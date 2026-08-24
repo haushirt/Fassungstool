@@ -1,0 +1,9 @@
+{
+  "name": "fassungstool",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "abgleich": "node werkzeug/abgleich.js"
+  }
+}

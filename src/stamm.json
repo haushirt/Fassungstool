@@ -1,0 +1,1008 @@
+{
+ "WINES": [
+  {
+   "id": "w001",
+   "f": "WEISS",
+   "r": "Grüner Veltliner",
+   "winzer": "Leindl",
+   "wein": "Langenlois",
+   "jg": "2024",
+   "region": "Kamptal DAC",
+   "reb": "Grüner Veltliner",
+   "at": 1,
+   "grp": "Grüner Veltliner"
+  },
+  {
+   "id": "w003",
+   "f": "WEISS",
+   "r": "Grüner Veltliner",
+   "winzer": "Ott",
+   "wein": "Fass 4",
+   "jg": "2025",
+   "region": "Wagram, Feuersbrunn",
+   "reb": "Grüner Veltliner",
+   "at": 1,
+   "grp": "Grüner Veltliner"
+  },
+  {
+   "id": "w002",
+   "f": "WEISS",
+   "r": "Grüner Veltliner",
+   "winzer": "Simon Gattinger",
+   "wein": "Loiben Federspiel",
+   "jg": "2024",
+   "region": "Wachau DAC",
+   "reb": "Grüner Veltliner",
+   "at": 1,
+   "grp": "Grüner Veltliner"
+  },
+  {
+   "id": "w004",
+   "f": "WEISS",
+   "r": "Grüner Veltliner",
+   "winzer": "Weinberghof Fritsch",
+   "wein": "Ried Schlossberg 1ÖTW",
+   "jg": "2022",
+   "region": "Wagram DAC, Oberstockstall",
+   "reb": "Grüner Veltliner",
+   "at": 1,
+   "grp": "Grüner Veltliner"
+  },
+  {
+   "id": "w005",
+   "f": "WEISS",
+   "r": "Riesling",
+   "winzer": "Hirsch",
+   "wein": "Zöbing",
+   "jg": "2024",
+   "region": "Kamptal",
+   "reb": "Riesling",
+   "at": 1,
+   "grp": "Riesling"
+  },
+  {
+   "id": "w006",
+   "f": "WEISS",
+   "r": "Riesling",
+   "winzer": "Pichler-Krutzler",
+   "wein": "Loiben",
+   "jg": "2024",
+   "region": "Wachau DAC",
+   "reb": "Riesling",
+   "at": 1,
+   "grp": "Riesling"
+  },
+  {
+   "id": "w007",
+   "f": "WEISS",
+   "r": "Riesling",
+   "winzer": "Emrich-Schönleber",
+   "wein": "Mineral",
+   "jg": "2023",
+   "region": "Monzingen (DE)",
+   "reb": "Riesling",
+   "at": 0,
+   "grp": "Riesling"
+  },
+  {
+   "id": "w008",
+   "f": "WEISS",
+   "r": "Sauvignon Blanc",
+   "winzer": "Hannes Sabathi",
+   "wein": "Sauvignon Blanc",
+   "jg": "2024",
+   "region": "Südsteiermark DAC, Gamlitz",
+   "reb": "Sauvignon Blanc",
+   "at": 1,
+   "grp": "Sauvignon Blanc"
+  },
+  {
+   "id": "w009",
+   "f": "WEISS",
+   "r": "Sauvignon Blanc",
+   "winzer": "Verus",
+   "wein": "Sauvignon Blanc",
+   "jg": "?",
+   "region": "Slowenien, Ormož",
+   "reb": "Sauvignon Blanc",
+   "at": 0,
+   "grp": "Sauvignon Blanc"
+  },
+  {
+   "id": "w010",
+   "f": "WEISS",
+   "r": "Weißburgunder",
+   "winzer": "Hannes Sabathi",
+   "wein": "Weißburgunder",
+   "jg": "2024",
+   "region": "Südsteiermark DAC, Gamlitz",
+   "reb": "Weißburgunder",
+   "at": 1,
+   "grp": "Weißburgunder"
+  },
+  {
+   "id": "w011",
+   "f": "WEISS",
+   "r": "Chardonnay",
+   "winzer": "Gesellmann",
+   "wein": "Chardonnay",
+   "jg": "2022",
+   "region": "Mittelburgenland, Deutschkreutz",
+   "reb": "Chardonnay",
+   "at": 1,
+   "grp": "Chardonnay"
+  },
+  {
+   "id": "w013",
+   "f": "WEISS",
+   "r": "Chardonnay",
+   "winzer": "Domaine Borgeot",
+   "wein": "Bourgogne Blanc Côte d'Or",
+   "jg": "2022",
+   "region": "Burgund (FR)",
+   "reb": "Chardonnay",
+   "at": 0,
+   "grp": "Chardonnay"
+  },
+  {
+   "id": "w014",
+   "f": "WEISS",
+   "r": "Chardonnay",
+   "winzer": "Domaine Pillot",
+   "wein": "Bourgogne Blanc",
+   "jg": "2023",
+   "region": "Burgund (FR)",
+   "reb": "Chardonnay",
+   "at": 0,
+   "grp": "Chardonnay"
+  },
+  {
+   "id": "w016",
+   "f": "WEISS",
+   "r": "Grauburgunder",
+   "winzer": "Andreas Gsellmann",
+   "wein": "Grauburgunder",
+   "jg": "2025",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Grauburgunder",
+   "at": 1,
+   "grp": "Grauburgunder"
+  },
+  {
+   "id": "w015",
+   "f": "WEISS",
+   "r": "Grauburgunder",
+   "winzer": "Dürnberg",
+   "wein": "Grauburgunder",
+   "jg": "2021",
+   "region": "Weinviertel",
+   "reb": "Grauburgunder",
+   "at": 1,
+   "grp": "Grauburgunder"
+  },
+  {
+   "id": "w017",
+   "f": "WEISS",
+   "r": "Roter Veltliner",
+   "winzer": "Josef Fritz",
+   "wein": "Wagram Terrassen",
+   "jg": "2024",
+   "region": "Wagram DAC, Zaussenberg",
+   "reb": "Roter Veltliner",
+   "at": 1,
+   "grp": "Roter Veltliner"
+  },
+  {
+   "id": "w018",
+   "f": "WEISS",
+   "r": "Muskateller",
+   "winzer": "Muster",
+   "wein": "Gelber Muskateller Styria",
+   "jg": "2025",
+   "region": "Südsteiermark",
+   "reb": "Gelber Muskateller",
+   "at": 1,
+   "grp": "Muskateller"
+  },
+  {
+   "id": "w019",
+   "f": "WEISS",
+   "r": "Gemischter Satz",
+   "winzer": "Ingrid Groiss",
+   "wein": "Anna's 17",
+   "jg": "2025",
+   "region": "Weinviertel, Breitenwaida",
+   "reb": "Gemischter Satz",
+   "at": 1,
+   "grp": "Gemischter Satz"
+  },
+  {
+   "id": "w020",
+   "f": "WEISS",
+   "r": "Gemischter Satz",
+   "winzer": "Mayer am Pfarrplatz",
+   "wein": "Wiener Gemischter Satz",
+   "jg": "2025",
+   "region": "Wien",
+   "reb": "Gemischter Satz",
+   "at": 1,
+   "grp": "Gemischter Satz"
+  },
+  {
+   "id": "w023",
+   "f": "WEISS",
+   "r": "Cuvée",
+   "winzer": "Bründlmayer",
+   "wein": "Spiegel",
+   "jg": "2022",
+   "region": "Kamptal, Langenlois",
+   "reb": "Grauburgunder / Weißburgunder",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w022",
+   "f": "WEISS",
+   "r": "Cuvée",
+   "winzer": "Heinrich (f. U&K)",
+   "wein": "Tulpe",
+   "jg": "2019",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Weißburgunder / Chardonnay",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w060",
+   "f": "WEISS",
+   "r": "Cuvée",
+   "winzer": "Muster (U&K)",
+   "wein": "Fräulein Klein",
+   "jg": "2021",
+   "region": "Südsteiermark, Gamlitz",
+   "reb": "Muskateller-Cuvée",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w021",
+   "f": "WEISS",
+   "r": "Cuvée",
+   "winzer": "Wolfgang Seher",
+   "wein": "Wilde Reben",
+   "jg": "2024",
+   "region": "Niederösterreich",
+   "reb": "GV / Riesling / Muskateller",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w045",
+   "f": "ROSÉ",
+   "r": "Zweigelt",
+   "winzer": "Dürnberg",
+   "wein": "Blanc de Noir",
+   "jg": "2024",
+   "region": "Weinviertel",
+   "reb": "Zweigelt",
+   "at": 1,
+   "grp": "Rosé"
+  },
+  {
+   "id": "w043",
+   "f": "ROSÉ",
+   "r": "Zweigelt",
+   "winzer": "Fritsch (Karl)",
+   "wein": "Wagram Rosé",
+   "jg": "?",
+   "region": "Wagram, Oberstockstall",
+   "reb": "Zweigelt",
+   "at": 1,
+   "grp": "Rosé"
+  },
+  {
+   "id": "w046",
+   "f": "ROSÉ",
+   "r": "Cuvée",
+   "winzer": "Ultimate Provence",
+   "wein": "UP Rosé",
+   "jg": "2025",
+   "region": "Côtes de Provence (FR)",
+   "reb": "Cinsault / Grenache / Syrah / Rolle",
+   "at": 0,
+   "grp": "Rosé"
+  },
+  {
+   "id": "w026",
+   "f": "ROT",
+   "r": "Zweigelt",
+   "winzer": "Glatzer",
+   "wein": "Rubin Carnuntum",
+   "jg": "2023",
+   "region": "Carnuntum, Göttlesbrunn",
+   "reb": "Zweigelt",
+   "at": 1,
+   "grp": "Zweigelt"
+  },
+  {
+   "id": "w027",
+   "f": "ROT",
+   "r": "Zweigelt",
+   "winzer": "Glatzer",
+   "wein": "Dornenvogel",
+   "jg": "2022",
+   "region": "Carnuntum DAC, Göttlesbrunn",
+   "reb": "Zweigelt Reserve",
+   "at": 1,
+   "grp": "Zweigelt"
+  },
+  {
+   "id": "w025",
+   "f": "ROT",
+   "r": "Zweigelt",
+   "winzer": "Kollwentz",
+   "wein": "Leithakalk",
+   "jg": "2022",
+   "region": "Leithaberg, Großhöflein",
+   "reb": "Zweigelt",
+   "at": 1,
+   "grp": "Zweigelt"
+  },
+  {
+   "id": "w024",
+   "f": "ROT",
+   "r": "Zweigelt",
+   "winzer": "Werner Achs",
+   "wein": "Goldberg",
+   "jg": "2024",
+   "region": "Neusiedlersee DAC, Gols",
+   "reb": "Zweigelt",
+   "at": 1,
+   "grp": "Zweigelt"
+  },
+  {
+   "id": "w031",
+   "f": "ROT",
+   "r": "Blaufränkisch",
+   "winzer": "Moric",
+   "wein": "Reserve",
+   "jg": "2023",
+   "region": "Burgenland",
+   "reb": "Blaufränkisch",
+   "at": 1,
+   "grp": "Blaufränkisch"
+  },
+  {
+   "id": "w030",
+   "f": "ROT",
+   "r": "Blaufränkisch",
+   "winzer": "Muhr",
+   "wein": "Samt & Seide",
+   "jg": "2022",
+   "region": "Carnuntum, Prellenkirchen",
+   "reb": "Blaufränkisch",
+   "at": 1,
+   "grp": "Blaufränkisch"
+  },
+  {
+   "id": "w028",
+   "f": "ROT",
+   "r": "Blaufränkisch",
+   "winzer": "Nittnaus",
+   "wein": "Kalk & Schiefer",
+   "jg": "2019",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Blaufränkisch",
+   "at": 1,
+   "grp": "Blaufränkisch"
+  },
+  {
+   "id": "w032",
+   "f": "ROT",
+   "r": "Pinot Noir",
+   "winzer": "Gebeshuber",
+   "wein": "Gumpoldskirchen",
+   "jg": "2022",
+   "region": "Thermenregion",
+   "reb": "Pinot Noir",
+   "at": 1,
+   "grp": "Pinot Noir"
+  },
+  {
+   "id": "w035",
+   "f": "ROT",
+   "r": "Pinot Noir",
+   "winzer": "Schiefer",
+   "wein": "Pinot Noir",
+   "jg": "2021",
+   "region": "Eisenberg, Königsberg",
+   "reb": "Pinot Noir",
+   "at": 1,
+   "grp": "Pinot Noir"
+  },
+  {
+   "id": "w033",
+   "f": "ROT",
+   "r": "Pinot Noir",
+   "winzer": "Domaine Confuron-Gindre",
+   "wein": "Bourgogne",
+   "jg": "2022",
+   "region": "Burgund (FR)",
+   "reb": "Pinot Noir",
+   "at": 0,
+   "grp": "Pinot Noir"
+  },
+  {
+   "id": "w034",
+   "f": "ROT",
+   "r": "Pinot Noir",
+   "winzer": "Domaine Ecard",
+   "wein": "Savigny-les-Beaune",
+   "jg": "2020",
+   "region": "Burgund (FR)",
+   "reb": "Pinot Noir",
+   "at": 0,
+   "grp": "Pinot Noir"
+  },
+  {
+   "id": "w036",
+   "f": "ROT",
+   "r": "Merlot",
+   "winzer": "Dürnberg",
+   "wein": "Elementum",
+   "jg": "2022",
+   "region": "Niederösterreich, Rosenberg",
+   "reb": "Merlot",
+   "at": 1,
+   "grp": "Merlot"
+  },
+  {
+   "id": "w041",
+   "f": "ROT",
+   "r": "Sangiovese",
+   "winzer": "Lamole di Lamole",
+   "wein": "Chianti Classico Duelame",
+   "jg": "2024",
+   "region": "Toscana (IT)",
+   "reb": "Sangiovese",
+   "at": 0,
+   "grp": "Sangiovese"
+  },
+  {
+   "id": "w042",
+   "f": "ROT",
+   "r": "Barbera",
+   "winzer": "Ceste",
+   "wein": "Barbera d'Alba Sposabella",
+   "jg": "?",
+   "region": "Piemont (IT)",
+   "reb": "Barbera",
+   "at": 0,
+   "grp": "Barbera"
+  },
+  {
+   "id": "w038",
+   "f": "ROT",
+   "r": "Cuvée",
+   "winzer": "Claus Preisinger",
+   "wein": "Heideboden",
+   "jg": "2023",
+   "region": "Gols, Leithagebirge",
+   "reb": "Zw / BF / Merlot",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w039",
+   "f": "ROT",
+   "r": "Cuvée",
+   "winzer": "Heinrich",
+   "wein": "Pannobile",
+   "jg": "2020",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Zweigelt / Blaufränkisch",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w037",
+   "f": "ROT",
+   "r": "Cuvée",
+   "winzer": "Heinrich (f. U&K)",
+   "wein": "Nelke",
+   "jg": "2017",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Zweigelt / Blaufränkisch",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w040",
+   "f": "ROT",
+   "r": "Cuvée",
+   "winzer": "Werner Achs",
+   "wein": "Xur",
+   "jg": "2022",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Zw / BF / St. Laurent",
+   "at": 1,
+   "grp": "Cuvée"
+  },
+  {
+   "id": "w055",
+   "f": "BUBBLES",
+   "r": "Schaumwein",
+   "winzer": "Seher",
+   "wein": "La Petite Frizzante Rosé",
+   "jg": "?",
+   "region": "Niederösterreich",
+   "reb": "Pinot Noir",
+   "at": 1,
+   "grp": "Sekt Rosé"
+  },
+  {
+   "id": "w056",
+   "f": "BUBBLES",
+   "r": "Schaumwein",
+   "winzer": "De Saint Gall",
+   "wein": "Champagne 1er Cru Blanc de Blancs",
+   "jg": "n.v.",
+   "region": "Champagne (FR)",
+   "reb": "Chardonnay",
+   "at": 0,
+   "grp": "Champagner"
+  },
+  {
+   "id": "w057",
+   "f": "BUBBLES",
+   "r": "Schaumwein",
+   "winzer": "La Farra",
+   "wein": "Prosecco Rosé Brut",
+   "jg": "n.v.",
+   "region": "Veneto (IT)",
+   "reb": "Glera / Pinot Nero",
+   "at": 0,
+   "grp": "Sekt Rosé"
+  },
+  {
+   "id": "serena",
+   "f": "BUBBLES",
+   "r": "Schaumwein",
+   "winzer": "Serena",
+   "wein": "Piu Frizzante",
+   "jg": "n.v.",
+   "region": "Veneto (IT)",
+   "reb": "Glera",
+   "at": 0,
+   "grp": "Sekt"
+  },
+  {
+   "id": "w048",
+   "f": "NATURAL",
+   "r": "Traminer",
+   "winzer": "Andreas Gsellmann",
+   "wein": "Traminer",
+   "jg": "2021",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Traminer",
+   "at": 1,
+   "grp": "Naturwein weiss"
+  },
+  {
+   "id": "w050",
+   "f": "NATURAL",
+   "r": "Traminer",
+   "winzer": "Heinrich",
+   "wein": "Roter Traminer Freyheit",
+   "jg": "2021",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Roter Traminer",
+   "at": 1,
+   "grp": "Naturwein weiss"
+  },
+  {
+   "id": "w049",
+   "f": "NATURAL",
+   "r": "Muskateller",
+   "winzer": "Heinrich",
+   "wein": "Muskat Freyheit",
+   "jg": "2022",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Muskateller",
+   "at": 1,
+   "grp": "Naturwein weiss"
+  },
+  {
+   "id": "w052",
+   "f": "NATURAL",
+   "r": "Pinot Noir",
+   "winzer": "Heinrich",
+   "wein": "Pinot Freyheit",
+   "jg": "2022",
+   "region": "Neusiedlersee, Gols",
+   "reb": "Pinot Noir",
+   "at": 1,
+   "grp": "Naturwein rot"
+  },
+  {
+   "id": "w047",
+   "f": "NATURAL",
+   "r": "Cuvée",
+   "winzer": "Claus Preisinger",
+   "wein": "Kalk und Kiesel",
+   "jg": "2022",
+   "region": "Gols, Leithagebirge",
+   "reb": "WB / GV / Welschriesling",
+   "at": 1,
+   "grp": "Naturwein weiss"
+  },
+  {
+   "id": "w051",
+   "f": "NATURAL",
+   "r": "Cuvée",
+   "winzer": "Heinrich",
+   "wein": "Naked White",
+   "jg": "2023",
+   "region": "Neusiedlersee, Gols",
+   "reb": "WB / Chardonnay / GV",
+   "at": 1,
+   "grp": "Naturwein weiss"
+  },
+  {
+   "id": "w053",
+   "f": "NATURAL",
+   "r": "Cuvée",
+   "winzer": "Heinrich",
+   "wein": "Naked Red",
+   "jg": "n.v.",
+   "region": "Burgenland",
+   "reb": "Zw / BF / St. Laurent",
+   "at": 1,
+   "grp": "Naturwein rot"
+  },
+  {
+   "id": "w065",
+   "f": "ROT",
+   "r": "Blaufränkisch",
+   "grp": "Blaufränkisch",
+   "winzer": "Gesellmann",
+   "wein": "Creitzer Reserve",
+   "jg": "2021",
+   "region": "Mittelburgenland DAC, Deutschkreutz",
+   "reb": "Blaufränkisch",
+   "at": 1
+  },
+  {
+   "id": "w066",
+   "f": "WEISS",
+   "r": "Chardonnay",
+   "grp": "Chardonnay",
+   "winzer": "Kollwentz",
+   "wein": "Leithakalk",
+   "jg": "2024",
+   "region": "Leithaberg, Großhöflein",
+   "reb": "Chardonnay",
+   "at": 1
+  }
+ ],
+ "GETR": {
+  "laden": [
+   {
+    "id": "saft",
+    "t": "Lade 1 · Säfte",
+    "kind": "grid",
+    "cell": 30,
+    "leerOben": 1,
+    "hinweis": "Angebrochene Packungen nach vorne ziehen – neue nach hinten.",
+    "hinweisStark": 1,
+    "grid": [
+     [
+      "tomate",
+      "cran",
+      "johan",
+      "mango",
+      "mango",
+      "mango",
+      "mango"
+     ],
+     [
+      "grape",
+      "anas",
+      "johan",
+      "mara",
+      "mara",
+      "mara",
+      "mara"
+     ]
+    ],
+    "spec": [
+     [
+      [
+       "holunder",
+       2
+      ],
+      [
+       "birne",
+       2
+      ],
+      [
+       "limette",
+       1
+      ],
+      [
+       "zitrone",
+       1
+      ]
+     ],
+     [
+      [
+       "sprite",
+       2
+      ],
+      [
+       "spritzer",
+       3
+      ]
+     ]
+    ]
+   },
+   {
+    "id": "mix",
+    "t": "Lade 4 · Mischgetränke",
+    "kind": "col",
+    "w": 37,
+    "photo": 1,
+    "cols": [
+     [
+      "sanbitter",
+      10
+     ],
+     [
+      "wildberry",
+      9
+     ],
+     [
+      "gingerale",
+      9
+     ],
+     [
+      "bitterlemon",
+      9
+     ],
+     [
+      "tonicth",
+      9
+     ],
+     [
+      "tonicfent",
+      9
+     ],
+     [
+      "gingerbeer",
+      8
+     ],
+     {
+      "versetzt": 1,
+      "platz": 8,
+      "stapel": [
+       [
+        "gastklein",
+        7
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "id": "soft",
+    "t": "Lade 5 · Softdrinks",
+    "kind": "col",
+    "w": 46,
+    "cols": [
+     [
+      "cola",
+      7
+     ],
+     [
+      "colaz",
+      7
+     ],
+     [
+      "almd",
+      7
+     ],
+     [
+      "berry",
+      7
+     ],
+     [
+      "orange",
+      7
+     ],
+     [
+      "lemon",
+      7
+     ]
+    ],
+    "photo": 1,
+    "leerOben": 1,
+    "hinweis": "Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.",
+    "hinweisStark": 1
+   },
+   {
+    "id": "bier",
+    "t": "Lade 6 · Bier",
+    "kind": "col",
+    "w": 55,
+    "cols": [
+     [
+      "st03",
+      8
+     ],
+     [
+      "st05",
+      7
+     ],
+     [
+      "hefe0",
+      7
+     ],
+     [
+      "hell",
+      7
+     ],
+     [
+      "dunkel",
+      7
+     ],
+     {
+      "stapel": [
+       [
+        "redale",
+        4
+       ],
+       [
+        "paleale",
+        4
+       ]
+      ]
+     }
+    ],
+    "photo": 1,
+    "leerOben": 1,
+    "hinweis": "Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.",
+    "hinweisStark": 1
+   },
+   {
+    "id": "regal",
+    "t": "Regal · Gasteiner",
+    "kind": "rack",
+    "w": 52,
+    "cols": [
+     [
+      "noblier",
+      1
+     ],
+     [
+      "gastill",
+      1
+     ]
+    ],
+    "rack": [
+     "gasteiner",
+     18,
+     6
+    ]
+   }
+  ],
+  "name": {
+   "tomate": "Tomate",
+   "grape": "Pink Grapefruit",
+   "cran": "Cranberry",
+   "anas": "Ananas",
+   "johan": "Schwarze Johannisbeere",
+   "mango": "Mango",
+   "mara": "Maracuja",
+   "holunder": "Holundersirup",
+   "sprite": "Sprite",
+   "birne": "Weißer Pfirsich · van Nahmen",
+   "limette": "Limettensaft",
+   "zitrone": "Zitronensaft",
+   "spritzer": "Spritzerwein",
+   "sanbitter": "Sanbitter",
+   "wildberry": "Schweppes Wild Berry",
+   "gingerale": "Thomas Henry Ginger Ale",
+   "bitterlemon": "Thomas Henry Bitter Lemon",
+   "tonicth": "Thomas Henry Tonic",
+   "tonicfent": "Fentimans Tonic",
+   "gingerbeer": "Fentimans Ginger Beer",
+   "gastklein": "Gasteiner 0,25 l",
+   "cola": "Cola",
+   "colaz": "Cola Zero",
+   "almd": "Almdudler",
+   "berry": "Berry Lemonade",
+   "orange": "Orange Lemonade",
+   "lemon": "Lemon Lemonade",
+   "st03": "Stiegl 0,0 % · 0,33",
+   "st05": "Stiegl Freibier alkoholfrei",
+   "hefe0": "Franziskaner Weissbier alkoholfrei",
+   "hell": "Franziskaner Weissbier hell",
+   "dunkel": "Franziskaner Weissbier dunkel",
+   "gasteiner": "Gasteiner 1 l",
+   "gastill": "Gasteiner still",
+   "noblier": "Noblier alkoholfrei",
+   "redale": "Raschhofer Roter Engel · Red Ale",
+   "paleale": "Raschhofer Silberpfeil · Pale Ale"
+  },
+  "kurz": {
+   "tonicth": "Tonic T.H.",
+   "tonicfent": "Tonic Fent.",
+   "gingerale": "Ginger Ale",
+   "bitterlemon": "Bitter Lemon",
+   "gingerbeer": "Ginger Beer",
+   "wildberry": "Wild Berry",
+   "gastklein": "Gast. 0,25",
+   "holunder": "Holunder",
+   "birne": "Pfirsich",
+   "limette": "Limette",
+   "zitrone": "Zitrone",
+   "spritzer": "Spritzer",
+   "sprite": "Sprite",
+   "st03": "0,0 klein",
+   "st05": "Freibier",
+   "hefe0": "Weissb. afr",
+   "hell": "Hell",
+   "dunkel": "Dunkel",
+   "colaz": "Zero",
+   "almd": "Almdudler",
+   "berry": "Berry",
+   "orange": "Orange",
+   "lemon": "Lemon",
+   "cola": "Cola",
+   "sanbitter": "Sanbitter",
+   "noblier": "Noblier",
+   "gastill": "Still",
+   "gasteiner": "Gast. 1 l",
+   "redale": "Red Ale",
+   "paleale": "Pale Ale"
+  },
+  "col": {
+   "sanbitter": "#CC0A14",
+   "wildberry": "#C4386A",
+   "gingerale": "#9B26B6",
+   "bitterlemon": "#3E9E1E",
+   "tonicth": "#F5D000",
+   "tonicfent": "#B08A5A",
+   "gingerbeer": "#7A3F1E",
+   "gastklein": "#1D6E96",
+   "cola": "#D6202A",
+   "colaz": "#2A2A2E",
+   "almd": "#D2A83A",
+   "berry": "#99101A",
+   "orange": "#EE7F1E",
+   "lemon": "#E8C21A",
+   "st03": "#1B7FD4",
+   "st05": "#166FBE",
+   "hefe0": "#6E8CA8",
+   "hell": "#B04A12",
+   "dunkel": "#5E2A12",
+   "gasteiner": "#1D6E96",
+   "gastill": "#4E7A8E",
+   "noblier": "#9A7B44",
+   "redale": "#D51726",
+   "paleale": "#7DBE2E"
+  },
+  "spec": {
+   "holunder": "#8A7E62",
+   "sprite": "#2FA84F",
+   "birne": "#C2A93E",
+   "limette": "#6E9A2A",
+   "zitrone": "#D9C43A",
+   "spritzer": "#4A6B2A"
+  },
+  "skal": {
+   "st03": 0.76,
+   "gastklein": 0.84
+  }
+ }
+}
