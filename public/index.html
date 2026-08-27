@@ -127,6 +127,64 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .drwb button,.exprow .secondary{
   background:var(--surface);border-color:var(--border-strong);color:var(--fg)}
 .recheck{color:var(--fg-muted)}
+.qbadge{display:inline-block;margin-left:var(--space-2);color:var(--danger-fg);
+  font-size:var(--text-xs);font-weight:var(--weight-medium)}
+.qbadge:empty{display:none}
+.rollchip{display:inline-block;margin-left:var(--space-2);padding:1px 8px;border-radius:var(--radius-pill);
+  background:var(--surface-4);color:var(--fg-muted);font-size:var(--text-xs);font-weight:var(--weight-medium);
+  letter-spacing:var(--track-caps);text-transform:uppercase}
+.standkopf{display:flex;align-items:center;gap:var(--space-4);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:var(--space-3) var(--space-4);margin-bottom:var(--space-3)}
+.standkopf .stz{flex:0 0 auto;text-align:center;padding-right:var(--space-4);
+  border-right:1px solid var(--border-strong)}
+.standkopf .stz b{display:block;font-size:28px;font-weight:var(--weight-bold);
+  letter-spacing:-.02em;line-height:1}
+.standkopf .stz span{display:block;font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle);margin-top:2px}
+.standkopf .stt b{display:block;font-size:var(--text-base)}
+.standkopf .stt span{display:block;font-size:var(--text-sm);color:var(--fg-muted);margin-top:2px}
+#standQ{margin-bottom:var(--space-3)}
+.stfilter{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-2);
+  margin-bottom:var(--space-3);-webkit-overflow-scrolling:touch}
+.stchip{flex:0 0 auto;height:34px;padding:0 14px;border-radius:var(--radius-pill);
+  border:1px solid var(--border-heavy);background:var(--surface);font-size:var(--text-sm);
+  color:var(--fg-secondary)}
+.stchip.on{background:var(--fg);border-color:var(--fg);color:var(--fg-on-dark);
+  font-weight:var(--weight-medium)}
+.stgrid{display:grid;grid-template-columns:1fr;gap:var(--space-3)}
+@media(min-width:700px){.stgrid{grid-template-columns:1fr 1fr}
+  .stgrp{grid-column:1/-1}}
+.stgrp{margin:var(--space-3) 0 0}
+.stgrp b{display:block;font-size:var(--text-xs);font-weight:var(--weight-medium);
+  letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-secondary)}
+.stgrp span{display:block;font-size:var(--text-xs);color:var(--fg-subtle);margin-top:1px}
+.stkarte{position:relative;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);
+  padding-left:calc(var(--space-4) + 4px);overflow:hidden}
+.stkarte::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--fk)}
+.stk1{display:flex;align-items:flex-start;gap:var(--space-3)}
+.stnm{flex:1;min-width:0}
+.stnm b{display:block;font-size:var(--text-base);font-weight:var(--weight-medium);line-height:1.25}
+.stnm span{display:block;font-size:var(--text-base);color:var(--fg-secondary);line-height:1.25}
+.stwert{flex:0 0 auto;font-size:30px;font-weight:var(--weight-bold);line-height:1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stwert i{font-style:normal;font-size:var(--text-base);font-weight:var(--weight-medium);
+  color:var(--fg-subtle)}
+.stk2{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-2)}
+.stmeta{flex:1;min-width:0;font-size:var(--text-sm);color:var(--fg-muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stnimm{flex:0 0 auto;height:32px;padding:0 12px;border-radius:var(--radius-pill);
+  border:1px solid var(--border-heavy);background:var(--surface-2);
+  font-size:var(--text-sm);color:var(--fg-secondary)}
+.stnimm:active{background:var(--surface-4)}
+.stbar{height:3px;border-radius:2px;background:var(--surface-4);margin-top:var(--space-3);overflow:hidden}
+.stbar i{display:block;height:100%;background:var(--fk);opacity:.75}
+.stkarte.knapp{background:var(--danger-surface);border-color:var(--danger-border)}
+.stkarte.knapp .stwert{color:var(--danger-fg)}
+.stkarte.leer{background:var(--danger-bg);border-color:var(--danger-border)}
+.stkarte.leer .stwert i{color:var(--danger-fg)}
+.stkarte.unbekannt{background:var(--surface-2)}
 .addbtn{border-style:dashed;color:var(--fg-muted)}
 .recheck:active,.fullbtn:active,.addbtn:active,.prueft:active,
 .card2 .row button:active,.drwb button:active,.exprow .secondary:active{
@@ -957,13 +1015,33 @@ const PLAN = {"soll":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":2,"w00
 const KISTE_STD=6;
 const kg=p=>+(p&&p.kistengr)||KISTE_STD;
 const MAIL="casimir.ikrath@haus-hirt.com";
-/* P8 · Zwei Codeebenen: Anmeldung (wer fasst) und Verwaltung/Freigabe (2797).
-   Klartext in einer HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
-const USER={"1357":"Asad Karakiri","5800":"Casimir","9114":"Ian Lauchbein",
-            "1326":"Marinus"};
-const UKEY="hh_user";
+/* P8/P26 · Es gab einmal zwei Codeebenen im Quelltext. Beide sind weg:
+   diese Datei ist öffentlich abrufbar, ein Code darin wäre eine
+   Unterschrift, keine Sperre. Geprüft wird gegen den Worker. */
+/* ══════ P26 · Anmeldung am Server ══════
+   Diese Datei ist öffentlich abrufbar, sobald der Worker läuft — auch aus
+   einem privaten Repo. Es steht darum kein einziger Code mehr darin.
+   Geprüft wird gegen /api/anmelden, dort liegen nur PBKDF2-Prüfsummen.
+
+   Name und Rolle wandern nach erfolgreicher Anmeldung in den
+   sessionStorage. Das ist keine Berechtigung, sondern nur die Antwort auf
+   „welche Kacheln zeige ich" — die Berechtigung prüft der Server bei
+   jedem Aufruf neu. Wer hier etwas verbiegt, sieht mehr Knöpfe und
+   bekommt vom Server trotzdem eine 403. */
+const UKEY="hh_user", RKEY="hh_rolle";
+const ROLLNAME={service:"Service",wirtschaft:"Wirtschaft",leitung:"Leitung"};
+const RECHTE={
+  service:   {module:["tag","fuellen","nach"],                stand:1, archiv:0, leitung:0},
+  wirtschaft:{module:["tag","fuellen","nach","keller","ware"], stand:1, archiv:1, leitung:0},
+  leitung:   {module:["tag","fuellen","nach","keller","ware"], stand:1, archiv:1, leitung:1}};
 function whoAmI(){try{return sessionStorage.getItem(UKEY)||"";}catch(e){return "";}}
-function setUser(n){try{n?sessionStorage.setItem(UKEY,n):sessionStorage.removeItem(UKEY);}catch(e){}}
+function meineRolle(){try{return sessionStorage.getItem(RKEY)||"service";}catch(e){return "service";}}
+function darf(was){const r=RECHTE[meineRolle()]||RECHTE.service;
+  return Array.isArray(r.module)&&r.module.includes(was) ? true : !!r[was];}
+function setUser(n,rolle){try{
+  if(n){sessionStorage.setItem(UKEY,n);sessionStorage.setItem(RKEY,rolle||"service");}
+  else {sessionStorage.removeItem(UKEY);sessionStorage.removeItem(RKEY);}
+}catch(e){}}
 const KEY="hh_keller_v12";
 const $=s=>document.querySelector(s);
 /* Zurück/Weiter wandern bei jedem Aufbau in den Inhalt. Die Knoten
@@ -1033,6 +1111,60 @@ const HOWTO={
 
 let S=load(), mode=null, step=0;
 
+/* ══════ P26 · Verbindung ══════
+   Die Erfassung bleibt unangetastet: sie schreibt weiter in localStorage
+   und läuft weiter, wenn im Keller kein Netz ist. Neu ist nur, dass jeder
+   Vorgang zusätzlich in eine Warteschlange geht und von dort zum Server
+   wandert. Die Id kommt vom Gerät, der Server ist idempotent — doppeltes
+   Senden schadet nicht. */
+const API="/api";
+const QKEY="hh_queue_v1", SPIEGELKEY="hh_spiegel_v1";
+function ladeQ(){try{return JSON.parse(localStorage.getItem(QKEY))||[];}catch(e){return [];}}
+function sichereQ(q){try{localStorage.setItem(QKEY,JSON.stringify(q));}catch(e){}}
+function inQ(rec){
+  if(!rec||!rec.mode)return;
+  if(!rec.vid)rec.vid=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random());
+  const q=ladeQ().filter(x=>x.vid!==rec.vid);
+  q.push(JSON.parse(JSON.stringify(rec)));
+  sichereQ(q.slice(-60));
+  flushQ();
+}
+let flushLaeuft=false;
+async function flushQ(){
+  if(flushLaeuft||!navigator.onLine)return;
+  flushLaeuft=true;
+  let q=ladeQ();
+  while(q.length){
+    const rec=q[0];
+    try{
+      const r=await fetch(API+"/vorgang/"+encodeURIComponent(rec.vid),
+        {method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify(rec)});
+      if(r.status===401){break;}                 /* Sitzung abgelaufen: liegen lassen */
+      if(!r.ok&&r.status<500){q.shift();sichereQ(q);continue;}  /* untauglich: verwerfen */
+      if(!r.ok)break;
+      q.shift();sichereQ(q);
+    }catch(e){break;}
+  }
+  flushLaeuft=false;
+  const offen=ladeQ().length;
+  const b=document.getElementById("qbadge");
+  if(b)b.textContent=offen?offen+" offen":"";
+}
+window.addEventListener("online",flushQ);
+
+/* Der Spiegel ist eine Kopie der Server-Vorgänge, damit der Kellerstand
+   auch dann etwas zeigt, wenn das Netz gerade weg ist. */
+function spiegel(){try{return JSON.parse(localStorage.getItem(SPIEGELKEY))||[];}catch(e){return [];}}
+async function zieheStand(){
+  try{
+    const r=await fetch(API+"/vorgaenge");
+    if(!r.ok)return false;
+    const j=await r.json();
+    localStorage.setItem(SPIEGELKEY,JSON.stringify(j.vorgaenge||[]));
+    return true;
+  }catch(e){return false;}
+}
+
 /* ── Konfiguration (Backoffice): Bar-Glasweine überschreibbar ── */
 const CFGKEY="hh_cfg_v9";
 function loadCfg(){try{const r=localStorage.getItem(CFGKEY);if(r)return JSON.parse(r);}catch(e){}return null;}
@@ -1043,7 +1175,8 @@ function barSlots(k){return (CFG&&CFG[k])?CFG[k]:PLAN[k];}
 function yest(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);}
 function today(){return new Date().toISOString().slice(0,10);}
 function blank(m){
-  const b={mode:m,tag:m==="tag"?yest():today(),name:whoAmI(),notiz:"",finished:false,ver:12};
+  const b={mode:m,tag:m==="tag"?yest():today(),name:whoAmI(),notiz:"",finished:false,ver:12,
+    vid:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random())};
   if(m==="tag")Object.assign(b,{rest:{},barrot:{},bar:{},backup:{},seen:{},holt:{},
     zusatz:{},gzusatz:{},gent:{},getr:{},gdone:{},gcheck:{},goffen:{},
     gholt:{},gholtN:{},holtN:{},fotos:[]});
@@ -1061,6 +1194,7 @@ function loadArch(){try{const r=localStorage.getItem(AKEY);if(r)return JSON.pars
 function saveArch(a){try{localStorage.setItem(AKEY,JSON.stringify(a));}catch(e){}}
 function archive(rec){
   if(!rec)return;
+  inQ(rec);
   const a=loadArch();
   a[rec.mode+"_"+rec.tag]=Object.assign({},rec,{archiviert:new Date().toISOString()});
   const ks=Object.keys(a).sort((x,y)=>(a[x].archiviert||"").localeCompare(a[y].archiviert||""));
@@ -1117,10 +1251,28 @@ function renderLogin(){
       <input id="uCode" class="input input--pin" type="tel" inputmode="numeric"
         maxlength="4" placeholder="\u2022\u2022\u2022\u2022" autocomplete="off"></label>`;
   const inp=$("#uCode");setTimeout(()=>inp.focus(),60);
-  const pruefe=()=>{
-    const n=USER[inp.value];
-    if(n){setUser(n);L.style.display="none";renderMenu();window.scrollTo(0,0);return;}
-    if(inp.value.length>=4){inp.value="";inp.placeholder="falsch";toast("Code unbekannt");}};
+  let laeuft=false;
+  const pruefe=async()=>{
+    if(laeuft||inp.value.length<4)return;
+    laeuft=true;inp.disabled=true;inp.placeholder="\u2026";
+    try{
+      const r=await fetch(API+"/anmelden",{method:"POST",
+        headers:{"content-type":"application/json"},body:JSON.stringify({code:inp.value})});
+      if(r.ok){
+        const j=await r.json();
+        setUser(j.name,j.rolle);
+        await zieheStand();
+        L.style.display="none";renderMenu();window.scrollTo(0,0);return;
+      }
+      /* Die Antwort sagt nie, ob es den Code gibt \u2014 nur, dass es nicht
+         gepasst hat. Bei zu vielen Versuchen sagt sie das ehrlich. */
+      toast(r.status===429?"Zu viele Versuche. Kurz warten.":"Code stimmt nicht");
+    }catch(e){
+      toast("Keine Verbindung \u2014 zum Anmelden braucht es einmal Netz");
+    }
+    inp.value="";inp.disabled=false;inp.placeholder="\u2022\u2022\u2022\u2022";
+    setTimeout(()=>inp.focus(),40);laeuft=false;
+  };
   inp.oninput=pruefe;
 }
 function renderMenu(){
@@ -1135,19 +1287,198 @@ function renderMenu(){
       ${run?`<span class="when">\u25cf Angefangen · ${deTag(d.tag)}</span>`:""}</span>
       <span class="go" aria-hidden="true">\u203a</span></button>`;
   };
+  const grp=(t,ks)=>{const c=ks.filter(darf).map(card).join("");
+    return c?`<div class="mgrp">${t}</div>${c}`:"";};
+  const B=standDaten();
   $("#menu").innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool · Bad Gastein</p>
     <p class="angemeldet">Angemeldet: <b>${esc(whoAmI())}</b>
+      <span class="rollchip">${ROLLNAME[meineRolle()]||""}</span>
+      <span class="qbadge" id="qbadge">${ladeQ().length?ladeQ().length+" offen":""}</span>
       <button class="wechseln" id="bWechseln">wechseln</button></p>
-    <div class="mgrp">Service</div>${card("tag")}${card("fuellen")}
-    <div class="mgrp">Notfall</div>${card("nach")}
-    <div class="mgrp">Bestand</div>${card("keller")}${card("ware")}
-    <button class="adminlink" id="bAdmin">Verwaltung</button>
-    <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`;
-  document.querySelectorAll(".mi").forEach(b=>b.onclick=()=>start(b.dataset.m));
-  $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
-  $("#bAdmin").onclick=askPin;
-  $("#bArch").onclick=openArchList;
+    ${grp("Service",["tag","fuellen"])}
+    ${grp("Notfall",["nach"])}
+    ${grp("Bestand",["keller","ware"])}
+    ${darf("stand")?`<div class="mgrp">Nachschlagen</div>
+      <button class="mi" id="bStand">
+        <span class="ic" aria-hidden="true">${ICONS.keller}</span>
+        <span class="txt"><b>Kellerstand</b><span>Was steht gerade unten? Nur nachsehen, nichts ändern.</span>
+        ${B.warn?`<span class="when">\u25cf ${B.warn} Positionen knapp</span>`:""}</span>
+        <span class="go" aria-hidden="true">\u203a</span></button>`:""}
+    ${darf("leitung")?`<button class="adminlink" id="bLeit">Leitung öffnen \u2197</button>`:""}
+    ${darf("archiv")?`<button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`:""}
+    ${darf("leitung")?`<button class="adminlink" id="bAdmin" style="margin-top:2px">Verwaltung</button>`:""}`;
+  document.querySelectorAll(".mi[data-m]").forEach(b=>b.onclick=()=>start(b.dataset.m));
+  $("#bWechseln").onclick=()=>{
+    fetch(API+"/abmelden").catch(()=>{});
+    setUser("");renderLogin();window.scrollTo(0,0);};
+  if($("#bStand"))$("#bStand").onclick=openStand;
+  if($("#bAdmin"))$("#bAdmin").onclick=askPin;
+  if($("#bLeit"))$("#bLeit").onclick=()=>{location.href="leitung.html";};
+  if($("#bArch"))$("#bArch").onclick=openArchList;
 }
+/* ══════ P24 · Kellerstand nachschlagen ══════
+   Die häufigste Frage an der Bar ist keine Fassung, sondern: haben wir
+   davon noch was? Bisher hiess die Antwort hinuntergehen. Diese Ansicht
+   rechnet sie aus der jüngsten Zählung und allem, was seither gebucht
+   wurde — sie schreibt nichts und kann darum nichts kaputt machen.
+
+   Ohne Zählung gibt es keinen Bestand. Dann steht das da, statt eine
+   Zahl zu erfinden. */
+function standDaten(){
+  const a=loadArch(), ks=Object.keys(a);
+  const rang={ware:0,keller:1,tag:2,fuellen:3,nach:4};
+  /* Server zuerst, eigenes Archiv als Ergänzung. Was beide kennen, zählt
+     einmal \u2014 die vid entscheidet. */
+  const gesehen=new Set();
+  const roh=[];
+  spiegel().forEach(v=>{if(v&&v.mode){roh.push(v);if(v.vid)gesehen.add(v.vid);}});
+  ks.map(k=>a[k]).forEach(v=>{if(v&&v.mode&&!(v.vid&&gesehen.has(v.vid)))roh.push(v);});
+  const alle=roh.filter(v=>v&&v.mode)
+    .slice().sort((x,y)=>(x.tag||"").localeCompare(y.tag||"")||((rang[x.mode]??9)-(rang[y.mode]??9)));
+  /* Der laufende, noch nicht archivierte Vorgang zählt mit — sonst zeigt
+     die Bar einen Stand, den das Fassen von heute früh schon überholt hat. */
+  Object.keys(S||{}).forEach(k=>{const v=S[k];
+    if(v&&v.mode&&hasData(k,v))alle.push(Object.assign({},v,{laufend:1}));});
+
+  let basis=null,bi=-1;
+  alle.forEach((v,i)=>{if(v.mode==="keller"&&WINES.some(w=>(v.zdone||{})[w.id])){basis=v;bi=i;}});
+  const b={};
+  if(basis)WINES.forEach(w=>{if((basis.zdone||{})[w.id])
+    b[w.id]=g(basis.reihen,w.id)*6+g(basis.einzel,w.id);});
+
+  let ein=0,raus=0;
+  alle.forEach((v,i)=>{
+    if(i<=bi)return;
+    if(v.mode==="ware")(v.pos||[]).forEach(p=>{
+      if(!p.id||p.id==="__neu"||!(+p.kisten>0))return;
+      const n=(+p.kisten)*(p.kg?+p.kg:((PLAN.kiste||{})[p.id]||6));
+      b[p.id]=(b[p.id]||0)+n;ein+=n;});
+    if(v.mode==="tag"||v.mode==="fuellen"){
+      const t={};["barrot","bar","backup","rest"].forEach(k=>
+        Object.keys(v[k]||{}).forEach(id=>t[id]=(t[id]||0)+(+v[k][id]||0)));
+      Object.keys(t).forEach(id=>{
+        const n=(v.holtN&&v.holtN[id]!=null)?+v.holtN[id]:t[id];
+        b[id]=(b[id]||0)-n;raus+=n;});
+      Object.keys(v.zusatz||{}).forEach(id=>{b[id]=(b[id]||0)-(+v.zusatz[id]||0);raus+=+v.zusatz[id]||0;});
+    }
+    if(v.mode==="nach")Object.keys(v.ent||{}).forEach(id=>{
+      b[id]=(b[id]||0)-(+v.ent[id]||0);raus+=+v.ent[id]||0;});
+  });
+  const warn=WINES.filter(w=>b[w.id]!=null&&b[w.id]<6).length;
+  const minus=WINES.filter(w=>b[w.id]!=null&&b[w.id]<0).length;
+  return {b,basis,ein,raus,warn,minus,hat:!!basis};
+}
+let standQ="", standF="ALLE";
+/* Der Keller ist nach Farbe sortiert, nicht alphabetisch. Die Ansicht
+   folgt demselben Bild: ein Farbstreifen je Karte, Gruppen im Laufweg.
+   Wer unten steht, sucht nicht nach einem Namen, sondern nach einem Regal. */
+const STANDFARBE={WEISS:"#C9A227","ROSÉ":"#D4818A",ROT:"#8B2F3B",
+                  BUBBLES:"#B08D57",NATURAL:"#6E8F5E"};
+let standFrisch=false;
+function openStand(){
+  if(!standFrisch){
+    standFrisch=true;
+    zieheStand().then(ok=>{
+      if(ok && $("#mTitle").textContent==="Kellerstand") openStand();});
+  }
+  const B=standDaten(), m=shellFor("Kellerstand"); m.innerHTML="";
+
+  const kopf=document.createElement("div"); kopf.className="standkopf";
+  const gez=WINES.filter(w=>B.b[w.id]!=null).length;
+  const ges=WINES.reduce((a,w)=>a+Math.max(0,B.b[w.id]||0),0);
+  kopf.innerHTML=B.hat
+    ? `<div class="stz"><b>${ges}</b><span>Flaschen</span></div>
+       <div class="stt"><b>Gezählt ${deTag(B.basis.tag)}</b>
+       <span>${gez} Positionen · seither ${B.ein} eingeräumt, ${B.raus} geholt</span></div>`
+    : `<div class="stt"><b>Noch nicht gezählt</b>
+       <span>Ohne Kellerzählung gibt es keinen Bestand, nur Bewegung.</span></div>`;
+  m.appendChild(kopf);
+
+  if(B.minus)add(m,"box","<b>"+B.minus+" Positionen stehen rechnerisch unter null.</b><br>"+
+    "Die Zählung ist überholt \u2014 bitte melden, damit neu gezählt wird.");
+
+  const f=document.createElement("input");
+  f.id="standQ"; f.className="input"; f.type="search";
+  f.placeholder="Winzer, Wein oder Rebsorte"; f.value=standQ; f.autocomplete="off";
+  m.appendChild(f);
+
+  /* Filterleiste: Farbe und der Blick auf das Knappe. Mehr braucht es nicht \u2014
+     jeder weitere Schalter ist eine Entscheidung, die niemand treffen will. */
+  const fl=document.createElement("div"); fl.className="stfilter";
+  const chips=[["ALLE","Alle"],["KNAPP","Knapp"]].concat(FARBEN.map(x=>[x,FARBKURZ[x]]));
+  fl.innerHTML=chips.map(([k,t])=>
+    `<button class="stchip${standF===k?" on":""}" data-f="${k}">${t}</button>`).join("");
+  fl.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{
+    standF=b.dataset.f; fl.querySelectorAll(".stchip").forEach(x=>
+      x.classList.toggle("on",x.dataset.f===standF)); male();});
+  m.appendChild(fl);
+
+  const liste=document.createElement("div"); liste.className="stgrid"; m.appendChild(liste);
+
+  const male=()=>{
+    const q=standQ.trim().toLowerCase();
+    const wl=WINES.filter(w=>{
+      if(q && !(w.winzer+" "+w.wein+" "+w.reb+" "+w.region).toLowerCase().includes(q))return false;
+      if(standF==="KNAPP")return B.b[w.id]!=null && B.b[w.id]<6;
+      if(standF!=="ALLE" && w.f!==standF)return false;
+      return true;}).slice().sort(wegCmp);
+    liste.innerHTML="";
+    if(!wl.length){add(liste,"empty","Nichts gefunden.");return;}
+    let zone=null;
+    wl.forEach(w=>{
+      const z=PLAN.zone[w.id];
+      if(z!==zone && standF!=="KNAPP" && !q){zone=z;
+        const h=document.createElement("div"); h.className="stgrp";
+        h.innerHTML=`<b>${esc((PLAN.zonen[z]||{}).t||"Übrige")}</b>
+          <span>${esc((PLAN.zonen[z]||{}).s||"")}</span>`;
+        liste.appendChild(h);}
+      const n=B.b[w.id];
+      const kl=n==null?"unbekannt":n<=0?"leer":n<6?"knapp":"gut";
+      const soll=PLAN.soll[w.id]||3;
+      const voll=n==null?0:Math.max(0,Math.min(100,Math.round(n/(soll*4)*100)));
+      const k=document.createElement("div"); k.className="stkarte "+kl;
+      k.style.setProperty("--fk",STANDFARBE[w.f]||"var(--fg-muted)");
+      k.innerHTML=`<div class="stk1">
+          <div class="stnm"><b>${esc(w.winzer)}</b><span>${esc(w.wein)}</span></div>
+          <div class="stwert">${n==null?'<i>?</i>':n<=0?'<i>leer</i>':n}</div>
+        </div>
+        <div class="stk2">
+          <span class="stmeta">${esc(w.jg)} · ${esc(w.reb)}</span>
+          <button class="stnimm" data-w="${w.id}">Entnahme</button>
+        </div>
+        <div class="stbar"><i style="width:${voll}%"></i></div>`;
+      liste.appendChild(k);});
+    liste.querySelectorAll(".stnimm").forEach(b=>b.onclick=()=>nimmRaus(b.dataset.w));
+  };
+  f.oninput=()=>{standQ=f.value;male();};
+  male();
+  window.scrollTo(0,0);
+
+  const back=document.createElement("button"); back.className="recheck";
+  back.textContent="Zurück zum Menü";
+  back.onclick=()=>{standFrisch=false;mode=null;renderMenu();window.scrollTo(0,0);};
+  m.appendChild(back);
+}
+
+/* P25 · Wer nachschlägt, steht meistens schon im Keller. Die Flasche, die
+   er dann mitnimmt, war bisher die häufigste Lücke im Bestand: geholt und
+   nicht gemeldet. Genau daher kommen die negativen Zahlen. Ein Knopf
+   schreibt sie in die laufende Sonderentnahme \u2014 abgeschlossen wird sie
+   weiterhin im eigenen Modul, damit das Protokoll seine Form behält. */
+function nimmRaus(id){
+  const w=byId(id); if(!w)return;
+  const cur=S.nach;
+  if(cur&&(cur.finished||cur.tag!==today())){archive(cur);S.nach=blank("nach");}
+  else if(!cur)S.nach=blank("nach");
+  if(!S.nach.name)S.nach.name=whoAmI();
+  S.nach.ent=S.nach.ent||{};
+  S.nach.ent[id]=(+S.nach.ent[id]||0)+1;
+  save();
+  const n=sum(S.nach.ent);
+  toast(w.winzer+" · "+w.wein+" gebucht \u2014 "+n+" offen");
+  openStand();
+}
+
 /* 2.2 · Liste der archivierten Vorgänge */
 function shellFor(titel){
   $("#menu").style.display="none";$("#app").style.display="";
@@ -1194,18 +1525,12 @@ function openArchDoc(k){
   $("#aCsv").onclick=expCsv;$("#aJson").onclick=expJson;
   $("#aBack").onclick=()=>{ARCHREC=null;openArchList();};
 }
-const PIN="2797";
+/* P26 · Die Freigabe-PIN ist ersatzlos gefallen. Eine Konstante im
+   Quelltext war nie eine Sperre \u2014 jetzt entscheidet die Rolle, und der
+   Server prüft sie bei jedem schreibenden Aufruf noch einmal. */
 function askPin(){
-  $("#ovT").textContent="Verwaltung";
-  $("#ovBody").innerHTML=`<p>PIN eingeben.</p>
-    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••">`;
-  $("#ov").classList.add("on");
-  const inp=$("#pinIn");setTimeout(()=>inp.focus(),50);
-  $("#ovOk").textContent="Öffnen";
-  $("#ovOk").onclick=()=>{
-    if(inp.value===PIN){$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();}
-    else{inp.value="";inp.placeholder="falsch";toast("PIN falsch");}
-  };
+  if(!darf("leitung"))return toast("Dieser Bereich ist der Leitung vorbehalten");
+  openAdmin();
 }
 function openAdmin(){
   $("#menu").style.display="none";$("#app").style.display="";
@@ -1222,6 +1547,14 @@ function renderAdmin(){
   const scope=document.createElement("div");scope.className="box";scope.style.margin="var(--space-4) var(--space-1) 0";
   scope.innerHTML="<b>Diese Einstellung gilt nur auf diesem Gerät.</b><br>Für die anderen Geräte den Code unten übertragen.";
   m.appendChild(scope);
+  /* P26 · Mitarbeiter, Codes und Rollen liegen am Server und werden im
+     Backoffice gepflegt. Hier bleibt, was diesem Gerät gehört. */
+  const rsec=document.createElement("div");rsec.style.marginTop="var(--space-5)";
+  rsec.innerHTML=`<div class="hd1" style="margin-bottom:var(--space-2)">Mitarbeiter</div>
+    <div class="box">Codes und Rollen werden in der Leitungsseite gepflegt,
+    nicht mehr auf dem Gerät.</div>`;
+  m.appendChild(rsec);
+
   const wrap=document.createElement("div");wrap.style.padding="0 2px";
   const opts=WINES.slice().sort((a,b)=>a.winzer.localeCompare(b.winzer))
     .map(w=>`<option value="${w.id}">${esc(w.winzer)} · ${esc(w.wein)}</option>`).join("");
@@ -3463,7 +3796,20 @@ if("serviceWorker" in navigator){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
 
-(whoAmI()?renderMenu():renderLogin());measure();fclean();
+/* P26 · Start. Der sessionStorage kann leer sein, während das Cookie noch
+   zwölf Stunden läuft — ein neuer Tab etwa. Dann fragt die App einmal
+   nach, statt eine Anmeldung zu verlangen, die es schon gibt. */
+(async()=>{
+  if(!whoAmI()){
+    try{
+      const r=await fetch(API+"/ich");
+      if(r.ok){const j=await r.json();setUser(j.name,j.rolle);}
+    }catch(e){}
+  }
+  (whoAmI()?renderMenu():renderLogin());
+  measure();fclean();
+  if(whoAmI()){flushQ();zieheStand();}
+})();
 </script>
 </body>
 </html>
