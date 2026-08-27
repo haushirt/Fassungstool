@@ -15,4 +15,13 @@
     {
       "binding": "DB",
       "database_name": "fassung",
-      "database_id":
+      "database_id": "2e0490ca-2b9d-40a7-a45c-a207a9447e91"
+    }
+  ],
+
+  "triggers": { "crons": ["0 6 * * 5"] },
+
+  "vars": {
+    "ABSENDER": "gastronovi.com"
+  }
+}
