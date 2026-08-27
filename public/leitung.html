@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leitung – Fassungstool · Haus Hirt</title>
+<style>
+:root{
+  --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F6F4EE; --surface-3:#F3F1EB; --surface-4:#ECE9E1;
+  --border:#E6E4DE; --border-strong:#D8D5CD; --border-heavy:#C6C2B8;
+  --fg:#1C1C1E; --fg-secondary:#5A5A60; --fg-muted:#6A6A70; --fg-subtle:#686870;
+  --accent:#9A7B44;
+  --danger:#B4471F; --danger-bg:#FBEDE6; --danger-fg:#7A3A12; --danger-border:#E7C3B2;
+  --success:#3E7A3E; --success-bg:#EFF5EE; --success-fg:#2F5E2F;
+  --info:#3A5266; --info-bg:#EDF2F6; --info-border:#D3E0EA;
+  --warn-bg:#FBF3E2; --warn-fg:#7A5426; --warn-border:#E6D6B4;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-pill:999px;
+  --track-caps:.08em;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px; --text-lg:19px; --text-display:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:400 var(--text-md)/1.45 var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select,textarea{font:inherit;color:inherit}
+table{border-collapse:collapse;width:100%}
+
+/* ══ Kopf ══ */
+.kopf{position:sticky;top:0;z-index:40;background:#1C1C1E;color:#fff;
+  display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6);height:56px}
+.kopf h1{font-size:var(--text-md);font-weight:600;letter-spacing:.01em}
+.kopf .haus{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);color:#9A9AA0}
+.kopf .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--radius-pill);
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:var(--text-xs);color:#fff}
+.chip .pkt{width:7px;height:7px;border-radius:50%;background:#8FBF8F}
+.chip.aus .pkt{background:#C6C2B8}
+.kopf button.k{height:30px;padding:0 12px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:var(--text-sm)}
+.kopf button.k:hover{background:rgba(255,255,255,.18)}
+
+/* ══ Gerüst ══ */
+.huelle{display:grid;grid-template-columns:212px 1fr;min-height:calc(100vh - 56px)}
+nav.seite{border-right:1px solid var(--border);background:var(--surface-2);padding:var(--space-5) var(--space-3)}
+nav.seite .grp{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
+  color:var(--fg-subtle);padding:0 10px;margin:var(--space-5) 0 var(--space-2)}
+nav.seite .grp:first-child{margin-top:0}
+nav.seite button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+  padding:8px 10px;border-radius:var(--radius-sm);font-size:var(--text-sm);color:var(--fg-secondary);text-align:left}
+nav.seite button:hover{background:var(--surface-4)}
+nav.seite button.on{background:var(--surface);color:var(--fg);font-weight:600;
+  box-shadow:inset 0 0 0 1px var(--border-strong)}
+nav.seite .zahl{font-size:var(--text-xs);font-weight:600;padding:1px 7px;border-radius:var(--radius-pill);
+  background:var(--surface-4);color:var(--fg-muted)}
+nav.seite button.on .zahl{background:var(--surface-3)}
+nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
+main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
+
+/* ══ Bausteine ══ */
+h2{font-size:var(--text-display);font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.unter{color:var(--fg-muted);font-size:var(--text-sm);margin-top:6px}
+h3{font-size:var(--text-base);font-weight:600;margin-bottom:var(--space-3)}
+section{margin-bottom:var(--space-8)}
+.karte{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5)}
+.gitter{display:grid;gap:var(--space-4)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.kpi span{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);color:var(--fg-subtle)}
+.kpi b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:6px;line-height:1.1}
+.kpi small{display:block;color:var(--fg-muted);font-size:var(--text-sm);margin-top:2px}
+.kpi.warn{background:var(--warn-bg);border-color:var(--warn-border)}
+.kpi.warn b,.kpi.warn small{color:var(--warn-fg)}
+.kpi.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.kpi.bad b,.kpi.bad small{color:var(--danger-fg)}
+.kpi.ok{background:var(--success-bg);border-color:#CFE0CC}
+.kpi.ok b,.kpi.ok small{color:var(--success-fg)}
+
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:var(--text-sm);vertical-align:middle}
+th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
+  color:var(--fg-subtle);font-weight:600;background:var(--surface-2);position:sticky;top:0;z-index:5}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+.tabhuelle{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.zwt td{background:var(--surface-3);font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle);font-weight:600}
+.dim{color:var(--fg-muted)}
+.mini{font-size:var(--text-xs);color:var(--fg-subtle)}
+.pill{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--text-xs);font-weight:600}
+.p-ok{background:var(--success-bg);color:var(--success-fg)}
+.p-warn{background:var(--warn-bg);color:var(--warn-fg)}
+.p-bad{background:var(--danger-bg);color:var(--danger-fg)}
+.p-neu{background:var(--info-bg);color:var(--info)}
+.p-grau{background:var(--surface-4);color:var(--fg-muted)}
+.diff-plus{color:var(--danger-fg);font-weight:600}
+.diff-minus{color:var(--info);font-weight:600}
+
+button.b{height:36px;padding:0 14px;border-radius:var(--radius-sm);border:1px solid var(--border-heavy);
+  background:var(--surface);font-size:var(--text-sm);font-weight:600}
+button.b:hover{background:var(--surface-2)}
+button.b.stark{background:#1C1C1E;color:#fff;border-color:#1C1C1E}
+button.b.stark:hover{background:#33333A}
+button.b.klein{height:28px;padding:0 10px;font-weight:400}
+.reihe{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+.rechts{margin-left:auto}
+select,input[type=text],input[type=number],input[type=date]{height:36px;padding:0 10px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-heavy);background:var(--surface);font-size:var(--text-sm)}
+select.klein{height:28px;font-size:var(--text-xs);max-width:270px}
+textarea{width:100%;min-height:150px;padding:var(--space-3);border-radius:var(--radius-md);
+  border:1px solid var(--border-heavy);font:400 12px/1.5 var(--mono);background:var(--surface);resize:vertical}
+.hinweis{border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);font-size:var(--text-sm);
+  background:var(--info-bg);border:1px solid var(--info-border);color:var(--info)}
+.hinweis.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
+.hinweis.bad{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-fg)}
+.leer{text-align:center;padding:var(--space-8) var(--space-4);color:var(--fg-muted);font-size:var(--text-sm)}
+.zone{display:flex;align-items:center;justify-content:center;min-height:190px;border:2px dashed var(--border-heavy);
+  border-radius:var(--radius-lg);background:var(--surface-2);color:var(--fg-muted);font-size:var(--text-sm);
+  text-align:center;padding:var(--space-5);cursor:pointer}
+.zone:hover,.zone.ueber{border-color:var(--accent);background:#FAF6EF;color:var(--fg)}
+.balken{height:6px;border-radius:3px;background:var(--surface-4);overflow:hidden;min-width:70px}
+.balken i{display:block;height:100%;background:var(--accent)}
+.balken i.knapp{background:var(--danger)}
+.balken i.satt{background:var(--success)}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);background:#1C1C1E;color:#fff;
+  padding:10px 18px;border-radius:var(--radius-pill);font-size:var(--text-sm);opacity:0;pointer-events:none;
+  transition:opacity .18s,transform .18s;z-index:90}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<header class="kopf">
+  <div><div class="haus">Haus Hirt</div><h1>Fassungstool · Leitung</h1></div>
+  <div class="sp"></div>
+  <span class="chip" id="cQuelle"><span class="pkt"></span><span id="tQuelle">—</span></span>
+  <span class="chip aus" id="cStand"><span class="pkt"></span><span id="tStand">—</span></span>
+  <button class="k" id="bNeu">Aktualisieren</button>
+  <button class="k" id="bFass">Fassungstool &rsaquo;</button>
+</header>
+
+<div class="huelle">
+  <nav class="seite" id="nav"></nav>
+  <main id="inhalt"></main>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   Fassungstool · Leitung (Backoffice)
+   Haus Hirt, Bad Gastein
+
+   Diese Seite schreibt nichts an den Vorgängen. Sie liest, rechnet und
+   vergleicht — Erfassung bleibt allein Sache der Fassungsseite.
+
+   Drei Quellen, in dieser Reihenfolge versucht:
+     1  Server   GET /api/vorgaenge   (sobald der Worker sie liefert)
+     2  Lokal    localStorage derselben Herkunft
+     3  Datei    JSON-Auszug vom Gerät, per Knopf eingelesen
+   ════════════════════════════════════════════════════════════════════ */
+
+const STAMM = {"WINES": [{"id": "w001", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Leindl", "wein": "Langenlois", "jg": "2024", "region": "Kamptal DAC", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w003", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Ott", "wein": "Fass 4", "jg": "2025", "region": "Wagram, Feuersbrunn", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w002", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Simon Gattinger", "wein": "Loiben Federspiel", "jg": "2024", "region": "Wachau DAC", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w004", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Weinberghof Fritsch", "wein": "Ried Schlossberg 1ÖTW", "jg": "2022", "region": "Wagram DAC, Oberstockstall", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w005", "f": "WEISS", "r": "Riesling", "winzer": "Hirsch", "wein": "Zöbing", "jg": "2024", "region": "Kamptal", "reb": "Riesling", "at": 1, "grp": "Riesling"}, {"id": "w006", "f": "WEISS", "r": "Riesling", "winzer": "Pichler-Krutzler", "wein": "Loiben", "jg": "2024", "region": "Wachau DAC", "reb": "Riesling", "at": 1, "grp": "Riesling"}, {"id": "w007", "f": "WEISS", "r": "Riesling", "winzer": "Emrich-Schönleber", "wein": "Mineral", "jg": "2023", "region": "Monzingen (DE)", "reb": "Riesling", "at": 0, "grp": "Riesling"}, {"id": "w008", "f": "WEISS", "r": "Sauvignon Blanc", "winzer": "Hannes Sabathi", "wein": "Sauvignon Blanc", "jg": "2024", "region": "Südsteiermark DAC, Gamlitz", "reb": "Sauvignon Blanc", "at": 1, "grp": "Sauvignon Blanc"}, {"id": "w009", "f": "WEISS", "r": "Sauvignon Blanc", "winzer": "Verus", "wein": "Sauvignon Blanc", "jg": "?", "region": "Slowenien, Ormož", "reb": "Sauvignon Blanc", "at": 0, "grp": "Sauvignon Blanc"}, {"id": "w010", "f": "WEISS", "r": "Weißburgunder", "winzer": "Hannes Sabathi", "wein": "Weißburgunder", "jg": "2024", "region": "Südsteiermark DAC, Gamlitz", "reb": "Weißburgunder", "at": 1, "grp": "Weißburgunder"}, {"id": "w011", "f": "WEISS", "r": "Chardonnay", "winzer": "Gesellmann", "wein": "Chardonnay", "jg": "2022", "region": "Mittelburgenland, Deutschkreutz", "reb": "Chardonnay", "at": 1, "grp": "Chardonnay"}, {"id": "w013", "f": "WEISS", "r": "Chardonnay", "winzer": "Domaine Borgeot", "wein": "Bourgogne Blanc Côte d'Or", "jg": "2022", "region": "Burgund (FR)", "reb": "Chardonnay", "at": 0, "grp": "Chardonnay"}, {"id": "w014", "f": "WEISS", "r": "Chardonnay", "winzer": "Domaine Pillot", "wein": "Bourgogne Blanc", "jg": "2023", "region": "Burgund (FR)", "reb": "Chardonnay", "at": 0, "grp": "Chardonnay"}, {"id": "w016", "f": "WEISS", "r": "Grauburgunder", "winzer": "Andreas Gsellmann", "wein": "Grauburgunder", "jg": "2025", "region": "Neusiedlersee, Gols", "reb": "Grauburgunder", "at": 1, "grp": "Grauburgunder"}, {"id": "w015", "f": "WEISS", "r": "Grauburgunder", "winzer": "Dürnberg", "wein": "Grauburgunder", "jg": "2021", "region": "Weinviertel", "reb": "Grauburgunder", "at": 1, "grp": "Grauburgunder"}, {"id": "w017", "f": "WEISS", "r": "Roter Veltliner", "winzer": "Josef Fritz", "wein": "Wagram Terrassen", "jg": "2024", "region": "Wagram DAC, Zaussenberg", "reb": "Roter Veltliner", "at": 1, "grp": "Roter Veltliner"}, {"id": "w018", "f": "WEISS", "r": "Muskateller", "winzer": "Muster", "wein": "Gelber Muskateller Styria", "jg": "2025", "region": "Südsteiermark", "reb": "Gelber Muskateller", "at": 1, "grp": "Muskateller"}, {"id": "w019", "f": "WEISS", "r": "Gemischter Satz", "winzer": "Ingrid Groiss", "wein": "Anna's 17", "jg": "2025", "region": "Weinviertel, Breitenwaida", "reb": "Gemischter Satz", "at": 1, "grp": "Gemischter Satz"}, {"id": "w020", "f": "WEISS", "r": "Gemischter Satz", "winzer": "Mayer am Pfarrplatz", "wein": "Wiener Gemischter Satz", "jg": "2025", "region": "Wien", "reb": "Gemischter Satz", "at": 1, "grp": "Gemischter Satz"}, {"id": "w023", "f": "WEISS", "r": "Cuvée", "winzer": "Bründlmayer", "wein": "Spiegel", "jg": "2022", "region": "Kamptal, Langenlois", "reb": "Grauburgunder / Weißburgunder", "at": 1, "grp": "Cuvée"}, {"id": "w022", "f": "WEISS", "r": "Cuvée", "winzer": "Heinrich (f. U&K)", "wein": "Tulpe", "jg": "2019", "region": "Neusiedlersee, Gols", "reb": "Weißburgunder / Chardonnay", "at": 1, "grp": "Cuvée"}, {"id": "w060", "f": "WEISS", "r": "Cuvée", "winzer": "Muster (U&K)", "wein": "Fräulein Klein", "jg": "2021", "region": "Südsteiermark, Gamlitz", "reb": "Muskateller-Cuvée", "at": 1, "grp": "Cuvée"}, {"id": "w021", "f": "WEISS", "r": "Cuvée", "winzer": "Wolfgang Seher", "wein": "Wilde Reben", "jg": "2024", "region": "Niederösterreich", "reb": "GV / Riesling / Muskateller", "at": 1, "grp": "Cuvée"}, {"id": "w045", "f": "ROSÉ", "r": "Zweigelt", "winzer": "Dürnberg", "wein": "Blanc de Noir", "jg": "2024", "region": "Weinviertel", "reb": "Zweigelt", "at": 1, "grp": "Rosé"}, {"id": "w043", "f": "ROSÉ", "r": "Zweigelt", "winzer": "Fritsch (Karl)", "wein": "Wagram Rosé", "jg": "?", "region": "Wagram, Oberstockstall", "reb": "Zweigelt", "at": 1, "grp": "Rosé"}, {"id": "w046", "f": "ROSÉ", "r": "Cuvée", "winzer": "Ultimate Provence", "wein": "UP Rosé", "jg": "2025", "region": "Côtes de Provence (FR)", "reb": "Cinsault / Grenache / Syrah / Rolle", "at": 0, "grp": "Rosé"}, {"id": "w026", "f": "ROT", "r": "Zweigelt", "winzer": "Glatzer", "wein": "Rubin Carnuntum", "jg": "2023", "region": "Carnuntum, Göttlesbrunn", "reb": "Zweigelt", "at": 1, "grp": "Zweigelt"}, {"id": "w027", "f": "ROT", "r": "Zweigelt", "winzer": "Glatzer", "wein": "Dornenvogel", "jg": "2022", "region": "Carnuntum DAC, Göttlesbrunn", "reb": "Zweigelt Reserve", "at": 1, "grp": "Zweigelt"}, {"id": "w025", "f": "ROT", "r": "Zweigelt", "winzer": "Kollwentz", "wein": "Leithakalk", "jg": "2022", "region": "Leithaberg, Großhöflein", "reb": "Zweigelt", "at": 1, "grp": "Zweigelt"}, {"id": "w024", "f": "ROT", "r": "Zweigelt", "winzer": "Werner Achs", "wein": "Goldberg", "jg": "2024", "region": "Neusiedlersee DAC, Gols", "reb": "Zweigelt", "at": 1, "grp": "Zweigelt"}, {"id": "w031", "f": "ROT", "r": "Blaufränkisch", "winzer": "Moric", "wein": "Reserve", "jg": "2023", "region": "Burgenland", "reb": "Blaufränkisch", "at": 1, "grp": "Blaufränkisch"}, {"id": "w030", "f": "ROT", "r": "Blaufränkisch", "winzer": "Muhr", "wein": "Samt & Seide", "jg": "2022", "region": "Carnuntum, Prellenkirchen", "reb": "Blaufränkisch", "at": 1, "grp": "Blaufränkisch"}, {"id": "w028", "f": "ROT", "r": "Blaufränkisch", "winzer": "Nittnaus", "wein": "Kalk & Schiefer", "jg": "2019", "region": "Neusiedlersee, Gols", "reb": "Blaufränkisch", "at": 1, "grp": "Blaufränkisch"}, {"id": "w032", "f": "ROT", "r": "Pinot Noir", "winzer": "Gebeshuber", "wein": "Gumpoldskirchen", "jg": "2022", "region": "Thermenregion", "reb": "Pinot Noir", "at": 1, "grp": "Pinot Noir"}, {"id": "w035", "f": "ROT", "r": "Pinot Noir", "winzer": "Schiefer", "wein": "Pinot Noir", "jg": "2021", "region": "Eisenberg, Königsberg", "reb": "Pinot Noir", "at": 1, "grp": "Pinot Noir"}, {"id": "w033", "f": "ROT", "r": "Pinot Noir", "winzer": "Domaine Confuron-Gindre", "wein": "Bourgogne", "jg": "2022", "region": "Burgund (FR)", "reb": "Pinot Noir", "at": 0, "grp": "Pinot Noir"}, {"id": "w034", "f": "ROT", "r": "Pinot Noir", "winzer": "Domaine Ecard", "wein": "Savigny-les-Beaune", "jg": "2020", "region": "Burgund (FR)", "reb": "Pinot Noir", "at": 0, "grp": "Pinot Noir"}, {"id": "w036", "f": "ROT", "r": "Merlot", "winzer": "Dürnberg", "wein": "Elementum", "jg": "2022", "region": "Niederösterreich, Rosenberg", "reb": "Merlot", "at": 1, "grp": "Merlot"}, {"id": "w041", "f": "ROT", "r": "Sangiovese", "winzer": "Lamole di Lamole", "wein": "Chianti Classico Duelame", "jg": "2024", "region": "Toscana (IT)", "reb": "Sangiovese", "at": 0, "grp": "Sangiovese"}, {"id": "w042", "f": "ROT", "r": "Barbera", "winzer": "Ceste", "wein": "Barbera d'Alba Sposabella", "jg": "?", "region": "Piemont (IT)", "reb": "Barbera", "at": 0, "grp": "Barbera"}, {"id": "w038", "f": "ROT", "r": "Cuvée", "winzer": "Claus Preisinger", "wein": "Heideboden", "jg": "2023", "region": "Gols, Leithagebirge", "reb": "Zw / BF / Merlot", "at": 1, "grp": "Cuvée"}, {"id": "w039", "f": "ROT", "r": "Cuvée", "winzer": "Heinrich", "wein": "Pannobile", "jg": "2020", "region": "Neusiedlersee, Gols", "reb": "Zweigelt / Blaufränkisch", "at": 1, "grp": "Cuvée"}, {"id": "w037", "f": "ROT", "r": "Cuvée", "winzer": "Heinrich (f. U&K)", "wein": "Nelke", "jg": "2017", "region": "Neusiedlersee, Gols", "reb": "Zweigelt / Blaufränkisch", "at": 1, "grp": "Cuvée"}, {"id": "w040", "f": "ROT", "r": "Cuvée", "winzer": "Werner Achs", "wein": "Xur", "jg": "2022", "region": "Neusiedlersee, Gols", "reb": "Zw / BF / St. Laurent", "at": 1, "grp": "Cuvée"}, {"id": "w055", "f": "BUBBLES", "r": "Schaumwein", "winzer": "Seher", "wein": "La Petite Frizzante Rosé", "jg": "?", "region": "Niederösterreich", "reb": "Pinot Noir", "at": 1, "grp": "Sekt Rosé"}, {"id": "w056", "f": "BUBBLES", "r": "Schaumwein", "winzer": "De Saint Gall", "wein": "Champagne 1er Cru Blanc de Blancs", "jg": "n.v.", "region": "Champagne (FR)", "reb": "Chardonnay", "at": 0, "grp": "Champagner"}, {"id": "w057", "f": "BUBBLES", "r": "Schaumwein", "winzer": "La Farra", "wein": "Prosecco Rosé Brut", "jg": "n.v.", "region": "Veneto (IT)", "reb": "Glera / Pinot Nero", "at": 0, "grp": "Sekt Rosé"}, {"id": "serena", "f": "BUBBLES", "r": "Schaumwein", "winzer": "Serena", "wein": "Piu Frizzante", "jg": "n.v.", "region": "Veneto (IT)", "reb": "Glera", "at": 0, "grp": "Sekt"}, {"id": "w048", "f": "NATURAL", "r": "Traminer", "winzer": "Andreas Gsellmann", "wein": "Traminer", "jg": "2021", "region": "Neusiedlersee, Gols", "reb": "Traminer", "at": 1, "grp": "Naturwein weiss"}, {"id": "w050", "f": "NATURAL", "r": "Traminer", "winzer": "Heinrich", "wein": "Roter Traminer Freyheit", "jg": "2021", "region": "Neusiedlersee, Gols", "reb": "Roter Traminer", "at": 1, "grp": "Naturwein weiss"}, {"id": "w049", "f": "NATURAL", "r": "Muskateller", "winzer": "Heinrich", "wein": "Muskat Freyheit", "jg": "2022", "region": "Neusiedlersee, Gols", "reb": "Muskateller", "at": 1, "grp": "Naturwein weiss"}, {"id": "w052", "f": "NATURAL", "r": "Pinot Noir", "winzer": "Heinrich", "wein": "Pinot Freyheit", "jg": "2022", "region": "Neusiedlersee, Gols", "reb": "Pinot Noir", "at": 1, "grp": "Naturwein rot"}, {"id": "w047", "f": "NATURAL", "r": "Cuvée", "winzer": "Claus Preisinger", "wein": "Kalk und Kiesel", "jg": "2022", "region": "Gols, Leithagebirge", "reb": "WB / GV / Welschriesling", "at": 1, "grp": "Naturwein weiss"}, {"id": "w051", "f": "NATURAL", "r": "Cuvée", "winzer": "Heinrich", "wein": "Naked White", "jg": "2023", "region": "Neusiedlersee, Gols", "reb": "WB / Chardonnay / GV", "at": 1, "grp": "Naturwein weiss"}, {"id": "w053", "f": "NATURAL", "r": "Cuvée", "winzer": "Heinrich", "wein": "Naked Red", "jg": "n.v.", "region": "Burgenland", "reb": "Zw / BF / St. Laurent", "at": 1, "grp": "Naturwein rot"}, {"id": "w065", "f": "ROT", "r": "Blaufränkisch", "grp": "Blaufränkisch", "winzer": "Gesellmann", "wein": "Creitzer Reserve", "jg": "2021", "region": "Mittelburgenland DAC, Deutschkreutz", "reb": "Blaufränkisch", "at": 1}, {"id": "w066", "f": "WEISS", "r": "Chardonnay", "grp": "Chardonnay", "winzer": "Kollwentz", "wein": "Leithakalk", "jg": "2024", "region": "Leithaberg, Großhöflein", "reb": "Chardonnay", "at": 1}], "PLAN": {"soll": {"w001": 3, "w003": 3, "w002": 3, "w004": 3, "w005": 3, "w006": 2, "w007": 2, "w008": 3, "w009": 3, "w010": 3, "w011": 3, "w013": 3, "w014": 3, "w016": 3, "w015": 3, "w017": 3, "w018": 3, "w019": 3, "w020": 3, "w023": 2, "w022": 2, "w060": 2, "w021": 2, "w045": 2, "w043": 2, "w046": 2, "w026": 3, "w027": 3, "w025": 3, "w024": 3, "w031": 3, "w030": 3, "w028": 3, "w032": 3, "w035": 3, "w033": 3, "w034": 3, "w036": 3, "w041": 3, "w042": 3, "w038": 3, "w039": 3, "w037": 3, "w040": 3, "w048": 2, "w050": 2, "w049": 2, "w052": 3, "w047": 2, "w051": 3, "w053": 3, "w065": 3, "w066": 3}, "schrank": {"w001": 3, "w003": 3, "w002": 3, "w004": 3, "w005": 3, "w006": 3, "w007": 3, "w008": 3, "w009": 3, "w010": 3, "w011": 3, "w013": 3, "w014": 3, "w016": 4, "w015": 4, "w017": 4, "w018": 4, "w019": 4, "w020": 4, "w023": 4, "w022": 4, "w060": 4, "w021": 4, "w045": 4, "w043": 4, "w046": 4, "w026": 1, "w027": 1, "w025": 1, "w024": 1, "w031": 1, "w030": 1, "w028": 1, "w032": 2, "w035": 2, "w033": 2, "w034": 2, "w036": 1, "w041": 2, "w042": 2, "w038": 2, "w039": 2, "w037": 2, "w040": 2, "w048": 4, "w050": 4, "w049": 4, "w052": 2, "w047": 4, "w051": 4, "w053": 2, "w065": 1, "w066": 3}, "restorder": {"w024": 0, "w026": 1, "w025": 2, "w027": 3, "w028": 4, "w030": 5, "w031": 6, "w065": 7, "w036": 8, "w032": 9, "w035": 10, "w033": 11, "w034": 12, "w041": 13, "w042": 14, "w037": 15, "w039": 16, "w040": 17, "w038": 18, "w053": 19, "w052": 20, "w001": 21, "w002": 22, "w003": 23, "w004": 24, "w005": 25, "w006": 26, "w007": 27, "w008": 28, "w009": 29, "w010": 30, "w011": 31, "w066": 32, "w013": 33, "w014": 34, "w015": 35, "w016": 36, "w017": 37, "w018": 38, "w019": 39, "w020": 40, "w021": 41, "w022": 42, "w023": 43, "w060": 44, "w043": 45, "w045": 46, "w046": 47, "w047": 48, "w051": 49, "w049": 50, "w048": 51, "w050": 52}, "zone": {"w001": 3, "w003": 3, "w002": 3, "w004": 3, "w005": 3, "w006": 3, "w007": 3, "w008": 3, "w009": 3, "w010": 3, "w011": 3, "w013": 3, "w014": 3, "w016": 3, "w015": 3, "w017": 3, "w018": 3, "w019": 3, "w020": 3, "w023": 4, "w022": 4, "w060": 4, "w021": 4, "w045": 2, "w043": 2, "w046": 2, "w026": 1, "w027": 1, "w025": 1, "w024": 1, "w031": 1, "w030": 1, "w028": 1, "w032": 1, "w035": 1, "w033": 1, "w034": 1, "w036": 1, "w041": 1, "w042": 1, "w038": 1, "w039": 1, "w037": 1, "w040": 1, "w055": 6, "w056": 6, "w057": 6, "serena": 6, "w048": 5, "w050": 5, "w049": 5, "w052": 5, "w047": 5, "w051": 5, "w053": 5, "w065": 1, "w066": 3}, "zonen": {"1": {"t": "Rot", "s": "Linker Raum · Hauptregal"}, "2": {"t": "Rosé", "s": "Eingang · Frontregal"}, "3": {"t": "Weiss", "s": "Rechter Raum · Hauptregal"}, "4": {"t": "Cuvée Weiss", "s": "Rechter Raum · Seitenregal links"}, "5": {"t": "Natural", "s": "Rechter Raum · Seitenregal rechts"}, "6": {"t": "Bubbles", "s": "Eingang · Frontregal"}, "7": {"t": "Einzelgänger", "s": "Oben auf dem Regal"}}, "kiste": {"w003": 12}, "barrot": [{"id": "w026", "soll": 3}, {"id": "w065", "soll": 3}, {"id": "w053", "soll": 3}], "bar": [{"id": "serena", "soll": 6}, {"id": "w055", "soll": 2}, {"id": "w056", "soll": 1}, {"id": "w001", "soll": 3}, {"id": "w009", "soll": 3}, {"id": "w005", "soll": 3}, {"id": "w043", "soll": 3}], "backup": [{"id": "serena", "soll": 2}]}, "GETR": {"laden": [{"id": "saft", "t": "Lade 1 · Säfte", "kind": "grid", "cell": 30, "leerOben": 1, "hinweis": "Angebrochene Packungen nach vorne ziehen – neue nach hinten.", "hinweisStark": 1, "grid": [["tomate", "cran", "johan", "mango", "mango", "mango", "mango"], ["grape", "anas", "johan", "mara", "mara", "mara", "mara"]], "spec": [[["holunder", 2], ["birne", 2], ["limette", 1], ["zitrone", 1]], [["sprite", 2], ["spritzer", 3]]]}, {"id": "mix", "t": "Lade 4 · Mischgetränke", "kind": "col", "w": 37, "photo": 1, "cols": [["sanbitter", 10], ["wildberry", 9], ["gingerale", 9], ["bitterlemon", 9], ["tonicth", 9], ["tonicfent", 9], ["gingerbeer", 8], {"versetzt": 1, "platz": 8, "stapel": [["gastklein", 7]]}]}, {"id": "soft", "t": "Lade 5 · Softdrinks", "kind": "col", "w": 46, "cols": [["cola", 7], ["colaz", 7], ["almd", 7], ["berry", 7], ["orange", 7], ["lemon", 7]], "photo": 1, "leerOben": 1, "hinweis": "Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.", "hinweisStark": 1}, {"id": "bier", "t": "Lade 6 · Bier", "kind": "col", "w": 55, "cols": [["st03", 8], ["st05", 7], ["hefe0", 7], ["hell", 7], ["dunkel", 7], {"stapel": [["redale", 4], ["paleale", 4]]}], "photo": 1, "leerOben": 1, "hinweis": "Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.", "hinweisStark": 1}, {"id": "regal", "t": "Regal · Gasteiner", "kind": "rack", "w": 52, "cols": [["noblier", 1], ["gastill", 1]], "rack": ["gasteiner", 18, 6]}], "name": {"tomate": "Tomate", "grape": "Pink Grapefruit", "cran": "Cranberry", "anas": "Ananas", "johan": "Schwarze Johannisbeere", "mango": "Mango", "mara": "Maracuja", "holunder": "Holundersirup", "sprite": "Sprite", "birne": "Weißer Pfirsich · van Nahmen", "limette": "Limettensaft", "zitrone": "Zitronensaft", "spritzer": "Spritzerwein", "sanbitter": "Sanbitter", "wildberry": "Schweppes Wild Berry", "gingerale": "Thomas Henry Ginger Ale", "bitterlemon": "Thomas Henry Bitter Lemon", "tonicth": "Thomas Henry Tonic", "tonicfent": "Fentimans Tonic", "gingerbeer": "Fentimans Ginger Beer", "gastklein": "Gasteiner 0,25 l", "cola": "Cola", "colaz": "Cola Zero", "almd": "Almdudler", "berry": "Berry Lemonade", "orange": "Orange Lemonade", "lemon": "Lemon Lemonade", "st03": "Stiegl 0,0 % · 0,33", "st05": "Stiegl Freibier alkoholfrei", "hefe0": "Franziskaner Weissbier alkoholfrei", "hell": "Franziskaner Weissbier hell", "dunkel": "Franziskaner Weissbier dunkel", "gasteiner": "Gasteiner 1 l", "gastill": "Gasteiner still", "noblier": "Noblier alkoholfrei", "redale": "Raschhofer Roter Engel · Red Ale", "paleale": "Raschhofer Silberpfeil · Pale Ale"}, "kurz": {"tonicth": "Tonic T.H.", "tonicfent": "Tonic Fent.", "gingerale": "Ginger Ale", "bitterlemon": "Bitter Lemon", "gingerbeer": "Ginger Beer", "wildberry": "Wild Berry", "gastklein": "Gast. 0,25", "holunder": "Holunder", "birne": "Pfirsich", "limette": "Limette", "zitrone": "Zitrone", "spritzer": "Spritzer", "sprite": "Sprite", "st03": "0,0 klein", "st05": "Freibier", "hefe0": "Weissb. afr", "hell": "Hell", "dunkel": "Dunkel", "colaz": "Zero", "almd": "Almdudler", "berry": "Berry", "orange": "Orange", "lemon": "Lemon", "cola": "Cola", "sanbitter": "Sanbitter", "noblier": "Noblier", "gastill": "Still", "gasteiner": "Gast. 1 l", "redale": "Red Ale", "paleale": "Pale Ale"}, "col": {"sanbitter": "#CC0A14", "wildberry": "#C4386A", "gingerale": "#9B26B6", "bitterlemon": "#3E9E1E", "tonicth": "#F5D000", "tonicfent": "#B08A5A", "gingerbeer": "#7A3F1E", "gastklein": "#1D6E96", "cola": "#D6202A", "colaz": "#2A2A2E", "almd": "#D2A83A", "berry": "#99101A", "orange": "#EE7F1E", "lemon": "#E8C21A", "st03": "#1B7FD4", "st05": "#166FBE", "hefe0": "#6E8CA8", "hell": "#B04A12", "dunkel": "#5E2A12", "gasteiner": "#1D6E96", "gastill": "#4E7A8E", "noblier": "#9A7B44", "redale": "#D51726", "paleale": "#7DBE2E"}, "spec": {"holunder": "#8A7E62", "sprite": "#2FA84F", "birne": "#C2A93E", "limette": "#6E9A2A", "zitrone": "#D9C43A", "spritzer": "#4A6B2A"}, "skal": {"st03": 0.76, "gastklein": 0.84}}};
+const WINES = STAMM.WINES, PLAN = STAMM.PLAN, GETR = STAMM.GETR;
+const byId = id => WINES.find(w => w.id === id);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num = n => (Math.round(n * 100) / 100).toLocaleString("de-AT", {maximumFractionDigits:2});
+const eur = n => (+n||0).toLocaleString("de-AT", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
+  clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),2200);}
+
+/* ── Schlüssel der Fassungsseite. Ändern sie sich dort, hier nachziehen ── */
+const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
+/* Eigene Schlüssel der Leitung */
+const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
+const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
+
+const lese = k => {try{const r=localStorage.getItem(k); return r?JSON.parse(r):null;}catch(e){return null;}};
+const schreib = (k,v) => {try{localStorage.setItem(k,JSON.stringify(v));}catch(e){toast("Speicher voll");}};
+
+let EINST = Object.assign({reichweite:14, tage:28}, lese(K_EINST)||{});
+let MAP   = lese(K_MAP) || {};      /* Kassenname → Artikel-Id oder "__ignoriert" */
+let ZBER  = lese(K_ZBER) || {};     /* Betriebstag → geparster Z-Bericht */
+let REZ   = lese(K_REZ) || {};      /* Kassenname → [{id, ml}] für Mischgetränke */
+const ROLLNAME={service:"Service", wirtschaft:"Wirtschaft", leitung:"Leitung"};
+const RECHTETEXT={
+  service:"Tagesfassung · Nachfüllen · Sonderentnahme · Kellerstand",
+  wirtschaft:"zusätzlich Kellerzählung · Wareneingang · Protokolle",
+  leitung:"zusätzlich Verwaltung · diese Leitungsseite"};
+
+/* ════════════ 1 · Getränke: Soll je Position aus der Ladengeometrie ════════════
+   Dieselbe Rechnung wie in der App, sonst weichen Soll-Werte auseinander. */
+function colTeile(c){
+  if(Array.isArray(c) && typeof c[0]==="string") return [[c[0], c[1]]];
+  if(c && c.stapel) return c.stapel.map(x=>[x[0],x[1]]);
+  return [];
+}
+const GSOLL = (()=>{ const s={};
+  (GETR.laden||[]).forEach(L=>{
+    (L.grid||[]).forEach(c=>c.forEach(id=>s[id]=(s[id]||0)+1));
+    (L.spec||[]).forEach(g=>g.forEach(([id,n])=>s[id]=(s[id]||0)+n));
+    (L.cols||[]).forEach(c=>colTeile(c).forEach(([id,n])=>s[id]=(s[id]||0)+n));
+    if(L.rack) s[L.rack[0]] = (s[L.rack[0]]||0) + L.rack[1];
+  });
+  return s; })();
+const GIDS = Object.keys(GSOLL);
+const GN = id => (GETR.name||{})[id] || id;
+
+/* Gebindegröße in Millilitern. Steht im Namen — sonst 750 für Wein,
+   und für Getränke ohne Angabe zählt ein Verkauf als eine Flasche. */
+function mlAusText(t){
+  if(!t) return null;
+  const s = String(t).toLowerCase();
+  let letzte=null, m;
+  const rx=/(\d+(?:[.,]\d+)?)\s*(ml|cl|l)\b/g;
+  while((m=rx.exec(s))) letzte=m;
+  if(letzte){
+    const v=parseFloat(letzte[1].replace(",","."));
+    return letzte[2]==="ml"?v : letzte[2]==="cl"?v*10 : v*1000;
+  }
+  const br=/(\d)\s*\/\s*(\d)\b/.exec(s);            /* 1/8 Wein = 125 ml */
+  if(br) return Math.round(1000*(+br[1]/+br[2])/1) === 125 ? 125 : (1000*(+br[1]/+br[2]));
+  return null;
+}
+const GEBINDE = (()=>{ const g={};
+  WINES.forEach(w=>g[w.id]=750);
+  GIDS.forEach(id=>g[id]= mlAusText(GN(id)) || null);
+  return g; })();
+
+/* ════════════ 2 · Vorgänge einlesen und vereinheitlichen ════════════
+   Aus dem v11-Blob wird je Vorgang ein flaches Ergebnis:
+     wein{id:n}     Flaschen aus dem Weinkeller geholt
+     getr{id:n}     Flaschen aus dem Getränkelager geholt
+     zaehlung{id:n} gezählter Kellerbestand (nur Kellerzählung)
+     eingang{id:n}  Wareneingang in Flaschen                            */
+const summe = o => Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
+
+function kistenGr(p){ if(p && p.kg) return +p.kg; return (PLAN.kiste||{})[p.id] || 6; }
+
+function normVorgang(v){
+  if(!v || !v.mode) return null;
+  const o={mode:v.mode, tag:v.tag||"", name:v.name||"", notiz:v.notiz||"",
+           fertig:!!v.finished, ts:v.archiviert||"", wein:{}, getr:{},
+           zaehlung:null, gzaehlung:null, eingang:{}, fotos:(v.fotos||[]).length,
+           roh:v};
+  const zu=(t,id,n)=>{ n=+n||0; if(n) t[id]=(t[id]||0)+n; };
+
+  if(v.mode==="tag" || v.mode==="fuellen"){
+    /* rest/bar/barrot/backup halten die Fehlmengen je Ort — genau das,
+       was aus dem Keller geholt wird. holtN überschreibt pro Wein. */
+    const soll={};
+    ["barrot","bar","backup","rest"].forEach(k=>
+      Object.keys(v[k]||{}).forEach(id=>soll[id]=(soll[id]||0)+(+v[k][id]||0)));
+    Object.keys(soll).forEach(id=>{
+      const n=(v.holtN && v.holtN[id]!=null) ? +v.holtN[id] : soll[id];
+      zu(o.wein,id,n);
+    });
+    Object.keys(v.zusatz||{}).forEach(id=>zu(o.wein,id,v.zusatz[id]));
+    /* Getränke: getr[id] ist der Ist-Stand in der Lade, Fehlmenge = Soll − Ist */
+    GIDS.forEach(id=>{
+      const ist=(v.getr && v.getr[id]!=null) ? +v.getr[id] : GSOLL[id];
+      const fehlt=Math.max(0, GSOLL[id]-ist);
+      const n=(v.gholtN && v.gholtN[id]!=null) ? +v.gholtN[id] : fehlt;
+      zu(o.getr,id,n);
+    });
+    if(v.getr && Object.keys(v.getr).length) o.gzaehlung=Object.assign({},v.getr);
+  }
+
+  if(v.mode==="nach"){
+    Object.keys(v.ent||{}).forEach(id=>zu(o.wein,id,v.ent[id]));
+  }
+
+  if(v.mode==="keller"){
+    const z={}; let hat=false;
+    WINES.forEach(w=>{
+      if(!(v.zdone||{})[w.id]) return;
+      z[w.id]=(+(v.reihen||{})[w.id]||0)*6 + (+(v.einzel||{})[w.id]||0); hat=true;
+    });
+    if(hat) o.zaehlung=z;
+    if(v.getr && Object.keys(v.getr).length) o.gzaehlung=Object.assign({},v.getr);
+  }
+
+  if(v.mode==="ware"){
+    (v.pos||[]).forEach(p=>{
+      if(!p.id || p.id==="__neu" || !(+p.kisten>0)) return;
+      zu(o.eingang, p.id, (+p.kisten)*kistenGr(p));
+    });
+  }
+
+  /* gent (Getränke zusätzlich entnommen) taucht in mehreren Modi auf */
+  Object.keys(v.gent||{}).forEach(id=>zu(o.getr,id,v.gent[id]));
+  Object.keys(v.gzusatz||{}).forEach(id=>zu(o.getr,id,v.gzusatz[id]));
+
+  o.flWein=summe(o.wein); o.flGetr=summe(o.getr);
+  return o;
+}
+
+/* Reihenfolge: Betriebstag, danach die natürliche Abfolge innerhalb eines Tages */
+const MODUSRANG={ware:0, keller:1, tag:2, fuellen:3, nach:4};
+function nachZeit(a,b){
+  return (a.tag||"").localeCompare(b.tag||"") || ((MODUSRANG[a.mode]??9)-(MODUSRANG[b.mode]??9));
+}
+
+/* ════════════ 3 · Quelle ════════════ */
+let QUELLE="—", VORGAENGE=[], STAND=null;
+
+let ICH=null;
+async function werBinIch(){
+  try{ const r=await fetch("/api/ich"); if(r.ok){ ICH=await r.json(); return ICH; } }catch(e){}
+  return null;
+}
+function verlangeAnmeldung(){
+  document.body.innerHTML=`<div style="max-width:420px;margin:18vh auto;text-align:center;
+    font:400 15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1C1C1E">
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#686870">Haus Hirt</div>
+    <h1 style="font-size:28px;margin:6px 0 10px">Leitung</h1>
+    <p style="color:#5A5A60;margin-bottom:22px">Diese Seite zeigt Bestände, Umsätze und Namen.
+      Sie öffnet sich nur mit einer Anmeldung im Fassungstool.</p>
+    <a href="index.html" style="display:inline-block;background:#1C1C1E;color:#fff;
+      padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:600">Zum Fassungstool</a></div>`;
+}
+
+async function ladeDaten(){
+  /* 1 · Server */
+  try{
+    const r=await fetch("/api/vorgaenge",{headers:{Accept:"application/json"}});
+    if(r.status===401){ QUELLE="Nicht angemeldet"; VORGAENGE=[]; return; }
+    if(r.ok && (r.headers.get("content-type")||"").includes("json")){
+      const j=await r.json();
+      const roh=Array.isArray(j)?j:(j.vorgaenge||[]);
+      VORGAENGE=roh.map(x=>normVorgang(x.daten||x)).filter(Boolean).sort(nachZeit);
+      QUELLE="Server"; return;
+    }
+  }catch(e){}
+  /* 2 · Lokal */
+  const arch=lese(K_ARCHIV)||{}, akt=lese(K_STAND)||{};
+  const alle=[];
+  Object.values(arch).forEach(v=>alle.push(v));
+  Object.values(akt).forEach(v=>{ if(v && v.mode) alle.push(Object.assign({},v,{laufend:!v.finished})); });
+  if(alle.length){
+    VORGAENGE=alle.map(normVorgang).filter(Boolean).sort(nachZeit);
+    QUELLE="Lokal"; return;
+  }
+  VORGAENGE=[]; QUELLE="Keine Daten";
+}
+
+function dateiLaden(){
+  const i=document.createElement("input"); i.type="file"; i.accept=".json,application/json";
+  i.onchange=()=>{ const f=i.files[0]; if(!f) return;
+    const fr=new FileReader();
+    fr.onload=()=>{
+      try{
+        const j=JSON.parse(fr.result);
+        const alle=[];
+        const sammle=o=>Object.values(o||{}).forEach(v=>{ if(v&&v.mode) alle.push(v); });
+        if(Array.isArray(j)) j.forEach(v=>{ if(v&&v.mode) alle.push(v); });
+        else { sammle(j[K_ARCHIV]); sammle(j[K_STAND]); sammle(j.archiv); sammle(j.stand); sammle(j); }
+        if(!alle.length) return toast("Keine Vorgänge in der Datei gefunden");
+        VORGAENGE=alle.map(normVorgang).filter(Boolean).sort(nachZeit);
+        QUELLE="Datei · "+f.name; zeichne(); toast(alle.length+" Vorgänge eingelesen");
+      }catch(e){ toast("Datei nicht lesbar"); }
+    };
+    fr.readAsText(f);
+  };
+  i.click();
+}
+
+/* ════════════ 4 · Bestand fortschreiben ════════════
+   Bestand = jüngste Zählung + alles danach Eingegangene − alles danach Entnommene.
+   Ohne Zählung gibt es keinen Bestand, nur Bewegung — das wird auch so gesagt. */
+function bestand(){
+  let basis=null, basisIdx=-1;
+  VORGAENGE.forEach((v,i)=>{ if(v.zaehlung){ basis=v; basisIdx=i; } });
+  const b={}, seit={ein:{}, raus:{}};
+  if(basis) WINES.forEach(w=>{ if(basis.zaehlung[w.id]!=null) b[w.id]=basis.zaehlung[w.id]; });
+  VORGAENGE.forEach((v,i)=>{
+    if(i<=basisIdx) return;
+    Object.keys(v.eingang).forEach(id=>{ b[id]=(b[id]||0)+v.eingang[id]; seit.ein[id]=(seit.ein[id]||0)+v.eingang[id]; });
+    Object.keys(v.wein).forEach(id=>{ b[id]=(b[id]||0)-v.wein[id]; seit.raus[id]=(seit.raus[id]||0)+v.wein[id]; });
+  });
+  return {basis, b, seit, hat:!!basis};
+}
+
+/* Verbrauch je Tag über das Fenster in EINST.tage */
+function verbrauch(){
+  const heute=new Date(), grenze=new Date(heute); grenze.setDate(grenze.getDate()-EINST.tage);
+  const g=grenze.toISOString().slice(0,10);
+  const w={}, gt={}; const tage=new Set();
+  VORGAENGE.forEach(v=>{
+    if((v.tag||"") < g) return;
+    if(v.mode==="ware"||v.mode==="keller") return;
+    tage.add(v.tag);
+    Object.keys(v.wein).forEach(id=>w[id]=(w[id]||0)+v.wein[id]);
+    Object.keys(v.getr).forEach(id=>gt[id]=(gt[id]||0)+v.getr[id]);
+  });
+  const n=Math.max(1, tage.size);
+  const proTag={}; Object.keys(w).forEach(id=>proTag[id]=w[id]/n);
+  const gProTag={}; Object.keys(gt).forEach(id=>gProTag[id]=gt[id]/n);
+  return {proTag, gProTag, tage:n, wein:w, getr:gt};
+}
+
+/* ════════════ 5 · Z-Bericht lesen ════════════
+   Sektionsdokument: gequotete Felder, Tabulator als Trenner, Sektionen
+   zwischen Strichlinien, keine Kopfzeile. Vier Fallen sind eingebaut:
+     · gleiche Namen mehrfach → über den Namen summieren
+     · Nullpreis-Zeilen zählen mit
+     · Größe steht im Namen, es gilt das letzte Vorkommen
+     · der Positionsblock kennt keine Warengruppe                        */
+function zahl(s){
+  if(s==null) return null;
+  let t=String(s).trim().replace(/[€\s]/g,"");
+  if(!t || !/[\d]/.test(t)) return null;
+  if(t.includes(",")) t=t.replace(/\./g,"").replace(",",".");
+  const v=parseFloat(t);
+  return isNaN(v)?null:v;
+}
+function felder(zeile){
+  return zeile.split("\t").map(f=>{
+    let t=f.trim();
+    if(t.startsWith('"') && t.endsWith('"') && t.length>1) t=t.slice(1,-1);
+    return t.replace(/""/g,'"').trim();
+  });
+}
+const istStrich = z => /^[\s"'\-–—_=]*[-–—_=]{5,}[\s"'\-–—_=]*$/.test(z);
+
+function zParse(text){
+  const zeilen=text.split(/\r?\n/);
+  const sekt=[]; let akt={titel:"(Kopf)", zeilen:[]}; let strichZuvor=false;
+  zeilen.forEach(z=>{
+    if(!z.trim()) { return; }
+    if(istStrich(z)){ strichZuvor=true; return; }
+    const f=felder(z).filter((x,i,a)=>!(x==="" && i===a.length-1));
+    if(!f.length) return;
+    const nurEins = f.filter(x=>x!=="").length===1;
+    if(strichZuvor && nurEins){
+      akt={titel:f.find(x=>x!=="")||"(ohne Titel)", zeilen:[]}; sekt.push(akt);
+      strichZuvor=false; return;
+    }
+    strichZuvor=false;
+    akt.zeilen.push(f);
+  });
+  if(!sekt.length) sekt.push(akt);
+  else if(akt.zeilen.length && sekt[0]!==akt && !sekt.includes(akt)) sekt.unshift(akt);
+
+  /* Betriebstag: das Datum hinter "Bis" */
+  let tag="";
+  const alle=text.split(/\r?\n/);
+  for(const z of alle){
+    const f=felder(z);
+    if(/^bis\b/i.test(f[0]||"")){
+      const d=/(\d{1,2})\.(\d{1,2})\.(\d{4})/.exec(f.slice(1).join(" ")||f[0]);
+      if(d){ tag=`${d[3]}-${String(d[2]).padStart(2,"0")}-${String(d[1]).padStart(2,"0")}`; break; }
+    }
+  }
+  /* Nummer des Berichts, falls vorhanden */
+  let nr="";
+  const mz=/Z\s*(\d+)/.exec(alle.slice(0,25).join(" ")); if(mz) nr="Z "+mz[1];
+
+  /* Positionsblock: die Sektion mit den meisten Zeilen aus Text + Zahl */
+  let beste=null, bestN=0;
+  sekt.forEach(s=>{
+    const n=s.zeilen.filter(f=>f.length>=2 && f[0] && !/^\d/.test(f[0]) && zahl(f[1])!=null).length;
+    if(n>bestN){ bestN=n; beste=s; }
+  });
+
+  const roh=[];
+  (beste?beste.zeilen:[]).forEach(f=>{
+    if(f.length<2) return;
+    const name=f[0]; const anz=zahl(f[1]);
+    if(!name || anz==null) return;
+    if(/^(summe|gesamt|total|zwischensumme)/i.test(name)) return;
+    roh.push({name, anzahl:anz, preis:zahl(f[2]), umsatz:zahl(f[3])!=null?zahl(f[3]):zahl(f[2])});
+  });
+
+  /* Doppelte Namen summieren — sonst fehlt ein Viertel des Ausschanks */
+  const map={};
+  roh.forEach(p=>{
+    const k=p.name;
+    if(!map[k]) map[k]={name:k, anzahl:0, umsatz:0, zeilen:0};
+    map[k].anzahl+=p.anzahl; map[k].umsatz+=(p.umsatz||0); map[k].zeilen++;
+  });
+  const pos=Object.values(map).sort((a,b)=>b.anzahl-a.anzahl);
+
+  return {tag, nr, sektionen:sekt.map(s=>({titel:s.titel, n:s.zeilen.length})),
+          block: beste?beste.titel:"—", positionen:pos,
+          umsatz: pos.reduce((a,p)=>a+(p.umsatz||0),0)};
+}
+
+/* ── Zuordnung. Weine über das Rebsorten-Kürzel automatisch, Getränke nie ── */
+const KUERZEL={GV:"Grüner Veltliner", RI:"Riesling", RIE:"Riesling", SB:"Sauvignon Blanc",
+  WB:"Weißburgunder", CH:"Chardonnay", GB:"Grauburgunder", RV:"Roter Veltliner",
+  MU:"Muskateller", MUS:"Muskateller", GS:"Gemischter Satz", GEM:"Gemischter Satz",
+  ZW:"Zweigelt", BF:"Blaufränkisch", PN:"Pinot Noir", ME:"Merlot", MER:"Merlot",
+  SA:"Sangiovese", BA:"Barbera", TR:"Traminer", CU:"Cuvée", CUV:"Cuvée"};
+const flach = s => String(s||"").toLowerCase()
+  .replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss")
+  .replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+
+function autoWein(name){
+  const m=/^([A-ZÄÖÜ]{2,3})\s+(.+)$/.exec(String(name).trim());
+  if(!m) return null;
+  const kz=m[1].toUpperCase(), rest=m[2];
+  const reb=KUERZEL[kz]; if(!reb) return null;
+  const teil=rest.split(",");
+  const winzer=flach(teil[0]);
+  if(!winzer) return null;
+  let kand=WINES.filter(w=>{
+    const wf=flach(w.winzer);
+    return wf===winzer || wf.startsWith(winzer) || winzer.startsWith(wf) || wf.includes(winzer);
+  });
+  /* Das Kürzel bestätigt gegen — es entscheidet nicht allein */
+  kand=kand.filter(w=>flach(w.reb).includes(flach(reb)) || flach(w.r).includes(flach(reb)));
+  if(kand.length===1) return {id:kand[0].id, sicher:true};
+  if(kand.length>1 && teil[1]){
+    const wein=flach(teil[1].replace(/\d+\s*[\/,.]?\d*\s*l?$/,""));
+    const eng=kand.filter(w=>flach(w.wein) && (flach(w.wein).includes(wein.split(" ")[0]) || wein.includes(flach(w.wein))));
+    if(eng.length===1) return {id:eng[0].id, sicher:true};
+  }
+  return null;
+}
+
+/* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml */
+function flaschen(p, artId){
+  const aus = mlAusText(p.name);
+  const geb = artId ? GEBINDE[artId] : null;
+  if(aus && geb) return p.anzahl*aus/geb;
+  if(artId && byId(artId)) return p.anzahl*(aus||750)/750;
+  return p.anzahl;                                   /* eine Einheit = eine Flasche */
+}
+
+function zuordnung(pos){
+  if(REZ[pos.name] && REZ[pos.name].length) return {status:"rezept"};
+  const z=MAP[pos.name];
+  if(z==="__ignoriert") return {status:"ignoriert"};
+  if(z) return {status:"fest", id:z};
+  const a=autoWein(pos.name);
+  if(a) return {status:"auto", id:a.id};
+  return {status:"offen"};
+}
+
+/* ════════════ 6 · Abgleich Verkauf ↔ Fassung ════════════ */
+function abgleich(tag, spanne){
+  spanne = spanne || 1;
+  const bis=tag, von=(()=>{ const d=new Date(tag+"T12:00");
+    d.setDate(d.getDate()-(spanne-1)); return d.toISOString().slice(0,10); })();
+  const imFenster = t => t>=von && t<=bis;
+
+  const verk={}, offen=[], berichte=[];
+  Object.keys(ZBER).filter(imFenster).sort().forEach(t=>{
+    const z=ZBER[t]; berichte.push(z);
+    z.positionen.forEach(p=>{
+      const r=REZ[p.name];
+      if(r && r.length){                       /* zerlegtes Mischgetränk */
+        r.forEach(t=>{
+          const geb=GEBINDE[t.id]||null;
+          verk[t.id]=(verk[t.id]||0)+(geb ? p.anzahl*t.ml/geb : p.anzahl);
+        });
+        return;
+      }
+      const zu=zuordnung(p);
+      if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
+      if(zu.status==="ignoriert") return;
+      verk[zu.id]=(verk[zu.id]||0)+flaschen(p, zu.id);
+    });
+  });
+  const z=berichte.length?berichte[berichte.length-1]:null;
+
+  /* Alles, was im Fenster aus dem Keller ging */
+  const ent={};
+  VORGAENGE.filter(v=>imFenster(v.tag)).forEach(v=>{
+    Object.keys(v.wein).forEach(id=>ent[id]=(ent[id]||0)+v.wein[id]);
+    Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
+  });
+
+  const ids=Array.from(new Set([...Object.keys(verk), ...Object.keys(ent)]));
+  const zeilen=ids.map(id=>{
+    const w=byId(id);
+    const v=verk[id]||0, e=ent[id]||0;
+    return {id, name: w ? (w.winzer+" · "+w.wein) : GN(id), art: w?"Wein":"Getränk",
+            verkauf:v, entnahme:e, diff:e-v};
+  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
+
+  return {z, zeilen, offen, verk, ent, von, bis, spanne, berichte:berichte.length};
+}
+
+/* ════════════ 7 · Ansichten ════════════ */
+const SEITEN=[
+  {id:"heute",     t:"Mittagsblick",     grp:"Täglich"},
+  {id:"abgleich",  t:"Verkauf ↔ Fassung"},
+  {id:"import",    t:"Z-Bericht"},
+  {id:"bestand",   t:"Kellerbestand",    grp:"Bestand"},
+  {id:"bestellen", t:"Nachbestellen"},
+  {id:"getraenke", t:"Getränke"},
+  {id:"zaehlliste",t:"Zählliste"},
+  {id:"speicher",  t:"Speicher",          grp:"Nachschlagen"},
+  {id:"zuordnung", t:"Zuordnung"},
+  {id:"rezepte",   t:"Rezepturen"},
+  {id:"team",      t:"Mitarbeiter",       grp:"Verwaltung"},
+  {id:"einst",     t:"Einstellungen"}
+];
+let SEITE="heute", SPANNE=7;
+
+function zaehler(id){
+  const t=letzterTag();
+  if(id==="zuordnung"){ const a=abgleich(t); return a.offen.length||null; }
+  if(id==="bestellen"){ return bestellliste().length||null; }
+  if(id==="zaehlliste"){ return zaehlliste().length||null; }
+  if(id==="speicher"){ return VORGAENGE.length||null; }
+  if(id==="abgleich"){ const a=abgleich(t, SPANNE);
+    return a.zeilen.filter(r=>Math.abs(r.diff)>=1).length||null; }
+  return null;
+}
+
+function zeichneNav(){
+  const n=$("#nav"); n.innerHTML="";
+  SEITEN.forEach(s=>{
+    if(s.grp){ const g=document.createElement("div"); g.className="grp"; g.textContent=s.grp; n.appendChild(g); }
+    const b=document.createElement("button");
+    b.className=(SEITE===s.id?"on":"");
+    const z=zaehler(s.id);
+    b.innerHTML=`<span>${esc(s.t)}</span>`+
+      (z?`<span class="zahl ${s.id==="zuordnung"||s.id==="abgleich"?"rot":""}">${z}</span>`:"");
+    b.onclick=()=>{ SEITE=s.id; zeichne(); window.scrollTo(0,0); };
+    n.appendChild(b);
+  });
+}
+
+function letzterTag(){
+  /* Der Betriebstag, um den es geht: gestern, sofern es dazu etwas gibt */
+  const d=new Date(); d.setDate(d.getDate()-1);
+  const gestern=d.toISOString().slice(0,10);
+  if(ZBER[gestern] || VORGAENGE.some(v=>v.tag===gestern)) return gestern;
+  const tage=Array.from(new Set([...Object.keys(ZBER), ...VORGAENGE.map(v=>v.tag)])).filter(Boolean).sort();
+  return tage[tage.length-1] || gestern;
+}
+function deTag(iso){
+  if(!iso) return "—";
+  const d=new Date(iso+"T12:00");
+  return d.toLocaleDateString("de-AT",{weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"});
+}
+
+/* ── Mittagsblick ───────────────────────────────────────────────────── */
+function vHeute(m){
+  const tag=letzterTag(), a=abgleich(tag, SPANNE), B=bestand(), V=verbrauch();
+  const heutigeVorg=VORGAENGE.filter(v=>v.tag===tag);
+  const fassung=heutigeVorg.find(v=>v.mode==="tag");
+  const best=bestellliste();
+  const grob=a.zeilen.filter(r=>Math.abs(r.diff)>=2);
+  const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
+
+  m.innerHTML=`<section>
+    <h2>Mittagsblick</h2>
+    <div class="unter">Betriebstag ${esc(deTag(tag))} · Abgleich über ${SPANNE} Tage · Stand aus ${esc(QUELLE)}</div></section>`;
+
+  const k=document.createElement("section");
+  k.className="gitter g4";
+  const kachel=(t,w,u,kl)=>`<div class="kpi ${kl||""}"><span>${t}</span><b>${w}</b><small>${u||"&nbsp;"}</small></div>`;
+  k.innerHTML=
+    kachel("Tagesfassung", fassung?"eingegangen":"fehlt",
+      fassung?esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein":"noch keine Fassung für diesen Tag",
+      fassung?"ok":"warn")+
+    kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE:"fehlen",
+      a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
+      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad")+
+    kachel("Auffällige Differenzen", grob.length,
+      grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich",
+      grob.length>4?"bad":grob.length?"warn":"ok")+
+    kachel("Nachbestellen", best.length,
+      best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle",
+      best.length?"warn":"ok");
+  m.appendChild(k);
+
+  /* Was heute noch fehlt */
+  const fehlt=[];
+  if(!fassung) fehlt.push("Für "+deTag(tag)+" liegt keine Tagesfassung vor.");
+  if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
+  else if(a.berichte<SPANNE) fehlt.push("Im Fenster fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
+  if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
+  if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
+  else if(minus.length) fehlt.push(minus.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
+  if(fehlt.length){
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Was noch fehlt</h3><div class="hinweis warn">${fehlt.map(esc).join("<br>")}</div>`;
+    m.appendChild(s);
+  }
+
+  /* Die grössten Ausreisser */
+  const s2=document.createElement("section");
+  const top=a.zeilen.filter(r=>Math.abs(r.diff)>=1).slice(0,10);
+  s2.innerHTML=`<h3>Grösste Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
+    (top.length? `<div class="tabhuelle"><table><thead><tr>
+      <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
+      </tr></thead><tbody>${top.map(r=>`<tr>
+        <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
+        <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
+        <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
+        <td class="mini">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
+      </tr>`).join("")}</tbody></table></div>`
+    : `<div class="karte leer">Keine Abweichung über einer Flasche.</div>`);
+  m.appendChild(s2);
+
+  /* Bestellvorschlag kompakt */
+  if(best.length){
+    const s3=document.createElement("section");
+    s3.innerHTML=`<h3>Bestellvorschlag</h3><div class="tabhuelle"><table><thead><tr>
+      <th>Wein</th><th class="r">Bestand</th><th class="r">Pro Tag</th><th class="r">Reicht</th><th class="r">Kisten</th>
+      </tr></thead><tbody>${best.slice(0,8).map(r=>`<tr>
+        <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}</td>
+        <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
+        <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${r.reichweite===Infinity?"—":Math.floor(r.reichweite)+" T"}</span></td>
+        <td class="r"><b>${r.kisten}</b> × ${r.kg}</td></tr>`).join("")}</tbody></table></div>
+      <div class="reihe" style="margin-top:12px"><button class="b" id="bMehr">Alle ansehen</button></div>`;
+    m.appendChild(s3);
+    $("#bMehr").onclick=()=>{ SEITE="bestellen"; zeichne(); };
+  }
+}
+
+/* ── Abgleich ───────────────────────────────────────────────────────── */
+function vAbgleich(m){
+  const tage=Array.from(new Set([...Object.keys(ZBER), ...VORGAENGE.map(v=>v.tag)])).filter(Boolean).sort().reverse();
+  const tag=vAbgleich.tag && tage.includes(vAbgleich.tag) ? vAbgleich.tag : letzterTag();
+  vAbgleich.tag=tag;
+  const a=abgleich(tag, SPANNE);
+
+  m.innerHTML=`<section><h2>Verkauf ↔ Fassung</h2>
+    <div class="unter">Was die Kasse gebucht hat, gegen das, was aus dem Keller geholt wurde.
+    Gerechnet wird in Flaschen: Anzahl × Ausschank in Millilitern, geteilt durch das Gebinde.<br>
+    Was am Abend verkauft wird, holt oft erst der nächste Tag nach. Über einen einzelnen Tag
+    verschiebt das jede Zeile — über eine Woche gleicht es sich aus.</div></section>`;
+
+  const w=document.createElement("section"); w.className="reihe";
+  w.innerHTML=`<label class="mini">Bis Betriebstag</label>
+    <select id="selTag">${tage.map(t=>`<option value="${t}" ${t===tag?"selected":""}>${esc(deTag(t))}</option>`).join("")}</select>
+    <label class="mini" style="margin-left:10px">Zeitraum</label>
+    <select id="selSpanne">${[1,7,14,30].map(n=>`<option value="${n}" ${n===SPANNE?"selected":""}>${n===1?"nur dieser Tag":n+" Tage"}</option>`).join("")}</select>
+    <span class="mini">${a.berichte} Z-Bericht${a.berichte===1?"":"e"} im Fenster</span>
+    <span class="rechts"></span>
+    <button class="b klein" id="bCsv">Als CSV</button>`;
+  m.appendChild(w);
+  $("#selTag").onchange=e=>{ vAbgleich.tag=e.target.value; zeichne(); };
+  $("#selSpanne").onchange=e=>{ SPANNE=+e.target.value; zeichne(); };
+  $("#bCsv").onclick=()=>csvAbgleich(tag,a);
+
+  if(!a.berichte){
+    const s=document.createElement("section");
+    s.innerHTML=`<div class="hinweis warn">In diesem Fenster liegt kein Z-Bericht vor.
+      Ohne ihn zeigt die Tabelle nur die Entnahme.</div>`;
+    m.appendChild(s);
+  }else if(a.berichte<a.spanne){
+    const s=document.createElement("section");
+    s.innerHTML=`<div class="hinweis">${a.berichte} von ${a.spanne} Tagen sind eingelesen.
+      Für die übrigen fehlt der Verkauf — die Differenzen fallen entsprechend zu hoch aus.</div>`;
+    m.appendChild(s);
+  }
+  if(a.offen.length){
+    const s=document.createElement("section");
+    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenpositionen ohne Zuordnung —
+      ihr Verkauf fehlt in dieser Rechnung.
+      <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
+    m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
+  }
+
+  const s=document.createElement("section");
+  const wein=a.zeilen.filter(r=>r.art==="Wein"), getr=a.zeilen.filter(r=>r.art!=="Wein");
+  const zeile=r=>`<tr>
+    <td>${esc(r.name)}</td>
+    <td class="r">${num(r.verkauf)}</td>
+    <td class="r">${num(r.entnahme)}</td>
+    <td class="r ${Math.abs(r.diff)<0.5?"dim":(r.diff>0?"diff-plus":"diff-minus")}">${r.diff>0?"+":""}${num(r.diff)}</td>
+    <td>${Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
+        :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
+        :'<span class="pill p-bad">prüfen</span>'}</td></tr>`;
+  s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
+      <th>Artikel</th><th class="r">Verkauf Fl.</th><th class="r">Entnahme Fl.</th><th class="r">Differenz</th><th>Befund</th>
+    </tr></thead><tbody>
+      ${wein.length?`<tr class="zwt"><td colspan="5">Wein</td></tr>`+wein.map(zeile).join(""):""}
+      ${getr.length?`<tr class="zwt"><td colspan="5">Getränke</td></tr>`+getr.map(zeile).join(""):""}
+      ${a.zeilen.length?"":`<tr><td colspan="5" class="leer">Für diesen Tag gibt es nichts zu vergleichen.</td></tr>`}
+    </tbody></table></div>`;
+  m.appendChild(s);
+}
+
+function csvAbgleich(tag,a){
+  const e=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
+  const L=[["Abgleich Verkauf gegen Fassung"].map(e).join(";"),
+           ["Betriebstag",tag].map(e).join(";"),"",
+           ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz"].map(e).join(";")];
+  a.zeilen.forEach(r=>L.push([r.name,r.art,num(r.verkauf),num(r.entnahme),num(r.diff)].map(e).join(";")));
+  if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
+    a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
+  hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
+}
+function hol(name, inhalt, typ){
+  const b=new Blob([inhalt],{type:typ+";charset=utf-8"}), u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+
+/* ── Z-Bericht einlesen ─────────────────────────────────────────────── */
+function vImport(m){
+  m.innerHTML=`<section><h2>Z-Bericht</h2>
+    <div class="unter">Der gastronovi-Bericht über den Vortag, morgens gezogen.
+    Datei hierher ziehen oder den Text einfügen.</div></section>`;
+
+  const s=document.createElement("section");
+  s.innerHTML=`<div class="zone" id="zone">Bericht hierher ziehen<br><span class="mini">oder klicken, um eine Datei zu wählen</span></div>
+    <div style="margin-top:16px"><textarea id="roh" placeholder="… oder den Inhalt hier einfügen"></textarea></div>
+    <div class="reihe" style="margin-top:12px">
+      <button class="b stark" id="bLies">Einlesen</button>
+      <span class="mini" id="stat"></span></div>`;
+  m.appendChild(s);
+
+  const zone=$("#zone"), roh=$("#roh");
+  const datei=f=>{ const fr=new FileReader(); fr.onload=()=>{ roh.value=fr.result; pruefe(); }; fr.readAsText(f,"utf-8"); };
+  zone.onclick=()=>{ const i=document.createElement("input"); i.type="file";
+    i.accept=".csv,.txt,text/*"; i.onchange=()=>i.files[0]&&datei(i.files[0]); i.click(); };
+  zone.ondragover=e=>{ e.preventDefault(); zone.classList.add("ueber"); };
+  zone.ondragleave=()=>zone.classList.remove("ueber");
+  zone.ondrop=e=>{ e.preventDefault(); zone.classList.remove("ueber");
+    if(e.dataTransfer.files[0]) datei(e.dataTransfer.files[0]); };
+
+  const vor=document.createElement("section"); vor.id="vor"; m.appendChild(vor);
+
+  function pruefe(){
+    const t=roh.value.trim(); if(!t){ vor.innerHTML=""; return; }
+    const z=zParse(t);
+    let auto=0, offen=0, ign=0;
+    z.positionen.forEach(p=>{ const zu=zuordnung(p);
+      if(zu.status==="offen") offen++; else if(zu.status==="ignoriert") ign++; else auto++; });
+    vor.innerHTML=`<h3>Vorschau</h3>
+      <div class="gitter g4" style="margin-bottom:16px">
+        <div class="kpi"><span>Betriebstag</span><b style="font-size:19px">${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc(z.nr||"")}</small></div>
+        <div class="kpi"><span>Positionen</span><b>${z.positionen.length}</b><small>Block „${esc(z.block)}“</small></div>
+        <div class="kpi"><span>Zugeordnet</span><b>${auto}</b><small>${ign} ignoriert</small></div>
+        <div class="kpi ${offen?"warn":"ok"}"><span>Offen</span><b>${offen}</b><small>brauchen eine Zuordnung</small></div>
+      </div>
+      <div class="tabhuelle" style="max-height:420px;overflow:auto"><table><thead><tr>
+        <th>Kassenname</th><th class="r">Anzahl</th><th class="r">Umsatz</th><th>Zuordnung</th><th class="r">Flaschen</th>
+      </tr></thead><tbody>${z.positionen.map(p=>{
+        const zu=zuordnung(p); const w=zu.id?byId(zu.id):null;
+        const nm=zu.status==="ignoriert"?'<span class="pill p-grau">ignoriert</span>'
+          :zu.status==="offen"?'<span class="pill p-bad">offen</span>'
+          :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${zu.status==="auto"?"p-neu":"p-ok"}">${zu.status==="auto"?"automatisch":"bestätigt"}</span>`;
+        return `<tr><td>${esc(p.name)}${p.zeilen>1?` <span class="mini">${p.zeilen} Zeilen summiert</span>`:""}</td>
+          <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
+          <td>${nm}</td><td class="r">${zu.id?num(flaschen(p,zu.id)):"—"}</td></tr>`;
+      }).join("")}</tbody></table></div>`;
+    $("#stat").textContent = z.tag ? "Bereit — "+z.positionen.length+" Positionen" : "Betriebstag nicht erkannt, bitte prüfen";
+    vor._z=z;
+  }
+  roh.oninput=pruefe;
+  $("#bLies").onclick=()=>{
+    const z=vor._z; if(!z) return toast("Erst einen Bericht einfügen");
+    if(!z.tag) return toast("Ohne Betriebstag lässt sich nichts zuordnen");
+    ZBER[z.tag]=z; schreib(K_ZBER,ZBER);
+    toast("Z-Bericht für "+deTag(z.tag)+" gespeichert");
+    vAbgleich.tag=z.tag; SEITE = (function(){const a=abgleich(z.tag); return a.offen.length?"zuordnung":"abgleich";})();
+    zeichne();
+  };
+
+  const alt=Object.keys(ZBER).sort().reverse();
+  if(alt.length){
+    const s2=document.createElement("section");
+    s2.innerHTML=`<h3>Bereits eingelesen</h3><div class="tabhuelle"><table><thead><tr>
+      <th>Betriebstag</th><th>Bericht</th><th class="r">Positionen</th><th class="r">Umsatz</th><th></th>
+      </tr></thead><tbody>${alt.map(t=>`<tr>
+        <td>${esc(deTag(t))}</td><td class="dim">${esc(ZBER[t].nr||"—")}</td>
+        <td class="r">${ZBER[t].positionen.length}</td><td class="r">${eur(ZBER[t].umsatz)}</td>
+        <td class="r"><button class="b klein" data-weg="${t}">Löschen</button></td></tr>`).join("")}
+      </tbody></table></div>`;
+    m.appendChild(s2);
+    s2.querySelectorAll("[data-weg]").forEach(b=>b.onclick=()=>{
+      delete ZBER[b.dataset.weg]; schreib(K_ZBER,ZBER); zeichne(); toast("Gelöscht"); });
+  }
+}
+
+/* ── Kellerbestand ──────────────────────────────────────────────────── */
+function vBestand(m){
+  const B=bestand(), V=verbrauch();
+  m.innerHTML=`<section><h2>Kellerbestand</h2>
+    <div class="unter">Jüngste Zählung, fortgeschrieben mit allem, was seither ein- und ausgegangen ist.</div></section>`;
+
+  if(!B.hat){
+    m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis warn">Es liegt keine Kellerzählung vor.
+       Ohne Zählung gibt es keinen Bestand — nur die Bewegung der letzten Vorgänge.</div></section>`);
+  }else{
+    m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis">Basis ist die Zählung vom ${esc(deTag(B.basis.tag))}${B.basis.name?" durch "+esc(B.basis.name):""}.
+       Seither ${summe(B.seit.ein)} Flaschen eingegangen, ${summe(B.seit.raus)} entnommen.</div></section>`);
+    const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
+    if(minus.length) m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis bad">${minus.length} Positionen stehen rechnerisch unter null.
+       Entweder wurde ohne Vorgang aus dem Keller geholt, oder die Zählung ist zu alt.
+       Beides löst dieselbe Massnahme aus: neu zählen.</div></section>`);
+  }
+
+  const zonen={};
+  WINES.forEach(w=>{ const z=PLAN.zone[w.id]||7; (zonen[z]=zonen[z]||[]).push(w); });
+  const reihen=[];
+  Object.keys(zonen).map(Number).sort((a,b)=>a-b).forEach(z=>{
+    reihen.push(`<tr class="zwt"><td colspan="7">${esc((PLAN.zonen[z]||{}).t||("Zone "+z))} · ${esc((PLAN.zonen[z]||{}).s||"")}</td></tr>`);
+    zonen[z].sort((a,b)=>(PLAN.restorder[a.id]??999)-(PLAN.restorder[b.id]??999)).forEach(w=>{
+      const b=B.b[w.id], pt=V.proTag[w.id]||0;
+      const rw = b==null||!pt ? Infinity : (b<=0 ? 0 : b/pt);
+      const soll=PLAN.soll[w.id]||0;
+      const anteil=b!=null&&soll?Math.min(100,Math.round(b/(soll*4)*100)):0;
+      reihen.push(`<tr>
+        <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span></td>
+        <td class="mini">${esc(w.reb)}</td>
+        <td class="r">${b==null?'<span class="dim">—</span>'
+          :b<0?`<b style="color:var(--danger-fg)">${num(b)}</b>`:`<b>${num(b)}</b>`}</td>
+        <td class="r dim">${soll||"—"}</td>
+        <td class="r">${pt?num(pt):'<span class="dim">—</span>'}</td>
+        <td class="r">${rw===Infinity?'<span class="dim">—</span>':
+          b<=0?'<span class="pill p-bad">leer</span>':
+          `<span class="pill ${rw<7?"p-bad":rw<EINST.reichweite?"p-warn":"p-ok"}">${Math.floor(rw)} T</span>`}</td>
+        <td><div class="balken"><i class="${b!=null&&b<6?"knapp":anteil>60?"satt":""}" style="width:${anteil}%"></i></div></td>
+      </tr>`);
+    });
+  });
+
+  const s=document.createElement("section");
+  s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
+    <th>Wein</th><th>Rebsorte</th><th class="r">Bestand Fl.</th><th class="r">Soll Schrank</th>
+    <th class="r">Pro Tag</th><th class="r">Reicht</th><th>&nbsp;</th>
+    </tr></thead><tbody>${reihen.join("")}</tbody></table></div>
+    <div class="mini" style="margin-top:10px">Verbrauch je Tag über die letzten ${V.tage} erfassten Tage.</div>`;
+  m.appendChild(s);
+}
+
+/* ── Nachbestellen ──────────────────────────────────────────────────── */
+function bestellliste(){
+  const B=bestand(), V=verbrauch(), out=[];
+  WINES.forEach(w=>{
+    const b=B.b[w.id]; if(b==null) return;
+    const pt=V.proTag[w.id]||0; if(!pt) return;
+    const rw = b<=0 ? 0 : b/pt; if(rw>=EINST.reichweite) return;
+    const kg=(PLAN.kiste||{})[w.id]||6;
+    const ziel=Math.ceil(pt*EINST.reichweite*1.5);        /* auf anderthalb Fenster auffüllen */
+    const kisten=Math.max(1, Math.ceil(Math.max(0,ziel-Math.max(0,b))/kg));
+    out.push({w, bestand:b, proTag:pt, reichweite:rw, kg, kisten});
+  });
+  return out.sort((a,b)=>a.reichweite-b.reichweite);
+}
+function vBestellen(m){
+  const L=bestellliste();
+  m.innerHTML=`<section><h2>Nachbestellen</h2>
+    <div class="unter">Alles, dessen Bestand bei gleichbleibendem Verbrauch keine ${EINST.reichweite} Tage mehr trägt.
+    Der Vorschlag füllt auf das Anderthalbfache dieses Fensters auf, aufgerundet auf ganze Kisten.</div></section>`;
+  if(!L.length){
+    m.insertAdjacentHTML("beforeend",`<section><div class="karte leer">Nichts unter der Schwelle.</div></section>`);
+    return;
+  }
+  const s=document.createElement("section");
+  s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
+    <th>Wein</th><th>Winzer</th><th class="r">Bestand</th><th class="r">Pro Tag</th>
+    <th class="r">Reicht</th><th class="r">Kisten</th><th class="r">Flaschen</th>
+    </tr></thead><tbody>${L.map(r=>`<tr>
+      <td><b>${esc(r.w.wein)}</b> <span class="mini">${esc(r.w.jg)}</span></td>
+      <td>${esc(r.w.winzer)}</td>
+      <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
+      <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${Math.floor(r.reichweite)} T</span></td>
+      <td class="r"><b>${r.kisten}</b> <span class="mini">à ${r.kg}</span></td>
+      <td class="r">${r.kisten*r.kg}</td></tr>`).join("")}</tbody></table></div>
+    <div class="reihe" style="margin-top:16px">
+      <button class="b stark" id="bKop">Als Text kopieren</button>
+      <button class="b" id="bCsv2">Als CSV</button></div>`;
+  m.appendChild(s);
+  $("#bKop").onclick=()=>{
+    const t="Bestellvorschlag Haus Hirt · "+new Date().toLocaleDateString("de-AT")+"\n\n"+
+      L.map(r=>`${r.kisten} × ${r.kg}er  ${r.w.winzer}, ${r.w.wein} ${r.w.jg}`).join("\n");
+    navigator.clipboard.writeText(t).then(()=>toast("In die Zwischenablage kopiert"),()=>toast("Kopieren nicht möglich"));
+  };
+  $("#bCsv2").onclick=()=>{
+    const e=s2=>'"'+String(s2??"").replace(/"/g,'""')+'"';
+    const R=[["Winzer","Wein","Jahrgang","Bestand","Verbrauch/Tag","Reichweite","Kisten","Kistengröße","Flaschen"].map(e).join(";")];
+    L.forEach(r=>R.push([r.w.winzer,r.w.wein,r.w.jg,num(r.bestand),num(r.proTag),
+      Math.floor(r.reichweite),r.kisten,r.kg,r.kisten*r.kg].map(e).join(";")));
+    hol("bestellvorschlag.csv","\uFEFF"+R.join("\r\n"),"text/csv");
+  };
+}
+
+/* ── Getränke ───────────────────────────────────────────────────────── */
+function vGetraenke(m){
+  const V=verbrauch();
+  let letzterIst=null;
+  VORGAENGE.forEach(v=>{ if(v.gzaehlung) letzterIst=v; });
+  m.innerHTML=`<section><h2>Getränke</h2>
+    <div class="unter">Soll und letzter Ist-Stand in den Laden. Ein Kellerbestand wird für Getränke nicht geführt —
+    was hier steht, ist die Bar, nicht das Lager.</div></section>`;
+  const s=document.createElement("section");
+  const zeilen=GIDS.map(id=>{
+    const soll=GSOLL[id];
+    const ist=letzterIst && letzterIst.gzaehlung[id]!=null ? +letzterIst.gzaehlung[id] : null;
+    const pt=V.gProTag[id]||0;
+    return {id, soll, ist, pt, fehlt: ist==null?null:Math.max(0,soll-ist)};
+  }).sort((a,b)=>(b.fehlt||0)-(a.fehlt||0) || b.pt-a.pt);
+  s.innerHTML=`${letzterIst?`<div class="hinweis" style="margin-bottom:16px">Letzter Ist-Stand vom ${esc(deTag(letzterIst.tag))}.</div>`:""}
+    <div class="tabhuelle"><table><thead><tr>
+      <th>Position</th><th class="r">Soll Lade</th><th class="r">Ist</th><th class="r">Fehlt</th>
+      <th class="r">Pro Tag</th><th class="r">Gebinde</th></tr></thead><tbody>
+      ${zeilen.map(r=>`<tr><td>${esc(GN(r.id))}</td>
+        <td class="r dim">${r.soll}</td>
+        <td class="r">${r.ist==null?'<span class="dim">—</span>':r.ist}</td>
+        <td class="r">${r.fehlt?`<b>${r.fehlt}</b>`:'<span class="dim">—</span>'}</td>
+        <td class="r">${r.pt?num(r.pt):'<span class="dim">—</span>'}</td>
+        <td class="r mini">${GEBINDE[r.id]?GEBINDE[r.id]+" ml":"—"}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  m.appendChild(s);
+}
+
+/* ── Vorgangsnamen (vom Speicher genutzt) ──────────────────────────── */
+const MODUSNAME={tag:"Tagesfassung", fuellen:"Nachfüllen", keller:"Kellerzählung",
+                 nach:"Sonderentnahme", ware:"Wareneingang"};
+function vVorgaenge(m){
+  m.innerHTML=`<section><h2>Vorgänge</h2>
+    <div class="unter">Alle Fassungen, die diese Ansicht erreichen — jüngste zuerst.</div></section>`;
+  const s=document.createElement("section");
+  const L=VORGAENGE.slice().reverse();
+  s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
+    <th>Betriebstag</th><th>Vorgang</th><th>Wer</th><th class="r">Wein Fl.</th><th class="r">Getränke Fl.</th>
+    <th>Zustand</th><th>Notiz</th></tr></thead><tbody>
+    ${L.length?L.map(v=>`<tr>
+      <td>${esc(deTag(v.tag))}</td>
+      <td>${esc(MODUSNAME[v.mode]||v.mode)}</td>
+      <td>${esc(v.name||"—")}</td>
+      <td class="r">${v.flWein||'<span class="dim">—</span>'}</td>
+      <td class="r">${v.flGetr||'<span class="dim">—</span>'}</td>
+      <td>${v.fertig?'<span class="pill p-ok">abgeschlossen</span>':'<span class="pill p-warn">läuft</span>'}
+          ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}
+          ${v.fotos?` <span class="mini">${v.fotos} Foto${v.fotos>1?"s":""}</span>`:""}</td>
+      <td class="mini">${esc(v.notiz||"")}</td></tr>`).join("")
+      :`<tr><td colspan="7" class="leer">Keine Vorgänge in dieser Quelle.</td></tr>`}
+    </tbody></table></div>`;
+  m.appendChild(s);
+}
+
+/* ── Zuordnung ──────────────────────────────────────────────────────── */
+function vZuordnung(m){
+  m.innerHTML=`<section><h2>Zuordnung</h2>
+    <div class="unter">Kassenname zu Artikel. Weine mit Rebsorten-Kürzel gehen automatisch durch.
+    Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
+    „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.</div></section>`;
+
+  const namen={};
+  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
+    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0, tage:0};
+    namen[p.name].anzahl+=p.anzahl; namen[p.name].tage++;
+  }));
+  const L=Object.values(namen).sort((a,b)=>{
+    const za=zuordnung(a), zb=zuordnung(b);
+    const rang=x=>x.status==="offen"?0:x.status==="auto"?1:2;
+    return rang(za)-rang(zb) || b.anzahl-a.anzahl;
+  });
+  if(!L.length){
+    m.insertAdjacentHTML("beforeend",`<section><div class="karte leer">Noch kein Z-Bericht eingelesen.</div></section>`);
+    return;
+  }
+  const optionen=`<option value="">— offen —</option><option value="__ignoriert">Ignorieren</option>`+
+    `<optgroup label="Wein">${WINES.map(w=>`<option value="${w.id}">${esc(w.winzer)} · ${esc(w.wein)} ${esc(w.jg)}</option>`).join("")}</optgroup>`+
+    `<optgroup label="Getränke">${GIDS.map(id=>`<option value="${id}">${esc(GN(id))}</option>`).join("")}</optgroup>`;
+
+  const s=document.createElement("section");
+  s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
+    <th>Kassenname</th><th class="r">Menge gesamt</th><th>Zuordnung</th><th>Zustand</th></tr></thead><tbody>
+    ${L.map(p=>{ const z=zuordnung(p);
+      return `<tr><td>${esc(p.name)}</td><td class="r">${num(p.anzahl)}</td>
+        <td><select class="klein" data-name="${esc(p.name)}">${optionen}</select></td>
+        <td>${z.status==="offen"?'<span class="pill p-bad">offen</span>'
+            :z.status==="auto"?'<span class="pill p-neu">automatisch — bestätigen</span>'
+            :z.status==="ignoriert"?'<span class="pill p-grau">ignoriert</span>'
+            :'<span class="pill p-ok">festgelegt</span>'}</td></tr>`;
+    }).join("")}</tbody></table></div>
+    <div class="reihe" style="margin-top:16px">
+      <button class="b stark" id="bAuto">Alle automatischen Weinvorschläge übernehmen</button></div>`;
+  m.appendChild(s);
+
+  s.querySelectorAll("select[data-name]").forEach(sel=>{
+    const nm=sel.dataset.name, z=zuordnung({name:nm});
+    sel.value = MAP[nm] ? MAP[nm] : (z.status==="auto" ? z.id : "");
+    sel.onchange=()=>{
+      if(sel.value) MAP[nm]=sel.value; else delete MAP[nm];
+      schreib(K_MAP,MAP); zeichne(); toast("Zuordnung gespeichert");
+    };
+  });
+  $("#bAuto").onclick=()=>{
+    let n=0;
+    L.forEach(p=>{ if(MAP[p.name]) return; const a=autoWein(p.name); if(a){ MAP[p.name]=a.id; n++; } });
+    schreib(K_MAP,MAP); zeichne(); toast(n+" Weine übernommen");
+  };
+}
+
+/* ── Einstellungen ──────────────────────────────────────────────────── */
+function vEinst(m){
+  m.innerHTML=`<section><h2>Einstellungen</h2>
+    <div class="unter">Gilt nur für diese Ansicht. Die Fassungsseite bleibt unberührt.</div></section>`;
+  const s=document.createElement("section"); s.className="karte";
+  s.innerHTML=`<div class="reihe" style="margin-bottom:16px">
+      <label style="width:230px">Nachbestellen unter</label>
+      <input type="number" id="eRw" value="${EINST.reichweite}" min="1" max="90" style="width:90px"> <span class="mini">Tagen Reichweite</span></div>
+    <div class="reihe" style="margin-bottom:20px">
+      <label style="width:230px">Verbrauch mitteln über</label>
+      <input type="number" id="eTg" value="${EINST.tage}" min="7" max="180" style="width:90px"> <span class="mini">Tage</span></div>
+    <div class="reihe"><button class="b stark" id="eSp">Speichern</button>
+      <span class="rechts"></span>
+      <button class="b" id="eDatei">Vorgänge aus Datei laden</button>
+      <button class="b" id="eWeg">Zuordnungen zurücksetzen</button></div>`;
+  m.appendChild(s);
+  $("#eSp").onclick=()=>{ EINST.reichweite=Math.max(1,+$("#eRw").value||14);
+    EINST.tage=Math.max(7,+$("#eTg").value||28); schreib(K_EINST,EINST); zeichne(); toast("Gespeichert"); };
+  $("#eDatei").onclick=dateiLaden;
+  $("#eWeg").onclick=()=>{ if(!confirm("Alle bestätigten Zuordnungen löschen?")) return;
+    MAP={}; schreib(K_MAP,MAP); zeichne(); toast("Zurückgesetzt"); };
+
+  const s2=document.createElement("section");
+  s2.innerHTML=`<h3>Quelle</h3><div class="karte">
+    <table><tbody>
+      <tr><td>Aktive Quelle</td><td class="r"><b>${esc(QUELLE)}</b></td></tr>
+      <tr><td>Vorgänge</td><td class="r">${VORGAENGE.length}</td></tr>
+      <tr><td>Z-Berichte</td><td class="r">${Object.keys(ZBER).length}</td></tr>
+      <tr><td>Feste Zuordnungen</td><td class="r">${Object.keys(MAP).length}</td></tr>
+      <tr><td>Weine · Getränke im Stamm</td><td class="r">${WINES.length} · ${GIDS.length}</td></tr>
+    </tbody></table></div>`;
+  m.appendChild(s2);
+}
+
+/* ════════════ 7d · Zählliste ════════════
+   Zählen nach Bedarf statt nach Kalender. Wer weiss, welche zwölf
+   Positionen auseinanderlaufen, zählt in fünf Minuten das Richtige —
+   statt in einer Stunde alles, und das zu selten. */
+function zaehlliste(){
+  const B=bestand(), V=verbrauch(), t=letzterTag(), A=abgleich(t, SPANNE);
+  const dif={}; A.zeilen.forEach(r=>dif[r.id]=r.diff);
+  const out=[];
+  WINES.forEach(w=>{
+    const b=B.b[w.id], d=dif[w.id]||0, pt=V.proTag[w.id]||0;
+    let grund=null, rang=9;
+    if(b!=null && b<0){ grund="rechnerisch unter null"; rang=0; }
+    else if(Math.abs(d)>=3){ grund="Verkauf und Entnahme "+num(Math.abs(d))+" Fl. auseinander"; rang=1; }
+    else if(b!=null && b<6 && pt>0){ grund="unter einer Reihe"; rang=2; }
+    if(!grund) return;
+    out.push({w, bestand:b, diff:d, grund, rang});
+  });
+  return out.sort((a,b)=>a.rang-b.rang || Math.abs(b.diff)-Math.abs(a.diff));
+}
+function vZaehlliste(m){
+  const L=zaehlliste();
+  m.innerHTML=`<section><h2>Zählliste</h2>
+    <div class="unter">Nicht alles, sondern das Auffällige. Positionen unter null, Positionen deren
+    Verkauf und Entnahme über ${SPANNE} Tage auseinanderlaufen, und was unter eine Reihe gefallen ist.</div></section>`;
+  if(!L.length){
+    m.insertAdjacentHTML("beforeend",`<section><div class="karte leer">Nichts zu prüfen — alles im Rahmen.</div></section>`);
+    return;
+  }
+  const s=document.createElement("section");
+  s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
+    <th>Wein</th><th>Kellerbereich</th><th class="r">Rechnerisch</th><th>Warum zählen</th>
+    </tr></thead><tbody>${L.map(r=>`<tr>
+      <td><b>${esc(r.w.winzer)}</b> · ${esc(r.w.wein)} <span class="mini">${esc(r.w.jg)}</span></td>
+      <td class="mini">${esc((PLAN.zonen[PLAN.zone[r.w.id]]||{}).t||"—")}</td>
+      <td class="r">${r.bestand==null?'<span class="dim">—</span>'
+        :r.bestand<0?`<b style="color:var(--danger-fg)">${r.bestand}</b>`:`<b>${r.bestand}</b>`}</td>
+      <td><span class="pill ${r.rang===0?"p-bad":r.rang===1?"p-warn":"p-grau"}">${esc(r.grund)}</span></td>
+    </tr>`).join("")}</tbody></table></div>
+    <div class="reihe" style="margin-top:16px">
+      <button class="b stark" id="zKop">Als Zettel kopieren</button>
+      <button class="b" id="zCsv">Als CSV</button>
+      <span class="mini rechts">${L.length} von ${WINES.length} Positionen</span></div>`;
+  m.appendChild(s);
+  $("#zKop").onclick=()=>{
+    const txt="Zählliste "+new Date().toLocaleDateString("de-AT")+"\n\n"+
+      L.map(r=>`☐  ${(PLAN.zonen[PLAN.zone[r.w.id]]||{}).t||"?"} · ${r.w.winzer}, ${r.w.wein} ${r.w.jg}   ____ Reihen  ____ einzeln`).join("\n");
+    navigator.clipboard.writeText(txt).then(()=>toast("Kopiert"),()=>toast("Kopieren nicht möglich"));
+  };
+  $("#zCsv").onclick=()=>{
+    const e=x=>'"'+String(x??"").replace(/"/g,'""')+'"';
+    const R=[["Bereich","Winzer","Wein","Jahrgang","Rechnerisch","Grund","Reihen","Einzeln"].map(e).join(";")];
+    L.forEach(r=>R.push([(PLAN.zonen[PLAN.zone[r.w.id]]||{}).t||"",r.w.winzer,r.w.wein,r.w.jg,
+      r.bestand==null?"":r.bestand,r.grund,"",""].map(e).join(";")));
+    hol("zaehlliste.csv","\uFEFF"+R.join("\r\n"),"text/csv");
+  };
+}
+
+/* ════════════ 7e · Speicher ════════════
+   Jede Fassung, die je durchgelaufen ist — vollständig, nicht als
+   Zusammenfassung. Wer wissen will, warum vor drei Wochen zwölf Flaschen
+   gebucht wurden, braucht die Zeilen, nicht die Summe. */
+let SPFILTER={modus:"", wer:"", q:""}, SPOFFEN=null;
+function vSpeicher(m){
+  const alle=VORGAENGE.slice().reverse();
+  const leute=Array.from(new Set(alle.map(v=>v.name).filter(Boolean))).sort();
+
+  m.innerHTML=`<section><h2>Speicher</h2>
+    <div class="unter">${alle.length} Vorgänge aus ${esc(QUELLE)}.
+    ${QUELLE==="Lokal"?"Lokal hält die App die letzten 30 — am Server fällt dieser Deckel weg.":""}</div></section>`;
+
+  const w=document.createElement("section"); w.className="reihe";
+  w.innerHTML=`<input type="text" id="spQ" placeholder="Name, Notiz oder Datum" value="${esc(SPFILTER.q)}" style="width:250px">
+    <select id="spM"><option value="">Alle Vorgänge</option>
+      ${Object.keys(MODUSNAME).map(k=>`<option value="${k}"${SPFILTER.modus===k?" selected":""}>${MODUSNAME[k]}</option>`).join("")}</select>
+    <select id="spW"><option value="">Alle Personen</option>
+      ${leute.map(n=>`<option value="${esc(n)}"${SPFILTER.wer===n?" selected":""}>${esc(n)}</option>`).join("")}</select>
+    <span class="rechts"></span><button class="b klein" id="spCsv">Alles als CSV</button>`;
+  m.appendChild(w);
+  $("#spQ").oninput=e=>{SPFILTER.q=e.target.value; malSpeicher();};
+  $("#spM").onchange=e=>{SPFILTER.modus=e.target.value; malSpeicher();};
+  $("#spW").onchange=e=>{SPFILTER.wer=e.target.value; malSpeicher();};
+  $("#spCsv").onclick=()=>csvSpeicher(gefiltert());
+
+  const liste=document.createElement("section"); liste.id="spListe"; m.appendChild(liste);
+  const detail=document.createElement("section"); detail.id="spDetail"; m.appendChild(detail);
+  malSpeicher();
+
+  function gefiltert(){
+    const q=SPFILTER.q.trim().toLowerCase();
+    return alle.filter(v=>
+      (!SPFILTER.modus || v.mode===SPFILTER.modus) &&
+      (!SPFILTER.wer   || v.name===SPFILTER.wer) &&
+      (!q || (v.name+" "+v.notiz+" "+v.tag+" "+deTag(v.tag)).toLowerCase().includes(q)));
+  }
+  function malSpeicher(){
+    const L=gefiltert();
+    $("#spListe").innerHTML=`<div class="tabhuelle"><table><thead><tr>
+      <th>Betriebstag</th><th>Vorgang</th><th>Wer</th><th class="r">Wein</th><th class="r">Getränke</th>
+      <th>Zustand</th><th></th></tr></thead><tbody>
+      ${L.length?L.map((v,i)=>`<tr>
+        <td>${esc(deTag(v.tag))}</td><td>${esc(MODUSNAME[v.mode]||v.mode)}</td>
+        <td>${esc(v.name||"—")}</td>
+        <td class="r">${v.flWein||'<span class="dim">—</span>'}</td>
+        <td class="r">${v.flGetr||'<span class="dim">—</span>'}</td>
+        <td>${v.fertig?'<span class="pill p-ok">fertig</span>':'<span class="pill p-warn">läuft</span>'}
+            ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}
+            ${v.fotos?` <span class="mini">${v.fotos} Foto${v.fotos>1?"s":""}</span>`:""}</td>
+        <td class="r"><button class="b klein" data-oe="${alle.indexOf(v)}">Ansehen</button></td></tr>`).join("")
+        :`<tr><td colspan="7" class="leer">Nichts gefunden.</td></tr>`}
+      </tbody></table></div>`;
+    $("#spListe").querySelectorAll("[data-oe]").forEach(b=>b.onclick=()=>{
+      SPOFFEN=alle[+b.dataset.oe]; malDetail();
+      $("#spDetail").scrollIntoView({behavior:"smooth", block:"start"});});
+    if(SPOFFEN) malDetail();
+  }
+  function malDetail(){
+    const v=SPOFFEN; if(!v) return;
+    const nm=id=>{const w=byId(id); return w?w.winzer+" · "+w.wein+" "+w.jg:GN(id);};
+    const tab=(titel,o,einheit)=>{
+      const ks=Object.keys(o||{}).filter(k=>+o[k]); if(!ks.length) return "";
+      return `<h3 style="margin-top:24px">${titel}</h3><div class="tabhuelle"><table><thead><tr>
+        <th>Position</th><th class="r">${einheit}</th></tr></thead><tbody>
+        ${ks.sort((a,b)=>o[b]-o[a]).map(k=>`<tr><td>${esc(nm(k))}</td><td class="r"><b>${num(o[k])}</b></td></tr>`).join("")}
+        <tr class="zwt"><td>Summe</td><td class="r">${num(summe(o))}</td></tr></tbody></table></div>`;
+    };
+    $("#spDetail").innerHTML=`<div class="karte" style="margin-top:24px">
+      <div class="reihe">
+        <div><h3 style="margin:0">${esc(MODUSNAME[v.mode]||v.mode)} · ${esc(deTag(v.tag))}</h3>
+          <div class="mini">${esc(v.name||"ohne Namen")}${v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):""}</div></div>
+        <span class="rechts"></span>
+        <button class="b klein" id="spJson">Rohdaten</button>
+        <button class="b klein" id="spZu">Schliessen</button></div>
+      ${v.notiz?`<div class="hinweis" style="margin-top:14px">${esc(v.notiz)}</div>`:""}
+      ${v.zaehlung?`<div class="hinweis" style="margin-top:14px">Diese Zählung ist die Basis aller
+        Bestände danach. ${Object.keys(v.zaehlung).length} Positionen, ${summe(v.zaehlung)} Flaschen.</div>`:""}
+      ${tab("Aus dem Weinkeller geholt", v.wein, "Flaschen")}
+      ${tab("Aus dem Getränkelager geholt", v.getr, "Flaschen")}
+      ${tab("Wareneingang", v.eingang, "Flaschen")}
+      ${v.zaehlung?tab("Gezählter Bestand", v.zaehlung, "Flaschen"):""}
+      ${(!summe(v.wein)&&!summe(v.getr)&&!summe(v.eingang)&&!v.zaehlung)
+        ?`<div class="leer">Dieser Vorgang hat keine Mengen bewegt.</div>`:""}
+    </div>`;
+    $("#spZu").onclick=()=>{SPOFFEN=null; $("#spDetail").innerHTML="";};
+    $("#spJson").onclick=()=>hol(`vorgang_${v.mode}_${v.tag}.json`,
+      JSON.stringify(v.roh,null,2), "application/json");
+  }
+}
+function csvSpeicher(L){
+  const e=x=>'"'+String(x??"").replace(/"/g,'""')+'"';
+  const R=[["Betriebstag","Vorgang","Wer","Position","Art","Menge","Notiz"].map(e).join(";")];
+  L.forEach(v=>{
+    const zeile=(o,art)=>Object.keys(o||{}).filter(k=>+o[k]).forEach(k=>{
+      const w=byId(k);
+      R.push([v.tag, MODUSNAME[v.mode]||v.mode, v.name,
+        w?w.winzer+" "+w.wein:GN(k), art, o[k], v.notiz].map(e).join(";"));});
+    zeile(v.wein,"Weinkeller"); zeile(v.getr,"Getränkelager");
+    zeile(v.eingang,"Wareneingang"); if(v.zaehlung) zeile(v.zaehlung,"Zählung");
+  });
+  hol("speicher.csv","\uFEFF"+R.join("\r\n"),"text/csv");
+}
+
+/* ════════════ 7f · Rezepturen ════════════
+   Ein Gin Tonic verbraucht ein Tonic, ein Aperol Spritz Prosecco und Soda.
+   Ohne diese Zerlegung steht der Mixer für immer als Überhang da: geholt,
+   nie verkauft. Es sind ein paar Rezepte, keine Kartei. */
+function vRezepte(m){
+  m.innerHTML=`<section><h2>Rezepturen</h2>
+    <div class="unter">Für Mischgetränke, die einen Artikel aus dem Lager verbrauchen, ohne selbst
+    einer zu sein. Was hier steht, wird im Abgleich statt der Position selbst gebucht.</div></section>`;
+
+  const namen={};
+  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
+    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0};
+    namen[p.name].anzahl+=p.anzahl;}));
+  const kandidaten=Object.values(namen)
+    .filter(p=>!MAP[p.name] && !REZ[p.name])
+    .sort((a,b)=>b.anzahl-a.anzahl);
+
+  const s=document.createElement("section");
+  const zutatOpt=GIDS.map(id=>`<option value="${id}">${esc(GN(id))}</option>`).join("");
+  s.innerHTML=`<h3>Angelegt</h3>
+    ${Object.keys(REZ).length?`<div class="tabhuelle"><table><thead><tr>
+      <th>Kassenname</th><th>Verbraucht</th><th></th></tr></thead><tbody>
+      ${Object.keys(REZ).map(k=>`<tr><td><b>${esc(k)}</b></td>
+        <td>${REZ[k].map(t=>`${esc(GN(t.id))} <span class="mini">${t.ml} ml</span>`).join(" · ")}</td>
+        <td class="r"><button class="b klein" data-rw="${esc(k)}">Löschen</button></td></tr>`).join("")}
+      </tbody></table></div>`
+    :`<div class="karte leer">Noch keine Rezeptur angelegt.</div>`}
+
+    <h3 style="margin-top:32px">Neu anlegen</h3>
+    <div class="karte">
+      <div class="reihe" style="margin-bottom:14px">
+        <label style="width:150px">Kassenposition</label>
+        <select id="rzName" style="max-width:340px">
+          <option value="">— wählen —</option>
+          ${kandidaten.map(p=>`<option value="${esc(p.name)}">${esc(p.name)} (${num(p.anzahl)}×)</option>`).join("")}
+        </select></div>
+      <div id="rzZut"></div>
+      <div class="reihe" style="margin-top:14px">
+        <button class="b" id="rzPlus">Zutat hinzufügen</button>
+        <span class="rechts"></span>
+        <button class="b stark" id="rzSave">Rezeptur speichern</button></div>
+    </div>`;
+  m.appendChild(s);
+
+  const zut=[];
+  const malZut=()=>{
+    $("#rzZut").innerHTML = zut.length ? zut.map((t,i)=>`
+      <div class="reihe" style="margin-bottom:8px">
+        <select data-zi="${i}" style="max-width:300px">${zutatOpt}</select>
+        <input type="number" data-zm="${i}" value="${t.ml}" min="10" max="1000" step="10" style="width:100px">
+        <span class="mini">ml je Verkauf</span>
+        <button class="b klein" data-zx="${i}">Weg</button></div>`).join("")
+      : `<div class="mini">Noch keine Zutat.</div>`;
+    $("#rzZut").querySelectorAll("[data-zi]").forEach(sel=>{
+      sel.value=zut[+sel.dataset.zi].id;
+      sel.onchange=()=>{zut[+sel.dataset.zi].id=sel.value;};});
+    $("#rzZut").querySelectorAll("[data-zm]").forEach(inp=>
+      inp.oninput=()=>{zut[+inp.dataset.zm].ml=Math.max(0,+inp.value||0);});
+    $("#rzZut").querySelectorAll("[data-zx]").forEach(b=>
+      b.onclick=()=>{zut.splice(+b.dataset.zx,1); malZut();});
+  };
+  malZut();
+  $("#rzPlus").onclick=()=>{zut.push({id:GIDS[0], ml:200}); malZut();};
+  $("#rzSave").onclick=()=>{
+    const nm=$("#rzName").value;
+    if(!nm) return toast("Erst eine Kassenposition wählen");
+    if(!zut.length) return toast("Ohne Zutat ist es keine Rezeptur");
+    REZ[nm]=zut.map(t=>({id:t.id, ml:t.ml})); schreib(K_REZ,REZ);
+    zeichne(); toast("Rezeptur gespeichert");
+  };
+  s.querySelectorAll("[data-rw]").forEach(b=>b.onclick=()=>{
+    delete REZ[b.dataset.rw]; schreib(K_REZ,REZ); zeichne(); toast("Gelöscht");});
+}
+
+/* ════════════ 7g · Mitarbeiter ════════════
+   Codes und Rollen gehören der Leitung, nicht dem Quelltext. Solange
+   alles im Browser läuft, ist ein Code eine Unterschrift und keine
+   Sperre — das steht hier auch so, damit niemand mehr hineinliest. */
+function vTeam(m){
+  m.innerHTML=`<section><h2>Mitarbeiter</h2>
+    <div class="unter">Wer sich anmelden darf und was ihm die App dann zeigt.
+    Codes werden nur beim Anlegen eingegeben und nirgends gespeichert —
+    am Server liegt eine PBKDF2-Prüfsumme, sonst nichts. Wer seinen Code
+    vergisst, bekommt einen neuen; auslesen kann ihn niemand.</div></section>`;
+
+  const s=document.createElement("section");
+  s.innerHTML=`<div id="teamL"><div class="karte leer">Wird geladen \u2026</div></div>
+    <h3 style="margin-top:32px">Aufnehmen oder Code neu setzen</h3>
+    <div class="karte">
+      <div class="reihe" style="margin-bottom:12px">
+        <label style="width:140px">Name</label>
+        <input type="text" id="nName" placeholder="Vor- und Nachname" style="width:280px"></div>
+      <div class="reihe" style="margin-bottom:12px">
+        <label style="width:140px">Rolle</label>
+        <select id="nRolle">${Object.keys(ROLLNAME).map(k=>
+          `<option value="${k}">${ROLLNAME[k]}</option>`).join("")}</select>
+        <span class="mini" id="nHint">${esc(RECHTETEXT.service)}</span></div>
+      <div class="reihe" style="margin-bottom:16px">
+        <label style="width:140px">Code</label>
+        <input type="text" id="nCode" placeholder="vier bis acht Ziffern" maxlength="8"
+          inputmode="numeric" style="width:180px">
+        <button class="b klein" id="nWuerfel">Vorschlagen</button></div>
+      <div class="reihe">
+        <button class="b stark" id="nAdd">Speichern</button>
+        <span class="mini rechts">Der Code erscheint danach nirgends mehr. Jetzt notieren.</span></div>
+    </div>`;
+  m.appendChild(s);
+
+  $("#nRolle").onchange=e=>{ $("#nHint").textContent=RECHTETEXT[e.target.value]||""; };
+  $("#nWuerfel").onclick=()=>{
+    const a=new Uint32Array(1); crypto.getRandomValues(a);
+    $("#nCode").value=String(1000+(a[0]%9000));
+  };
+
+  let LEUTE=[];
+  const male=()=>{
+    $("#teamL").innerHTML=LEUTE.length?`<div class="tabhuelle"><table><thead><tr>
+      <th>Name</th><th style="width:200px">Rolle</th><th>Sieht</th><th style="width:120px">Zustand</th>
+      </tr></thead><tbody>${LEUTE.map(p=>`<tr>
+        <td><b>${esc(p.name)}</b></td>
+        <td><select class="klein" data-rp="${esc(p.id)}">${Object.keys(ROLLNAME).map(k=>
+          `<option value="${k}"${p.rolle===k?" selected":""}>${ROLLNAME[k]}</option>`).join("")}</select></td>
+        <td class="mini">${esc(RECHTETEXT[p.rolle]||"")}</td>
+        <td><button class="b klein" data-ap="${esc(p.id)}">${p.aktiv?"Sperren":"Freigeben"}</button></td>
+      </tr>`).join("")}</tbody></table></div>`
+      :`<div class="karte leer">Noch niemand angelegt.</div>`;
+    $("#teamL").querySelectorAll("[data-rp]").forEach(sel=>sel.onchange=()=>{
+      const p=LEUTE.find(x=>x.id===sel.dataset.rp);
+      sende({id:p.id,name:p.name,rolle:sel.value,aktiv:p.aktiv});});
+    $("#teamL").querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>{
+      const p=LEUTE.find(x=>x.id===b.dataset.ap);
+      sende({id:p.id,name:p.name,rolle:p.rolle,aktiv:p.aktiv?0:1});});
+  };
+  const hole=async()=>{
+    try{
+      const r=await fetch("/api/personen");
+      if(r.status===403){ $("#teamL").innerHTML=
+        `<div class="hinweis warn">Nur die Leitung darf Mitarbeiter verwalten.</div>`; return; }
+      if(!r.ok){ $("#teamL").innerHTML=
+        `<div class="hinweis warn">Der Server antwortet nicht. Mitarbeiter lassen sich
+         nur mit Verbindung pflegen.</div>`; return; }
+      LEUTE=(await r.json()).personen||[]; male();
+    }catch(e){ $("#teamL").innerHTML=
+      `<div class="hinweis warn">Keine Verbindung zum Server.</div>`; }
+  };
+  const sende=async(body)=>{
+    try{
+      const r=await fetch("/api/personen",{method:"POST",
+        headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+      const j=await r.json();
+      if(!r.ok)return toast(j.fehler||"Nicht gespeichert");
+      toast("Gespeichert"); hole();
+    }catch(e){ toast("Keine Verbindung"); }
+  };
+  $("#nAdd").onclick=()=>{
+    const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();
+    if(!nm) return toast("Ohne Namen geht es nicht");
+    if(!/^\d{4,8}$/.test(code)) return toast("Der Code hat vier bis acht Ziffern");
+    const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
+    sende({id:da?da.id:undefined, name:nm, rolle:$("#nRolle").value, code, aktiv:1});
+    $("#nName").value=""; $("#nCode").value="";
+  };
+  hole();
+}
+
+/* ════════════ 8 · Aufbau ════════════ */
+const ANSICHT={heute:vHeute, abgleich:vAbgleich, import:vImport, bestand:vBestand,
+  bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste, speicher:vSpeicher,
+  zuordnung:vZuordnung, rezepte:vRezepte, team:vTeam, einst:vEinst};
+
+function zeichne(){
+  zeichneNav();
+  const m=$("#inhalt"); m.innerHTML="";
+  (ANSICHT[SEITE]||vHeute)(m);
+  $("#tQuelle").textContent=QUELLE;
+  $("#cQuelle").classList.toggle("aus", QUELLE==="Keine Daten");
+  const t=letzterTag();
+  $("#tStand").textContent=deTag(t);
+  $("#cStand").classList.toggle("aus", !VORGAENGE.some(v=>v.tag===t));
+}
+
+$("#bNeu").onclick=async()=>{ await ladeDaten(); zeichne(); toast("Aktualisiert"); };
+$("#bFass").onclick=()=>{ location.href="index.html"; };
+
+/* Zweite Ansicht im selben Browser: neue Stände kommen von selbst an */
+window.addEventListener("storage", e=>{
+  if([K_STAND,K_ARCHIV].includes(e.key)){ ladeDaten().then(zeichne); }
+});
+
+(async()=>{
+  await werBinIch();
+  await ladeDaten();
+  /* Ohne Sitzung und ohne lokale Daten hat diese Seite nichts zu zeigen —
+     dann besser eine klare Tür als eine leere Tabelle. */
+  if(!ICH && QUELLE==="Nicht angemeldet") return verlangeAnmeldung();
+  zeichne();
+  if(ICH && ICH.rolle!=="leitung"){
+    document.getElementById("cQuelle").insertAdjacentHTML("beforebegin",
+      `<span class="chip aus"><span class="pkt"></span>${ICH.rolle}: nur lesen</span>`);
+  }
+})();
+</script>
+</body>
+</html>
