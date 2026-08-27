@@ -2,13 +2,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fassungstool",
   "main": "src/index.js",
-  "compatibility_date": "2026-08-23",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
 
-  // Alles ausserhalb von /api/* kommt direkt aus public/.
-  // run_worker_first ist entscheidend: ohne die Zeile schluckt der
-  // Asset-Server /api/* und der Worker läuft nie.
   "assets": {
-    "directory": "./public/",
+    "directory": "./public",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
   },
@@ -17,9 +15,4 @@
     {
       "binding": "DB",
       "database_name": "fassung",
-      "database_id": "2e0490ca-2b9d-40a7-a45c-a207a9447e91"
-    }
-  ],
-
-  "observability": { "enabled": true }
-} 
+      "database_id":
