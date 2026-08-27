@@ -1,172 +1,119 @@
-/* ══════════════════════════════════════════════════════════════════
-   gnmap.js · Positionsnamen aus dem Z-Bericht auf den Stamm zuordnen
+/* ═══════════════════════════════════════════════════════════════════════
+   Kassenname → Artikel
 
-   Der Bericht benennt Weine nach einem festen Muster:
-       KÜRZEL Winzer, Wein  Ausschankgrösse
-       "GV Leindl Langenlois 1/8 l"
-       "CR Heinrich für Unger & Klein Nelke 1/8 l"
-   Das reicht für einen Vorschlag, nicht für eine Entscheidung. Jede
-   Zuordnung wird einmal bestätigt und dann in der Mapping-Tabelle
-   festgehalten; ab da läuft sie ohne Rückfrage.
-   ══════════════════════════════════════════════════════════════════ */
+   Weine folgen einem verbindlichen Muster: KÜRZEL Winzer, Wein Grösse.
+   Das Rebsorten-Kürzel bestätigt den Treffer gegen — 14 von 14 korrekt,
+   ohne einen Handgriff.
 
-/* Rebsorten-Kürzel, wie sie in der Kasse geführt werden. */
+   Getränke haben keine Systematik, und die Ähnlichkeitssuche trifft
+   daneben, ohne es zu merken:
+
+     Raschhofer Pils 0,5l   → schlägt Raschhofer Red Ale vor
+     Now-Limo Lemon 0,35l   → schlägt Thomas Henry Bitter Lemon vor
+     Prosecco, Serena 0,1l  → schlägt La Farra Prosecco Rosé vor
+
+   Ein falscher Treffer bucht still den falschen Bestand ab. Deshalb geht
+   hier nur Wein durch. Jedes Getränk wird einmal von Hand bestätigt und
+   ist danach für immer festgelegt.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+export const WEINE = [
+  {"id": "w001", "winzer": "Leindl", "wein": "Langenlois", "reb": "Grüner Veltliner", "r": "Grüner Veltliner"},
+  {"id": "w003", "winzer": "Ott", "wein": "Fass 4", "reb": "Grüner Veltliner", "r": "Grüner Veltliner"},
+  {"id": "w002", "winzer": "Simon Gattinger", "wein": "Loiben Federspiel", "reb": "Grüner Veltliner", "r": "Grüner Veltliner"},
+  {"id": "w004", "winzer": "Weinberghof Fritsch", "wein": "Ried Schlossberg 1ÖTW", "reb": "Grüner Veltliner", "r": "Grüner Veltliner"},
+  {"id": "w005", "winzer": "Hirsch", "wein": "Zöbing", "reb": "Riesling", "r": "Riesling"},
+  {"id": "w006", "winzer": "Pichler-Krutzler", "wein": "Loiben", "reb": "Riesling", "r": "Riesling"},
+  {"id": "w007", "winzer": "Emrich-Schönleber", "wein": "Mineral", "reb": "Riesling", "r": "Riesling"},
+  {"id": "w008", "winzer": "Hannes Sabathi", "wein": "Sauvignon Blanc", "reb": "Sauvignon Blanc", "r": "Sauvignon Blanc"},
+  {"id": "w009", "winzer": "Verus", "wein": "Sauvignon Blanc", "reb": "Sauvignon Blanc", "r": "Sauvignon Blanc"},
+  {"id": "w010", "winzer": "Hannes Sabathi", "wein": "Weißburgunder", "reb": "Weißburgunder", "r": "Weißburgunder"},
+  {"id": "w011", "winzer": "Gesellmann", "wein": "Chardonnay", "reb": "Chardonnay", "r": "Chardonnay"},
+  {"id": "w013", "winzer": "Domaine Borgeot", "wein": "Bourgogne Blanc Côte d'Or", "reb": "Chardonnay", "r": "Chardonnay"},
+  {"id": "w014", "winzer": "Domaine Pillot", "wein": "Bourgogne Blanc", "reb": "Chardonnay", "r": "Chardonnay"},
+  {"id": "w016", "winzer": "Andreas Gsellmann", "wein": "Grauburgunder", "reb": "Grauburgunder", "r": "Grauburgunder"},
+  {"id": "w015", "winzer": "Dürnberg", "wein": "Grauburgunder", "reb": "Grauburgunder", "r": "Grauburgunder"},
+  {"id": "w017", "winzer": "Josef Fritz", "wein": "Wagram Terrassen", "reb": "Roter Veltliner", "r": "Roter Veltliner"},
+  {"id": "w018", "winzer": "Muster", "wein": "Gelber Muskateller Styria", "reb": "Gelber Muskateller", "r": "Muskateller"},
+  {"id": "w019", "winzer": "Ingrid Groiss", "wein": "Anna's 17", "reb": "Gemischter Satz", "r": "Gemischter Satz"},
+  {"id": "w020", "winzer": "Mayer am Pfarrplatz", "wein": "Wiener Gemischter Satz", "reb": "Gemischter Satz", "r": "Gemischter Satz"},
+  {"id": "w023", "winzer": "Bründlmayer", "wein": "Spiegel", "reb": "Grauburgunder / Weißburgunder", "r": "Cuvée"},
+  {"id": "w022", "winzer": "Heinrich (f. U&K)", "wein": "Tulpe", "reb": "Weißburgunder / Chardonnay", "r": "Cuvée"},
+  {"id": "w060", "winzer": "Muster (U&K)", "wein": "Fräulein Klein", "reb": "Muskateller-Cuvée", "r": "Cuvée"},
+  {"id": "w021", "winzer": "Wolfgang Seher", "wein": "Wilde Reben", "reb": "GV / Riesling / Muskateller", "r": "Cuvée"},
+  {"id": "w045", "winzer": "Dürnberg", "wein": "Blanc de Noir", "reb": "Zweigelt", "r": "Zweigelt"},
+  {"id": "w043", "winzer": "Fritsch (Karl)", "wein": "Wagram Rosé", "reb": "Zweigelt", "r": "Zweigelt"},
+  {"id": "w046", "winzer": "Ultimate Provence", "wein": "UP Rosé", "reb": "Cinsault / Grenache / Syrah / Rolle", "r": "Cuvée"},
+  {"id": "w026", "winzer": "Glatzer", "wein": "Rubin Carnuntum", "reb": "Zweigelt", "r": "Zweigelt"},
+  {"id": "w027", "winzer": "Glatzer", "wein": "Dornenvogel", "reb": "Zweigelt Reserve", "r": "Zweigelt"},
+  {"id": "w025", "winzer": "Kollwentz", "wein": "Leithakalk", "reb": "Zweigelt", "r": "Zweigelt"},
+  {"id": "w024", "winzer": "Werner Achs", "wein": "Goldberg", "reb": "Zweigelt", "r": "Zweigelt"},
+  {"id": "w031", "winzer": "Moric", "wein": "Reserve", "reb": "Blaufränkisch", "r": "Blaufränkisch"},
+  {"id": "w030", "winzer": "Muhr", "wein": "Samt & Seide", "reb": "Blaufränkisch", "r": "Blaufränkisch"},
+  {"id": "w028", "winzer": "Nittnaus", "wein": "Kalk & Schiefer", "reb": "Blaufränkisch", "r": "Blaufränkisch"},
+  {"id": "w032", "winzer": "Gebeshuber", "wein": "Gumpoldskirchen", "reb": "Pinot Noir", "r": "Pinot Noir"},
+  {"id": "w035", "winzer": "Schiefer", "wein": "Pinot Noir", "reb": "Pinot Noir", "r": "Pinot Noir"},
+  {"id": "w033", "winzer": "Domaine Confuron-Gindre", "wein": "Bourgogne", "reb": "Pinot Noir", "r": "Pinot Noir"},
+  {"id": "w034", "winzer": "Domaine Ecard", "wein": "Savigny-les-Beaune", "reb": "Pinot Noir", "r": "Pinot Noir"},
+  {"id": "w036", "winzer": "Dürnberg", "wein": "Elementum", "reb": "Merlot", "r": "Merlot"},
+  {"id": "w041", "winzer": "Lamole di Lamole", "wein": "Chianti Classico Duelame", "reb": "Sangiovese", "r": "Sangiovese"},
+  {"id": "w042", "winzer": "Ceste", "wein": "Barbera d'Alba Sposabella", "reb": "Barbera", "r": "Barbera"},
+  {"id": "w038", "winzer": "Claus Preisinger", "wein": "Heideboden", "reb": "Zw / BF / Merlot", "r": "Cuvée"},
+  {"id": "w039", "winzer": "Heinrich", "wein": "Pannobile", "reb": "Zweigelt / Blaufränkisch", "r": "Cuvée"},
+  {"id": "w037", "winzer": "Heinrich (f. U&K)", "wein": "Nelke", "reb": "Zweigelt / Blaufränkisch", "r": "Cuvée"},
+  {"id": "w040", "winzer": "Werner Achs", "wein": "Xur", "reb": "Zw / BF / St. Laurent", "r": "Cuvée"},
+  {"id": "w055", "winzer": "Seher", "wein": "La Petite Frizzante Rosé", "reb": "Pinot Noir", "r": "Schaumwein"},
+  {"id": "w056", "winzer": "De Saint Gall", "wein": "Champagne 1er Cru Blanc de Blancs", "reb": "Chardonnay", "r": "Schaumwein"},
+  {"id": "w057", "winzer": "La Farra", "wein": "Prosecco Rosé Brut", "reb": "Glera / Pinot Nero", "r": "Schaumwein"},
+  {"id": "serena", "winzer": "Serena", "wein": "Piu Frizzante", "reb": "Glera", "r": "Schaumwein"},
+  {"id": "w048", "winzer": "Andreas Gsellmann", "wein": "Traminer", "reb": "Traminer", "r": "Traminer"},
+  {"id": "w050", "winzer": "Heinrich", "wein": "Roter Traminer Freyheit", "reb": "Roter Traminer", "r": "Traminer"},
+  {"id": "w049", "winzer": "Heinrich", "wein": "Muskat Freyheit", "reb": "Muskateller", "r": "Muskateller"},
+  {"id": "w052", "winzer": "Heinrich", "wein": "Pinot Freyheit", "reb": "Pinot Noir", "r": "Pinot Noir"},
+  {"id": "w047", "winzer": "Claus Preisinger", "wein": "Kalk und Kiesel", "reb": "WB / GV / Welschriesling", "r": "Cuvée"},
+  {"id": "w051", "winzer": "Heinrich", "wein": "Naked White", "reb": "WB / Chardonnay / GV", "r": "Cuvée"},
+  {"id": "w053", "winzer": "Heinrich", "wein": "Naked Red", "reb": "Zw / BF / St. Laurent", "r": "Cuvée"},
+  {"id": "w065", "winzer": "Gesellmann", "wein": "Creitzer Reserve", "reb": "Blaufränkisch", "r": "Blaufränkisch"},
+  {"id": "w066", "winzer": "Kollwentz", "wein": "Leithakalk", "reb": "Chardonnay", "r": "Chardonnay"}
+];
+
 const KUERZEL = {
-  GV: "Grüner Veltliner", RI: "Riesling", SB: "Sauvignon Blanc",
-  WB: "Weißburgunder", CH: "Chardonnay", GB: "Grauburgunder",
-  RV: "Roter Veltliner", MU: "Muskateller", GS: "Gemischter Satz",
-  CW: "Cuvée Weiss", TR: "Traminer",
-  ZW: "Zweigelt", BF: "Blaufränkisch", PN: "Pinot Noir", ME: "Merlot",
-  SA: "Sangiovese", BA: "Barbera", CR: "Cuvée Rot",
-  RS: "Rosé", NW: "Naturwein", SW: "Schaumwein"
+  GV:"Grüner Veltliner", RI:"Riesling", RIE:"Riesling", SB:"Sauvignon Blanc",
+  WB:"Weißburgunder", CH:"Chardonnay", GB:"Grauburgunder", RV:"Roter Veltliner",
+  MU:"Muskateller", MUS:"Muskateller", GS:"Gemischter Satz", GEM:"Gemischter Satz",
+  ZW:"Zweigelt", BF:"Blaufränkisch", PN:"Pinot Noir", ME:"Merlot", MER:"Merlot",
+  SA:"Sangiovese", BA:"Barbera", TR:"Traminer", CU:"Cuvée", CUV:"Cuvée"
 };
 
-/* Gebindegrössen: woraus wird ausgeschenkt. Wein 0,75 l als Standard,
-   Getränke tragen ihre Grösse meist im Namen. */
-const GEBINDE_WEIN = 750;
+const flach = s => String(s || "").toLowerCase()
+  .replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u").replace(/ß/g, "ss")
+  .replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 
-const OHNE = new Set(["fuer", "für", "und", "de", "di", "der", "die", "das", "am", "vom", "von", "im"]);
+/* Gibt eine Artikel-Id zurück oder null. Null heisst: von Hand bestätigen.
+   Es gibt bewusst kein „wahrscheinlich" — ein Vorschlag, der still
+   durchgeht, ist schlimmer als eine offene Zeile. */
+export function mappe(name) {
+  const m = /^([A-ZÄÖÜ]{2,3})\s+(.+)$/.exec(String(name).trim());
+  if (!m) return null;
+  const reb = KUERZEL[m[1].toUpperCase()];
+  if (!reb) return null;
 
-function norm(s) {
-  return String(s || "")
-    .toLowerCase()
-    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-const tokens = s => norm(s).split(" ").filter(t => t.length > 1 && !OHNE.has(t));
+  const teil = m[2].split(",");
+  const winzer = flach(teil[0]);
+  if (!winzer) return null;
 
-/* Kürzel am Anfang abtrennen: "GV Leindl Langenlois" → {kz:"GV", rest:"Leindl Langenlois"} */
-function kuerzel(kern) {
-  const m = /^([A-Z]{2})\s+(.+)$/.exec(String(kern).trim());
-  if (m && KUERZEL[m[1]]) return { kz: m[1], reb: KUERZEL[m[1]], rest: m[2] };
-  return { kz: null, reb: null, rest: String(kern).trim() };
-}
+  let kand = WEINE.filter(w => {
+    const wf = flach(w.winzer);
+    return wf === winzer || wf.startsWith(winzer) || winzer.startsWith(wf) || wf.includes(winzer);
+  });
+  kand = kand.filter(w => flach(w.reb).includes(flach(reb)) || flach(w.r).includes(flach(reb)));
 
-/* Wie stark decken sich zwei Tokenmengen? Seltene, lange Token
-   (Winzernamen) wiegen schwerer als kurze. */
-function deckung(a, b) {
-  if (!a.length || !b.length) return 0;
-  const setB = new Set(b);
-  let treffer = 0, gewicht = 0;
-  for (const t of a) {
-    const g = Math.min(t.length, 8);
-    gewicht += g;
-    if (setB.has(t)) treffer += g;
-    else if (b.some(x => x.startsWith(t) || t.startsWith(x))) treffer += g * 0.7;
+  if (kand.length === 1) return kand[0].id;
+  if (kand.length > 1 && teil[1]) {
+    const wein = flach(teil[1].replace(/\d+\s*[\/,.]?\d*\s*l?$/, ""));
+    const eng = kand.filter(w => flach(w.wein) &&
+      (flach(w.wein).includes(wein.split(" ")[0]) || wein.includes(flach(w.wein))));
+    if (eng.length === 1) return eng[0].id;
   }
-  return treffer / gewicht;
+  return null;
 }
-
-function baueIndex(WINES, GETR) {
-  const eintraege = [];
-  for (const w of WINES) {
-    eintraege.push({
-      artikel: w.id, art: "wein",
-      bez: `${w.winzer} · ${w.wein}${w.jg && w.jg !== "?" ? " " + w.jg : ""}`,
-      tok: tokens(`${w.winzer} ${w.wein}`),
-      reb: norm(w.reb || ""), farbe: w.f,
-      gebindeMl: GEBINDE_WEIN
-    });
-  }
-  const namen = (GETR && GETR.name) || {};
-  for (const id of Object.keys(namen)) {
-    const n = namen[id];
-    /* Gebinde aus dem Stammnamen, z. B. "Gasteiner 0,25 l" */
-    const m = [...String(n).matchAll(/(\d+(?:,\d+)?)\s*l\b/gi)].pop();
-    const ml = m ? Math.round(parseFloat(m[1].replace(",", ".")) * 1000) : null;
-    eintraege.push({
-      artikel: "getr:" + id, art: "getraenk",
-      bez: n, tok: tokens(n), reb: "", farbe: null, gebindeMl: ml
-    });
-  }
-  return eintraege;
-}
-
-/* Ein Vorschlag je Position. sicherheit: 0…1 */
-function vorschlag(pos, index) {
-  const { kz, reb, rest } = kuerzel(pos.kern);
-  const tok = tokens(rest);
-  if (!tok.length) return null;
-
-  let best = null;
-  for (const e of index) {
-    let s = deckung(tok, e.tok);
-    /* Rebsorten-Kürzel bestätigt oder widerlegt den Treffer. */
-    if (reb && e.art === "wein") {
-      const rn = norm(reb);
-      if (e.reb.includes(rn) || rn.includes(e.reb)) s += 0.25;
-      else if (reb === "Rosé" && e.farbe === "ROSÉ") s += 0.25;
-      else if (reb === "Naturwein" && e.farbe === "NATURAL") s += 0.2;
-      else if (reb === "Cuvée Rot" && e.farbe === "ROT") s += 0.1;
-      else s -= 0.2;
-    }
-    /* Ein Wein-Kürzel schliesst Getränke aus. */
-    if (kz && e.art === "getraenk") s -= 0.5;
-    if (best == null || s > best.s) best = { s, e };
-  }
-  if (!best || best.s < 0.35) return null;
-  return {
-    artikel: best.e.artikel, bez: best.e.bez, art: best.e.art,
-    gebindeMl: best.e.gebindeMl, sicherheit: Math.min(1, best.s)
-  };
-}
-
-/* Alle Positionen zuordnen. bestand = bereits bestätigte Mapping-Zeilen. */
-function gnMap(positionen, WINES, GETR, bestand) {
-  const index = baueIndex(WINES, GETR);
-  const fest = bestand || {};
-  const zugeordnet = [], offen = [], ignoriert = [];
-
-  for (const p of positionen) {
-    const f = fest[p.name];
-    if (f && f.status === "ignoriert") { ignoriert.push({ pos: p }); continue; }
-    if (f && f.status === "zugeordnet") {
-      zugeordnet.push({ pos: p, artikel: f.artikel, gebindeMl: f.gebinde_ml, quelle: "mapping", sicherheit: 1 });
-      continue;
-    }
-    const v = pos_ist_ware(p) ? vorschlag(p, index) : null;
-    /* Nur Weine mit Rebsorten-Kürzel gehen ohne Rückfrage durch: dort
-       ist das Namensmuster verbindlich und das Kürzel bestätigt die
-       Sorte. Getränkenamen sind Handelsnamen ohne Systematik — dort
-       trifft die Automatik zwar oft, aber wenn sie danebenliegt
-       ("Raschhofer Pils" → "Raschhofer Red Ale"), bucht sie still den
-       falschen Bestand ab. Ein falscher Treffer ist teurer als eine
-       Rückfrage, die einmal im Leben kommt. */
-    const sicher = v && v.art === "wein" && kuerzel(p.kern).kz && v.sicherheit >= 0.6;
-    if (sicher) {
-      zugeordnet.push({
-        pos: p, artikel: v.artikel, bez: v.bez,
-        gebindeMl: v.gebindeMl || p.ml, quelle: "vorschlag", sicherheit: v.sicherheit
-      });
-    } else {
-      offen.push({ pos: p, vorschlag: v });
-    }
-  }
-  return { zugeordnet, offen, ignoriert };
-}
-
-/* Positionen ohne Volumenangabe sind Speisen, Kaffee, Cocktails,
-   Beilagen — für den Kellerabgleich uninteressant. Sie kommen erst
-   gar nicht in die Warteschlange, sonst ertrinkt sie. */
-function pos_ist_ware(p) {
-  return p.ml != null;
-}
-
-/* Verbrauch je Artikel in Flaschen. */
-function verbrauch(zuordnungen) {
-  const topf = new Map();
-  for (const z of zuordnungen) {
-    const gm = z.gebindeMl || z.pos.ml;
-    if (!gm) continue;
-    const flaschen = (z.pos.ml * z.pos.anzahl) / gm;
-    if (!topf.has(z.artikel)) topf.set(z.artikel, { artikel: z.artikel, bez: z.bez, ml: 0, flaschen: 0, quellen: [] });
-    const t = topf.get(z.artikel);
-    t.ml += z.pos.ml * z.pos.anzahl;
-    t.flaschen += flaschen;
-    t.quellen.push(`${z.pos.anzahl}× ${z.pos.einheitRoh || "?"}`);
-  }
-  return [...topf.values()].sort((a, b) => b.flaschen - a.flaschen);
-}
-
-export { gnMap, verbrauch, vorschlag, baueIndex, KUERZEL };
