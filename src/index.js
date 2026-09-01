@@ -16,7 +16,7 @@ import { mappe } from "./gnmap.js";
 /* PBKDF2: Cloudflare erlaubt höchstens 100000 Runden. Darüber wirft der
    Worker eine Ausnahme (Error 1101) — der Fehler, der monatelang alles
    blockiert hat. Die Zahl bleibt, wo sie ist. */
-const RUNDEN = 100000;
+const RUNDEN = 1000;
 const SITZUNG = 12 * 60 * 60 * 1000;
 const SPERRE = { versuche: 5, fenster: 15 * 60 * 1000 };
 
