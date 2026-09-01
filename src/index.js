@@ -13,9 +13,12 @@ import PostalMime from "postal-mime";
 import { parseZ } from "./gnparse.js";
 import { mappe } from "./gnmap.js";
 
-/* PBKDF2: Cloudflare erlaubt höchstens 100000 Runden. Darüber wirft der
-   Worker eine Ausnahme (Error 1101) — der Fehler, der monatelang alles
-   blockiert hat. Die Zahl bleibt, wo sie ist. */
+/* PBKDF2-Runden. Cloudflare erlaubt höchstens 100000, der Free-Plan
+   schafft rechnerisch aber nur wenige tausend (10 ms CPU, vier
+   Personen je Anmeldung). 1000 reicht hier: die Codes sind
+   Identifikation mit Rechten, kein Schutz vor Angreifern — dafür
+   sorgt die Sperre nach fünf Fehlversuchen. Zieht das Tool auf einen
+   eigenen Server, gehört diese Zahl wieder auf 100000. */
 const RUNDEN = 1000;
 const SITZUNG = 12 * 60 * 60 * 1000;
 const SPERRE = { versuche: 5, fenster: 15 * 60 * 1000 };
