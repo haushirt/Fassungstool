@@ -4,90 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1C1C1E">
+<meta name="theme-color" content="#004947">
 <link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="tokens.css?v=12">
 <title>Fassungstool – Haus Hirt</title>
 <style>
-/* ═══════════════ Design-Tokens ═══════════════ */
-:root{
-  /* Neutrale Flächen und Rahmen (warm) */
-  --bg:#FBFAF7;
-  --surface:#FFFFFF;
-  --surface-2:#F6F4EE;
-  --surface-3:#F3F1EB;
-  --surface-4:#ECE9E1;
-  --border:#E6E4DE;
-  --border-strong:#D8D5CD;
-  --border-heavy:#C6C2B8;
-
-  /* Text */
-  --fg:#1C1C1E;
-  --fg-secondary:#5A5A60;
-  --fg-muted:#6A6A70;
-  --fg-subtle:#686870;          /* ≥4,5:1 auf allen hellen Flächen */
-
-  /* Text auf dunklen Leisten */
-  --fg-on-dark:#FFFFFF;
-  --fg-on-dark-2:#B4B4BA;
-  --fg-on-dark-3:#9A9AA0;
-  --surface-on-dark:rgba(255,255,255,.10);
-  --surface-on-dark-2:rgba(255,255,255,.06);
-  --border-on-dark:rgba(255,255,255,.14);
-
-  /* Akzent und Status */
-  --accent:#9A7B44;
-  --danger:#B4471F;
-  --danger-bg:#FBEDE6;
-  --danger-fg:#7A3A12;
-  --danger-border:#E7C3B2;
-  --danger-surface:#FDF9F6;
-  --success:#3E7A3E;
-  --success-bg:#EFF5EE;
-  --success-fg:#2F5E2F;
-  --success-on-dark:#8FBF8F;
-  --info:#3A5266;
-  --info-bg:#EDF2F6;
-  --info-border:#D3E0EA;
-  /* Zielorte im Holen-Schritt */
-  --tag-bar-bg:#F3E7D9;  --tag-bar-fg:#7A5426;
-  --tag-back-bg:#EDE7F0; --tag-back-fg:#5A4A6A;
-
-  /* Abstände, 4px-Basis */
-  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
-  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
-
-  /* Radien */
-  --radius-xs:2px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-pill:999px;
-  --track-caps:.08em;   /* ein Wert für alle Versalzeilen */
-
-  /* Typografie */
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px;
-  --text-lg:19px; --text-display:32px;
-  --leading-tight:1.25; --leading-normal:1.45;
-  --weight-regular:400; --weight-medium:600; --weight-bold:700;
-
-  /* Bedienelemente */
-  --tap-min:44px; --control-h-sm:36px; --control-h:44px; --control-h-lg:52px;
-
-  /* Fokus und Bewegung */
-  --ring:#1C1C1E; --ring-width:2px; --ring-offset:2px;
-  --dur-fast:120ms; --dur:180ms; --ease:cubic-bezier(.2,0,0,1);
-
-  /* Schichten */
-  --z-rail:35; --z-top:40; --z-overlay:80; --z-toast:90;
-  --shadow-overlay:0 4px 16px rgba(0,0,0,.25);
-
-  /* Layout */
-  --foot:0px; --rail:44px; --maxw:760px; --topH:118px;
-
-  /* Getränke: Trefferflächen skalieren mit der Viewport-Breite */
-  --gd:clamp(26px,7vw,42px);      /* Punkt-Durchmesser */
-  --gpt-s:clamp(26px,7.5vw,40px); /* Punkt in den Fächern */
-  --gcell:clamp(40px,11vw,64px);  /* Zelle Lade 1 */
-  --grack:clamp(30px,9vw,52px);   /* Gasteiner-Regal */
-  --gnum-on-dot:rgba(255,255,255,.5)
-}
 
 /* ═══════════════ Basis ═══════════════ */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -97,15 +18,8 @@ body{background:var(--bg);color:var(--fg);
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 h1,h2{font-weight:var(--weight-medium)}
-
-/* Tastaturfokus — ein Selektor für alle interaktiven Elemente */
-:where(button,input,select,textarea,a,[tabindex]):focus-visible{
-  outline:var(--ring-width) solid var(--ring);
-  outline-offset:var(--ring-offset);
-  position:relative;z-index:1}
 header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* ═══════════════ Button-System ═══════════════
    Basis über die bestehenden Klassennamen, damit die imperative
@@ -126,65 +40,13 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .recheck,.fullbtn,.addbtn,.prueft,.card2 .row button,
 .drwb button,.exprow .secondary{
   background:var(--surface);border-color:var(--border-strong);color:var(--fg)}
-.recheck{color:var(--fg-muted)}
-.qbadge{display:inline-block;margin-left:var(--space-2);color:var(--danger-fg);
-  font-size:var(--text-xs);font-weight:var(--weight-medium)}
-.qbadge:empty{display:none}
-.rollchip{display:inline-block;margin-left:var(--space-2);padding:1px 8px;border-radius:var(--radius-pill);
-  background:var(--surface-4);color:var(--fg-muted);font-size:var(--text-xs);font-weight:var(--weight-medium);
-  letter-spacing:var(--track-caps);text-transform:uppercase}
-.standkopf{display:flex;align-items:center;gap:var(--space-4);background:var(--surface-2);
-  border:1px solid var(--border);border-radius:var(--radius-md);
-  padding:var(--space-3) var(--space-4);margin-bottom:var(--space-3)}
-.standkopf .stz{flex:0 0 auto;text-align:center;padding-right:var(--space-4);
-  border-right:1px solid var(--border-strong)}
-.standkopf .stz b{display:block;font-size:28px;font-weight:var(--weight-bold);
-  letter-spacing:-.02em;line-height:1}
-.standkopf .stz span{display:block;font-size:var(--text-xs);text-transform:uppercase;
-  letter-spacing:var(--track-caps);color:var(--fg-subtle);margin-top:2px}
-.standkopf .stt b{display:block;font-size:var(--text-base)}
-.standkopf .stt span{display:block;font-size:var(--text-sm);color:var(--fg-muted);margin-top:2px}
-#standQ{margin-bottom:var(--space-3)}
-.stfilter{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:var(--space-2);
-  margin-bottom:var(--space-3);-webkit-overflow-scrolling:touch}
-.stchip{flex:0 0 auto;height:34px;padding:0 14px;border-radius:var(--radius-pill);
-  border:1px solid var(--border-heavy);background:var(--surface);font-size:var(--text-sm);
-  color:var(--fg-secondary)}
-.stchip.on{background:var(--fg);border-color:var(--fg);color:var(--fg-on-dark);
-  font-weight:var(--weight-medium)}
-.stgrid{display:grid;grid-template-columns:1fr;gap:var(--space-3)}
-@media(min-width:700px){.stgrid{grid-template-columns:1fr 1fr}
-  .stgrp{grid-column:1/-1}}
-.stgrp{margin:var(--space-3) 0 0}
-.stgrp b{display:block;font-size:var(--text-xs);font-weight:var(--weight-medium);
-  letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-secondary)}
-.stgrp span{display:block;font-size:var(--text-xs);color:var(--fg-subtle);margin-top:1px}
-.stkarte{position:relative;background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);
-  padding-left:calc(var(--space-4) + 4px);overflow:hidden}
-.stkarte::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--fk)}
-.stk1{display:flex;align-items:flex-start;gap:var(--space-3)}
-.stnm{flex:1;min-width:0}
-.stnm b{display:block;font-size:var(--text-base);font-weight:var(--weight-medium);line-height:1.25}
-.stnm span{display:block;font-size:var(--text-base);color:var(--fg-secondary);line-height:1.25}
-.stwert{flex:0 0 auto;font-size:30px;font-weight:var(--weight-bold);line-height:1;
-  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.stwert i{font-style:normal;font-size:var(--text-base);font-weight:var(--weight-medium);
-  color:var(--fg-subtle)}
-.stk2{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-2)}
-.stmeta{flex:1;min-width:0;font-size:var(--text-sm);color:var(--fg-muted);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stnimm{flex:0 0 auto;height:32px;padding:0 12px;border-radius:var(--radius-pill);
-  border:1px solid var(--border-heavy);background:var(--surface-2);
-  font-size:var(--text-sm);color:var(--fg-secondary)}
-.stnimm:active{background:var(--surface-4)}
-.stbar{height:3px;border-radius:2px;background:var(--surface-4);margin-top:var(--space-3);overflow:hidden}
-.stbar i{display:block;height:100%;background:var(--fk);opacity:.75}
-.stkarte.knapp{background:var(--danger-surface);border-color:var(--danger-border)}
-.stkarte.knapp .stwert{color:var(--danger-fg)}
-.stkarte.leer{background:var(--danger-bg);border-color:var(--danger-border)}
-.stkarte.leer .stwert i{color:var(--danger-fg)}
-.stkarte.unbekannt{background:var(--surface-2)}
+/* Dritte Stufe: Ausweichmoeglichkeit, kein Rahmen. Vorher sah
+   „Ueberspringen“ genauso aus wie „Zurueck“. */
+.recheck{background:none;border-color:transparent;color:var(--fg-muted);
+  font-weight:var(--weight-regular)}
+.recheck:active{background:var(--surface-3)}
+.navrow .b.leise{background:none;border-color:transparent;color:var(--fg-muted);
+  font-weight:var(--weight-regular)}
 .addbtn{border-style:dashed;color:var(--fg-muted)}
 .recheck:active,.fullbtn:active,.addbtn:active,.prueft:active,
 .card2 .row button:active,.drwb button:active,.exprow .secondary:active{
@@ -192,10 +54,10 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 
 /* primär */
 .finishbtn,.exprow .primary,.card2 .row .ok,.prueft.weiter,.drwb button.weiter{
-  background:var(--fg);color:var(--fg-on-dark);border-color:var(--fg)}
+  background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
 .finishbtn:active,.exprow .primary:active,.card2 .row .ok:active,
 .prueft.weiter:active,.drwb button.weiter:active{
-  background:var(--fg-secondary);border-color:var(--fg-secondary)}
+  background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
 
 /* erledigt */
 .fullbtn.done,.prueft.on,.prueft.weiter.on,.drwb button.weiter.ok{
@@ -204,8 +66,10 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 /* Blockiert: bewusst KEIN disabled/aria-disabled — der Knopf bleibt für alle
    bedienbar und beantwortet beim Antippen, warum es noch nicht weitergeht.
    Der Grund steht zusätzlich als Kasten darüber. */
+/* Bleibt bedienbar und nennt beim Antippen den Grund — sieht aber nicht
+   mehr aus wie ein ausgegrauter Knopf ohne Funktion. */
 .finishbtn.blocked{
-  background:var(--surface-4);color:var(--fg-secondary);border-color:var(--border-strong)}
+  background:var(--surface);color:var(--fg);border-color:var(--border-heavy)}
 .finishbtn.blocked:active{background:var(--border-strong)}
 
 /* Blockbreite */
@@ -224,10 +88,13 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .addbtn{margin-top:var(--space-4)}
 
 /* Textknöpfe */
-.adminlink,.explesser button{
+/* Unterstrichene Textlinks sahen aus wie rohes HTML. Gleiche Form wie die
+   dritte Knopfstufe im Rest der App. */
+.adminlink,.explesser button,.wechseln{
   background:none;border:0;color:var(--fg-muted);font-size:var(--text-sm);
-  cursor:pointer;text-decoration:underline;min-height:var(--tap-min);
-  padding:0 var(--space-4)}
+  cursor:pointer;text-decoration:none;min-height:var(--tap-min);
+  padding:0 var(--space-4);border-radius:var(--radius-md)}
+.adminlink:active,.explesser button:active,.wechseln:active{background:var(--surface-3)}
 .adminlink{display:block;margin:var(--space-7) auto 0}
 .explesser button.del{color:var(--danger)}
 
@@ -253,7 +120,7 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .gq,.gnum,.fachn,.rhd i,td.r,th.r{font-variant-numeric:tabular-nums}
 
 /* ═══════════════ Menü ═══════════════ */
-.menu{padding:var(--space-6) var(--space-4) var(--space-8);max-width:620px;margin:0 auto}
+.menu{padding:var(--space-6) var(--space-4) var(--space-8);max-width:var(--maxw);margin:0 auto}
 .menu h1{font-size:var(--text-lg);margin:0 0 var(--space-1);letter-spacing:-.01em}
 .menu .sub{color:var(--fg-muted);font-size:var(--text-sm);margin:0 0 var(--space-6)}
 .mgrp{font-size:var(--text-xs);font-weight:var(--weight-medium);letter-spacing:var(--track-caps);
@@ -280,14 +147,22 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
   font-weight:var(--weight-medium)}
 .mi.run{border-color:var(--danger-border);background:var(--danger-surface)}
 .mi.run .ic{background:var(--danger-bg);color:var(--danger)}
-.mi .go{color:var(--fg-subtle);font-size:var(--text-lg);flex-shrink:0}
+/* › als Textzeichen sass zu hoch und passte in der Strichstaerke nicht
+   zu den 1,5px-Symbolen daneben. Gleiche Form, jetzt als Grafik. */
+.mi .go,.gbtn .go2,.hwh .car2,.secarrow,.w .go,.offenz .go{
+  font-size:0;width:16px;height:16px;flex-shrink:0;display:inline-block;
+  background:currentColor;color:var(--fg-subtle);
+  -webkit-mask:var(--chev) no-repeat center/16px 16px;
+  mask:var(--chev) no-repeat center/16px 16px}
+:root{--chev:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M9 6l6 6-6 6'/></svg>")}
 
 /* ═══════════════ Kopf ═══════════════ */
 .topwrap{position:sticky;top:0;z-index:var(--z-top)}
-header{background:var(--fg);color:var(--fg-on-dark);
-  padding:var(--space-3) var(--space-4) 0}
+header{background:var(--accent);color:var(--fg-on-dark);
+  padding:var(--space-2) var(--space-4) 0}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3)}
-.hd h1{margin:0;font-size:var(--text-base);font-weight:var(--weight-medium)}
+.hd h1{margin:0;font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
+  letter-spacing:.01em}
 .hd .subh{font-size:var(--text-xs);color:var(--fg-on-dark-3);margin-top:2px}
 .hdr-r{display:flex;gap:var(--space-2);align-items:center}
 .home{background:var(--surface-on-dark);border:0;color:var(--fg-on-dark);
@@ -297,16 +172,22 @@ header{background:var(--fg);color:var(--fg-on-dark);
 #dSel{background:var(--surface-on-dark);border:0;color:var(--fg-on-dark);
   min-height:var(--control-h-sm);padding:0 var(--space-2);border-radius:var(--radius-md);
   font-size:var(--text-sm)}
-.steps{display:flex;margin-top:var(--space-3);gap:2px;overflow-x:auto;
-  scrollbar-width:none;padding-bottom:0}
-.steps::-webkit-scrollbar{display:none}
-.st{flex:1 0 auto;background:var(--surface-on-dark-2);border:0;color:var(--fg-on-dark-3);
-  min-height:var(--control-h-sm);padding:0 var(--space-3);font-size:var(--text-sm);
-  cursor:pointer;border-radius:var(--radius-md) var(--radius-md) 0 0;
-  font-weight:var(--weight-medium);white-space:nowrap;
-  transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.st[aria-selected="true"]{background:var(--bg);color:var(--fg)}
-.st.done{color:var(--success-on-dark)}
+/* Fortschritt statt Reiter: vier Reiter passen bei 390px nicht nebeneinander
+   und wurden rechts abgeschnitten. Punkte skalieren, Text sagt wo man ist. */
+.steps{display:flex;align-items:center;gap:var(--space-3);
+  margin-top:var(--space-2);height:36px}
+.stpts{display:flex;gap:6px;flex-shrink:0}
+.st{width:10px;height:10px;padding:0;border:0;border-radius:50%;
+  background:var(--surface-on-dark);cursor:pointer;flex-shrink:0;
+  transition:background var(--dur-fast) var(--ease),box-shadow var(--dur-fast) var(--ease)}
+.st.done{background:var(--success-on-dark)}
+.st[aria-selected="true"]{background:var(--fg-on-dark);
+  box-shadow:0 0 0 3px var(--border-on-dark)}
+/* Trefferflaeche bleibt 44px, der Punkt bleibt klein. */
+.stpts .st{position:relative}
+.stpts .st::after{content:"";position:absolute;inset:-17px -7px}
+.stlbl{font-size:var(--text-sm);font-weight:var(--weight-medium);
+  color:var(--fg-on-dark-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ═══════════════ Anleitung ═══════════════ */
 .howto{background:var(--surface-3);border-bottom:1px solid var(--border)}
@@ -347,18 +228,20 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 /* ═══════════════ Sprungleiste ═══════════════ */
 .rail{position:fixed;right:2px;top:50%;transform:translateY(-50%);z-index:var(--z-rail);
   display:flex;flex-direction:column;gap:2px}
-.rail button{width:40px;min-height:var(--tap-min);padding:var(--space-2) 0;
+/* Gedreht und auf 40px beschnitten wurde aus „Bubbles“ ein „Bubb“.
+   Zwei Buchstaben, waagrecht, passen immer. */
+.rail button{width:36px;min-height:var(--tap-min);padding:var(--space-2) 0;
   border-radius:var(--radius-md);border:1px solid var(--border);
-  background:rgba(255,255,255,.92);color:var(--fg-muted);font-size:var(--text-xs);
-  font-weight:var(--weight-medium);cursor:pointer;
-  writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.03em;
+  background:rgba(255,255,255,.94);color:var(--fg-muted);font-size:var(--text-xs);
+  font-weight:var(--weight-bold);letter-spacing:.04em;cursor:pointer;
+  display:grid;place-items:center;
   transition:background var(--dur-fast) var(--ease),
              border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.rail button:active{background:var(--fg);color:var(--fg-on-dark)}
-.rail button.on{border-color:var(--fg);color:var(--fg)}
+.rail button:active{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
+.rail button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-tint)}
 
 /* ═══════════════ Überschriften und Stationen ═══════════════ */
-.lagerh{padding:var(--space-6) var(--space-4) var(--space-1);background:var(--bg)}
+.lagerh{padding:var(--space-6) 0 var(--space-1);background:var(--bg)}
 .lgt{font-size:var(--text-xs);font-weight:var(--weight-bold);letter-spacing:var(--track-caps);
   text-transform:uppercase;display:flex;align-items:center;gap:var(--space-2)}
 .lgs{font-size:var(--text-sm);color:var(--fg-muted);margin-top:var(--space-1)}
@@ -369,17 +252,17 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   transition:background var(--dur-fast) var(--ease),
              border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
 .statb.done{background:var(--success-bg);border-color:var(--success);color:var(--success-fg)}
-.statb.on{background:var(--fg);border-color:var(--fg);color:var(--fg-on-dark)}
-.stath{padding:var(--space-4) var(--space-4) var(--space-1);display:flex;
+.statb.on{background:var(--accent);border-color:var(--accent);color:var(--fg-on-dark)}
+.stath{padding:var(--space-4) 0 var(--space-1);display:flex;
   align-items:baseline;justify-content:space-between;gap:var(--space-3)}
 .stath b{font-size:var(--text-base);font-weight:var(--weight-medium)}
 .stath i{font-style:normal;font-size:var(--text-xs);color:var(--fg-subtle);white-space:nowrap}
-.hd1sub2{padding:0 var(--space-4) var(--space-2);font-size:var(--text-sm);color:var(--fg-muted)}
-.stats{padding:var(--space-1) var(--space-4) var(--space-3);font-size:var(--text-sm);
+.hd1sub2{padding:0 0 var(--space-2);font-size:var(--text-sm);color:var(--fg-muted)}
+.stats{padding:var(--space-1) 0 var(--space-3);font-size:var(--text-sm);
   color:var(--fg-muted)}
 .stats .bar{display:block;height:3px;border-radius:var(--radius-xs);background:var(--border);
   margin-top:var(--space-2)}
-.stats .bar i{display:block;height:100%;border-radius:var(--radius-xs);background:var(--fg)}
+.stats .bar i{display:block;height:100%;border-radius:var(--radius-xs);background:var(--accent)}
 .reb8{display:inline-block;min-width:24px;padding:1px var(--space-1);
   border-radius:var(--radius-sm);background:var(--fg);color:var(--fg-on-dark);
   font-size:var(--text-xs);font-weight:var(--weight-bold);letter-spacing:.04em;vertical-align:2px}
@@ -387,7 +270,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .gq.vorne{min-width:30px;text-align:right;font-size:var(--text-lg);
   font-weight:var(--weight-bold);flex-shrink:0;margin-right:2px}
 .gq.vorne.aus{color:var(--fg-subtle)}
-.pruefw{padding:var(--space-3) var(--space-4) var(--space-2)}
+.pruefw{padding:var(--space-3) 0 var(--space-2)}
 .hd1w{margin:var(--space-6) 0 0}
 .hd1{font-size:var(--text-sm);font-weight:var(--weight-bold);padding:0 0 var(--space-2);
   border-bottom:2px solid var(--fg);display:flex;justify-content:space-between;
@@ -396,7 +279,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .hd1 .cnt2.full{color:var(--success)}
 .hd1sub{font-size:var(--text-xs);color:var(--fg-muted);margin:var(--space-1) 0 var(--space-2)}
 .prog{height:4px;background:var(--border);border-radius:var(--radius-xs);overflow:hidden}
-.prog i{display:block;height:100%;background:var(--fg);
+.prog i{display:block;height:100%;background:var(--accent);
   transition:width var(--dur) var(--ease)}
 .prog i.full{background:var(--success)}
 .reb{font-size:var(--text-xs);color:var(--fg-muted);margin:var(--space-4) 0 var(--space-1);
@@ -405,12 +288,19 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 
 /* ═══════════════ Zeile ═══════════════ */
 .w{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);
-  padding:var(--space-3) 2px;display:flex;align-items:center;gap:var(--space-3);cursor:pointer;
+  padding:var(--space-3) 0;display:flex;align-items:center;gap:var(--space-3);cursor:pointer;
   transition:background var(--dur-fast) var(--ease)}
 .w:active{background:var(--surface-3)}
 .w .tx{flex:1;min-width:0}
+/* Winzer als Vorzeile, Wein als Zeile. Vorher stand beides gleich gross
+   nebeneinander und brach bei 390px in fast jeder Zeile um. */
 .nm{display:block;font-size:var(--text-base);line-height:1.32}
-.nm b{font-weight:var(--weight-medium)}
+.nm b{display:block;font-size:var(--text-xs);font-weight:var(--weight-medium);
+  text-transform:uppercase;letter-spacing:var(--track-caps);color:var(--fg-muted);
+  line-height:1.3}
+.nm .wn{display:block;font-size:var(--text-base);font-weight:var(--weight-medium);
+  line-height:1.3}
+.nm .trenner{display:none}
 .mt{display:block;font-size:var(--text-sm);color:var(--fg-muted);margin-top:2px}
 .w.miss{background:var(--danger-bg);border-radius:var(--radius-md);
   border-bottom-color:transparent;padding-left:var(--space-2);padding-right:var(--space-2);
@@ -429,7 +319,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-lg);
   color:var(--fg-muted);cursor:pointer;line-height:1;
   transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.kminus:active,.kplus:active{background:var(--fg);color:var(--fg-on-dark)}
+.kminus:active,.kplus:active{background:var(--accent);color:var(--fg-on-dark)}
 .kminus.hide{visibility:hidden}
 .cnt{min-width:46px;height:var(--tap-min);border:2px solid var(--border-strong);
   border-radius:var(--radius-md);display:grid;place-items:center;font-size:var(--text-lg);
@@ -440,12 +330,18 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 /* Punkte und Häkchen */
 .dots{display:flex;gap:var(--space-2);align-items:center;flex-shrink:0;
   padding:var(--space-3) 0;cursor:pointer}
-.dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--fg);background:var(--fg)}
-.dot.off{background:var(--surface);border-color:var(--border-strong)}
+/* Drei volle schwarze Kreise je Zeile waren die groesste optische Last der
+   Liste und trugen die kleinste Information: alle sagten dasselbe. Als Ring
+   bleibt die Aussage, das Gewicht geht weg. Geometrie unveraendert. */
+.dot{width:26px;height:26px;border-radius:50%;background:transparent;
+  border:2px solid var(--accent);box-shadow:inset 0 0 0 20px var(--accent-ring)}
+.dot.off{background:none;border:2px dashed var(--border-heavy);box-shadow:none}
+.dot.fehlt,.w.miss .dot.off{border-color:var(--danger)}
+.w.miss .dot{border-color:var(--danger);box-shadow:inset 0 0 0 20px var(--danger-ring)}
 .miss-n{font-size:var(--text-sm);font-weight:var(--weight-bold);color:var(--danger-fg);
   margin-left:var(--space-1);min-width:22px;text-align:right}
 .chkbox{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
-.chk{width:var(--tap-min);height:var(--tap-min);border:2px solid var(--border-strong);
+.chk{width:var(--tap-min);height:var(--tap-min);border:2px solid var(--border-heavy);
   border-radius:var(--radius-md);display:grid;place-items:center;font-size:var(--text-lg);
   font-weight:var(--weight-bold);color:var(--fg-on-dark);background:var(--surface);cursor:pointer;
   transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease)}
@@ -465,7 +361,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   text-align:right;flex-shrink:0}
 
 /* ═══════════════ Zählfelder ═══════════════ */
-.zw{padding:var(--space-3) 2px;border-bottom:1px solid var(--border)}
+.zw{padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
 .zw.zebra{background:var(--surface-3)}
 .zw.seen .nm{opacity:.55}
 .ztop{margin-bottom:var(--space-2)}
@@ -478,7 +374,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-lg);
   color:var(--fg-muted);cursor:pointer;line-height:1;flex-shrink:0;
   transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.zbtn:active{background:var(--fg);color:var(--fg-on-dark)}
+.zbtn:active{background:var(--accent);color:var(--fg-on-dark)}
 .zval{flex:1;min-width:34px;height:var(--tap-min);border:2px solid var(--border-strong);
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-base);
   font-weight:var(--weight-bold);color:var(--fg-subtle);cursor:pointer;
@@ -507,7 +403,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   font-weight:var(--weight-medium);color:var(--fg-muted);cursor:pointer;
   transition:background var(--dur-fast) var(--ease),
              border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.fchip.on{background:var(--fg);color:var(--fg-on-dark);border-color:var(--fg)}
+.fchip.on{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
 .zrow{display:flex;gap:var(--space-2);align-items:center;flex-shrink:0}
 .zl{font-size:var(--text-xs);color:var(--fg-subtle);font-weight:var(--weight-medium)}
 .zsum{font-size:var(--text-base);font-weight:var(--weight-bold);min-width:30px;text-align:right}
@@ -583,10 +479,13 @@ tr.tot td{border-top:2px solid var(--fg);border-bottom:0;font-weight:var(--weigh
 .kpi b{font-size:var(--text-lg);font-weight:var(--weight-bold)}
 .kpi div.w2{border-color:var(--danger-border);background:var(--danger-bg)}
 .kpi div.w2 b{color:var(--danger)}
-.box{border:1px solid var(--border);border-left:4px solid var(--danger);
-  background:var(--danger-bg);border-radius:0 var(--radius-md) var(--radius-md) 0;
-  padding:var(--space-3);margin-top:var(--space-4);font-size:var(--text-md)}
-.box.good{border-left-color:var(--success);background:var(--success-bg)}
+/* Gleiche Form wie .hinweis im Backoffice: Vollrahmen, rundum gerundet. */
+.box{border:1px solid var(--danger-border);background:var(--danger-bg);
+  color:var(--danger-fg);border-radius:var(--radius-md);
+  padding:var(--space-3) var(--space-4);margin-top:var(--space-4);
+  font-size:var(--text-md);line-height:var(--leading-normal)}
+.box.good{border-color:var(--success-border);background:var(--success-bg);
+  color:var(--success-fg)}
 
 /* ═══════════════ Name-Auswahl ═══════════════ */
 .namebox{margin-top:var(--space-2)}
@@ -652,12 +551,22 @@ body.off .offline{display:block}
 }
 
 /* ═══════════════ Breite Viewports ═══════════════ */
+/* Vorher endete die dunkle Leiste mitten im Nichts, weil sie wie der Inhalt
+   auf die Satzbreite beschnitten war. Die Fl\u00e4che geht jetzt durch, der Inhalt
+   darin bleibt auf Satzbreite. */
 @media(min-width:720px){
-  header,.howto,.tools,main{max-width:var(--maxw);margin-left:auto;margin-right:auto}
-  /* max() verhindert, dass die Leiste aus dem Bild rutscht, wenn --maxw
-     breiter ist als der Viewport (iPad 834px gegen --maxw 900px). */
-  .rail{right:max(var(--space-1),calc(50% - (var(--maxw)/2) + var(--space-2)))}}
-@media(min-width:768px){:root{--maxw:900px}}
+  .topwrap{background:var(--accent)}
+  .topwrap>.howto,.topwrap>.tools,.offline{background:var(--bg);max-width:none}
+  header>.hd,header>.steps{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+  .tools>#q,.howto>*{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+  main{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+  .rail{right:max(var(--space-1),calc(50% - (var(--maxw)/2) - var(--rail) - var(--space-2)))}
+  /* Name links, Z\u00e4hlung und H\u00e4kchen an einer festen rechten Kante \u2014 sonst
+     liegen bei 1280px f\u00fcnfhundert Pixel Leere dazwischen. */
+  .w{display:grid;grid-template-columns:1fr auto auto;column-gap:var(--space-5);
+     align-items:center}
+  .w>.tx{min-width:0}}
+@media(min-width:768px){:root{--maxw:760px}}
 
 /* ═══════════════ Teil 2 ═══════════════ */
 .gshot--tap{cursor:pointer;border-radius:var(--radius-sm)}
@@ -700,13 +609,16 @@ body.off .offline{display:block}
  display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .navrow .b:active{background:var(--surface-3)}
 .navrow .b.sm{flex:0 0 auto;padding:0 var(--space-5);color:var(--fg-muted)}
-.navrow .b.go{background:var(--fg);border-color:var(--fg);color:var(--fg-on-dark)}
-.navrow .b.go:active{background:var(--fg-secondary)}
-.navrow .b.go.leise{background:var(--surface);border-color:var(--border-strong);
+.navrow .b.go{background:var(--accent);border-color:var(--accent);color:var(--fg-on-dark)}
+.navrow .b.go:active{background:var(--accent-dunkel)}
+/* „Ueberspringen“ ist eine Ausweichmoeglichkeit, kein zweiter Hauptweg —
+   vorher sah es genauso aus wie „Zurueck“ und stand gleich gross daneben. */
+.navrow .b.go.leise{background:none;border-color:transparent;
  color:var(--fg-muted);font-weight:var(--weight-regular)}
+.navrow .b.go.leise:active{background:var(--surface-3)}
 /* Kontrollierte Spalte: ruhig, aber erkennbar */
-.gcol--geprueft{background:#DCEBD8;border-radius:var(--radius-md);
- box-shadow:0 0 0 3px #DCEBD8;position:relative}
+.gcol--geprueft{background:var(--success-tint);border-radius:var(--radius-md);
+ box-shadow:0 0 0 3px var(--success-tint);position:relative}
 /* Der Haken gehoert ans Foto, nicht an die Spalte. */
 .gcol--geprueft .gshot{position:relative}
 .gcol--geprueft .gshot::after{content:"\2713";position:absolute;right:0;top:0;
@@ -716,11 +628,11 @@ body.off .offline{display:block}
 /* Noch nicht kontrolliert */
 /* Nicht kontrollierte Karten meldet die Stationsleiste \u2014 ein Kasten
    im Inhalt wiederholt das nur. Bestätigt schlägt offen. */
-.statb.offen{border-color:#E0B200;background:#FDF3D0;color:#6B4E00;
- box-shadow:inset 0 0 0 1px #E0B200}
+.statb.offen{border-color:var(--warn);background:var(--warn-bg);color:var(--warn-fg);
+ box-shadow:inset 0 0 0 1px var(--warn)}
 .statb.done,.statb.done.offen{background:var(--success-bg);border-color:var(--success);
  color:var(--success-fg);box-shadow:none}
-.statb.on,.statb.on.offen,.statb.on.done{background:var(--fg);border-color:var(--fg);
+.statb.on,.statb.on.offen,.statb.on.done{background:var(--accent);border-color:var(--accent);
  color:var(--fg-on-dark);box-shadow:none}
 /* P8 · Startbild */
 .login{padding:var(--space-8) var(--space-4);max-width:420px;margin:0 auto}
@@ -732,8 +644,7 @@ body.off .offline{display:block}
   margin:calc(var(--space-6) * -1 + var(--space-2)) 0 var(--space-6);
   display:flex;align-items:center;gap:var(--space-3)}
 .angemeldet b{color:var(--fg);font-weight:var(--weight-medium)}
-.wechseln{background:none;border:0;color:var(--fg-muted);font-size:var(--text-sm);
-  text-decoration:underline;cursor:pointer;padding:var(--space-2);min-height:var(--tap-min)}
+.wechseln{padding:0 var(--space-3)}
 /* P8/4 · Datum als Zeile unter dem Titel */
 .datumline{position:relative;display:inline-flex;align-items:center;
   font-size:var(--text-xs);color:var(--fg-on-dark-3);margin-top:2px;
@@ -761,6 +672,8 @@ body.off .offline{display:block}
 .fdel{position:absolute;top:-6px;right:-6px;width:28px;height:28px;
   border-radius:50%;border:1px solid var(--border-strong);background:var(--surface);
   color:var(--fg-muted);font-size:var(--text-sm);cursor:pointer;line-height:1}
+.fotobtn.leer{background:var(--accent);border-color:var(--accent);
+  color:var(--fg-on-dark);font-weight:var(--weight-medium)}
 .fotobtn{width:100%;min-height:var(--control-h-lg);
   display:inline-flex;align-items:center;justify-content:center;
   font:var(--weight-medium) var(--text-base)/1.2 var(--font);
@@ -768,6 +681,78 @@ body.off .offline{display:block}
   background:var(--surface);color:var(--fg);cursor:pointer;
   transition:background var(--dur-fast) var(--ease)}
 .fotobtn:active{background:var(--surface-3)}
+
+/* ═══════════════ Hilfe-Sheet ═══════════════
+   Ersetzt die zwei Dauerzeilen über dem Inhalt. Beides steht jetzt an
+   einer Stelle, und die Liste beginnt rund 180px weiter oben. */
+.hilfebtn{width:var(--control-h-sm);height:var(--control-h-sm);flex-shrink:0;
+  border:1px solid var(--border-on-dark);background:var(--surface-on-dark);
+  color:var(--fg-on-dark);border-radius:var(--radius-md);
+  font-size:var(--text-md);font-weight:var(--weight-medium);cursor:pointer;
+  display:grid;place-items:center;line-height:1}
+.sheet{position:fixed;inset:0;z-index:var(--z-overlay);display:flex;
+  align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.sheetgrund{position:absolute;inset:0;background:rgba(28,34,32,.45)}
+.sheetkarte{position:relative;background:var(--surface);width:100%;
+  max-width:var(--maxw);max-height:82vh;display:flex;flex-direction:column;
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow:var(--shadow-overlay)}
+.sheetkopf{display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-4);border-bottom:1px solid var(--border)}
+.sheetkopf h3{flex:1;margin:0;font-size:var(--text-base);
+  font-weight:var(--weight-medium)}
+.sheetkoerper{padding:var(--space-4) var(--space-4) var(--space-8);overflow:auto}
+.sheetkoerper .hp{margin:0;font-size:var(--text-md);line-height:var(--leading-normal)}
+.sheetkoerper .htip{margin:var(--space-3) 0 0;font-size:var(--text-md);
+  color:var(--accent);line-height:var(--leading-normal)}
+.sheetkoerper h4{margin:var(--space-6) 0 var(--space-3);font-size:var(--text-xs);
+  text-transform:uppercase;letter-spacing:var(--track-caps);color:var(--fg-subtle);
+  font-weight:var(--weight-medium);padding-bottom:var(--space-2);
+  border-bottom:1px solid var(--border)}
+.sheetkoerper dl{margin:0;font-size:var(--text-md);line-height:var(--leading-normal)}
+.sheetkoerper dt{font-weight:var(--weight-medium);margin-top:var(--space-4)}
+.sheetkoerper dt:first-child{margin-top:0}
+.sheetkoerper dd{margin:2px 0 0;color:var(--fg-muted)}
+
+/* ═══════════════ Anmeldung ═══════════════ */
+.loginbox{display:flex;flex-direction:column}
+.pinreihe{display:flex;gap:var(--space-3);margin:var(--space-2) 0 var(--space-3)}
+.pinfeld{flex:1;height:var(--control-h-lg);border:1px solid var(--border-strong);
+  border-radius:var(--radius-md);background:var(--surface);position:relative}
+.pinfeld.voll::after{content:"";position:absolute;left:50%;top:50%;
+  width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent)}
+.pinfehler{min-height:20px;margin:0 0 var(--space-3);font-size:var(--text-sm);
+  color:var(--danger)}
+.block{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);
+  margin-top:var(--space-4)}
+.ztaste{height:var(--control-h-lg);border:1px solid var(--border-strong);
+  background:var(--surface);border-radius:var(--radius-md);
+  font-size:var(--text-lg);font-weight:var(--weight-medium);color:var(--fg);
+  font-variant-numeric:tabular-nums;cursor:pointer}
+.ztaste:active{background:var(--surface-3)}
+.ztaste--weg{font-size:var(--text-base);color:var(--fg-muted)}
+.login h1{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
+  letter-spacing:0;margin:0 0 var(--space-1)}
+.menu h1{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
+  letter-spacing:0}
+
+/* ═══════════════ Offene Punkte ═══════════════
+   Als Fließtext mit Mittelpunkten war diese Liste unlesbar und mit nichts
+   verbunden. Jede Zeile führt jetzt dorthin, wo der Punkt zu erledigen ist. */
+.offenbox .offenliste{margin-top:var(--space-2)}
+.offenz{display:flex;align-items:center;gap:var(--space-3);width:100%;
+  min-height:var(--tap-min);padding:var(--space-1) 0;text-align:left;
+  background:none;border:0;border-top:1px solid var(--danger-border);
+  color:inherit;font:inherit;cursor:pointer}
+.offenz:first-child{border-top:0}
+.offenz.ohneziel{cursor:default}
+.offenpkt{width:14px;height:14px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--danger);opacity:.75}
+.offent{flex:1;font-size:var(--text-md);line-height:var(--leading-tight)}
+.offenz .go{color:var(--danger-fg);opacity:.6}
+.offenz:active{background:rgba(180,71,31,.06)}
+.offenbox .btn{margin-top:var(--space-2)}
 
 /* ═══════════════ Druck ═══════════════ */
 @media print{
@@ -795,7 +780,7 @@ body.off .offline{display:block}
  font-weight:var(--weight-medium);color:var(--fg-muted);cursor:pointer;
  display:flex;align-items:center;justify-content:center;gap:var(--space-2);
  transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
-.gseg button.on{background:var(--fg);color:var(--fg-on-dark)}
+.gseg button.on{background:var(--accent);color:var(--fg-on-dark)}
 .gseg .gb{font-size:var(--text-xs);font-weight:var(--weight-bold);
  padding:1px var(--space-2);border-radius:var(--radius-pill);
  background:var(--danger-bg);color:var(--danger-fg);font-variant-numeric:tabular-nums}
@@ -835,7 +820,8 @@ body.off .offline{display:block}
  padding:2px var(--space-2);background:var(--surface)}
 .drwf i.low{color:var(--danger);font-weight:var(--weight-bold);
  border-color:var(--danger-border);background:var(--danger-bg)}
-.drwh{width:28px;height:4px;border-radius:var(--radius-xs);background:var(--border-heavy);flex-shrink:0}
+/* Der Griff versprach eine Ziehgeste, die es nicht gibt. */
+.drwh{display:none}
 .drwi{padding:var(--space-4) var(--space-3) var(--space-3);display:flex;
  gap:var(--space-2);justify-content:center;align-items:flex-end;
  touch-action:auto;overflow:hidden;
@@ -860,13 +846,18 @@ body.off .offline{display:block}
 .gbase{width:80%;height:2px;background:var(--border-heavy);margin:var(--space-2) 0 0}
 .gshot{height:52px;width:100%;display:flex;align-items:flex-end;justify-content:center;
  margin-top:var(--space-1)}
-.gshot img{display:block;opacity:.92;max-width:100%;max-height:100%;width:auto;height:auto;
- object-fit:contain}
+/* Gemeinsame Hoehe und gemeinsame Standlinie — sonst stehen Tetrapak,
+   Weinflasche und Sprite in drei Massstaeben nebeneinander. */
+.gshot img{display:block;opacity:.94;max-width:100%;max-height:44px;width:auto;
+ height:auto;object-fit:contain;object-position:bottom}
 
 /* Eine Zeile, abgeschnitten. Das Bild sagt ohnehin, was in der Flasche ist. */
+/* Je Stapel steht das Kuerzel nur unter der untersten Flasche. Die leeren
+   Kuerzel darueber reservierten trotzdem Hoehe und zogen den Stapel auf. */
 .gcap{font-size:var(--text-xs);line-height:var(--leading-tight);text-align:center;
  color:var(--fg-secondary);margin-top:var(--space-1);height:15px;padding:0 1px;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;max-width:100%}
+.gcap:empty{display:none}
 /* In den Fotoladen ist die Spalte schmal — dort darf das Kürzel umbrechen,
    aber nur an Leerzeichen und weichen Trennzeichen. hyphens:auto zerlegte
    „Ginger Ale" zu „Ginge / r Ale". Feste Höhe hält die Grundlinien bündig. */
@@ -903,9 +894,9 @@ body.off .offline{display:block}
  width:var(--gcell);height:var(--gcellh,calc(var(--gcell) * 1.24))}
 /* Die Zelle ist ein Fach in der Lade, keine Karte auf einer Fläche:
    heller Innenraum, feine Kontur, ein Hauch Tiefe an der Oberkante. */
-.gcell .gsh{position:absolute;inset:0;border:1px solid var(--border-strong);
+.gcell .gsh{position:absolute;inset:0;border:1px solid var(--border);
  background:var(--surface);border-radius:var(--radius-sm);
- box-shadow:inset 0 1px 2px rgba(28,28,30,.05)}
+ box-shadow:0 1px 0 rgba(0,73,71,.07)}
 .gcell svg{position:relative;z-index:1;width:80%;height:80%}
 .gcell img{position:absolute;left:10%;right:10%;top:6%;bottom:6%;width:80%;height:88%;
  object-fit:contain;z-index:1;display:block}
@@ -921,7 +912,7 @@ body.off .offline{display:block}
 .gitem.gx .gcap{color:var(--danger)}
 /* Miniatur-Schleier: dieselbe Sprache wie die kontrollierte Spalte
    in den Fotoladen, nur auf Zellengroesse. */
-.gitem--geprueft .gcell .gsh{background:#DCEBD8;border-color:var(--success)}
+.gitem--geprueft .gcell .gsh{background:var(--success-tint);border-color:var(--success)}
 .gitem--geprueft .gcap{color:var(--success-fg);font-weight:var(--weight-medium)}
 .gspal{width:var(--gcell)}
 .gspec{display:flex;gap:var(--space-2);padding-left:var(--space-2);margin-left:var(--space-1);
@@ -991,7 +982,7 @@ body.off .offline{display:block}
     <div><h1 id="mTitle">—</h1>
       <label class="datumline" id="bDatum"><span id="datumTxt"></span>
         <span class="vh">Datum ändern</span><input type="date" id="dSel"></label></div>
-    <div class="hdr-r"><button class="home" id="bHome">Menü</button></div>
+    <div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
   </div>
   <nav class="steps" id="steps" role="tablist"></nav>
 </header>
@@ -1008,6 +999,14 @@ body.off .offline{display:block}
   <h3 id="ovT"></h3><div id="ovBody"></div>
   <div class="row"><button id="ovNo">Abbrechen</button><button class="ok" id="ovOk">Ja</button></div>
 </div></div>
+<div class="sheet" id="hilfe" hidden role="dialog" aria-modal="true" aria-labelledby="hilfeT">
+  <div class="sheetgrund" data-zu></div>
+  <div class="sheetkarte">
+    <div class="sheetkopf"><h3 id="hilfeT"></h3>
+      <button class="btn btn--klein" id="hilfeZu" data-zu>Schließen</button></div>
+    <div class="sheetkoerper" id="hilfeB"></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <script>
 const WINES = [{"id":"w001","f":"WEISS","r":"Grüner Veltliner","winzer":"Leindl","wein":"Langenlois","jg":"2024","region":"Kamptal DAC","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w003","f":"WEISS","r":"Grüner Veltliner","winzer":"Ott","wein":"Fass 4","jg":"2025","region":"Wagram, Feuersbrunn","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w002","f":"WEISS","r":"Grüner Veltliner","winzer":"Simon Gattinger","wein":"Loiben Federspiel","jg":"2024","region":"Wachau DAC","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w004","f":"WEISS","r":"Grüner Veltliner","winzer":"Weinberghof Fritsch","wein":"Ried Schlossberg 1ÖTW","jg":"2022","region":"Wagram DAC, Oberstockstall","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w005","f":"WEISS","r":"Riesling","winzer":"Hirsch","wein":"Zöbing","jg":"2024","region":"Kamptal","reb":"Riesling","at":1,"grp":"Riesling"},{"id":"w006","f":"WEISS","r":"Riesling","winzer":"Pichler-Krutzler","wein":"Loiben","jg":"2024","region":"Wachau DAC","reb":"Riesling","at":1,"grp":"Riesling"},{"id":"w007","f":"WEISS","r":"Riesling","winzer":"Emrich-Schönleber","wein":"Mineral","jg":"2023","region":"Monzingen (DE)","reb":"Riesling","at":0,"grp":"Riesling"},{"id":"w008","f":"WEISS","r":"Sauvignon Blanc","winzer":"Hannes Sabathi","wein":"Sauvignon Blanc","jg":"2024","region":"Südsteiermark DAC, Gamlitz","reb":"Sauvignon Blanc","at":1,"grp":"Sauvignon Blanc"},{"id":"w009","f":"WEISS","r":"Sauvignon Blanc","winzer":"Verus","wein":"Sauvignon Blanc","jg":"?","region":"Slowenien, Ormož","reb":"Sauvignon Blanc","at":0,"grp":"Sauvignon Blanc"},{"id":"w010","f":"WEISS","r":"Weißburgunder","winzer":"Hannes Sabathi","wein":"Weißburgunder","jg":"2024","region":"Südsteiermark DAC, Gamlitz","reb":"Weißburgunder","at":1,"grp":"Weißburgunder"},{"id":"w011","f":"WEISS","r":"Chardonnay","winzer":"Gesellmann","wein":"Chardonnay","jg":"2022","region":"Mittelburgenland, Deutschkreutz","reb":"Chardonnay","at":1,"grp":"Chardonnay"},{"id":"w013","f":"WEISS","r":"Chardonnay","winzer":"Domaine Borgeot","wein":"Bourgogne Blanc Côte d'Or","jg":"2022","region":"Burgund (FR)","reb":"Chardonnay","at":0,"grp":"Chardonnay"},{"id":"w014","f":"WEISS","r":"Chardonnay","winzer":"Domaine Pillot","wein":"Bourgogne Blanc","jg":"2023","region":"Burgund (FR)","reb":"Chardonnay","at":0,"grp":"Chardonnay"},{"id":"w016","f":"WEISS","r":"Grauburgunder","winzer":"Andreas Gsellmann","wein":"Grauburgunder","jg":"2025","region":"Neusiedlersee, Gols","reb":"Grauburgunder","at":1,"grp":"Grauburgunder"},{"id":"w015","f":"WEISS","r":"Grauburgunder","winzer":"Dürnberg","wein":"Grauburgunder","jg":"2021","region":"Weinviertel","reb":"Grauburgunder","at":1,"grp":"Grauburgunder"},{"id":"w017","f":"WEISS","r":"Roter Veltliner","winzer":"Josef Fritz","wein":"Wagram Terrassen","jg":"2024","region":"Wagram DAC, Zaussenberg","reb":"Roter Veltliner","at":1,"grp":"Roter Veltliner"},{"id":"w018","f":"WEISS","r":"Muskateller","winzer":"Muster","wein":"Gelber Muskateller Styria","jg":"2025","region":"Südsteiermark","reb":"Gelber Muskateller","at":1,"grp":"Muskateller"},{"id":"w019","f":"WEISS","r":"Gemischter Satz","winzer":"Ingrid Groiss","wein":"Anna's 17","jg":"2025","region":"Weinviertel, Breitenwaida","reb":"Gemischter Satz","at":1,"grp":"Gemischter Satz"},{"id":"w020","f":"WEISS","r":"Gemischter Satz","winzer":"Mayer am Pfarrplatz","wein":"Wiener Gemischter Satz","jg":"2025","region":"Wien","reb":"Gemischter Satz","at":1,"grp":"Gemischter Satz"},{"id":"w023","f":"WEISS","r":"Cuvée","winzer":"Bründlmayer","wein":"Spiegel","jg":"2022","region":"Kamptal, Langenlois","reb":"Grauburgunder / Weißburgunder","at":1,"grp":"Cuvée"},{"id":"w022","f":"WEISS","r":"Cuvée","winzer":"Heinrich (f. U&K)","wein":"Tulpe","jg":"2019","region":"Neusiedlersee, Gols","reb":"Weißburgunder / Chardonnay","at":1,"grp":"Cuvée"},{"id":"w060","f":"WEISS","r":"Cuvée","winzer":"Muster (U&K)","wein":"Fräulein Klein","jg":"2021","region":"Südsteiermark, Gamlitz","reb":"Muskateller-Cuvée","at":1,"grp":"Cuvée"},{"id":"w021","f":"WEISS","r":"Cuvée","winzer":"Wolfgang Seher","wein":"Wilde Reben","jg":"2024","region":"Niederösterreich","reb":"GV / Riesling / Muskateller","at":1,"grp":"Cuvée"},{"id":"w045","f":"ROSÉ","r":"Zweigelt","winzer":"Dürnberg","wein":"Blanc de Noir","jg":"2024","region":"Weinviertel","reb":"Zweigelt","at":1,"grp":"Rosé"},{"id":"w043","f":"ROSÉ","r":"Zweigelt","winzer":"Fritsch (Karl)","wein":"Wagram Rosé","jg":"?","region":"Wagram, Oberstockstall","reb":"Zweigelt","at":1,"grp":"Rosé"},{"id":"w046","f":"ROSÉ","r":"Cuvée","winzer":"Ultimate Provence","wein":"UP Rosé","jg":"2025","region":"Côtes de Provence (FR)","reb":"Cinsault / Grenache / Syrah / Rolle","at":0,"grp":"Rosé"},{"id":"w026","f":"ROT","r":"Zweigelt","winzer":"Glatzer","wein":"Rubin Carnuntum","jg":"2023","region":"Carnuntum, Göttlesbrunn","reb":"Zweigelt","at":1,"grp":"Zweigelt"},{"id":"w027","f":"ROT","r":"Zweigelt","winzer":"Glatzer","wein":"Dornenvogel","jg":"2022","region":"Carnuntum DAC, Göttlesbrunn","reb":"Zweigelt Reserve","at":1,"grp":"Zweigelt"},{"id":"w025","f":"ROT","r":"Zweigelt","winzer":"Kollwentz","wein":"Leithakalk","jg":"2022","region":"Leithaberg, Großhöflein","reb":"Zweigelt","at":1,"grp":"Zweigelt"},{"id":"w024","f":"ROT","r":"Zweigelt","winzer":"Werner Achs","wein":"Goldberg","jg":"2024","region":"Neusiedlersee DAC, Gols","reb":"Zweigelt","at":1,"grp":"Zweigelt"},{"id":"w031","f":"ROT","r":"Blaufränkisch","winzer":"Moric","wein":"Reserve","jg":"2023","region":"Burgenland","reb":"Blaufränkisch","at":1,"grp":"Blaufränkisch"},{"id":"w030","f":"ROT","r":"Blaufränkisch","winzer":"Muhr","wein":"Samt & Seide","jg":"2022","region":"Carnuntum, Prellenkirchen","reb":"Blaufränkisch","at":1,"grp":"Blaufränkisch"},{"id":"w028","f":"ROT","r":"Blaufränkisch","winzer":"Nittnaus","wein":"Kalk & Schiefer","jg":"2019","region":"Neusiedlersee, Gols","reb":"Blaufränkisch","at":1,"grp":"Blaufränkisch"},{"id":"w032","f":"ROT","r":"Pinot Noir","winzer":"Gebeshuber","wein":"Gumpoldskirchen","jg":"2022","region":"Thermenregion","reb":"Pinot Noir","at":1,"grp":"Pinot Noir"},{"id":"w035","f":"ROT","r":"Pinot Noir","winzer":"Schiefer","wein":"Pinot Noir","jg":"2021","region":"Eisenberg, Königsberg","reb":"Pinot Noir","at":1,"grp":"Pinot Noir"},{"id":"w033","f":"ROT","r":"Pinot Noir","winzer":"Domaine Confuron-Gindre","wein":"Bourgogne","jg":"2022","region":"Burgund (FR)","reb":"Pinot Noir","at":0,"grp":"Pinot Noir"},{"id":"w034","f":"ROT","r":"Pinot Noir","winzer":"Domaine Ecard","wein":"Savigny-les-Beaune","jg":"2020","region":"Burgund (FR)","reb":"Pinot Noir","at":0,"grp":"Pinot Noir"},{"id":"w036","f":"ROT","r":"Merlot","winzer":"Dürnberg","wein":"Elementum","jg":"2022","region":"Niederösterreich, Rosenberg","reb":"Merlot","at":1,"grp":"Merlot"},{"id":"w041","f":"ROT","r":"Sangiovese","winzer":"Lamole di Lamole","wein":"Chianti Classico Duelame","jg":"2024","region":"Toscana (IT)","reb":"Sangiovese","at":0,"grp":"Sangiovese"},{"id":"w042","f":"ROT","r":"Barbera","winzer":"Ceste","wein":"Barbera d'Alba Sposabella","jg":"?","region":"Piemont (IT)","reb":"Barbera","at":0,"grp":"Barbera"},{"id":"w038","f":"ROT","r":"Cuvée","winzer":"Claus Preisinger","wein":"Heideboden","jg":"2023","region":"Gols, Leithagebirge","reb":"Zw / BF / Merlot","at":1,"grp":"Cuvée"},{"id":"w039","f":"ROT","r":"Cuvée","winzer":"Heinrich","wein":"Pannobile","jg":"2020","region":"Neusiedlersee, Gols","reb":"Zweigelt / Blaufränkisch","at":1,"grp":"Cuvée"},{"id":"w037","f":"ROT","r":"Cuvée","winzer":"Heinrich (f. U&K)","wein":"Nelke","jg":"2017","region":"Neusiedlersee, Gols","reb":"Zweigelt / Blaufränkisch","at":1,"grp":"Cuvée"},{"id":"w040","f":"ROT","r":"Cuvée","winzer":"Werner Achs","wein":"Xur","jg":"2022","region":"Neusiedlersee, Gols","reb":"Zw / BF / St. Laurent","at":1,"grp":"Cuvée"},{"id":"w055","f":"BUBBLES","r":"Schaumwein","winzer":"Seher","wein":"La Petite Frizzante Rosé","jg":"?","region":"Niederösterreich","reb":"Pinot Noir","at":1,"grp":"Sekt Rosé"},{"id":"w056","f":"BUBBLES","r":"Schaumwein","winzer":"De Saint Gall","wein":"Champagne 1er Cru Blanc de Blancs","jg":"n.v.","region":"Champagne (FR)","reb":"Chardonnay","at":0,"grp":"Champagner"},{"id":"w057","f":"BUBBLES","r":"Schaumwein","winzer":"La Farra","wein":"Prosecco Rosé Brut","jg":"n.v.","region":"Veneto (IT)","reb":"Glera / Pinot Nero","at":0,"grp":"Sekt Rosé"},{"id":"serena","f":"BUBBLES","r":"Schaumwein","winzer":"Serena","wein":"Piu Frizzante","jg":"n.v.","region":"Veneto (IT)","reb":"Glera","at":0,"grp":"Sekt"},{"id":"w048","f":"NATURAL","r":"Traminer","winzer":"Andreas Gsellmann","wein":"Traminer","jg":"2021","region":"Neusiedlersee, Gols","reb":"Traminer","at":1,"grp":"Naturwein weiss"},{"id":"w050","f":"NATURAL","r":"Traminer","winzer":"Heinrich","wein":"Roter Traminer Freyheit","jg":"2021","region":"Neusiedlersee, Gols","reb":"Roter Traminer","at":1,"grp":"Naturwein weiss"},{"id":"w049","f":"NATURAL","r":"Muskateller","winzer":"Heinrich","wein":"Muskat Freyheit","jg":"2022","region":"Neusiedlersee, Gols","reb":"Muskateller","at":1,"grp":"Naturwein weiss"},{"id":"w052","f":"NATURAL","r":"Pinot Noir","winzer":"Heinrich","wein":"Pinot Freyheit","jg":"2022","region":"Neusiedlersee, Gols","reb":"Pinot Noir","at":1,"grp":"Naturwein rot"},{"id":"w047","f":"NATURAL","r":"Cuvée","winzer":"Claus Preisinger","wein":"Kalk und Kiesel","jg":"2022","region":"Gols, Leithagebirge","reb":"WB / GV / Welschriesling","at":1,"grp":"Naturwein weiss"},{"id":"w051","f":"NATURAL","r":"Cuvée","winzer":"Heinrich","wein":"Naked White","jg":"2023","region":"Neusiedlersee, Gols","reb":"WB / Chardonnay / GV","at":1,"grp":"Naturwein weiss"},{"id":"w053","f":"NATURAL","r":"Cuvée","winzer":"Heinrich","wein":"Naked Red","jg":"n.v.","region":"Burgenland","reb":"Zw / BF / St. Laurent","at":1,"grp":"Naturwein rot"},{"id":"w065","f":"ROT","r":"Blaufränkisch","grp":"Blaufränkisch","winzer":"Gesellmann","wein":"Creitzer Reserve","jg":"2021","region":"Mittelburgenland DAC, Deutschkreutz","reb":"Blaufränkisch","at":1},{"id":"w066","f":"WEISS","r":"Chardonnay","grp":"Chardonnay","winzer":"Kollwentz","wein":"Leithakalk","jg":"2024","region":"Leithaberg, Großhöflein","reb":"Chardonnay","at":1}];
@@ -1015,33 +1014,13 @@ const PLAN = {"soll":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":2,"w00
 const KISTE_STD=6;
 const kg=p=>+(p&&p.kistengr)||KISTE_STD;
 const MAIL="casimir.ikrath@haus-hirt.com";
-/* P8/P26 · Es gab einmal zwei Codeebenen im Quelltext. Beide sind weg:
-   diese Datei ist öffentlich abrufbar, ein Code darin wäre eine
-   Unterschrift, keine Sperre. Geprüft wird gegen den Worker. */
-/* ══════ P26 · Anmeldung am Server ══════
-   Diese Datei ist öffentlich abrufbar, sobald der Worker läuft — auch aus
-   einem privaten Repo. Es steht darum kein einziger Code mehr darin.
-   Geprüft wird gegen /api/anmelden, dort liegen nur PBKDF2-Prüfsummen.
-
-   Name und Rolle wandern nach erfolgreicher Anmeldung in den
-   sessionStorage. Das ist keine Berechtigung, sondern nur die Antwort auf
-   „welche Kacheln zeige ich" — die Berechtigung prüft der Server bei
-   jedem Aufruf neu. Wer hier etwas verbiegt, sieht mehr Knöpfe und
-   bekommt vom Server trotzdem eine 403. */
-const UKEY="hh_user", RKEY="hh_rolle";
-const ROLLNAME={service:"Service",wirtschaft:"Wirtschaft",leitung:"Leitung"};
-const RECHTE={
-  service:   {module:["tag","fuellen","nach"],                stand:1, archiv:0, leitung:0},
-  wirtschaft:{module:["tag","fuellen","nach","keller","ware"], stand:1, archiv:1, leitung:0},
-  leitung:   {module:["tag","fuellen","nach","keller","ware"], stand:1, archiv:1, leitung:1}};
+/* P8 · Zwei Codeebenen: Anmeldung (wer fasst) und Verwaltung/Freigabe (2797).
+   Klartext in einer HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
+const USER={"1357":"Asad Karakiri","5800":"Casimir","9114":"Ian Lauchbein",
+            "1326":"Marinus"};
+const UKEY="hh_user";
 function whoAmI(){try{return sessionStorage.getItem(UKEY)||"";}catch(e){return "";}}
-function meineRolle(){try{return sessionStorage.getItem(RKEY)||"service";}catch(e){return "service";}}
-function darf(was){const r=RECHTE[meineRolle()]||RECHTE.service;
-  return Array.isArray(r.module)&&r.module.includes(was) ? true : !!r[was];}
-function setUser(n,rolle){try{
-  if(n){sessionStorage.setItem(UKEY,n);sessionStorage.setItem(RKEY,rolle||"service");}
-  else {sessionStorage.removeItem(UKEY);sessionStorage.removeItem(RKEY);}
-}catch(e){}}
+function setUser(n){try{n?sessionStorage.setItem(UKEY,n):sessionStorage.removeItem(UKEY);}catch(e){}}
 const KEY="hh_keller_v12";
 const $=s=>document.querySelector(s);
 /* Zurück/Weiter wandern bei jedem Aufbau in den Inhalt. Die Knoten
@@ -1059,7 +1038,7 @@ const MODES={
  tag:{t:"Tagesfassung",d:"Kühlschränke prüfen, Keller holen, Liste fotografieren.",ic:"tag",
       steps:["Bar","Restaurant","Keller","Abschluss"]},
  /* Nur die Getränke der Bar \u2014 ohne Rotweine, ohne Backup, ohne Lade 3. */
- fuellen:{t:"Nachfüllen",d:"Nur die Getränke an der Bar prüfen und auffüllen.",ic:"nach",
+ fuellen:{t:"Nachfüllen",d:"Nur die Getränke an der Bar prüfen und auffüllen.",ic:"fuellen",
       steps:["Bar","Holen","Abschluss"]},
  keller:{t:"Kellerzählung",d:"Alles im Keller zählen. Reihen und einzelne Flaschen.",ic:"keller",
       steps:["Zählen","Abschluss"]},
@@ -1111,60 +1090,6 @@ const HOWTO={
 
 let S=load(), mode=null, step=0;
 
-/* ══════ P26 · Verbindung ══════
-   Die Erfassung bleibt unangetastet: sie schreibt weiter in localStorage
-   und läuft weiter, wenn im Keller kein Netz ist. Neu ist nur, dass jeder
-   Vorgang zusätzlich in eine Warteschlange geht und von dort zum Server
-   wandert. Die Id kommt vom Gerät, der Server ist idempotent — doppeltes
-   Senden schadet nicht. */
-const API="/api";
-const QKEY="hh_queue_v1", SPIEGELKEY="hh_spiegel_v1";
-function ladeQ(){try{return JSON.parse(localStorage.getItem(QKEY))||[];}catch(e){return [];}}
-function sichereQ(q){try{localStorage.setItem(QKEY,JSON.stringify(q));}catch(e){}}
-function inQ(rec){
-  if(!rec||!rec.mode)return;
-  if(!rec.vid)rec.vid=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random());
-  const q=ladeQ().filter(x=>x.vid!==rec.vid);
-  q.push(JSON.parse(JSON.stringify(rec)));
-  sichereQ(q.slice(-60));
-  flushQ();
-}
-let flushLaeuft=false;
-async function flushQ(){
-  if(flushLaeuft||!navigator.onLine)return;
-  flushLaeuft=true;
-  let q=ladeQ();
-  while(q.length){
-    const rec=q[0];
-    try{
-      const r=await fetch(API+"/vorgang/"+encodeURIComponent(rec.vid),
-        {method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify(rec)});
-      if(r.status===401){break;}                 /* Sitzung abgelaufen: liegen lassen */
-      if(!r.ok&&r.status<500){q.shift();sichereQ(q);continue;}  /* untauglich: verwerfen */
-      if(!r.ok)break;
-      q.shift();sichereQ(q);
-    }catch(e){break;}
-  }
-  flushLaeuft=false;
-  const offen=ladeQ().length;
-  const b=document.getElementById("qbadge");
-  if(b)b.textContent=offen?offen+" offen":"";
-}
-window.addEventListener("online",flushQ);
-
-/* Der Spiegel ist eine Kopie der Server-Vorgänge, damit der Kellerstand
-   auch dann etwas zeigt, wenn das Netz gerade weg ist. */
-function spiegel(){try{return JSON.parse(localStorage.getItem(SPIEGELKEY))||[];}catch(e){return [];}}
-async function zieheStand(){
-  try{
-    const r=await fetch(API+"/vorgaenge");
-    if(!r.ok)return false;
-    const j=await r.json();
-    localStorage.setItem(SPIEGELKEY,JSON.stringify(j.vorgaenge||[]));
-    return true;
-  }catch(e){return false;}
-}
-
 /* ── Konfiguration (Backoffice): Bar-Glasweine überschreibbar ── */
 const CFGKEY="hh_cfg_v9";
 function loadCfg(){try{const r=localStorage.getItem(CFGKEY);if(r)return JSON.parse(r);}catch(e){}return null;}
@@ -1175,8 +1100,7 @@ function barSlots(k){return (CFG&&CFG[k])?CFG[k]:PLAN[k];}
 function yest(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);}
 function today(){return new Date().toISOString().slice(0,10);}
 function blank(m){
-  const b={mode:m,tag:m==="tag"?yest():today(),name:whoAmI(),notiz:"",finished:false,ver:12,
-    vid:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random())};
+  const b={mode:m,tag:m==="tag"?yest():today(),name:whoAmI(),notiz:"",finished:false,ver:12};
   if(m==="tag")Object.assign(b,{rest:{},barrot:{},bar:{},backup:{},seen:{},holt:{},
     zusatz:{},gzusatz:{},gent:{},getr:{},gdone:{},gcheck:{},goffen:{},
     gholt:{},gholtN:{},holtN:{},fotos:[]});
@@ -1194,7 +1118,6 @@ function loadArch(){try{const r=localStorage.getItem(AKEY);if(r)return JSON.pars
 function saveArch(a){try{localStorage.setItem(AKEY,JSON.stringify(a));}catch(e){}}
 function archive(rec){
   if(!rec)return;
-  inQ(rec);
   const a=loadArch();
   a[rec.mode+"_"+rec.tag]=Object.assign({},rec,{archiviert:new Date().toISOString()});
   const ks=Object.keys(a).sort((x,y)=>(a[x].archiviert||"").localeCompare(a[y].archiviert||""));
@@ -1237,6 +1160,7 @@ const ICONS={
   tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v3M16 3v3M8 11h8M8 15h5"/></svg>',
   keller:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>',
   nach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 13h6l-1 8 8-10h-6z"/></svg>',
+  fuellen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3l2 3v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8l2-3z"/><path d="M8 14h8"/><path d="M12 10v3m0 0l-1.5-1.5M12 13l1.5-1.5"/></svg>',
   ware:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12v9H2zM14 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>'};
 /* P8 · Erst der Code, dann der Name, dann das Modul. Der Code ist eine
    Unterschrift, keine Sperre \u2014 im Klartext in einer HTML-Datei kann er
@@ -1244,36 +1168,41 @@ const ICONS={
 function renderLogin(){
   $("#app").style.display="none";$("#menu").style.display="none";
   const L=$("#login");L.style.display="";
-  L.innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool · Bad Gastein</p>
+  /* Vorher: ein leerer Schirm mit einem breiten Textfeld. Vier Felder und
+     ein Ziffernblock sind auf einem iPhone mit nassen H\u00e4nden schneller \u2014
+     und es ist der erste Eindruck, den das Werkzeug macht. */
+  L.innerHTML=`<div class="loginbox">
+    <h1>Haus Hirt</h1><p class="sub">Fassungstool · Bad Gastein</p>
     <p class="loginhilfe">Bestände prüfen, fassen und protokollieren.
       Melde dich mit deinem persönlichen Code an – er steht später im Protokoll.</p>
-    <label class="f"><span>PIN eingeben</span>
-      <input id="uCode" class="input input--pin" type="tel" inputmode="numeric"
-        maxlength="4" placeholder="\u2022\u2022\u2022\u2022" autocomplete="off"></label>`;
-  const inp=$("#uCode");setTimeout(()=>inp.focus(),60);
-  let laeuft=false;
-  const pruefe=async()=>{
-    if(laeuft||inp.value.length<4)return;
-    laeuft=true;inp.disabled=true;inp.placeholder="\u2026";
-    try{
-      const r=await fetch(API+"/anmelden",{method:"POST",
-        headers:{"content-type":"application/json"},body:JSON.stringify({code:inp.value})});
-      if(r.ok){
-        const j=await r.json();
-        setUser(j.name,j.rolle);
-        await zieheStand();
-        L.style.display="none";renderMenu();window.scrollTo(0,0);return;
-      }
-      /* Die Antwort sagt nie, ob es den Code gibt \u2014 nur, dass es nicht
-         gepasst hat. Bei zu vielen Versuchen sagt sie das ehrlich. */
-      toast(r.status===429?"Zu viele Versuche. Kurz warten.":"Code stimmt nicht");
-    }catch(e){
-      toast("Keine Verbindung \u2014 zum Anmelden braucht es einmal Netz");
-    }
-    inp.value="";inp.disabled=false;inp.placeholder="\u2022\u2022\u2022\u2022";
-    setTimeout(()=>inp.focus(),40);laeuft=false;
-  };
-  inp.oninput=pruefe;
+    <div class="pinreihe" id="pinReihe" aria-hidden="true">
+      <span class="pinfeld"></span><span class="pinfeld"></span>
+      <span class="pinfeld"></span><span class="pinfeld"></span></div>
+    <input id="uCode" class="input input--pin vh" type="tel" inputmode="none"
+      maxlength="4" autocomplete="off" aria-label="Code eingeben">
+    <p class="pinfehler" id="pinFehler" role="status"></p>
+    <div class="block" id="pinBlock">
+      ${[1,2,3,4,5,6,7,8,9].map(z=>`<button class="ztaste" data-z="${z}">${z}</button>`).join("")}
+      <span></span><button class="ztaste" data-z="0">0</button>
+      <button class="ztaste ztaste--weg" data-weg aria-label="Letzte Ziffer löschen">⌫</button>
+    </div></div>`;
+  const inp=$("#uCode");
+  const male=()=>{
+    const v=inp.value;
+    document.querySelectorAll("#pinReihe .pinfeld").forEach((f,i)=>
+      f.classList.toggle("voll",i<v.length));};
+  $("#pinBlock").onclick=e=>{
+    const b=e.target.closest("button");if(!b)return;
+    if(b.dataset.weg)inp.value=inp.value.slice(0,-1);
+    else if(inp.value.length<4)inp.value+=b.dataset.z;
+    $("#pinFehler").textContent="";male();pruefe();};
+  inp.oninput=()=>{male();pruefe();};
+  male();
+  const pruefe=()=>{
+    const n=USER[inp.value];
+    if(n){setUser(n);L.style.display="none";renderMenu();window.scrollTo(0,0);return;}
+    if(inp.value.length>=4){inp.value="";male();
+      $("#pinFehler").textContent="Dieser Code ist nicht hinterlegt.";}};
 }
 function renderMenu(){
   if(!whoAmI())return renderLogin();
@@ -1287,198 +1216,19 @@ function renderMenu(){
       ${run?`<span class="when">\u25cf Angefangen · ${deTag(d.tag)}</span>`:""}</span>
       <span class="go" aria-hidden="true">\u203a</span></button>`;
   };
-  const grp=(t,ks)=>{const c=ks.filter(darf).map(card).join("");
-    return c?`<div class="mgrp">${t}</div>${c}`:"";};
-  const B=standDaten();
   $("#menu").innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool · Bad Gastein</p>
     <p class="angemeldet">Angemeldet: <b>${esc(whoAmI())}</b>
-      <span class="rollchip">${ROLLNAME[meineRolle()]||""}</span>
-      <span class="qbadge" id="qbadge">${ladeQ().length?ladeQ().length+" offen":""}</span>
       <button class="wechseln" id="bWechseln">wechseln</button></p>
-    ${grp("Service",["tag","fuellen"])}
-    ${grp("Notfall",["nach"])}
-    ${grp("Bestand",["keller","ware"])}
-    ${darf("stand")?`<div class="mgrp">Nachschlagen</div>
-      <button class="mi" id="bStand">
-        <span class="ic" aria-hidden="true">${ICONS.keller}</span>
-        <span class="txt"><b>Kellerstand</b><span>Was steht gerade unten? Nur nachsehen, nichts ändern.</span>
-        ${B.warn?`<span class="when">\u25cf ${B.warn} Positionen knapp</span>`:""}</span>
-        <span class="go" aria-hidden="true">\u203a</span></button>`:""}
-    ${darf("leitung")?`<button class="adminlink" id="bLeit">Leitung öffnen \u2197</button>`:""}
-    ${darf("archiv")?`<button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`:""}
-    ${darf("leitung")?`<button class="adminlink" id="bAdmin" style="margin-top:2px">Verwaltung</button>`:""}`;
-  document.querySelectorAll(".mi[data-m]").forEach(b=>b.onclick=()=>start(b.dataset.m));
-  $("#bWechseln").onclick=()=>{
-    fetch(API+"/abmelden").catch(()=>{});
-    setUser("");renderLogin();window.scrollTo(0,0);};
-  if($("#bStand"))$("#bStand").onclick=openStand;
-  if($("#bAdmin"))$("#bAdmin").onclick=askPin;
-  if($("#bLeit"))$("#bLeit").onclick=()=>{location.href="leitung.html";};
-  if($("#bArch"))$("#bArch").onclick=openArchList;
+    <div class="mgrp">Service</div>${card("tag")}${card("fuellen")}
+    <div class="mgrp">Notfall</div>${card("nach")}
+    <div class="mgrp">Bestand</div>${card("keller")}${card("ware")}
+    <button class="adminlink" id="bAdmin">Verwaltung</button>
+    <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`;
+  document.querySelectorAll(".mi").forEach(b=>b.onclick=()=>start(b.dataset.m));
+  $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
+  $("#bAdmin").onclick=askPin;
+  $("#bArch").onclick=openArchList;
 }
-/* ══════ P24 · Kellerstand nachschlagen ══════
-   Die häufigste Frage an der Bar ist keine Fassung, sondern: haben wir
-   davon noch was? Bisher hiess die Antwort hinuntergehen. Diese Ansicht
-   rechnet sie aus der jüngsten Zählung und allem, was seither gebucht
-   wurde — sie schreibt nichts und kann darum nichts kaputt machen.
-
-   Ohne Zählung gibt es keinen Bestand. Dann steht das da, statt eine
-   Zahl zu erfinden. */
-function standDaten(){
-  const a=loadArch(), ks=Object.keys(a);
-  const rang={ware:0,keller:1,tag:2,fuellen:3,nach:4};
-  /* Server zuerst, eigenes Archiv als Ergänzung. Was beide kennen, zählt
-     einmal \u2014 die vid entscheidet. */
-  const gesehen=new Set();
-  const roh=[];
-  spiegel().forEach(v=>{if(v&&v.mode){roh.push(v);if(v.vid)gesehen.add(v.vid);}});
-  ks.map(k=>a[k]).forEach(v=>{if(v&&v.mode&&!(v.vid&&gesehen.has(v.vid)))roh.push(v);});
-  const alle=roh.filter(v=>v&&v.mode)
-    .slice().sort((x,y)=>(x.tag||"").localeCompare(y.tag||"")||((rang[x.mode]??9)-(rang[y.mode]??9)));
-  /* Der laufende, noch nicht archivierte Vorgang zählt mit — sonst zeigt
-     die Bar einen Stand, den das Fassen von heute früh schon überholt hat. */
-  Object.keys(S||{}).forEach(k=>{const v=S[k];
-    if(v&&v.mode&&hasData(k,v))alle.push(Object.assign({},v,{laufend:1}));});
-
-  let basis=null,bi=-1;
-  alle.forEach((v,i)=>{if(v.mode==="keller"&&WINES.some(w=>(v.zdone||{})[w.id])){basis=v;bi=i;}});
-  const b={};
-  if(basis)WINES.forEach(w=>{if((basis.zdone||{})[w.id])
-    b[w.id]=g(basis.reihen,w.id)*6+g(basis.einzel,w.id);});
-
-  let ein=0,raus=0;
-  alle.forEach((v,i)=>{
-    if(i<=bi)return;
-    if(v.mode==="ware")(v.pos||[]).forEach(p=>{
-      if(!p.id||p.id==="__neu"||!(+p.kisten>0))return;
-      const n=(+p.kisten)*(p.kg?+p.kg:((PLAN.kiste||{})[p.id]||6));
-      b[p.id]=(b[p.id]||0)+n;ein+=n;});
-    if(v.mode==="tag"||v.mode==="fuellen"){
-      const t={};["barrot","bar","backup","rest"].forEach(k=>
-        Object.keys(v[k]||{}).forEach(id=>t[id]=(t[id]||0)+(+v[k][id]||0)));
-      Object.keys(t).forEach(id=>{
-        const n=(v.holtN&&v.holtN[id]!=null)?+v.holtN[id]:t[id];
-        b[id]=(b[id]||0)-n;raus+=n;});
-      Object.keys(v.zusatz||{}).forEach(id=>{b[id]=(b[id]||0)-(+v.zusatz[id]||0);raus+=+v.zusatz[id]||0;});
-    }
-    if(v.mode==="nach")Object.keys(v.ent||{}).forEach(id=>{
-      b[id]=(b[id]||0)-(+v.ent[id]||0);raus+=+v.ent[id]||0;});
-  });
-  const warn=WINES.filter(w=>b[w.id]!=null&&b[w.id]<6).length;
-  const minus=WINES.filter(w=>b[w.id]!=null&&b[w.id]<0).length;
-  return {b,basis,ein,raus,warn,minus,hat:!!basis};
-}
-let standQ="", standF="ALLE";
-/* Der Keller ist nach Farbe sortiert, nicht alphabetisch. Die Ansicht
-   folgt demselben Bild: ein Farbstreifen je Karte, Gruppen im Laufweg.
-   Wer unten steht, sucht nicht nach einem Namen, sondern nach einem Regal. */
-const STANDFARBE={WEISS:"#C9A227","ROSÉ":"#D4818A",ROT:"#8B2F3B",
-                  BUBBLES:"#B08D57",NATURAL:"#6E8F5E"};
-let standFrisch=false;
-function openStand(){
-  if(!standFrisch){
-    standFrisch=true;
-    zieheStand().then(ok=>{
-      if(ok && $("#mTitle").textContent==="Kellerstand") openStand();});
-  }
-  const B=standDaten(), m=shellFor("Kellerstand"); m.innerHTML="";
-
-  const kopf=document.createElement("div"); kopf.className="standkopf";
-  const gez=WINES.filter(w=>B.b[w.id]!=null).length;
-  const ges=WINES.reduce((a,w)=>a+Math.max(0,B.b[w.id]||0),0);
-  kopf.innerHTML=B.hat
-    ? `<div class="stz"><b>${ges}</b><span>Flaschen</span></div>
-       <div class="stt"><b>Gezählt ${deTag(B.basis.tag)}</b>
-       <span>${gez} Positionen · seither ${B.ein} eingeräumt, ${B.raus} geholt</span></div>`
-    : `<div class="stt"><b>Noch nicht gezählt</b>
-       <span>Ohne Kellerzählung gibt es keinen Bestand, nur Bewegung.</span></div>`;
-  m.appendChild(kopf);
-
-  if(B.minus)add(m,"box","<b>"+B.minus+" Positionen stehen rechnerisch unter null.</b><br>"+
-    "Die Zählung ist überholt \u2014 bitte melden, damit neu gezählt wird.");
-
-  const f=document.createElement("input");
-  f.id="standQ"; f.className="input"; f.type="search";
-  f.placeholder="Winzer, Wein oder Rebsorte"; f.value=standQ; f.autocomplete="off";
-  m.appendChild(f);
-
-  /* Filterleiste: Farbe und der Blick auf das Knappe. Mehr braucht es nicht \u2014
-     jeder weitere Schalter ist eine Entscheidung, die niemand treffen will. */
-  const fl=document.createElement("div"); fl.className="stfilter";
-  const chips=[["ALLE","Alle"],["KNAPP","Knapp"]].concat(FARBEN.map(x=>[x,FARBKURZ[x]]));
-  fl.innerHTML=chips.map(([k,t])=>
-    `<button class="stchip${standF===k?" on":""}" data-f="${k}">${t}</button>`).join("");
-  fl.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{
-    standF=b.dataset.f; fl.querySelectorAll(".stchip").forEach(x=>
-      x.classList.toggle("on",x.dataset.f===standF)); male();});
-  m.appendChild(fl);
-
-  const liste=document.createElement("div"); liste.className="stgrid"; m.appendChild(liste);
-
-  const male=()=>{
-    const q=standQ.trim().toLowerCase();
-    const wl=WINES.filter(w=>{
-      if(q && !(w.winzer+" "+w.wein+" "+w.reb+" "+w.region).toLowerCase().includes(q))return false;
-      if(standF==="KNAPP")return B.b[w.id]!=null && B.b[w.id]<6;
-      if(standF!=="ALLE" && w.f!==standF)return false;
-      return true;}).slice().sort(wegCmp);
-    liste.innerHTML="";
-    if(!wl.length){add(liste,"empty","Nichts gefunden.");return;}
-    let zone=null;
-    wl.forEach(w=>{
-      const z=PLAN.zone[w.id];
-      if(z!==zone && standF!=="KNAPP" && !q){zone=z;
-        const h=document.createElement("div"); h.className="stgrp";
-        h.innerHTML=`<b>${esc((PLAN.zonen[z]||{}).t||"Übrige")}</b>
-          <span>${esc((PLAN.zonen[z]||{}).s||"")}</span>`;
-        liste.appendChild(h);}
-      const n=B.b[w.id];
-      const kl=n==null?"unbekannt":n<=0?"leer":n<6?"knapp":"gut";
-      const soll=PLAN.soll[w.id]||3;
-      const voll=n==null?0:Math.max(0,Math.min(100,Math.round(n/(soll*4)*100)));
-      const k=document.createElement("div"); k.className="stkarte "+kl;
-      k.style.setProperty("--fk",STANDFARBE[w.f]||"var(--fg-muted)");
-      k.innerHTML=`<div class="stk1">
-          <div class="stnm"><b>${esc(w.winzer)}</b><span>${esc(w.wein)}</span></div>
-          <div class="stwert">${n==null?'<i>?</i>':n<=0?'<i>leer</i>':n}</div>
-        </div>
-        <div class="stk2">
-          <span class="stmeta">${esc(w.jg)} · ${esc(w.reb)}</span>
-          <button class="stnimm" data-w="${w.id}">Entnahme</button>
-        </div>
-        <div class="stbar"><i style="width:${voll}%"></i></div>`;
-      liste.appendChild(k);});
-    liste.querySelectorAll(".stnimm").forEach(b=>b.onclick=()=>nimmRaus(b.dataset.w));
-  };
-  f.oninput=()=>{standQ=f.value;male();};
-  male();
-  window.scrollTo(0,0);
-
-  const back=document.createElement("button"); back.className="recheck";
-  back.textContent="Zurück zum Menü";
-  back.onclick=()=>{standFrisch=false;mode=null;renderMenu();window.scrollTo(0,0);};
-  m.appendChild(back);
-}
-
-/* P25 · Wer nachschlägt, steht meistens schon im Keller. Die Flasche, die
-   er dann mitnimmt, war bisher die häufigste Lücke im Bestand: geholt und
-   nicht gemeldet. Genau daher kommen die negativen Zahlen. Ein Knopf
-   schreibt sie in die laufende Sonderentnahme \u2014 abgeschlossen wird sie
-   weiterhin im eigenen Modul, damit das Protokoll seine Form behält. */
-function nimmRaus(id){
-  const w=byId(id); if(!w)return;
-  const cur=S.nach;
-  if(cur&&(cur.finished||cur.tag!==today())){archive(cur);S.nach=blank("nach");}
-  else if(!cur)S.nach=blank("nach");
-  if(!S.nach.name)S.nach.name=whoAmI();
-  S.nach.ent=S.nach.ent||{};
-  S.nach.ent[id]=(+S.nach.ent[id]||0)+1;
-  save();
-  const n=sum(S.nach.ent);
-  toast(w.winzer+" · "+w.wein+" gebucht \u2014 "+n+" offen");
-  openStand();
-}
-
 /* 2.2 · Liste der archivierten Vorgänge */
 function shellFor(titel){
   $("#menu").style.display="none";$("#app").style.display="";
@@ -1493,7 +1243,7 @@ function openArchList(){
   if(!ks.length)add(m,"empty","Noch keine archivierten Protokolle.");
   ks.forEach(k=>{const r=a[k];
     const b=document.createElement("button");b.className="w";
-    b.innerHTML=`<span class="tx"><span class="nm"><b>${esc(MODES[r.mode].t)}</b> · ${deTag(r.tag)}</span>
+    b.innerHTML=`<span class="tx"><span class="nm"><b>${deTag(r.tag)}</b><span class="wn">${esc(MODES[r.mode].t)}</span></span>
       <span class="mt">${esc(r.name)||"ohne Namen"}${r.finished?"":" · unvollständig"}</span></span>
       <span class="go">\u203a</span>`;
     b.onclick=()=>openArchDoc(k);m.appendChild(b);});
@@ -1525,12 +1275,18 @@ function openArchDoc(k){
   $("#aCsv").onclick=expCsv;$("#aJson").onclick=expJson;
   $("#aBack").onclick=()=>{ARCHREC=null;openArchList();};
 }
-/* P26 · Die Freigabe-PIN ist ersatzlos gefallen. Eine Konstante im
-   Quelltext war nie eine Sperre \u2014 jetzt entscheidet die Rolle, und der
-   Server prüft sie bei jedem schreibenden Aufruf noch einmal. */
+const PIN="2797";
 function askPin(){
-  if(!darf("leitung"))return toast("Dieser Bereich ist der Leitung vorbehalten");
-  openAdmin();
+  $("#ovT").textContent="Verwaltung";
+  $("#ovBody").innerHTML=`<p>PIN eingeben.</p>
+    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••">`;
+  $("#ov").classList.add("on");
+  const inp=$("#pinIn");setTimeout(()=>inp.focus(),50);
+  $("#ovOk").textContent="Öffnen";
+  $("#ovOk").onclick=()=>{
+    if(inp.value===PIN){$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();}
+    else{inp.value="";inp.placeholder="falsch";toast("PIN falsch");}
+  };
 }
 function openAdmin(){
   $("#menu").style.display="none";$("#app").style.display="";
@@ -1547,14 +1303,6 @@ function renderAdmin(){
   const scope=document.createElement("div");scope.className="box";scope.style.margin="var(--space-4) var(--space-1) 0";
   scope.innerHTML="<b>Diese Einstellung gilt nur auf diesem Gerät.</b><br>Für die anderen Geräte den Code unten übertragen.";
   m.appendChild(scope);
-  /* P26 · Mitarbeiter, Codes und Rollen liegen am Server und werden im
-     Backoffice gepflegt. Hier bleibt, was diesem Gerät gehört. */
-  const rsec=document.createElement("div");rsec.style.marginTop="var(--space-5)";
-  rsec.innerHTML=`<div class="hd1" style="margin-bottom:var(--space-2)">Mitarbeiter</div>
-    <div class="box">Codes und Rollen werden in der Leitungsseite gepflegt,
-    nicht mehr auf dem Gerät.</div>`;
-  m.appendChild(rsec);
-
   const wrap=document.createElement("div");wrap.style.padding="0 2px";
   const opts=WINES.slice().sort((a,b)=>a.winzer.localeCompare(b.winzer))
     .map(w=>`<option value="${w.id}">${esc(w.winzer)} · ${esc(w.wein)}</option>`).join("");
@@ -1637,8 +1385,16 @@ function start(m){
   render();window.scrollTo(0,0);
 }
 function buildSteps(){
-  $("#steps").innerHTML=steps().map((t,i)=>
-    `<button class="st" role="tab" aria-controls="main" data-s="${i}"${i===step?' aria-selected="true"':""}>${i+1} · ${t}</button>`).join("");
+  /* Vier Reiter passten bei 390px nicht nebeneinander und wurden rechts
+     abgeschnitten \u2014 ohne Hinweis darauf, dass da noch etwas ist. Punkte
+     skalieren, der Text daneben sagt, wo man steht. */
+  const L=steps();
+  $("#steps").innerHTML=
+    '<span class="stpts">'+L.map((t,i)=>
+      `<button class="st" role="tab" aria-controls="main" data-s="${i}" title="${esc(t)}"`+
+      ` aria-label="Schritt ${i+1}: ${esc(t)}"${i===step?' aria-selected="true"':""}></button>`).join("")+
+    '</span><span class="stlbl">Schritt '+(step+1)+' von '+L.length+
+    ' \u00b7 '+esc(L[step]||"")+'</span>';
   document.querySelectorAll(".st").forEach(b=>b.onclick=()=>go(+b.dataset.s));
 }
 function go(s){step=s;render();window.scrollTo(0,0);}
@@ -1682,42 +1438,48 @@ function howtoFor(){
 const HWKEY="hh_howto_v1";
 function hwState(){try{return JSON.parse(localStorage.getItem(HWKEY))||{};}catch(e){return{};}}
 function hwKey(){return mode+"_"+(branch||"wein")+"_"+step;}
+/* 4.2 \u00b7 Eine Hilfe statt zweier Dauerzeilen.
+   Vorher standen Schritttext und Bedienungserkl\u00e4rung permanent \u00fcber dem
+   Inhalt und kosteten rund 90px \u2014 auf einem iPhone die H\u00e4lfte dessen,
+   was von der Liste \u00fcbrig blieb. Jetzt liegen beide im selben Sheet hinter
+   dem Fragezeichen in der Kopfleiste. Damit es niemand \u00fcbersieht, \u00f6ffnet
+   es sich beim ersten Aufruf eines Modus einmal von selbst. */
+let HILFE_SCHRITT={t:"",p:"",tip:""};
 function renderHowto(){
-  const h=howtoFor(),box=$("#howto");
-  if(!h.p){box.style.display="none";return;}
-  box.style.display="block";
-  const st=hwState(),open=!!st[hwKey()];
-  box.className="howto"+(open?" open":"");
-  box.innerHTML=`<button class="hwh" aria-expanded="${open}"><span class="ibadge">Info</span><b>${h.t}</b><span class="car2">\u203a</span></button>
-    <div class="hwb"><p>${h.p}</p>${h.tip?`<p class="tip">${h.tip}</p>`:""}</div>`;
-  box.querySelector(".hwh").onclick=()=>{
-    const s2=hwState();s2[hwKey()]=!s2[hwKey()];
-    try{localStorage.setItem(HWKEY,JSON.stringify(s2));}catch(e){}
-    renderHowto();measure();};
+  HILFE_SCHRITT=howtoFor();
+  $("#howto").style.display="none";
+  const b=$("#bHilfe");
+  if(b)b.style.display=HILFE_SCHRITT.p?"":"none";
 }
-/* Immer derselbe Text, unabhaengig von Modus und Schritt. */
 const BEDIEN=[
  ["Punkte antippen","Du tippst herunter auf das, was noch dasteht. Der oberste Punkt ist der hinterste Platz."],
  ["H\u00e4kchen \u201evoll\u201c","Alles da, nichts fehlt. Nochmal antippen l\u00f6st es wieder."],
  ["Produktfoto antippen","Markiert die Spalte als angeschaut \u2013 ohne die Menge zu \u00e4ndern."],
  ["Zahl antippen","\u00d6ffnet die Direkteingabe, wenn Tippen zu lange dauert."],
  ["\u201eLade gepr\u00fcft\u201c","Best\u00e4tigt die ganze Lade und geht zur n\u00e4chsten."],
- ["Farben","Rot hei\u00dft: hier fehlt etwas. Blau ist ein Arbeitshinweis. Gelb: Karte verlassen, ohne sie zu best\u00e4tigen."],
+ ["Farben","Rot hei\u00dft: hier fehlt etwas. Gr\u00fcn ist best\u00e4tigt. Gelb: Station verlassen, ohne sie zu best\u00e4tigen."],
  ["Nichts geht verloren","Jede Eingabe wird sofort gespeichert. Du kannst jederzeit aufh\u00f6ren und sp\u00e4ter weitermachen."]];
-function renderBedien(){
-  const box=$("#bedien");
-  if(mode===null||step===lastStep()){box.style.display="none";return;}
-  box.style.display="block";
-  const st=hwState(),open=!!st.bedien;
-  box.className="howto bedien"+(open?" open":"");
-  box.innerHTML=`<button class="hwh" aria-expanded="${open}"><span class="ibadge">?</span>
-    <b>Wie funktioniert die Bedienung?</b><span class="car2">\u203a</span></button>
-    <div class="hwb"><dl>${BEDIEN.map(x=>
-      `<dt>${x[0]}</dt><dd>${x[1]}</dd>`).join("")}</dl></div>`;
-  box.querySelector(".hwh").onclick=()=>{
-    const s2=hwState();s2.bedien=!s2.bedien;
-    try{localStorage.setItem(HWKEY,JSON.stringify(s2));}catch(e){}
-    renderBedien();measure();};
+function renderBedien(){ $("#bedien").style.display="none"; }
+function fuelleHilfe(){
+  const h=HILFE_SCHRITT;
+  $("#hilfeT").textContent=h.t||"Hilfe";
+  $("#hilfeB").innerHTML=
+    (h.p?`<p class="hp">${h.p}</p>`:"")+
+    (h.tip?`<p class="htip">${h.tip}</p>`:"")+
+    `<h4>Wie funktioniert die Bedienung?</h4><dl>`+
+    BEDIEN.map(x=>`<dt>${x[0]}</dt><dd>${x[1]}</dd>`).join("")+`</dl>`;
+}
+function oeffneHilfe(){ fuelleHilfe();$("#hilfe").hidden=false;
+  document.body.style.overflow="hidden";
+  setTimeout(()=>{const z=$("#hilfeZu");if(z)z.focus();},40); }
+function schliesseHilfe(){ $("#hilfe").hidden=true;document.body.style.overflow=""; }
+/* Einmal je Modus von selbst \u2014 danach nur noch auf Wunsch. */
+function hilfeVielleicht(){
+  if(!mode)return;
+  const st=hwState(),k="gesehen_"+mode;
+  if(st[k])return;
+  st[k]=1;try{localStorage.setItem(HWKEY,JSON.stringify(st));}catch(e){}
+  if(HILFE_SCHRITT.p)oeffneHilfe();
 }
 function render(){
   const d=D();$("#dSel").value=d.tag;
@@ -1731,6 +1493,7 @@ function render(){
   renderHowto();
   renderBedien();
   measure();
+  hilfeVielleicht();
   document.querySelectorAll(".st").forEach(b=>{const i=+b.dataset.s;
     b.setAttribute("aria-selected",i===step);b.classList.toggle("done",stepComplete(i));});
   const last=lastStep();
@@ -1764,12 +1527,22 @@ function filt(){const q=$("#q").value.trim().toLowerCase();
     .slice().sort((a,b)=>DISPORD.indexOf(a.f)-DISPORD.indexOf(b.f));}
 
 /* ── Sprungleiste ── */
+/* Vertikal gesetzt und auf 40px beschnitten wurde aus \u201eBubbles\u201c ein
+   \u201eBubb\u201c \u2014 das liest sich wie ein Fehler. Zwei Buchstaben passen immer. */
+const RAILKURZ={"Rot":"RT","Rosé":"RS","Weiss":"WS","Weiß":"WS","Cuvée Weiss":"CV",
+  "Cuvée":"CV","Natural":"NT","Natur":"NT","Bubbles":"BB","Einzelgänger":"EG"};
+function railKurz(t){
+  if(RAILKURZ[t])return RAILKURZ[t];
+  const m2=/^\s*\D*?(\d+)\s*$/.exec(t);
+  if(m2)return (t.trim()[0]+m2[1]).toUpperCase();
+  return t.replace(/[^A-Za-zÄÖÜäöü]/g,"").slice(0,2).toUpperCase();
+}
 let railGroups=[];
 function buildRail(show){
   const rail=$("#rail");
   if(!show||!railGroups.length){rail.innerHTML="";$("#main").classList.remove("hasrail");return;}
   $("#main").classList.add("hasrail");
-  rail.innerHTML=railGroups.map(g2=>`<button data-anchor="${g2.id}">${g2.kurz}</button>`).join("");
+  rail.innerHTML=railGroups.map(g2=>`<button data-anchor="${g2.id}" title="${esc(g2.kurz)}" aria-label="${esc(g2.kurz)}">${railKurz(g2.kurz)}</button>`).join("");
   rail.querySelectorAll("button").forEach(b=>b.onclick=()=>{
     const el=document.getElementById("anchor_"+b.dataset.anchor);
     if(el)el.scrollIntoView({behavior:"smooth",block:"start"});});
@@ -1778,7 +1551,7 @@ function buildRail(show){
 /* ── Konsum ── */
 function countRow(w,bucket,sub,lab){
   const row=document.createElement("div");row.className="w";
-  row.innerHTML=`<span class="tx"><span class="nm"><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</span>${
+  row.innerHTML=`<span class="tx"><span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>${
     sub?`<span class="mt">${sub}</span>`:""}</span>`;
   /* P4/12 · Dieselbe Dreiergruppe wie in der Kellerzaehlung:
      [\u2212] [ Zahl ] [+]. Das Antippen der Zahl oeffnet die Direkteingabe. */
@@ -1973,7 +1746,7 @@ function dotRow(w,bucket,soll,pos){
   const tx=document.createElement("div");
   tx.style.cssText="flex:1;min-width:0;display:flex;align-items:center;gap:11px";
   tx.innerHTML=`${pos?`<span class="pos">${pos}</span>`:""}
-    <span class="tx"><span class="nm"><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</span>
+    <span class="tx"><span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
     <span class="mt">Soll ${soll}</span></span>`;
   const dots=document.createElement("span");dots.className="dots";
   const pts=[];
@@ -2084,7 +1857,7 @@ function holRow(it){
   const r=document.createElement("div");r.className="holz"+(on?" erledigt":"");
   const b=document.createElement("button");b.className="holzl";
   b.innerHTML=`<span class="gq vorne${on?" aus":""}">${menge}</span>
-    <span class="tx"><span class="nm"><b>${esc(it.w.winzer)}</b> · ${esc(it.w.wein)}</span>
+    <span class="tx"><span class="nm"><b>${esc(it.w.winzer)}</b><span class="wn">${esc(it.w.wein)}</span></span>
     <span class="ztags">${zielTags(it)}</span></span>`;
   b.setAttribute("aria-label",`${menge} × ${it.w.wein}${on?", eingeräumt":", zum Holen"}`);
   b.onclick=()=>{if(on)delete d.holt[it.w.id];else d.holt[it.w.id]=1;save();render();};
@@ -2174,7 +1947,7 @@ function zRow(w,idx){
   const d=D(),on=!!d.zdone[w.id];
   const row=document.createElement("div");row.className="zw"+(on?" seen":"")+(idx%2?" zebra":"");
   const top=document.createElement("div");top.className="ztop";
-  top.innerHTML=`<span class="nm"><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</span>
+  top.innerHTML=`<span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
     <span class="mt">${esc(w.jg)} · ${esc(w.region)}</span>`;
   row.appendChild(top);
   const z=document.createElement("div");z.className="zsteppers";
@@ -2276,7 +2049,7 @@ function rJahr(m){
       chk.onclick=()=>{if(ok)delete d.jok[p.id];else d.jok[p.id]=1;save();render();};
       row.appendChild(chk);
       const tx=document.createElement("div");tx.className="tx";
-      tx.innerHTML=`<div class="nm"><b>${esc(w.winzer)}</b> · ${esc(w.wein)}${chg?'<span class="pill chg">geändert</span>':""}</div>
+      tx.innerHTML=`<div class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}${chg?'<span class="pill chg">geändert</span>':""}</span></div>
         <div class="mt">Keller ${esc(w.jg)} \u2192 Lieferung ${esc(p.jg||"?")}</div>`;
       row.appendChild(tx);
       const inp=document.createElement("input");inp.className="zf";inp.style.width="64px";
@@ -2288,7 +2061,7 @@ function rJahr(m){
     const h=add(m,"hd1w","");h.innerHTML='<div class="hd1">Neue Weine</div><div class="hd1sub">Nicht im bisherigen Sortiment</div>';
     neu.forEach(p=>{const n=p.neu||{};
       const row=document.createElement("div");row.className="w";
-      row.innerHTML=`<span class="tx"><span class="nm"><b>${esc(n.winzer)||"—"}</b> · ${esc(n.wein)||"—"}<span class="pill new">neu</span></span>
+      row.innerHTML=`<span class="tx"><span class="nm"><b>${esc(n.winzer)||"—"}</b><span class="wn">${esc(n.wein)||"—"}<span class="pill new">neu</span></span></span>
         <span class="mt">${esc(n.reb)||"?"} · ${esc(n.region)||"?"} · ${esc(n.f)||"?"} · Jg. ${esc(p.jg)||"?"}</span></span>
         <span class="qty">${(+p.kisten||0)*kg(p)}</span>`;
       m.appendChild(row);});
@@ -2304,7 +2077,7 @@ function rEin(m){
     const fl=p.kisten*kg(p),on=!!d.ein[p.id];
     const b=document.createElement("button");b.className="w"+(on?" tick":"");
     b.innerHTML=`<span class="box2${on?" on":""}">${on?"\u2713":""}</span>
-      <span class="tx"><span class="nm"><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</span>
+      <span class="tx"><span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
       <span class="mt">${p.kisten} Kisten à ${kg(p)} · Jg. ${esc(p.jg||"?")}</span></span><span class="qty">${fl}</span>`;
     b.onclick=()=>{if(on)delete d.ein[p.id];else d.ein[p.id]=1;save();render();};
     m.appendChild(b);});
@@ -2686,9 +2459,12 @@ function gCell(k,i,cls,inv){
   c.title=GN(id);c.dataset.gid=k;c.dataset.k=i;c.dataset.n=n;
   if(inv)c.dataset.inv="1";
   return c;}
-function drwHead(L,box){
+function drwHead(L,box,ohneTitel){
+  /* Steht die Lade allein auf dem Schirm, nennt die Stations\u00fcberschrift
+     ihren Namen bereits \u2014 zweimal dieselbe Zeile untereinander ist eine
+     Zeile zu viel. */
   const f=gLadeFehlt(L);
-  box.innerHTML='<div class="drwf"><b>'+esc(L.t)+'</b><span class="drwh"></span>'+
+  box.innerHTML='<div class="drwf"><b>'+(ohneTitel?"Bestand":esc(L.t))+'</b><span class="drwh"></span>'+
     '<i class="'+(f?"low":"")+'">'+(f?(f===1?"1 fehlt":f+" fehlen"):"voll")+'</i></div>';
 }
 function drwFoot(L,box){
@@ -2705,7 +2481,7 @@ function drwFoot(L,box){
       if(barIdx<U.length-1){barIdx++;render();window.scrollTo(0,0);return;}
       go(step+1);return;}
     render();};
-  const rs=document.createElement("button");rs.className="reset";rs.textContent="alles voll";
+  const rs=document.createElement("button");rs.className="reset";rs.textContent="Alles voll";
   rs.setAttribute("aria-label","Lade "+L.t+" auf voll zur\u00fccksetzen");
   rs.onclick=()=>{gLadeKeys(L).forEach(k=>{sSet(k,sSoll(k));gPaint(k);});
     gPaintLade(L);renderFoot();};
@@ -2755,10 +2531,10 @@ function gFit(box,L){
     if(cv)cv.style.width=Math.max(dd,Math.floor(innenBreite(inner,k)/k))+"px";});
 }
 
-function drwBox(L){
+function drwBox(L,ohneTitel){
   const box=document.createElement("div");box.className="drw"+(L.kind==="col"?"":" wide");
   box.id="drw_"+L.id;
-  drwHead(L,box);
+  drwHead(L,box,ohneTitel);
   if(L.hinweis){const hw=document.createElement("div");
     hw.className="ghint"+(L.hinweisStark?" ghint--stark":"");
     hw.textContent=L.hinweis;box.appendChild(hw);}
@@ -2934,7 +2710,7 @@ function ALLE_LADEN(){
 function rGetr(m,nur){
   const laden=nur?[nur]:ALLE_LADEN();
   const wrap=document.createElement("div");wrap.className="gladen";
-  laden.forEach(L=>wrap.appendChild(drwBox(L)));
+  laden.forEach(L=>wrap.appendChild(drwBox(L,!!nur)));
   m.appendChild(wrap);
   laden.forEach(L=>{gFit(document.getElementById("drw_"+L.id),L);gPaintLade(L);});
   if(nur)return;
@@ -3245,8 +3021,22 @@ function rDoc(m){
        zurueckhaltend gestaltet, solange etwas offen ist, und nennt
        darueber vollstaendig, was offen ist. */
     if(offen.length){
-      const box=document.createElement("div");box.className="box";
-      box.innerHTML="<b>Noch offen:</b><br>"+offen.map(esc).join(" · ");
+      /* Vorher: dreizehn Punkte als Flie\u00dftext mit Mittelpunkten \u2014 die
+         Information, die den Abschluss blockiert, war die am schlechtesten
+         lesbare und die einzige, mit der man nichts machen konnte. */
+      const box=document.createElement("div");box.className="box offenbox";
+      const kopf=document.createElement("b");kopf.textContent=
+        offen.length===1?"Ein Punkt ist noch offen":offen.length+" Punkte sind noch offen";
+      box.appendChild(kopf);
+      const ul=document.createElement("div");ul.className="offenliste";
+      const zeig=offen.slice(0,5);
+      zeig.forEach(t=>ul.appendChild(offenZeile(t)));
+      box.appendChild(ul);
+      if(offen.length>5){
+        const mehr=document.createElement("button");mehr.className="btn btn--leise btn--klein";
+        mehr.textContent="+ "+(offen.length-5)+" weitere anzeigen";
+        mehr.onclick=()=>{offen.slice(5).forEach(t=>ul.appendChild(offenZeile(t)));mehr.remove();};
+        box.appendChild(mehr);}
       m.appendChild(box);}
     const fb=document.createElement("button");
     fb.className="finishbtn"+(offen.length?" blocked":"");
@@ -3304,7 +3094,7 @@ function rDoc(m){
 function freigabe(offen){
   $("#ovT").textContent="Trotzdem abschließen?";
   $("#ovBody").innerHTML=`<p>Diese Punkte sind offen:</p>
-    <div class="box" style="margin-top:0">${offen.map(esc).join(" · ")}</div>
+    <div class="box" style="margin-top:0">${offen.map(x=>"\u2022 "+esc(x)).join("<br>")}</div>
     <label class="f"><span>Freigabecode</span>
       <input id="fgCode" class="input input--pin" type="tel" inputmode="numeric"
         maxlength="4" placeholder="\u2022\u2022\u2022\u2022"></label>`;
@@ -3332,6 +3122,24 @@ function docUeber(){
     ${u.offen.map(esc).join(" · ")}</div>`;
 }
 /* P14/27 · Was ist offen? Eine Liste, kein Riegel. */
+/* Zu welchem Schritt f\u00fchrt ein offener Punkt? Die Liste bleibt eine
+   Liste von Texten \u2014 sie wandert so auch ins Protokoll. */
+function offenZiel(t){
+  if(t.indexOf("Kein Foto")===0)return null;
+  if(t==="Nicht alles geholt")return mode==="tag"?2:1;
+  if(t.indexOf("Schrank")===0)return 1;
+  if(t.indexOf("Nicht alle Positionen")===0)return 0;
+  return 0;
+}
+function offenZeile(t){
+  const z=offenZiel(t);
+  const el=document.createElement(z==null?"div":"button");
+  el.className="offenz"+(z==null?" ohneziel":"");
+  el.innerHTML='<span class="offenpkt" aria-hidden="true"></span><span class="offent">'+
+    esc(t)+'</span>'+(z==null?"":'<span class="go" aria-hidden="true"></span>');
+  if(z!=null)el.onclick=()=>go(z);
+  return el;
+}
 function offenList(){
   const d=D(),o=[];
   if(mode==="tag"){
@@ -3414,7 +3222,7 @@ function rFotos(m){
   const w=document.createElement("div");w.className="fotoblock";
   w.innerHTML=`<div class="hd1" style="margin-bottom:var(--space-3)">Fassungsliste</div>
     <div class="fotos"></div>
-    <button class="fotobtn" type="button">Foto aufnehmen</button>
+    <button class="fotobtn${(D().fotos||[]).length?"":" leer"}" type="button">Foto aufnehmen</button>
     <input type="file" accept="image/*" capture="environment" multiple class="vh" id="fIn">`;
   const gal=w.querySelector(".fotos");
   d.fotos.forEach((x,i)=>{
@@ -3755,6 +3563,9 @@ $("#ovNo").onclick=()=>{$("#ov").classList.remove("on");
 function renderFoot(){}
 /* ── Navigation ── */
 $("#bHome").onclick=()=>{ARCHREC=null;mode=null;renderMenu();window.scrollTo(0,0);};
+$("#bHilfe").onclick=oeffneHilfe;
+$("#hilfe").addEventListener("click",e=>{if(e.target.closest("[data-zu]"))schliesseHilfe();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#hilfe").hidden)schliesseHilfe();});
 BBACK.onclick=()=>{
   if((mode==="tag"||mode==="fuellen")&&step===0&&barIdx>0){
     barIdx--;render();window.scrollTo(0,0);return;}
@@ -3796,20 +3607,7 @@ if("serviceWorker" in navigator){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
 
-/* P26 · Start. Der sessionStorage kann leer sein, während das Cookie noch
-   zwölf Stunden läuft — ein neuer Tab etwa. Dann fragt die App einmal
-   nach, statt eine Anmeldung zu verlangen, die es schon gibt. */
-(async()=>{
-  if(!whoAmI()){
-    try{
-      const r=await fetch(API+"/ich");
-      if(r.ok){const j=await r.json();setUser(j.name,j.rolle);}
-    }catch(e){}
-  }
-  (whoAmI()?renderMenu():renderLogin());
-  measure();fclean();
-  if(whoAmI()){flushQ();zieheStand();}
-})();
+(whoAmI()?renderMenu():renderLogin());measure();fclean();
 </script>
 </body>
 </html>
