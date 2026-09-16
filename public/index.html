@@ -336,8 +336,11 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .dot{width:26px;height:26px;border-radius:50%;background:transparent;
   border:2px solid var(--accent);box-shadow:inset 0 0 0 20px var(--accent-ring)}
 .dot.off{background:none;border:2px dashed var(--border-heavy);box-shadow:none}
-.dot.fehlt,.w.miss .dot.off{border-color:var(--danger)}
-.w.miss .dot{border-color:var(--danger);box-shadow:inset 0 0 0 20px var(--danger-ring)}
+/* Rot wird nur, was fehlt. Die vorhandenen Flaschen derselben Zeile
+   bleiben ruhig — sonst schreit die ganze Zeile, obwohl nur eine
+   Position offen ist. */
+.dot.fehlt,.w.miss .dot.off{border-color:var(--danger);border-style:dashed;
+  box-shadow:inset 0 0 0 20px var(--danger-ring)}
 .miss-n{font-size:var(--text-sm);font-weight:var(--weight-bold);color:var(--danger-fg);
   margin-left:var(--space-1);min-width:22px;text-align:right}
 .chkbox{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
@@ -682,6 +685,21 @@ body.off .offline{display:block}
   transition:background var(--dur-fast) var(--ease)}
 .fotobtn:active{background:var(--surface-3)}
 
+/* ═══════════════ Mehrgerätebetrieb ═══════════════ */
+.netz{position:absolute;right:var(--space-4);bottom:var(--space-2);
+  font-size:var(--text-xs);font-weight:var(--weight-medium);
+  padding:2px var(--space-2);border-radius:var(--radius-pill);
+  background:var(--surface-on-dark);color:var(--fg-on-dark-2);
+  pointer-events:none;white-space:nowrap}
+.netz.ok{color:var(--success-on-dark)}
+.netz.wartet{background:var(--warn-bg);color:var(--warn-fg)}
+.netz.offline{background:var(--surface-on-dark);color:var(--fg-on-dark-3)}
+.fernzeile{background:var(--warn-bg);border:1px solid var(--warn-border);
+  color:var(--warn-fg);border-radius:var(--radius-md);
+  padding:var(--space-3) var(--space-4);margin-bottom:var(--space-5);
+  font-size:var(--text-md);line-height:var(--leading-normal)}
+.fernzeile b{display:block;font-weight:var(--weight-medium);margin-bottom:2px}
+
 /* ═══════════════ Hilfe-Sheet ═══════════════
    Ersetzt die zwei Dauerzeilen über dem Inhalt. Beides steht jetzt an
    einer Stelle, und die Liste beginnt rund 180px weiter oben. */
@@ -982,7 +1000,7 @@ body.off .offline{display:block}
     <div><h1 id="mTitle">—</h1>
       <label class="datumline" id="bDatum"><span id="datumTxt"></span>
         <span class="vh">Datum ändern</span><input type="date" id="dSel"></label></div>
-    <div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
+    <span class="netz" id="netz" style="display:none"></span><div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
   </div>
   <nav class="steps" id="steps" role="tablist"></nav>
 </header>
@@ -1016,8 +1034,29 @@ const kg=p=>+(p&&p.kistengr)||KISTE_STD;
 const MAIL="casimir.ikrath@haus-hirt.com";
 /* P8 · Zwei Codeebenen: Anmeldung (wer fasst) und Verwaltung/Freigabe (2797).
    Klartext in einer HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
-const USER={"1357":"Asad Karakiri","5800":"Casimir","9114":"Ian Lauchbein",
-            "1326":"Marinus"};
+/* Die vier Codes standen bis v11 im Klartext in dieser Datei — wer die
+   Seite aufrief, konnte sie lesen. Die Anmeldung läuft jetzt über den
+   Server. Für den Keller ohne Netz merkt sich das Gerät, wer sich hier
+   schon einmal erfolgreich angemeldet hat: als Prüfsumme, nicht als Code.
+   Ein fremdes Gerät kommt damit nicht hinein, ein bekanntes schon. */
+const K_BEKANNT="hh_bekannt_v1";
+async function codeSumme(code){
+  try{
+    const b=new TextEncoder().encode("hh:"+code);
+    const h=await crypto.subtle.digest("SHA-256",b);
+    return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("");
+  }catch(e){ return "roh:"+code; }
+}
+async function merkeCode(code,name){
+  const k=await codeSumme(code);
+  const m=(()=>{try{return JSON.parse(localStorage.getItem(K_BEKANNT))||{};}catch(e){return {};}})();
+  m[k]=name; try{localStorage.setItem(K_BEKANNT,JSON.stringify(m));}catch(e){}
+}
+async function bekannterCode(code){
+  const k=await codeSumme(code);
+  try{ return (JSON.parse(localStorage.getItem(K_BEKANNT))||{})[k]||null; }catch(e){ return null; }
+}
+const USER={};   /* bleibt leer — nur noch Rückwärtskompatibilität */
 const UKEY="hh_user";
 function whoAmI(){try{return sessionStorage.getItem(UKEY)||"";}catch(e){return "";}}
 function setUser(n){try{n?sessionStorage.setItem(UKEY,n):sessionStorage.removeItem(UKEY);}catch(e){}}
@@ -1118,6 +1157,10 @@ function loadArch(){try{const r=localStorage.getItem(AKEY);if(r)return JSON.pars
 function saveArch(a){try{localStorage.setItem(AKEY,JSON.stringify(a));}catch(e){}}
 function archive(rec){
   if(!rec)return;
+  /* Bevor ein Vorgang ins Archiv rutscht, geht er noch einmal hinaus —
+     sonst ginge ein am Vortag abgeschlossener Stand verloren, den der
+     Server nie gesehen hat. */
+  if(rec.finished&&!rec._gesendet){ rec._gesendet=1; inDenAusgang(rec,"fertig"); }
   const a=loadArch();
   a[rec.mode+"_"+rec.tag]=Object.assign({},rec,{archiviert:new Date().toISOString()});
   const ks=Object.keys(a).sort((x,y)=>(a[x].archiviert||"").localeCompare(a[y].archiviert||""));
@@ -1127,7 +1170,174 @@ function archive(rec){
     ((a[weg]||{}).fotos||[]).forEach(x=>{try{fdel(x.k);}catch(e){}});
     delete a[weg];}
   saveArch(a);}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast("Speicher voll");}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast("Speicher voll");}
+  merkeAenderung();}
+
+/* ══════════════════ Mehrgerätebetrieb ══════════════════
+   Grundsatz: Das Gerät ist die Wahrheit, solange es allein ist. Der
+   Server ist die Wahrheit, sobald mehrere Geräte im Spiel sind. Dazwischen
+   liegt ein Ausgang (eine Warteschlange), der nie etwas verliert.
+
+   Alles hier ist zusätzlich. Antwortet der Server nicht, bleibt die App
+   exakt das, was sie vorher war: ein Werkzeug, das offline im Keller
+   funktioniert und sein Protokoll per Mail weitergibt.
+
+   Ein Vorgang ist ein vollständiger Zustand, kein Zuwachs. Er wird unter
+   seinem Schlüssel (modus_tag) abgelegt; die höhere Zählnummer gewinnt.
+   Zwei Leute am selben Vorgang sind kein Merge-Problem, sondern eine
+   Frage an den Menschen — deshalb wird gefragt, nicht zusammengerechnet. */
+const API="/api";
+const K_AUSGANG="hh_ausgang_v1", K_GERAET="hh_geraet_v1",
+      K_ZAEHL="hh_zaehlnr_v1", K_FERN="hh_fern_v1";
+
+function uuid(){
+  try{ if(crypto.randomUUID)return crypto.randomUUID(); }catch(e){}
+  return "u"+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+}
+function geraetId(){
+  let g=null; try{g=localStorage.getItem(K_GERAET);}catch(e){}
+  if(!g){ g=uuid(); try{localStorage.setItem(K_GERAET,g);}catch(e){} }
+  return g;
+}
+const GERAET=geraetId();
+const jlese=(k,f)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r):f;}catch(e){return f;}};
+const jschreib=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+
+let NETZ={zustand:"unbekannt", offen:0, letzte:0, laeuft:false};
+let FERN=jlese(K_FERN,{});          /* schluessel → Vorgang vom Server  */
+let AEND=0;                          /* Zeitstempel der letzten Änderung */
+function merkeAenderung(){ AEND=Date.now(); }
+
+function schluesselVon(rec){ return rec.mode+"_"+rec.tag; }
+function zaehlnr(sch,neu){
+  const z=jlese(K_ZAEHL,{});
+  if(neu){ z[sch]=(z[sch]||0)+1; jschreib(K_ZAEHL,z); }
+  return z[sch]||0;
+}
+
+/* Der Ausgang hält je Schlüssel höchstens einen Eintrag: Ein Vorgang ist
+   ein Zustand, kein Zuwachs — der neuere ersetzt den älteren restlos. */
+function inDenAusgang(rec,status){
+  if(!rec||!rec.mode||!rec.tag)return;
+  const sch=schluesselVon(rec);
+  const a=jlese(K_AUSGANG,[]).filter(x=>x.schluessel!==sch);
+  a.push({schluessel:sch, id:uuid(), modus:rec.mode, tag:rec.tag,
+          zaehlnr:zaehlnr(sch,true), status:status||(rec.finished?"fertig":"laeuft"),
+          name:rec.name||whoAmI()||"", geraet:GERAET,
+          zeit:new Date().toISOString(),
+          daten:(()=>{const k=JSON.parse(JSON.stringify(rec));
+                      delete k._gesendet; return k;})(), versuche:0});
+  jschreib(K_AUSGANG,a);
+  NETZ.offen=a.length; netzChip();
+}
+
+async function schiebe(){
+  if(NETZ.laeuft)return; NETZ.laeuft=true;
+  try{
+    let a=jlese(K_AUSGANG,[]);
+    while(a.length){
+      const e=a[0];
+      let r;
+      try{
+        r=await fetch(API+"/vorgang",{method:"POST",credentials:"same-origin",
+          headers:{"content-type":"application/json","idempotency-key":e.id},
+          body:JSON.stringify(e)});
+      }catch(err){ NETZ.zustand="offline"; break; }
+      if(r.status===401){ NETZ.zustand="abgemeldet"; break; }
+      if(r.status>=500||r.status===429){ NETZ.zustand="serverfehler"; break; }
+      if(!r.ok && r.status!==409){ NETZ.zustand="serverfehler"; break; }
+      /* 409 heißt: der Server hat einen neueren Stand. Der Eintrag ist
+         damit erledigt — nicht verloren, sondern überholt. */
+      a=jlese(K_AUSGANG,[]).filter(x=>x.id!==e.id);
+      jschreib(K_AUSGANG,a);
+      NETZ.zustand="verbunden"; NETZ.letzte=Date.now();
+    }
+    NETZ.offen=jlese(K_AUSGANG,[]).length;
+  } finally { NETZ.laeuft=false; netzChip(); }
+}
+
+async function zieheFern(){
+  try{
+    const r=await fetch(API+"/vorgaenge",{credentials:"same-origin",
+      headers:{accept:"application/json"}});
+    if(r.status===401){ NETZ.zustand="abgemeldet"; netzChip(); return; }
+    if(!r.ok||!(r.headers.get("content-type")||"").includes("json")){
+      NETZ.zustand="kein-server"; netzChip(); return; }
+    const j=await r.json();
+    const liste=Array.isArray(j)?j:(j.vorgaenge||[]);
+    const f={};
+    liste.forEach(v=>{ if(v&&v.schluessel)f[v.schluessel]=v; });
+    const vorher=JSON.stringify(Object.keys(FERN).sort().map(k=>[k,FERN[k].zaehlnr,FERN[k].status]));
+    FERN=f; jschreib(K_FERN,FERN);
+    NETZ.zustand="verbunden"; NETZ.letzte=Date.now();
+    /* Der Fernstand trifft nach dem ersten Aufbau ein. Ohne dieses
+       Nachzeichnen bliebe die Zeile „Läuft gerade woanders" bis zum
+       nächsten Menüaufruf unsichtbar. */
+    const nachher=JSON.stringify(Object.keys(FERN).sort().map(k=>[k,FERN[k].zaehlnr,FERN[k].status]));
+    if(vorher!==nachher && !mode && whoAmI() && $("#menu").style.display!=="none"){
+      renderMenu();
+    }
+  }catch(e){ NETZ.zustand="offline"; }
+  netzChip();
+}
+
+/* Läuft anderswo etwas? Das beantwortet die Zeile über den Kacheln. */
+function fernOffen(){
+  const heute=today(), gestern=yest();
+  return Object.values(FERN).filter(v=>
+    v.status==="laeuft" && v.geraet!==GERAET && (v.tag===heute||v.tag===gestern));
+}
+/* Gibt es zu diesem Modus einen neueren Stand woanders? */
+function fernNeuer(m){
+  const ziel=(m==="tag")?yest():today();
+  const v=FERN[m+"_"+ziel];
+  if(!v||v.geraet===GERAET)return null;
+  const eigen=zaehlnr(m+"_"+ziel);
+  return (v.zaehlnr||0)>eigen ? v : null;
+}
+
+function netzChip(){
+  const el=$("#netz"); if(!el)return;
+  const z=NETZ.zustand, o=NETZ.offen;
+  let t="", k="";
+  if(z==="kein-server"){ el.style.display="none"; return; }
+  if(o>0){ t=o===1?"1 Vorgang wartet":o+" Vorgänge warten"; k="wartet"; }
+  else if(z==="offline"){ t="Offline – wird nachgereicht"; k="offline"; }
+  else if(z==="abgemeldet"){ t="Nicht angemeldet"; k="offline"; }
+  else if(z==="serverfehler"){ t="Server antwortet nicht"; k="offline"; }
+  else if(z==="verbunden"){ t="Übertragen"; k="ok"; }
+  else { el.style.display="none"; return; }
+  el.style.display=""; el.className="netz "+k; el.textContent=t;
+}
+
+/* Fertige und laufende Vorgänge einsammeln, die noch nicht draußen sind. */
+let LETZTER_ZWISCHEN=0;
+function sammle(){
+  Object.keys(MODES).forEach(m=>{
+    const d=S[m];
+    if(d&&d.finished&&!d._gesendet){ d._gesendet=1; inDenAusgang(d,"fertig"); }
+  });
+}
+function zwischenstand(){
+  if(!mode)return;
+  const d=S[mode];
+  if(!d||d.finished)return;
+  if(AEND<=LETZTER_ZWISCHEN)return;
+  LETZTER_ZWISCHEN=Date.now();
+  inDenAusgang(d,"laeuft");
+}
+
+function netzStart(){
+  if(netzStart._an)return; netzStart._an=1;
+  netzChip();
+  zieheFern().then(schiebe);
+  window.addEventListener("online",()=>{ NETZ.zustand="unbekannt"; schiebe(); zieheFern(); });
+  window.addEventListener("offline",()=>{ NETZ.zustand="offline"; netzChip(); });
+  setInterval(()=>{ sammle(); zwischenstand(); schiebe(); }, 45000);
+  setInterval(zieheFern, 180000);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden){ sammle(); schiebe(); zieheFern(); }});
+}
 let ARCHREC=null;
 function D(){return ARCHREC||S[mode];}
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
@@ -1198,11 +1408,42 @@ function renderLogin(){
     $("#pinFehler").textContent="";male();pruefe();};
   inp.oninput=()=>{male();pruefe();};
   male();
-  const pruefe=()=>{
-    const n=USER[inp.value];
-    if(n){setUser(n);L.style.display="none";renderMenu();window.scrollTo(0,0);return;}
-    if(inp.value.length>=4){inp.value="";male();
-      $("#pinFehler").textContent="Dieser Code ist nicht hinterlegt.";}};
+  /* Erst den Server fragen — dort stehen die Personen, dort werden sie
+     gepflegt, und nur dort entsteht die Sitzung, die der Server für die
+     Übertragung braucht. Antwortet er nicht, gilt die eingebaute Liste:
+     im Keller ohne Netz muss die Anmeldung trotzdem gehen. */
+  let laeuftPruefung=false;
+  const pruefe=async()=>{
+    const code=inp.value;
+    if(code.length<4||laeuftPruefung)return;
+    laeuftPruefung=true;
+    $("#pinFehler").textContent="";
+    let name=null, serverHat=false;
+    try{
+      const r=await fetch(API+"/anmelden",{method:"POST",credentials:"same-origin",
+        headers:{"content-type":"application/json"},body:JSON.stringify({code})});
+      if((r.headers.get("content-type")||"").includes("json")){
+        serverHat=true;
+        if(r.ok){ const j=await r.json(); name=j.name||null; }
+      }
+    }catch(e){}
+    if(!name&&!serverHat) name=await bekannterCode(code);  /* Rückfallebene */
+    if(name&&serverHat) await merkeCode(code,name);        /* fürs nächste Mal */
+    laeuftPruefung=false;
+    if(name){ setUser(name);L.style.display="none";renderMenu();
+      window.scrollTo(0,0);netzStart();return; }
+    inp.value="";male();
+    $("#pinFehler").textContent=serverHat
+      ? "Dieser Code ist nicht hinterlegt."
+      : "Kein Netz. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";};
+}
+/* Etappe 3a aus der Projektanleitung: Offene Vorgänge lagen bisher im
+   localStorage, also je Gerät. Jetzt kommen sie vom Server. */
+function fernZeile(){
+  const o=fernOffen();
+  if(!o.length)return "";
+  const t=o.map(v=>`${esc(v.name||"Jemand")} · ${esc(MODES[v.modus]?MODES[v.modus].t:v.modus)}`).join("<br>");
+  return `<div class="fernzeile"><b>Läuft gerade woanders</b><div>${t}</div></div>`;
 }
 function renderMenu(){
   if(!whoAmI())return renderLogin();
@@ -1217,6 +1458,7 @@ function renderMenu(){
       <span class="go" aria-hidden="true">\u203a</span></button>`;
   };
   $("#menu").innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool · Bad Gastein</p>
+    ${fernZeile()}
     <p class="angemeldet">Angemeldet: <b>${esc(whoAmI())}</b>
       <button class="wechseln" id="bWechseln">wechseln</button></p>
     <div class="mgrp">Service</div>${card("tag")}${card("fuellen")}
@@ -1372,6 +1614,31 @@ function hasData(k,d){
   if(k==="ware")return (d.pos||[]).length||sum(d.gent);
 }
 function start(m){
+  /* Läuft derselbe Vorgang schon auf einem anderen Gerät, wird gefragt
+     statt zusammengerechnet. Zwei Leute an derselben Fassung sind ein
+     Organisationsproblem, kein Datenproblem — und es muss sichtbar sein. */
+  const fremd=fernNeuer(m);
+  if(fremd&&!start._uebernommen){
+    start._uebernommen=true;
+    $("#ovT").textContent="Auf einem anderen Gerät weiter?";
+    $("#ovBody").innerHTML=`<p>${esc(fremd.name||"Jemand")} hat
+      ${esc(MODES[m].t)} für ${esc(deTag(fremd.tag))} auf einem anderen
+      Gerät bearbeitet – zuletzt ${esc(new Date(fremd.zeit||Date.now())
+        .toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))} Uhr.</p>
+      <p>Diesen Stand übernehmen? Dein eigener Stand auf diesem Gerät wird
+      dabei ersetzt.</p>`;
+    $("#ov").classList.add("on");
+    $("#ovOk").textContent="Übernehmen";
+    $("#ovOk").onclick=()=>{
+      S[m]=Object.assign(blank(m),fremd.daten||{});
+      const z=jlese(K_ZAEHL,{}); z[m+"_"+S[m].tag]=fremd.zaehlnr||0; jschreib(K_ZAEHL,z);
+      save();$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
+      start._uebernommen=false;start(m);};
+    $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
+      $("#ovOk").textContent="Ja";start._uebernommen=false;start(m); };
+    return;
+  }
+  start._uebernommen=false;
   mode=m;branch=(m==="tag"||m==="fuellen")?"wein":null;
   const ziel=(m==="tag")?yest():today();
   const cur=S[m];
@@ -3043,7 +3310,9 @@ function rDoc(m){
     fb.textContent=mode==="nach"?"Entnahme melden"
       :mode==="ware"?"Lieferung melden":"Fertig – Protokoll erstellen";
     fb.onclick=()=>{
-      if(!offen.length){d.finished=true;save();render();window.scrollTo(0,0);return;}
+      if(!offen.length){d.finished=true;save();
+        inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
+        render();window.scrollTo(0,0);return;}
       freigabe(offen);};
     m.appendChild(fb);
     const rc=document.createElement("button");rc.className="recheck";
@@ -3101,15 +3370,16 @@ function freigabe(offen){
   $("#ov").classList.add("on");
   const inp=$("#fgCode");setTimeout(()=>inp.focus(),60);
   $("#ovOk").textContent="Freigeben";
-  $("#ovOk").onclick=()=>{
+  $("#ovOk").onclick=async()=>{
     /* Jeder angemeldete Mitarbeiter darf freigeben \u2014 die Freigabe steht
        ohnehin mit Namen im Protokoll. Der Verwaltungscode geht auch. */
-    if(inp.value!==PIN&&!USER[inp.value]){
+    if(inp.value!==PIN&&!(await bekannterCode(inp.value))){
       inp.value="";inp.placeholder="falsch";toast("Code unbekannt");return;}
     const d=D();
-    d.uebersteuert={von:USER[inp.value]||whoAmI()||d.name,
+    d.uebersteuert={von:(await bekannterCode(inp.value))||whoAmI()||d.name,
       zeit:new Date().toISOString(),offen:offen};
     d.finished=true;save();
+    inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
     render();window.scrollTo(0,0);};
 }
@@ -3608,6 +3878,7 @@ if("serviceWorker" in navigator){
 }
 
 (whoAmI()?renderMenu():renderLogin());measure();fclean();
+if(whoAmI())netzStart();
 </script>
 </body>
 </html>
