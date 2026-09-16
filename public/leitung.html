@@ -5,8 +5,455 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#004947">
 <title>Leitung – Fassungstool · Haus Hirt</title>
-<link rel="stylesheet" href="tokens.css?v=12">
-<link rel="stylesheet" href="leitung.css?v=12">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   ACHTUNG · geteilte Gestaltungsschicht
+   Dieser Block steht wortgleich in index.html und leitung.html.
+   Wird hier etwas geändert, muss es in der anderen Datei genauso
+   geändert werden — sonst laufen die beiden Oberflächen auseinander.
+   Stand: v12 · 15.09.2026
+   ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   Fassungstool · tokens.css
+   Haus Hirt, Bad Gastein
+
+   Eine Quelle für beide Oberflächen: index.html (Fassung, Finger) und
+   leitung.html (Backoffice, Maus). Wer hier etwas ändert, ändert es an
+   beiden Stellen — das ist der ganze Zweck der Datei.
+
+   Einbinden als ERSTES Stylesheet, vor dem seiteneigenen <style>:
+     <link rel="stylesheet" href="tokens.css?v=12">
+   Die Zahl bei jeder Änderung erhöhen, sonst lädt das iPhone die alte
+   Fassung aus dem Zwischenspeicher.
+
+   Dichte: leitung.html setzt am <html> data-dichte="maus".
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Schriften ──────────────────────────────────────────────────────
+   Barlow steht für Interstate, Cormorant Garamond für Mrs Eaves.
+   Die Dateien liegen unter /fonts/. Fehlen sie, greift der Systemstack
+   und nichts bricht — es sieht nur aus wie vorher.
+   WICHTIG: die vier Dateien müssen in die Cache-Liste des Service
+   Workers, sonst ist die App offline ohne Schrift.                     */
+@font-face{font-family:"Barlow";src:url("/fonts/barlow-500.woff2") format("woff2");
+  font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Barlow";src:url("/fonts/barlow-600.woff2") format("woff2");
+  font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Barlow";src:url("/fonts/barlow-700.woff2") format("woff2");
+  font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Cormorant Garamond";src:url("/fonts/cormorant-600.woff2") format("woff2");
+  font-weight:600;font-style:normal;font-display:swap}
+
+:root{
+  --marke:#462500;   /* Hauszeichen, Dunkelbraun */
+  /* ── Flächen und Rahmen ── Haus-Hirt-Cream als Grund, Weiß als Inhalt */
+  --bg:#ECE9E2;
+  --surface:#FFFFFF;
+  --surface-2:#F4F2EC;
+  --surface-3:#EFEDE6;
+  --surface-4:#E5E2D9;
+  --border:#DDD9D0;
+  --border-strong:#CBC6BA;
+  --border-heavy:#B5AFA1;
+
+  /* ── Text ── */
+  --fg:#1C2220;
+  --fg-secondary:#4E5654;
+  --fg-muted:#5F6866;
+  --fg-subtle:#5F6866;
+
+  /* ── Text auf dunklen Leisten ── */
+  --fg-on-dark:#FFFFFF;
+  --fg-on-dark-2:#BFD0CE;
+  --fg-on-dark-3:#9DB2AF;
+  --surface-on-dark:rgba(255,255,255,.12);
+  --surface-on-dark-2:rgba(255,255,255,.07);
+  --border-on-dark:rgba(255,255,255,.16);
+
+  /* ── Marke, Status ── */
+  --accent:#004947;           /* Haus-Hirt-Teal */
+  --accent-dunkel:#00605D;    /* gedrückter Zustand */
+  --accent-tint:#E4EDEC;
+  --accent-ring:rgba(0,73,71,.10);
+  --danger:#B4471F;  --danger-bg:#FBEDE6;  --danger-fg:#7A3A12;
+  --danger-border:#E7C3B2;  --danger-surface:#FDF9F6;
+  --danger-ring:rgba(180,71,31,.10);
+  --success:#3E7A3E;  --success-bg:#EFF5EE;  --success-fg:#2F5E2F;
+  --success-border:#CFE0CC;  --success-tint:#DCEBD8;  --success-on-dark:#8FBF8F;
+  --warn:#E0B200;  --warn-bg:#FDF3D0;  --warn-fg:#6B4E00;  --warn-border:#E6D6B4;
+  --info:#004947;  --info-bg:#E4EDEC;  --info-border:#C5D8D6;
+  --diff-minus:#3A5266;       /* Richtung, nicht Hinweis */
+
+  /* Zielorte im Holen-Schritt */
+  --tag-bar-bg:#F3E7D9;  --tag-bar-fg:#7A5426;
+  --tag-back-bg:#EDE7F0; --tag-back-fg:#5A4A6A;
+
+  /* ── Raum, 4px-Basis ── */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
+
+  /* ── Radien ── */
+  --radius-xs:2px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+  --radius-pill:999px; --radius-ctl:8px;
+  --track-caps:.08em;
+
+  /* ── Typografie ── */
+  --font:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px;
+  --text-lg:19px; --text-display:28px;
+  --leading-tight:1.25; --leading-normal:1.45;
+  --weight-regular:400; --weight-medium:600; --weight-bold:700;
+
+  /* ── Bedienelemente · Finger ── */
+  --tap-min:44px; --control-h-sm:36px; --control-h:44px; --control-h-lg:52px;
+
+  /* ── Fokus und Bewegung ── */
+  --ring:#004947; --ring-width:2px; --ring-offset:2px;
+  --dur-fast:120ms; --dur:180ms; --ease:cubic-bezier(.2,0,0,1);
+
+  /* ── Schichten ── */
+  --z-rail:35; --z-top:40; --z-overlay:80; --z-toast:90;
+  --shadow-overlay:0 4px 16px rgba(28,34,32,.25);
+
+  /* ── Layout ── */
+  --foot:0px; --rail:36px; --maxw:720px; --topH:92px;
+
+  /* ── Getränke: Trefferflächen skalieren mit der Viewport-Breite ── */
+  --gd:clamp(26px,7vw,42px);
+  --gpt-s:clamp(26px,7.5vw,40px);
+  --gcell:clamp(40px,11vw,64px);
+  --grack:clamp(30px,9vw,52px);
+  --gnum-on-dot:rgba(255,255,255,.5)
+}
+
+/* Maus statt Finger: dieselben Bauteile, engere Geometrie. */
+[data-dichte="maus"]{
+  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px
+}
+/* Auf schmalen Schirmen zählt wieder der Finger — auch im Backoffice. */
+@media(max-width:900px){
+  [data-dichte="maus"]{
+    --control-h:44px; --control-h-sm:36px; --control-h-lg:52px; --radius-ctl:8px
+  }
+}
+
+/* ═══════════════ Knopf ═══════════════
+   Drei Stufen, klar getrennt: gefüllt trägt die Hauptsache, gerahmt die
+   Nebensache, Text die Ausweichmöglichkeit. Wer alles rahmt, hat keine
+   Hierarchie, nur Kästchen. */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+  min-height:var(--control-h);padding:0 var(--space-4);
+  font:var(--weight-medium) var(--text-md)/1.2 var(--font);
+  border:1px solid var(--border-strong);border-radius:var(--radius-ctl);
+  background:var(--surface);color:var(--fg);text-align:center;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease),
+             border-color var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease)}
+.btn--stark{background:var(--accent);border-color:var(--accent);color:var(--fg-on-dark)}
+.btn--leise{background:none;border-color:transparent;color:var(--fg-muted);
+  font-weight:var(--weight-regular)}
+.btn--klein{min-height:var(--control-h-sm);padding:0 var(--space-3);font-size:var(--text-sm)}
+.btn--breit{width:100%}
+.btn--gross{min-height:var(--control-h-lg);font-size:var(--text-base);width:100%}
+.btn--gefahr{color:var(--danger)}
+.btn:active{background:var(--surface-3)}
+.btn--stark:active{background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
+.btn--leise:active{background:var(--surface-3);color:var(--fg)}
+.btn[disabled]{opacity:.5;cursor:default}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{background:var(--surface-2)}
+  .btn--stark:hover{background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
+  .btn--leise:hover{background:var(--surface-3);color:var(--fg)}}
+
+/* ═══════════════ Eingabe ═══════════════
+   16px Grundgröße verhindert das Auto-Zoomen von iOS Safari. */
+.feld,.wahl{width:100%;min-height:var(--control-h);
+  padding:var(--space-2) var(--space-3);
+  font:var(--weight-regular) var(--text-base)/1.3 var(--font);
+  border:1px solid var(--border-strong);border-radius:var(--radius-ctl);
+  background:var(--surface);color:var(--fg)}
+.wahl{appearance:none;-webkit-appearance:none;padding-right:var(--space-8);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6866' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M9 6l6 6-6 6'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;background-size:16px 16px}
+
+/* ═══════════════ Karte, Hinweis, Pille ═══════════════
+   Kanon aus der Leitung — die Fassungsseite zieht nach. */
+.karte{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-5)}
+
+.hinweis{border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);
+  font-size:var(--text-md);line-height:var(--leading-normal);
+  background:var(--info-bg);border:1px solid var(--info-border);color:var(--info)}
+.hinweis.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
+.hinweis.bad{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-fg)}
+.hinweis.good{background:var(--success-bg);border-color:var(--success-border);color:var(--success-fg)}
+.hinweis b{font-weight:var(--weight-medium)}
+
+/* Inhaltsspalten, die erklären — nicht Beiwerk. 11px war zu klein. */
+.deutung{font-size:var(--text-sm);color:var(--fg-secondary);line-height:var(--leading-normal)}
+.neg{color:var(--danger-fg);font-weight:var(--weight-bold)}
+
+/* ═══════════════ Fokus ═══════════════ */
+:where(button,input,select,textarea,a,[tabindex]):focus-visible{
+  outline:var(--ring-width) solid var(--ring);
+  outline-offset:var(--ring-offset);position:relative;z-index:1}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ═══════════════ Hauszeichen ═══════════════
+   Der Hirte mit dem Hund. Nimmt currentColor an, skaliert verlustfrei,
+   braucht keine Datei. In dunklen Leisten wird es über die Höhe
+   bemessen — sonst sprengt ein breites Zeichen die 56px-Zeile. */
+.marke{display:block;margin:0 0 var(--space-2);line-height:0}
+.marke svg{display:block;width:100%;max-width:200px;height:auto;color:var(--marke)}
+.marke--klein svg{max-width:180px}
+.kopf .marke,header .marke{margin:0}
+.kopf .marke svg,header .marke svg{
+  color:var(--fg-on-dark);width:auto;height:24px;max-width:none}
+.tuer .marke{margin:0 auto var(--space-3)}
+.tuer .marke svg{max-width:220px;margin:0 auto}
+/* Für Bildschirmlesegeräte bleibt der Name stehen, sichtbar ist er nicht. */
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap}
+/* ═══════════════════════════════════════════════════════════════════
+   Fassungstool · leitung.css
+   Was nur das Backoffice braucht. Alles Gemeinsame steht in tokens.css
+   und wird VORHER eingebunden:
+     <link rel="stylesheet" href="tokens.css?v=12">
+     <link rel="stylesheet" href="leitung.css?v=12">
+   Am <html> steht data-dichte="maus".
+   ═══════════════════════════════════════════════════════════════════ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);
+  font:var(--weight-regular) var(--text-md)/var(--leading-normal) var(--font);
+  -webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select,textarea{font:inherit;color:inherit}
+table{border-collapse:collapse;width:100%}
+
+/* ═══════════════ Kopf ═══════════════ */
+.kopf{position:sticky;top:0;z-index:var(--z-top);background:var(--accent);
+  color:var(--fg-on-dark);display:flex;align-items:center;gap:var(--space-4);
+  padding:0 var(--space-6);height:56px}
+.kopf h1{font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
+  letter-spacing:.01em}
+.kopf .haus{font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-on-dark-3)}
+.kopf .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;
+  border-radius:var(--radius-pill);background:var(--surface-on-dark);
+  border:1px solid var(--border-on-dark);font-size:var(--text-xs);color:var(--fg-on-dark)}
+.chip .pkt{width:7px;height:7px;border-radius:50%;background:var(--success-on-dark)}
+.chip.aus .pkt{background:var(--fg-on-dark-3)}
+.kopf button.k{height:30px;padding:0 12px;border-radius:var(--radius-ctl);
+  background:var(--surface-on-dark);border:1px solid var(--border-on-dark);
+  font-size:var(--text-sm);color:var(--fg-on-dark)}
+.kopf button.k:hover{background:rgba(255,255,255,.20)}
+/* Nur auf schmalen Schirmen sichtbar — oeffnet die Navigation. */
+.navknopf{display:none;width:36px;height:36px;border-radius:var(--radius-ctl);
+  background:var(--surface-on-dark);border:1px solid var(--border-on-dark);
+  color:var(--fg-on-dark);place-items:center;flex-shrink:0}
+
+/* ═══════════════ Gerüst ═══════════════ */
+.huelle{display:grid;grid-template-columns:212px 1fr;min-height:calc(100vh - 56px)}
+nav.seite{border-right:1px solid var(--border);background:var(--surface-2);
+  padding:var(--space-5) var(--space-3)}
+nav.seite .grp{font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle);
+  padding:0 10px;margin:var(--space-5) 0 var(--space-2)}
+nav.seite .grp:first-child{margin-top:0}
+nav.seite button{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;width:100%;min-height:var(--control-h);padding:8px 10px;
+  border-radius:var(--radius-ctl);font-size:var(--text-sm);
+  color:var(--fg-secondary);text-align:left}
+nav.seite button:hover{background:var(--surface-4)}
+nav.seite button.on{background:var(--surface);color:var(--fg);
+  font-weight:var(--weight-medium);box-shadow:inset 0 0 0 1px var(--border-strong)}
+nav.seite .zahl{font-size:var(--text-xs);font-weight:var(--weight-medium);
+  padding:1px 7px;border-radius:var(--radius-pill);
+  background:var(--surface-4);color:var(--fg-muted);font-variant-numeric:tabular-nums}
+nav.seite button.on .zahl{background:var(--surface-3)}
+nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
+main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
+
+/* ═══════════════ Überschriften ═══════════════ */
+h2{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
+  letter-spacing:0}
+.unter{color:var(--fg-muted);font-size:var(--text-sm);margin-top:6px;
+  max-width:70ch;line-height:var(--leading-normal)}
+/* Die zweite bis vierte Zeile der Erklaerung liegt hinter „Warum so
+   gerechnet?" — gut geschrieben, aber ab dem dritten Mal ueberlesen. */
+.unter .mehr{display:none}
+.unter.offen .mehr{display:block;margin-top:var(--space-2)}
+h3{font-size:var(--text-base);font-weight:var(--weight-medium);
+  margin-bottom:var(--space-3)}
+section{margin-bottom:var(--space-8)}
+.gitter{display:grid;gap:var(--space-4)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+/* ═══════════════ Kennzahl ═══════════════
+   Steht hier und nicht in tokens.css: die Fassungsseite hat unter
+   demselben Namen eine andere Komponente (die Zahlenreihe im
+   Protokoll). Ein Name, zwei Bedeutungen — also getrennt halten.
+   Zwei Varianten: Ziffern gehören in den großen Slot, Zustände nicht.
+   Ein 26px-Bold-„eingegangen" wiegt schwerer als jede Zahl daneben. */
+.kpi{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-4)}
+.kpi span{display:block;font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle)}
+.kpi b{display:block;font-size:26px;font-weight:var(--weight-bold);
+  letter-spacing:-.02em;margin-top:6px;line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.kpi small{display:block;color:var(--fg-muted);font-size:var(--text-sm);margin-top:2px}
+.kpi--status b{font-size:var(--text-md);font-weight:var(--weight-medium);
+  letter-spacing:0;margin-top:8px;display:flex;align-items:center;gap:var(--space-2)}
+.kpi--status b::before{content:"";width:9px;height:9px;border-radius:50%;
+  background:currentColor;flex-shrink:0;opacity:.75}
+.kpi.warn{background:var(--warn-bg);border-color:var(--warn-border)}
+.kpi.warn b,.kpi.warn small{color:var(--warn-fg)}
+.kpi.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.kpi.bad b,.kpi.bad small{color:var(--danger-fg)}
+.kpi.ok{background:var(--success-bg);border-color:var(--success-border)}
+.kpi.ok b,.kpi.ok small{color:var(--success-fg)}
+
+/* Ohne Sitzung und ohne lokale Daten: eine klare Tür statt einer
+   leeren Tabelle. */
+.tuer{max-width:420px;margin:18vh auto;text-align:center;padding:0 var(--space-4)}
+.tuer .haus{font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle)}
+.tuer h2{margin:6px 0 10px}
+.tuer p{color:var(--fg-secondary);margin-bottom:var(--space-6);
+  line-height:var(--leading-normal)}
+.tuer .b{text-decoration:none}
+
+/* ═══════════════ Tabellen ═══════════════
+   .tabhuelle war overflow:hidden — das hebt position:sticky am <th> auf.
+   Bei 53 Zeilen Kellerbestand scrollte man ohne Spaltenkoepfe. Jetzt ist
+   die Huelle selbst die Scrollflaeche, und die Koepfe bleiben stehen. */
+.tabhuelle{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);max-height:70vh;overflow:auto}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);
+  font-size:var(--text-sm);vertical-align:middle}
+th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
+  color:var(--fg-subtle);font-weight:var(--weight-medium);background:var(--surface-2);
+  position:sticky;top:0;z-index:5;box-shadow:inset 0 -1px 0 var(--border)}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+.zwt td{background:var(--surface-3);font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle);
+  font-weight:var(--weight-medium);padding:var(--space-2) 12px}
+.dim{color:var(--fg-muted)}
+.mini{font-size:var(--text-xs);color:var(--fg-subtle)}
+.diff-plus{color:var(--danger-fg);font-weight:var(--weight-medium)}
+.diff-minus{color:var(--diff-minus);font-weight:var(--weight-medium)}
+
+/* Alias auf den Kanon in tokens.css */
+.pill{display:inline-block;padding:2px var(--space-2);border-radius:var(--radius-pill);
+  font-size:var(--text-xs);font-weight:var(--weight-medium)}
+.p-ok{background:var(--success-bg);color:var(--success-fg)}
+.p-warn{background:var(--warn-bg);color:var(--warn-fg)}
+.p-bad{background:var(--danger-bg);color:var(--danger-fg)}
+.p-neu{background:var(--warn-bg);color:var(--warn-fg)}   /* verlangt Bestaetigung */
+.p-grau{background:var(--surface-4);color:var(--fg-muted)}
+
+/* ═══════════════ Knöpfe und Felder ═══════════════
+   Namen bleiben, damit das JS unveraendert laeuft. Form kommt aus tokens.css. */
+button.b{min-height:var(--control-h);padding:0 14px;border-radius:var(--radius-ctl);
+  border:1px solid var(--border-strong);background:var(--surface);
+  font-size:var(--text-sm);font-weight:var(--weight-medium);color:var(--fg);
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2)}
+button.b:hover{background:var(--surface-2)}
+button.b.stark{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
+button.b.stark:hover{background:#00605D;border-color:#00605D}
+button.b.klein{min-height:var(--control-h-sm);padding:0 10px;font-weight:var(--weight-regular)}
+button.b.leise{background:none;border-color:transparent;color:var(--fg-muted);
+  font-weight:var(--weight-regular)}
+button.b.leise:hover{background:var(--surface-3);color:var(--fg)}
+.reihe{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+.rechts{margin-left:auto}
+select,input[type=text],input[type=number],input[type=date]{
+  min-height:var(--control-h);padding:0 10px;border-radius:var(--radius-ctl);
+  border:1px solid var(--border-strong);background:var(--surface);font-size:var(--text-sm)}
+select{appearance:none;-webkit-appearance:none;padding-right:30px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6866' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M9 6l6 6-6 6'/></svg>");
+  background-repeat:no-repeat;background-position:right 9px center;background-size:16px}
+select.klein{min-height:var(--control-h-sm);font-size:var(--text-xs);max-width:270px}
+textarea{width:100%;min-height:150px;padding:var(--space-3);
+  border-radius:var(--radius-md);border:1px solid var(--border-strong);
+  font:400 12px/1.5 var(--mono);background:var(--surface);resize:vertical}
+
+/* ═══════════════ Sonstiges ═══════════════ */
+.leer{text-align:center;padding:var(--space-8) var(--space-4);
+  color:var(--fg-muted);font-size:var(--text-sm)}
+.zone{display:flex;align-items:center;justify-content:center;min-height:190px;
+  border:2px dashed var(--border-heavy);border-radius:var(--radius-lg);
+  background:var(--surface-2);color:var(--fg-muted);font-size:var(--text-sm);
+  text-align:center;padding:var(--space-5);cursor:pointer}
+.zone:hover,.zone.ueber{border-color:var(--accent);background:var(--accent-tint);color:var(--fg)}
+.balken{height:6px;border-radius:3px;background:var(--surface-4);overflow:hidden;min-width:70px}
+.balken i{display:block;height:100%;background:var(--accent)}
+.balken i.knapp{background:var(--danger)}
+.balken i.satt{background:var(--success)}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);
+  background:var(--fg);color:var(--fg-on-dark);padding:10px 18px;
+  border-radius:var(--radius-pill);font-size:var(--text-sm);opacity:0;
+  pointer-events:none;transition:opacity .18s,transform .18s;z-index:var(--z-toast)}
+#toast.on{opacity:1;transform:translateX(-50%)}
+
+/* ═══════════════ Schmale Schirme ═══════════════
+   Die Navigation war 212px breit und galt ohne Medienabfrage — bei 390px
+   nahm sie mehr als die halbe Breite und der Inhalt lief rechts hinaus.
+   Das ist die Ansicht, die der Nachmittagsblick am Handy braucht. */
+@media(max-width:900px){
+  .navknopf{display:grid}
+  .kopf{padding:0 var(--space-3);gap:var(--space-2)}
+  .kopf .chip{display:none}
+  /* Auf dem Handy traegt die Leiste die Marke, nicht den Seitentitel —
+     der steht ohnehin als Ueberschrift direkt darunter. */
+  .kopf h1{display:none}
+  .kopf .haus{display:block;font:var(--weight-medium) var(--text-base)/1 var(--font-display);
+    text-transform:none;letter-spacing:0;color:var(--fg-on-dark);white-space:nowrap}
+  .kopf button.k{padding:0 10px;font-size:var(--text-xs);white-space:nowrap}
+  .huelle{display:block}
+  nav.seite{position:fixed;left:0;top:56px;bottom:0;width:min(280px,86vw);
+    z-index:var(--z-overlay);overflow:auto;border-right:1px solid var(--border);
+    transform:translateX(-102%);transition:transform var(--dur) var(--ease);
+    box-shadow:var(--shadow-overlay)}
+  body.navoffen nav.seite{transform:none}
+  body.navoffen::after{content:"";position:fixed;inset:56px 0 0;
+    background:rgba(28,34,32,.4);z-index:calc(var(--z-overlay) - 1)}
+  main{padding:var(--space-5) var(--space-4) var(--space-8)}
+  h2{font-size:24px}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  /* Waagrecht scrollen statt umbrechen, erste Spalte bleibt stehen. */
+  .tabhuelle{max-height:none;overflow:auto;-webkit-overflow-scrolling:touch}
+  /* Nur Tabellen in einer Scrollhuelle duerfen breiter sein als der Schirm.
+     Die Quelle-Tabelle in den Einstellungen steht in einer .karte ohne
+     Scrollflaeche und schob sonst die ganze Seite auf 597px. */
+  .tabhuelle table{min-width:560px}
+  th:first-child,td:first-child{position:sticky;left:0;background:var(--surface);
+    box-shadow:1px 0 0 var(--border)}
+  th:first-child{background:var(--surface-2);z-index:6}
+  .zwt td:first-child{background:var(--surface-3)}
+  /* Einstellungen, Mitarbeiter und Rezepturen setzen feste Breiten als
+     Inline-Stil (230px Etikett, 280px Feld). Auf 390px läuft das über den
+     rechten Rand — hier gewinnt die Medienabfrage. */
+  .karte .reihe>label,.reihe>input[type=text],.reihe>select,.karte .reihe>select{
+    width:100%!important;max-width:none!important}
+  .reihe>input[type=number]{width:100px!important}
+  .karte .reihe{align-items:stretch}
+}
+@media(max-width:560px){
+  .g4,.g3{grid-template-columns:1fr}
+}
+
+</style>
 </head>
 <body>
 <header class="kopf">
@@ -202,7 +649,7 @@ async function werBinIch(){
 }
 function verlangeAnmeldung(){
   document.body.innerHTML=`<div class="tuer">
-    <div class="haus">Haus Hirt</div>
+    <span class="marke marke--klein"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1352 505" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M592 501C573 499 558 495 552 490C532 475 527 444 535 373C538 339 539 321 537 298C535 280 530 247 530 251C530 252 525 305 519 368C510 467 509 484 507 486L505 488 468 489C357 492 307 488 247 471C204 459 152 438 114 416C107 412 102 409 101 410C101 410 95 415 88 420C59 442 36 450 21 443C1 433 -4 396 13 384C27 374 54 374 84 382C87 383 90 384 91 384C91 384 90 380 89 377C73 324 83 290 115 292C155 295 158 331 123 384C119 391 115 396 115 397C113 399 157 422 188 435C214 446 275 464 279 463C280 463 276 459 270 454C234 423 230 393 259 378C291 360 312 388 315 455L316 470 321 470C345 473 364 474 399 474C440 475 495 474 495 473C495 467 535 35 536 30C540 14 547 4 558 3C572 2 582 11 582 26C582 38 578 45 572 45C566 44 564 41 567 32C569 24 568 21 564 19C558 16 553 21 551 32C550 34 547 66 544 101L538 166 540 169C542 171 544 175 546 178C550 183 550 184 552 183C557 178 598 119 596 119C578 113 568 107 566 99C563 88 572 80 599 65C607 61 611 58 614 54C631 36 637 32 648 32C660 32 666 37 673 54L676 62 688 69C711 82 720 94 711 104C709 106 690 116 687 116C684 116 686 119 699 140C718 171 724 184 727 198C732 220 736 244 741 296C743 312 744 327 744 328L745 332 758 331C767 331 775 332 786 333C829 339 825 338 828 336C829 335 833 328 838 319C847 300 850 298 859 297C876 296 901 310 908 325C917 344 903 359 880 356L874 356 874 364C870 402 860 428 845 435L840 437 842 450C844 464 845 469 847 471C848 473 854 473 920 473C991 473 997 473 1026 470L1036 469 1036 463C1036 453 1038 432 1040 420C1047 380 1065 364 1090 376C1113 387 1118 407 1103 429C1098 436 1082 453 1074 460L1070 463 1079 461C1104 455 1141 443 1169 432C1190 422 1237 399 1237 397C1237 397 1233 391 1229 384C1198 338 1196 304 1223 294C1243 286 1261 293 1267 312C1272 325 1270 353 1262 377C1261 380 1260 383 1261 383C1261 383 1265 382 1271 381C1329 366 1358 383 1345 424C1343 431 1337 438 1331 441C1315 449 1291 441 1258 415L1249 408 1236 416C1204 433 1169 449 1134 461C1066 484 1005 492 913 489C892 488 867 488 858 488C843 488 839 488 838 487C834 483 829 466 827 447C826 438 826 438 823 438C821 438 820 439 820 444C819 446 818 453 816 459C815 465 814 471 814 473C814 475 813 477 809 480C803 485 802 485 801 481C798 477 799 470 802 456C804 450 805 442 805 439L806 434 801 431C798 429 795 426 794 424L792 421 779 421L767 421 765 429C761 441 761 447 768 464C775 480 775 482 769 485C764 487 761 485 756 472C754 466 751 461 751 461C751 461 750 464 749 467C747 478 736 491 724 497C714 502 706 503 690 500C677 499 676 499 652 500C630 502 600 502 592 501Z M644 485C659 484 671 484 680 485C708 486 713 486 719 483C725 479 730 473 734 466C740 453 739 398 731 344C731 338 729 320 727 303C720 230 715 199 707 184C703 175 693 159 678 136C663 112 663 109 674 105C684 101 698 95 698 94C698 93 691 87 680 82C667 74 665 72 660 61C655 49 653 47 648 47C643 47 637 51 629 60C621 70 620 71 604 80C589 88 581 94 581 95C582 97 592 102 601 104C606 105 611 106 612 107C615 107 617 113 616 115C614 122 573 182 563 192C555 201 548 202 540 195L538 193 538 195C538 196 540 213 543 232C554 311 555 321 549 372C544 419 545 454 552 467C561 484 586 489 644 485Z M300 448C297 411 288 388 276 388C269 388 257 396 255 402C252 413 265 431 290 450C295 455 300 458 300 458C300 458 300 453 300 448Z M1063 449C1086 430 1099 413 1097 403C1095 396 1083 387 1075 387C1063 387 1055 409 1051 448C1051 459 1050 459 1063 449Z M42 429C52 426 74 413 85 403L89 399 83 398C52 389 28 389 20 398C18 401 18 402 18 409C19 426 27 433 42 429Z M1325 427C1332 424 1336 406 1332 399C1329 392 1316 389 1299 391C1288 392 1263 398 1263 399C1263 401 1282 415 1293 421C1306 428 1319 431 1325 427Z M841 419C846 415 852 403 855 390C858 376 858 374 859 357C860 337 861 336 873 340C884 343 896 341 896 336C896 329 881 316 867 313C858 311 859 310 846 337C843 343 837 349 832 351C827 354 822 353 797 350C776 347 749 345 747 347C747 348 748 355 748 363C749 372 750 385 751 394C752 403 752 410 752 410C753 410 755 409 758 408C762 407 767 406 782 405C803 405 804 405 805 412C805 416 806 417 810 419C820 424 835 424 841 419Z M112 374C126 352 132 337 132 324L132 316 129 313C123 307 110 305 103 309C94 315 94 339 103 371C105 380 106 382 106 382C107 382 109 379 112 374Z M1248 373C1257 339 1257 315 1248 309C1242 304 1225 307 1220 314C1216 320 1219 335 1228 352C1233 363 1244 381 1245 381C1245 381 1247 377 1248 373Z M635 134C628 130 621 113 621 95C621 87 622 86 641 88C665 90 666 91 659 111C654 128 644 137 635 134Z M644 116C645 114 646 110 647 107L649 102 644 102C638 101 634 101 634 102C634 103 637 116 638 118C639 121 641 121 644 116Z"/></svg><span class="vh">Haus Hirt</span></span>
     <h2>Leitung</h2>
     <p>Diese Seite zeigt Bestände, Umsätze und Namen.
       Sie öffnet sich nur mit einer Anmeldung im Fassungstool.</p>
