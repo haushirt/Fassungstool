@@ -1,143 +1,23 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-dichte="maus">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#004947">
 <title>Leitung – Fassungstool · Haus Hirt</title>
-<style>
-:root{
-  --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F6F4EE; --surface-3:#F3F1EB; --surface-4:#ECE9E1;
-  --border:#E6E4DE; --border-strong:#D8D5CD; --border-heavy:#C6C2B8;
-  --fg:#1C1C1E; --fg-secondary:#5A5A60; --fg-muted:#6A6A70; --fg-subtle:#686870;
-  --accent:#9A7B44;
-  --danger:#B4471F; --danger-bg:#FBEDE6; --danger-fg:#7A3A12; --danger-border:#E7C3B2;
-  --success:#3E7A3E; --success-bg:#EFF5EE; --success-fg:#2F5E2F;
-  --info:#3A5266; --info-bg:#EDF2F6; --info-border:#D3E0EA;
-  --warn-bg:#FBF3E2; --warn-fg:#7A5426; --warn-border:#E6D6B4;
-  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
-  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
-  --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-pill:999px;
-  --track-caps:.08em;
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px; --text-lg:19px; --text-display:28px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{background:var(--bg);color:var(--fg);font:400 var(--text-md)/1.45 var(--font);-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-input,select,textarea{font:inherit;color:inherit}
-table{border-collapse:collapse;width:100%}
-
-/* ══ Kopf ══ */
-.kopf{position:sticky;top:0;z-index:40;background:#1C1C1E;color:#fff;
-  display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6);height:56px}
-.kopf h1{font-size:var(--text-md);font-weight:600;letter-spacing:.01em}
-.kopf .haus{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);color:#9A9AA0}
-.kopf .sp{flex:1}
-.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--radius-pill);
-  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:var(--text-xs);color:#fff}
-.chip .pkt{width:7px;height:7px;border-radius:50%;background:#8FBF8F}
-.chip.aus .pkt{background:#C6C2B8}
-.kopf button.k{height:30px;padding:0 12px;border-radius:var(--radius-sm);
-  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);font-size:var(--text-sm)}
-.kopf button.k:hover{background:rgba(255,255,255,.18)}
-
-/* ══ Gerüst ══ */
-.huelle{display:grid;grid-template-columns:212px 1fr;min-height:calc(100vh - 56px)}
-nav.seite{border-right:1px solid var(--border);background:var(--surface-2);padding:var(--space-5) var(--space-3)}
-nav.seite .grp{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
-  color:var(--fg-subtle);padding:0 10px;margin:var(--space-5) 0 var(--space-2)}
-nav.seite .grp:first-child{margin-top:0}
-nav.seite button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
-  padding:8px 10px;border-radius:var(--radius-sm);font-size:var(--text-sm);color:var(--fg-secondary);text-align:left}
-nav.seite button:hover{background:var(--surface-4)}
-nav.seite button.on{background:var(--surface);color:var(--fg);font-weight:600;
-  box-shadow:inset 0 0 0 1px var(--border-strong)}
-nav.seite .zahl{font-size:var(--text-xs);font-weight:600;padding:1px 7px;border-radius:var(--radius-pill);
-  background:var(--surface-4);color:var(--fg-muted)}
-nav.seite button.on .zahl{background:var(--surface-3)}
-nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
-main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
-
-/* ══ Bausteine ══ */
-h2{font-size:var(--text-display);font-weight:700;letter-spacing:-.02em;line-height:1.15}
-.unter{color:var(--fg-muted);font-size:var(--text-sm);margin-top:6px}
-h3{font-size:var(--text-base);font-weight:600;margin-bottom:var(--space-3)}
-section{margin-bottom:var(--space-8)}
-.karte{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5)}
-.gitter{display:grid;gap:var(--space-4)}
-.g3{grid-template-columns:repeat(3,1fr)}
-.g4{grid-template-columns:repeat(4,1fr)}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)}
-.kpi span{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);color:var(--fg-subtle)}
-.kpi b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:6px;line-height:1.1}
-.kpi small{display:block;color:var(--fg-muted);font-size:var(--text-sm);margin-top:2px}
-.kpi.warn{background:var(--warn-bg);border-color:var(--warn-border)}
-.kpi.warn b,.kpi.warn small{color:var(--warn-fg)}
-.kpi.bad{background:var(--danger-bg);border-color:var(--danger-border)}
-.kpi.bad b,.kpi.bad small{color:var(--danger-fg)}
-.kpi.ok{background:var(--success-bg);border-color:#CFE0CC}
-.kpi.ok b,.kpi.ok small{color:var(--success-fg)}
-
-th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:var(--text-sm);vertical-align:middle}
-th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
-  color:var(--fg-subtle);font-weight:600;background:var(--surface-2);position:sticky;top:0;z-index:5}
-td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
-tr:last-child td{border-bottom:0}
-tbody tr:hover{background:var(--surface-2)}
-.tabhuelle{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-.zwt td{background:var(--surface-3);font-size:var(--text-xs);text-transform:uppercase;
-  letter-spacing:var(--track-caps);color:var(--fg-subtle);font-weight:600}
-.dim{color:var(--fg-muted)}
-.mini{font-size:var(--text-xs);color:var(--fg-subtle)}
-.pill{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--text-xs);font-weight:600}
-.p-ok{background:var(--success-bg);color:var(--success-fg)}
-.p-warn{background:var(--warn-bg);color:var(--warn-fg)}
-.p-bad{background:var(--danger-bg);color:var(--danger-fg)}
-.p-neu{background:var(--info-bg);color:var(--info)}
-.p-grau{background:var(--surface-4);color:var(--fg-muted)}
-.diff-plus{color:var(--danger-fg);font-weight:600}
-.diff-minus{color:var(--info);font-weight:600}
-
-button.b{height:36px;padding:0 14px;border-radius:var(--radius-sm);border:1px solid var(--border-heavy);
-  background:var(--surface);font-size:var(--text-sm);font-weight:600}
-button.b:hover{background:var(--surface-2)}
-button.b.stark{background:#1C1C1E;color:#fff;border-color:#1C1C1E}
-button.b.stark:hover{background:#33333A}
-button.b.klein{height:28px;padding:0 10px;font-weight:400}
-.reihe{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
-.rechts{margin-left:auto}
-select,input[type=text],input[type=number],input[type=date]{height:36px;padding:0 10px;border-radius:var(--radius-sm);
-  border:1px solid var(--border-heavy);background:var(--surface);font-size:var(--text-sm)}
-select.klein{height:28px;font-size:var(--text-xs);max-width:270px}
-textarea{width:100%;min-height:150px;padding:var(--space-3);border-radius:var(--radius-md);
-  border:1px solid var(--border-heavy);font:400 12px/1.5 var(--mono);background:var(--surface);resize:vertical}
-.hinweis{border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);font-size:var(--text-sm);
-  background:var(--info-bg);border:1px solid var(--info-border);color:var(--info)}
-.hinweis.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
-.hinweis.bad{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-fg)}
-.leer{text-align:center;padding:var(--space-8) var(--space-4);color:var(--fg-muted);font-size:var(--text-sm)}
-.zone{display:flex;align-items:center;justify-content:center;min-height:190px;border:2px dashed var(--border-heavy);
-  border-radius:var(--radius-lg);background:var(--surface-2);color:var(--fg-muted);font-size:var(--text-sm);
-  text-align:center;padding:var(--space-5);cursor:pointer}
-.zone:hover,.zone.ueber{border-color:var(--accent);background:#FAF6EF;color:var(--fg)}
-.balken{height:6px;border-radius:3px;background:var(--surface-4);overflow:hidden;min-width:70px}
-.balken i{display:block;height:100%;background:var(--accent)}
-.balken i.knapp{background:var(--danger)}
-.balken i.satt{background:var(--success)}
-#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);background:#1C1C1E;color:#fff;
-  padding:10px 18px;border-radius:var(--radius-pill);font-size:var(--text-sm);opacity:0;pointer-events:none;
-  transition:opacity .18s,transform .18s;z-index:90}
-#toast.on{opacity:1;transform:translateX(-50%)}
-</style>
+<link rel="stylesheet" href="tokens.css?v=12">
+<link rel="stylesheet" href="leitung.css?v=12">
 </head>
 <body>
 <header class="kopf">
+  <button class="navknopf" id="bNav" aria-label="Navigation öffnen">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
   <div><div class="haus">Haus Hirt</div><h1>Fassungstool · Leitung</h1></div>
   <div class="sp"></div>
-  <span class="chip" id="cQuelle"><span class="pkt"></span><span id="tQuelle">—</span></span>
-  <span class="chip aus" id="cStand"><span class="pkt"></span><span id="tStand">—</span></span>
+  <span class="chip" id="cQuelle" title="Woher die Daten gerade kommen"><span class="pkt"></span><span id="tQuelle">—</span></span>
+  <span class="chip aus" id="cStand" title="Jüngster Betriebstag mit Daten"><span class="pkt"></span><span id="tStand">—</span></span>
   <button class="k" id="bNeu">Aktualisieren</button>
   <button class="k" id="bFass">Fassungstool &rsaquo;</button>
 </header>
@@ -160,14 +40,21 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);border-radius:var(--
      1  Server   GET /api/vorgaenge   (sobald der Worker sie liefert)
      2  Lokal    localStorage derselben Herkunft
      3  Datei    JSON-Auszug vom Gerät, per Knopf eingelesen
+
+   Gestaltung: tokens.css trägt Farben, Schriften und Bauteile — dieselbe
+   Datei wie index.html. leitung.css trägt nur, was das Backoffice
+   zusätzlich braucht. In dieser Datei steht kein Farbwert mehr.
    ════════════════════════════════════════════════════════════════════ */
 
-const STAMM = {"WINES": [{"id": "w001", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Leindl", "wein": "Langenlois", "jg": "2024", "region": "Kamptal DAC", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w003", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Ott", "wein": "Fass 4", "jg": "2025", "region": "Wagram, Feuersbrunn", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w002", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Simon Gattinger", "wein": "Loiben Federspiel", "jg": "2024", "region": "Wachau DAC", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w004", "f": "WEISS", "r": "Grüner Veltliner", "winzer": "Weinberghof Fritsch", "wein": "Ried Schlossberg 1ÖTW", "jg": "2022", "region": "Wagram DAC, Oberstockstall", "reb": "Grüner Veltliner", "at": 1, "grp": "Grüner Veltliner"}, {"id": "w005", "f": "WEISS", "r": "Riesling", "winzer": "Hirsch", "wein": "Zöbing", "jg": "2024", "region": "Kamptal", "reb": "Riesling", "at": 1, "grp": "Riesling"}, {"id": "w006", "f": "WEISS", "r": "Riesling", "winzer": "Pichler-Krutzler", "wein": "Loiben", "jg": "2024", "region": "Wachau DAC", "reb": "Riesling", "at": 1, "grp": "Riesling"}, {"id": "w007", "f": "WEISS", "r": "Riesling", "winzer": "Emrich-Schönleber", "wein": "Mineral", "jg": "2023", "region": "Monzingen (DE)", "reb": "Riesling", "at": 0, "grp": "Riesling"}, {"id": "w008", "f": "WEISS", "r": "Sauvignon Blanc", "winzer": "Hannes Sabathi", "wein": "Sauvignon Blanc", "jg": "2024", "region": "Südsteiermark DAC, Gamlitz", "reb": "Sauvignon Blanc", "at": 1, "grp": "Sauvignon Blanc"}, {"id": "w009", "f": "WEISS", "r": "Sauvignon Blanc", "winzer": "Verus", "wein": "Sauvignon Blanc", "jg": "?", "region": "Slowenien, Ormož", "reb": "Sauvignon Blanc", "at": 0, "grp": "Sauvignon Blanc"}, {"id": "w010", "f": "WEISS", "r": "Weißburgunder", "winzer": "Hannes Sabathi", "wein": "Weißburgunder", "jg": "2024", "region": "Südsteiermark DAC, Gamlitz", "reb": "Weißburgunder", "at": 1, "grp": "Weißburgunder"}, {"id": "w011", "f": "WEISS", "r": "Chardonnay", "winzer": "Gesellmann", "wein": "Chardonnay", "jg": "2022", "region": "Mittelburgenland, Deutschkreutz", "reb": "Chardonnay", "at": 1, "grp": "Chardonnay"}, {"id": "w013", "f": "WEISS", "r": "Chardonnay", "winzer": "Domaine Borgeot", "wein": "Bourgogne Blanc Côte d'Or", "jg": "2022", "region": "Burgund (FR)", "reb": "Chardonnay", "at": 0, "grp": "Chardonnay"}, {"id": "w014", "f": "WEISS", "r": "Chardonnay", "winzer": "Domaine Pillot", "wein": "Bourgogne Blanc", "jg": "2023", "region": "Burgund (FR)", "reb": "Chardonnay", "at": 0, "grp": "Chardonnay"}, {"id": "w016", "f": "WEISS", "r": "Grauburgunder", "winzer": "Andreas Gsellmann", "wein": "Grauburgunder", "jg": "2025", "region": "Neusiedlersee, Gols", "reb": "Grauburgunder", "at": 1, "grp": "Grauburgunder"}, {"id": "w015", "f": "WEISS", "r": "Grauburgunder", "winzer": "Dürnberg", "wein": "Grauburgunder", "jg": "2021", "region": "Weinviertel", "reb": "Grauburgunder", "at": 1, "grp": "Grauburgunder"}, {"id": "w017", "f": "WEISS", "r": "Roter Veltliner", "winzer": "Josef Fritz", "wein": "Wagram Terrassen", "jg": "2024", "region": "Wagram DAC, Zaussenberg", "reb": "Roter Veltliner", "at": 1, "grp": "Roter Veltliner"}, {"id": "w018", "f": "WEISS", "r": "Muskateller", "winzer": "Muster", "wein": "Gelber Muskateller Styria", "jg": "2025", "region": "Südsteiermark", "reb": "Gelber Muskateller", "at": 1, "grp": "Muskateller"}, {"id": "w019", "f": "WEISS", "r": "Gemischter Satz", "winzer": "Ingrid Groiss", "wein": "Anna's 17", "jg": "2025", "region": "Weinviertel, Breitenwaida", "reb": "Gemischter Satz", "at": 1, "grp": "Gemischter Satz"}, {"id": "w020", "f": "WEISS", "r": "Gemischter Satz", "winzer": "Mayer am Pfarrplatz", "wein": "Wiener Gemischter Satz", "jg": "2025", "region": "Wien", "reb": "Gemischter Satz", "at": 1, "grp": "Gemischter Satz"}, {"id": "w023", "f": "WEISS", "r": "Cuvée", "winzer": "Bründlmayer", "wein": "Spiegel", "jg": "2022", "region": "Kamptal, Langenlois", "reb": "Grauburgunder / Weißburgunder", "at": 1, "grp": "Cuvée"}, {"id": "w022", "f": "WEISS", "r": "Cuvée", "winzer": "Heinrich (f. U&K)", "wein": "Tulpe", "jg": "2019", "region": "Neusiedlersee, Gols", "reb": "Weißburgunder / Chardonnay", "at": 1, "grp": "Cuvée"}, {"id": "w060", "f": "WEISS", "r": "Cuvée", "winzer": "Muster (U&K)", "wein": "Fräulein Klein", "jg": "2021", "region": "Südsteiermark, Gamlitz", "reb": "Muskateller-Cuvée", "at": 1, "grp": "Cuvée"}, {"id": "w021", "f": "WEISS", "r": "Cuvée", "winzer": "Wolfgang Seher", "wein": "Wilde Reben", "jg": "2024", "region": "Niederösterreich", "reb": "GV / Riesling / Muskateller", "at": 1, "grp": "Cuvée"}, {"id": "w045", "f": "ROSÉ", "r": "Zweigelt", "winzer": "Dürnberg", "wein": "Blanc de Noir", "jg": "2024", "region": "Weinviertel", "reb": "Zweigelt", "at": 1, "grp": "Rosé"}, {"id": "w043", "f": "ROSÉ", "r": "Zweigelt", "winzer": "Fritsch (Karl)", "wein": "Wagram Rosé", "jg": "?", "region": "Wagram, Oberstockstall", "reb": "Zweigelt", "at": 1, "grp": "Rosé"}, {"id": "w046", "f": "ROSÉ", "r": "Cuvée", "winzer": "Ultimate Provence", "wein": "UP Rosé", "jg": "2025", "region": "Côtes de Provence (FR)", "reb": "Cinsault / Grenache / Syrah / Rolle", "at": 0, "grp": "Rosé"}, {"id": "w026", "f": "ROT", "r": "Zweigelt", "winzer": "Glatzer", "wein": "Rubin Carnuntum", "jg": "2023", "region": "Carnuntum, Göttlesbrunn", "reb": "Zweigelt", "at": 1, "grp": "Zweigelt"}, {"id": "w027", "f": "ROT", "r": "Zweigelt", "winzer": "Glatzer", "wein": "Dornenvogel", "jg": "2022", "region": "Carnuntum DAC, Göttlesbrunn", "reb": "Zweigelt Reserve", "at": 1, "grp": "Zweigelt"}, {"id": "w025", "f": "ROT", "r": "Zweigelt", "winzer": "Kollwentz", "wein": "Leithakalk", "jg": "2022", "region": "Leithaberg, Großhöflein", "reb": "Zweigelt", "at": 1, "grp": "Zweigelt"}, {"id": "w024", "f": "ROT", "r": "Zweigelt", "winzer": "Werner Achs", "wein": "Goldberg", "jg": "2024", "region": "Neusiedlersee DAC, Gols", "reb": "Zweigelt", "at": 1, "grp": "Zweigelt"}, {"id": "w031", "f": "ROT", "r": "Blaufränkisch", "winzer": "Moric", "wein": "Reserve", "jg": "2023", "region": "Burgenland", "reb": "Blaufränkisch", "at": 1, "grp": "Blaufränkisch"}, {"id": "w030", "f": "ROT", "r": "Blaufränkisch", "winzer": "Muhr", "wein": "Samt & Seide", "jg": "2022", "region": "Carnuntum, Prellenkirchen", "reb": "Blaufränkisch", "at": 1, "grp": "Blaufränkisch"}, {"id": "w028", "f": "ROT", "r": "Blaufränkisch", "winzer": "Nittnaus", "wein": "Kalk & Schiefer", "jg": "2019", "region": "Neusiedlersee, Gols", "reb": "Blaufränkisch", "at": 1, "grp": "Blaufränkisch"}, {"id": "w032", "f": "ROT", "r": "Pinot Noir", "winzer": "Gebeshuber", "wein": "Gumpoldskirchen", "jg": "2022", "region": "Thermenregion", "reb": "Pinot Noir", "at": 1, "grp": "Pinot Noir"}, {"id": "w035", "f": "ROT", "r": "Pinot Noir", "winzer": "Schiefer", "wein": "Pinot Noir", "jg": "2021", "region": "Eisenberg, Königsberg", "reb": "Pinot Noir", "at": 1, "grp": "Pinot Noir"}, {"id": "w033", "f": "ROT", "r": "Pinot Noir", "winzer": "Domaine Confuron-Gindre", "wein": "Bourgogne", "jg": "2022", "region": "Burgund (FR)", "reb": "Pinot Noir", "at": 0, "grp": "Pinot Noir"}, {"id": "w034", "f": "ROT", "r": "Pinot Noir", "winzer": "Domaine Ecard", "wein": "Savigny-les-Beaune", "jg": "2020", "region": "Burgund (FR)", "reb": "Pinot Noir", "at": 0, "grp": "Pinot Noir"}, {"id": "w036", "f": "ROT", "r": "Merlot", "winzer": "Dürnberg", "wein": "Elementum", "jg": "2022", "region": "Niederösterreich, Rosenberg", "reb": "Merlot", "at": 1, "grp": "Merlot"}, {"id": "w041", "f": "ROT", "r": "Sangiovese", "winzer": "Lamole di Lamole", "wein": "Chianti Classico Duelame", "jg": "2024", "region": "Toscana (IT)", "reb": "Sangiovese", "at": 0, "grp": "Sangiovese"}, {"id": "w042", "f": "ROT", "r": "Barbera", "winzer": "Ceste", "wein": "Barbera d'Alba Sposabella", "jg": "?", "region": "Piemont (IT)", "reb": "Barbera", "at": 0, "grp": "Barbera"}, {"id": "w038", "f": "ROT", "r": "Cuvée", "winzer": "Claus Preisinger", "wein": "Heideboden", "jg": "2023", "region": "Gols, Leithagebirge", "reb": "Zw / BF / Merlot", "at": 1, "grp": "Cuvée"}, {"id": "w039", "f": "ROT", "r": "Cuvée", "winzer": "Heinrich", "wein": "Pannobile", "jg": "2020", "region": "Neusiedlersee, Gols", "reb": "Zweigelt / Blaufränkisch", "at": 1, "grp": "Cuvée"}, {"id": "w037", "f": "ROT", "r": "Cuvée", "winzer": "Heinrich (f. U&K)", "wein": "Nelke", "jg": "2017", "region": "Neusiedlersee, Gols", "reb": "Zweigelt / Blaufränkisch", "at": 1, "grp": "Cuvée"}, {"id": "w040", "f": "ROT", "r": "Cuvée", "winzer": "Werner Achs", "wein": "Xur", "jg": "2022", "region": "Neusiedlersee, Gols", "reb": "Zw / BF / St. Laurent", "at": 1, "grp": "Cuvée"}, {"id": "w055", "f": "BUBBLES", "r": "Schaumwein", "winzer": "Seher", "wein": "La Petite Frizzante Rosé", "jg": "?", "region": "Niederösterreich", "reb": "Pinot Noir", "at": 1, "grp": "Sekt Rosé"}, {"id": "w056", "f": "BUBBLES", "r": "Schaumwein", "winzer": "De Saint Gall", "wein": "Champagne 1er Cru Blanc de Blancs", "jg": "n.v.", "region": "Champagne (FR)", "reb": "Chardonnay", "at": 0, "grp": "Champagner"}, {"id": "w057", "f": "BUBBLES", "r": "Schaumwein", "winzer": "La Farra", "wein": "Prosecco Rosé Brut", "jg": "n.v.", "region": "Veneto (IT)", "reb": "Glera / Pinot Nero", "at": 0, "grp": "Sekt Rosé"}, {"id": "serena", "f": "BUBBLES", "r": "Schaumwein", "winzer": "Serena", "wein": "Piu Frizzante", "jg": "n.v.", "region": "Veneto (IT)", "reb": "Glera", "at": 0, "grp": "Sekt"}, {"id": "w048", "f": "NATURAL", "r": "Traminer", "winzer": "Andreas Gsellmann", "wein": "Traminer", "jg": "2021", "region": "Neusiedlersee, Gols", "reb": "Traminer", "at": 1, "grp": "Naturwein weiss"}, {"id": "w050", "f": "NATURAL", "r": "Traminer", "winzer": "Heinrich", "wein": "Roter Traminer Freyheit", "jg": "2021", "region": "Neusiedlersee, Gols", "reb": "Roter Traminer", "at": 1, "grp": "Naturwein weiss"}, {"id": "w049", "f": "NATURAL", "r": "Muskateller", "winzer": "Heinrich", "wein": "Muskat Freyheit", "jg": "2022", "region": "Neusiedlersee, Gols", "reb": "Muskateller", "at": 1, "grp": "Naturwein weiss"}, {"id": "w052", "f": "NATURAL", "r": "Pinot Noir", "winzer": "Heinrich", "wein": "Pinot Freyheit", "jg": "2022", "region": "Neusiedlersee, Gols", "reb": "Pinot Noir", "at": 1, "grp": "Naturwein rot"}, {"id": "w047", "f": "NATURAL", "r": "Cuvée", "winzer": "Claus Preisinger", "wein": "Kalk und Kiesel", "jg": "2022", "region": "Gols, Leithagebirge", "reb": "WB / GV / Welschriesling", "at": 1, "grp": "Naturwein weiss"}, {"id": "w051", "f": "NATURAL", "r": "Cuvée", "winzer": "Heinrich", "wein": "Naked White", "jg": "2023", "region": "Neusiedlersee, Gols", "reb": "WB / Chardonnay / GV", "at": 1, "grp": "Naturwein weiss"}, {"id": "w053", "f": "NATURAL", "r": "Cuvée", "winzer": "Heinrich", "wein": "Naked Red", "jg": "n.v.", "region": "Burgenland", "reb": "Zw / BF / St. Laurent", "at": 1, "grp": "Naturwein rot"}, {"id": "w065", "f": "ROT", "r": "Blaufränkisch", "grp": "Blaufränkisch", "winzer": "Gesellmann", "wein": "Creitzer Reserve", "jg": "2021", "region": "Mittelburgenland DAC, Deutschkreutz", "reb": "Blaufränkisch", "at": 1}, {"id": "w066", "f": "WEISS", "r": "Chardonnay", "grp": "Chardonnay", "winzer": "Kollwentz", "wein": "Leithakalk", "jg": "2024", "region": "Leithaberg, Großhöflein", "reb": "Chardonnay", "at": 1}], "PLAN": {"soll": {"w001": 3, "w003": 3, "w002": 3, "w004": 3, "w005": 3, "w006": 2, "w007": 2, "w008": 3, "w009": 3, "w010": 3, "w011": 3, "w013": 3, "w014": 3, "w016": 3, "w015": 3, "w017": 3, "w018": 3, "w019": 3, "w020": 3, "w023": 2, "w022": 2, "w060": 2, "w021": 2, "w045": 2, "w043": 2, "w046": 2, "w026": 3, "w027": 3, "w025": 3, "w024": 3, "w031": 3, "w030": 3, "w028": 3, "w032": 3, "w035": 3, "w033": 3, "w034": 3, "w036": 3, "w041": 3, "w042": 3, "w038": 3, "w039": 3, "w037": 3, "w040": 3, "w048": 2, "w050": 2, "w049": 2, "w052": 3, "w047": 2, "w051": 3, "w053": 3, "w065": 3, "w066": 3}, "schrank": {"w001": 3, "w003": 3, "w002": 3, "w004": 3, "w005": 3, "w006": 3, "w007": 3, "w008": 3, "w009": 3, "w010": 3, "w011": 3, "w013": 3, "w014": 3, "w016": 4, "w015": 4, "w017": 4, "w018": 4, "w019": 4, "w020": 4, "w023": 4, "w022": 4, "w060": 4, "w021": 4, "w045": 4, "w043": 4, "w046": 4, "w026": 1, "w027": 1, "w025": 1, "w024": 1, "w031": 1, "w030": 1, "w028": 1, "w032": 2, "w035": 2, "w033": 2, "w034": 2, "w036": 1, "w041": 2, "w042": 2, "w038": 2, "w039": 2, "w037": 2, "w040": 2, "w048": 4, "w050": 4, "w049": 4, "w052": 2, "w047": 4, "w051": 4, "w053": 2, "w065": 1, "w066": 3}, "restorder": {"w024": 0, "w026": 1, "w025": 2, "w027": 3, "w028": 4, "w030": 5, "w031": 6, "w065": 7, "w036": 8, "w032": 9, "w035": 10, "w033": 11, "w034": 12, "w041": 13, "w042": 14, "w037": 15, "w039": 16, "w040": 17, "w038": 18, "w053": 19, "w052": 20, "w001": 21, "w002": 22, "w003": 23, "w004": 24, "w005": 25, "w006": 26, "w007": 27, "w008": 28, "w009": 29, "w010": 30, "w011": 31, "w066": 32, "w013": 33, "w014": 34, "w015": 35, "w016": 36, "w017": 37, "w018": 38, "w019": 39, "w020": 40, "w021": 41, "w022": 42, "w023": 43, "w060": 44, "w043": 45, "w045": 46, "w046": 47, "w047": 48, "w051": 49, "w049": 50, "w048": 51, "w050": 52}, "zone": {"w001": 3, "w003": 3, "w002": 3, "w004": 3, "w005": 3, "w006": 3, "w007": 3, "w008": 3, "w009": 3, "w010": 3, "w011": 3, "w013": 3, "w014": 3, "w016": 3, "w015": 3, "w017": 3, "w018": 3, "w019": 3, "w020": 3, "w023": 4, "w022": 4, "w060": 4, "w021": 4, "w045": 2, "w043": 2, "w046": 2, "w026": 1, "w027": 1, "w025": 1, "w024": 1, "w031": 1, "w030": 1, "w028": 1, "w032": 1, "w035": 1, "w033": 1, "w034": 1, "w036": 1, "w041": 1, "w042": 1, "w038": 1, "w039": 1, "w037": 1, "w040": 1, "w055": 6, "w056": 6, "w057": 6, "serena": 6, "w048": 5, "w050": 5, "w049": 5, "w052": 5, "w047": 5, "w051": 5, "w053": 5, "w065": 1, "w066": 3}, "zonen": {"1": {"t": "Rot", "s": "Linker Raum · Hauptregal"}, "2": {"t": "Rosé", "s": "Eingang · Frontregal"}, "3": {"t": "Weiss", "s": "Rechter Raum · Hauptregal"}, "4": {"t": "Cuvée Weiss", "s": "Rechter Raum · Seitenregal links"}, "5": {"t": "Natural", "s": "Rechter Raum · Seitenregal rechts"}, "6": {"t": "Bubbles", "s": "Eingang · Frontregal"}, "7": {"t": "Einzelgänger", "s": "Oben auf dem Regal"}}, "kiste": {"w003": 12}, "barrot": [{"id": "w026", "soll": 3}, {"id": "w065", "soll": 3}, {"id": "w053", "soll": 3}], "bar": [{"id": "serena", "soll": 6}, {"id": "w055", "soll": 2}, {"id": "w056", "soll": 1}, {"id": "w001", "soll": 3}, {"id": "w009", "soll": 3}, {"id": "w005", "soll": 3}, {"id": "w043", "soll": 3}], "backup": [{"id": "serena", "soll": 2}]}, "GETR": {"laden": [{"id": "saft", "t": "Lade 1 · Säfte", "kind": "grid", "cell": 30, "leerOben": 1, "hinweis": "Angebrochene Packungen nach vorne ziehen – neue nach hinten.", "hinweisStark": 1, "grid": [["tomate", "cran", "johan", "mango", "mango", "mango", "mango"], ["grape", "anas", "johan", "mara", "mara", "mara", "mara"]], "spec": [[["holunder", 2], ["birne", 2], ["limette", 1], ["zitrone", 1]], [["sprite", 2], ["spritzer", 3]]]}, {"id": "mix", "t": "Lade 4 · Mischgetränke", "kind": "col", "w": 37, "photo": 1, "cols": [["sanbitter", 10], ["wildberry", 9], ["gingerale", 9], ["bitterlemon", 9], ["tonicth", 9], ["tonicfent", 9], ["gingerbeer", 8], {"versetzt": 1, "platz": 8, "stapel": [["gastklein", 7]]}]}, {"id": "soft", "t": "Lade 5 · Softdrinks", "kind": "col", "w": 46, "cols": [["cola", 7], ["colaz", 7], ["almd", 7], ["berry", 7], ["orange", 7], ["lemon", 7]], "photo": 1, "leerOben": 1, "hinweis": "Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.", "hinweisStark": 1}, {"id": "bier", "t": "Lade 6 · Bier", "kind": "col", "w": 55, "cols": [["st03", 8], ["st05", 7], ["hefe0", 7], ["hell", 7], ["dunkel", 7], {"stapel": [["redale", 4], ["paleale", 4]]}], "photo": 1, "leerOben": 1, "hinweis": "Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.", "hinweisStark": 1}, {"id": "regal", "t": "Regal · Gasteiner", "kind": "rack", "w": 52, "cols": [["noblier", 1], ["gastill", 1]], "rack": ["gasteiner", 18, 6]}], "name": {"tomate": "Tomate", "grape": "Pink Grapefruit", "cran": "Cranberry", "anas": "Ananas", "johan": "Schwarze Johannisbeere", "mango": "Mango", "mara": "Maracuja", "holunder": "Holundersirup", "sprite": "Sprite", "birne": "Weißer Pfirsich · van Nahmen", "limette": "Limettensaft", "zitrone": "Zitronensaft", "spritzer": "Spritzerwein", "sanbitter": "Sanbitter", "wildberry": "Schweppes Wild Berry", "gingerale": "Thomas Henry Ginger Ale", "bitterlemon": "Thomas Henry Bitter Lemon", "tonicth": "Thomas Henry Tonic", "tonicfent": "Fentimans Tonic", "gingerbeer": "Fentimans Ginger Beer", "gastklein": "Gasteiner 0,25 l", "cola": "Cola", "colaz": "Cola Zero", "almd": "Almdudler", "berry": "Berry Lemonade", "orange": "Orange Lemonade", "lemon": "Lemon Lemonade", "st03": "Stiegl 0,0 % · 0,33", "st05": "Stiegl Freibier alkoholfrei", "hefe0": "Franziskaner Weissbier alkoholfrei", "hell": "Franziskaner Weissbier hell", "dunkel": "Franziskaner Weissbier dunkel", "gasteiner": "Gasteiner 1 l", "gastill": "Gasteiner still", "noblier": "Noblier alkoholfrei", "redale": "Raschhofer Roter Engel · Red Ale", "paleale": "Raschhofer Silberpfeil · Pale Ale"}, "kurz": {"tonicth": "Tonic T.H.", "tonicfent": "Tonic Fent.", "gingerale": "Ginger Ale", "bitterlemon": "Bitter Lemon", "gingerbeer": "Ginger Beer", "wildberry": "Wild Berry", "gastklein": "Gast. 0,25", "holunder": "Holunder", "birne": "Pfirsich", "limette": "Limette", "zitrone": "Zitrone", "spritzer": "Spritzer", "sprite": "Sprite", "st03": "0,0 klein", "st05": "Freibier", "hefe0": "Weissb. afr", "hell": "Hell", "dunkel": "Dunkel", "colaz": "Zero", "almd": "Almdudler", "berry": "Berry", "orange": "Orange", "lemon": "Lemon", "cola": "Cola", "sanbitter": "Sanbitter", "noblier": "Noblier", "gastill": "Still", "gasteiner": "Gast. 1 l", "redale": "Red Ale", "paleale": "Pale Ale"}, "col": {"sanbitter": "#CC0A14", "wildberry": "#C4386A", "gingerale": "#9B26B6", "bitterlemon": "#3E9E1E", "tonicth": "#F5D000", "tonicfent": "#B08A5A", "gingerbeer": "#7A3F1E", "gastklein": "#1D6E96", "cola": "#D6202A", "colaz": "#2A2A2E", "almd": "#D2A83A", "berry": "#99101A", "orange": "#EE7F1E", "lemon": "#E8C21A", "st03": "#1B7FD4", "st05": "#166FBE", "hefe0": "#6E8CA8", "hell": "#B04A12", "dunkel": "#5E2A12", "gasteiner": "#1D6E96", "gastill": "#4E7A8E", "noblier": "#9A7B44", "redale": "#D51726", "paleale": "#7DBE2E"}, "spec": {"holunder": "#8A7E62", "sprite": "#2FA84F", "birne": "#C2A93E", "limette": "#6E9A2A", "zitrone": "#D9C43A", "spritzer": "#4A6B2A"}, "skal": {"st03": 0.76, "gastklein": 0.84}}};
+const STAMM = {"WINES":[{"id":"w001","f":"WEISS","r":"Grüner Veltliner","winzer":"Leindl","wein":"Langenlois","jg":"2024","region":"Kamptal DAC","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w003","f":"WEISS","r":"Grüner Veltliner","winzer":"Ott","wein":"Fass 4","jg":"2025","region":"Wagram, Feuersbrunn","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w002","f":"WEISS","r":"Grüner Veltliner","winzer":"Simon Gattinger","wein":"Loiben Federspiel","jg":"2024","region":"Wachau DAC","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w004","f":"WEISS","r":"Grüner Veltliner","winzer":"Weinberghof Fritsch","wein":"Ried Schlossberg 1ÖTW","jg":"2022","region":"Wagram DAC, Oberstockstall","reb":"Grüner Veltliner","at":1,"grp":"Grüner Veltliner"},{"id":"w005","f":"WEISS","r":"Riesling","winzer":"Hirsch","wein":"Zöbing","jg":"2024","region":"Kamptal","reb":"Riesling","at":1,"grp":"Riesling"},{"id":"w006","f":"WEISS","r":"Riesling","winzer":"Pichler-Krutzler","wein":"Loiben","jg":"2024","region":"Wachau DAC","reb":"Riesling","at":1,"grp":"Riesling"},{"id":"w007","f":"WEISS","r":"Riesling","winzer":"Emrich-Schönleber","wein":"Mineral","jg":"2023","region":"Monzingen (DE)","reb":"Riesling","at":0,"grp":"Riesling"},{"id":"w008","f":"WEISS","r":"Sauvignon Blanc","winzer":"Hannes Sabathi","wein":"Sauvignon Blanc","jg":"2024","region":"Südsteiermark DAC, Gamlitz","reb":"Sauvignon Blanc","at":1,"grp":"Sauvignon Blanc"},{"id":"w009","f":"WEISS","r":"Sauvignon Blanc","winzer":"Verus","wein":"Sauvignon Blanc","jg":"?","region":"Slowenien, Ormož","reb":"Sauvignon Blanc","at":0,"grp":"Sauvignon Blanc"},{"id":"w010","f":"WEISS","r":"Weißburgunder","winzer":"Hannes Sabathi","wein":"Weißburgunder","jg":"2024","region":"Südsteiermark DAC, Gamlitz","reb":"Weißburgunder","at":1,"grp":"Weißburgunder"},{"id":"w011","f":"WEISS","r":"Chardonnay","winzer":"Gesellmann","wein":"Chardonnay","jg":"2022","region":"Mittelburgenland, Deutschkreutz","reb":"Chardonnay","at":1,"grp":"Chardonnay"},{"id":"w013","f":"WEISS","r":"Chardonnay","winzer":"Domaine Borgeot","wein":"Bourgogne Blanc Côte d'Or","jg":"2022","region":"Burgund (FR)","reb":"Chardonnay","at":0,"grp":"Chardonnay"},{"id":"w014","f":"WEISS","r":"Chardonnay","winzer":"Domaine Pillot","wein":"Bourgogne Blanc","jg":"2023","region":"Burgund (FR)","reb":"Chardonnay","at":0,"grp":"Chardonnay"},{"id":"w016","f":"WEISS","r":"Grauburgunder","winzer":"Andreas Gsellmann","wein":"Grauburgunder","jg":"2025","region":"Neusiedlersee, Gols","reb":"Grauburgunder","at":1,"grp":"Grauburgunder"},{"id":"w015","f":"WEISS","r":"Grauburgunder","winzer":"Dürnberg","wein":"Grauburgunder","jg":"2021","region":"Weinviertel","reb":"Grauburgunder","at":1,"grp":"Grauburgunder"},{"id":"w017","f":"WEISS","r":"Roter Veltliner","winzer":"Josef Fritz","wein":"Wagram Terrassen","jg":"2024","region":"Wagram DAC, Zaussenberg","reb":"Roter Veltliner","at":1,"grp":"Roter Veltliner"},{"id":"w018","f":"WEISS","r":"Muskateller","winzer":"Muster","wein":"Gelber Muskateller Styria","jg":"2025","region":"Südsteiermark","reb":"Gelber Muskateller","at":1,"grp":"Muskateller"},{"id":"w019","f":"WEISS","r":"Gemischter Satz","winzer":"Ingrid Groiss","wein":"Anna's 17","jg":"2025","region":"Weinviertel, Breitenwaida","reb":"Gemischter Satz","at":1,"grp":"Gemischter Satz"},{"id":"w020","f":"WEISS","r":"Gemischter Satz","winzer":"Mayer am Pfarrplatz","wein":"Wiener Gemischter Satz","jg":"2025","region":"Wien","reb":"Gemischter Satz","at":1,"grp":"Gemischter Satz"},{"id":"w023","f":"WEISS","r":"Cuvée","winzer":"Bründlmayer","wein":"Spiegel","jg":"2022","region":"Kamptal, Langenlois","reb":"Grauburgunder / Weißburgunder","at":1,"grp":"Cuvée"},{"id":"w022","f":"WEISS","r":"Cuvée","winzer":"Heinrich (f. U&K)","wein":"Tulpe","jg":"2019","region":"Neusiedlersee, Gols","reb":"Weißburgunder / Chardonnay","at":1,"grp":"Cuvée"},{"id":"w060","f":"WEISS","r":"Cuvée","winzer":"Muster (U&K)","wein":"Fräulein Klein","jg":"2021","region":"Südsteiermark, Gamlitz","reb":"Muskateller-Cuvée","at":1,"grp":"Cuvée"},{"id":"w021","f":"WEISS","r":"Cuvée","winzer":"Wolfgang Seher","wein":"Wilde Reben","jg":"2024","region":"Niederösterreich","reb":"GV / Riesling / Muskateller","at":1,"grp":"Cuvée"},{"id":"w045","f":"ROSÉ","r":"Zweigelt","winzer":"Dürnberg","wein":"Blanc de Noir","jg":"2024","region":"Weinviertel","reb":"Zweigelt","at":1,"grp":"Rosé"},{"id":"w043","f":"ROSÉ","r":"Zweigelt","winzer":"Fritsch (Karl)","wein":"Wagram Rosé","jg":"?","region":"Wagram, Oberstockstall","reb":"Zweigelt","at":1,"grp":"Rosé"},{"id":"w046","f":"ROSÉ","r":"Cuvée","winzer":"Ultimate Provence","wein":"UP Rosé","jg":"2025","region":"Côtes de Provence (FR)","reb":"Cinsault / Grenache / Syrah / Rolle","at":0,"grp":"Rosé"},{"id":"w026","f":"ROT","r":"Zweigelt","winzer":"Glatzer","wein":"Rubin Carnuntum","jg":"2023","region":"Carnuntum, Göttlesbrunn","reb":"Zweigelt","at":1,"grp":"Zweigelt"},{"id":"w027","f":"ROT","r":"Zweigelt","winzer":"Glatzer","wein":"Dornenvogel","jg":"2022","region":"Carnuntum DAC, Göttlesbrunn","reb":"Zweigelt Reserve","at":1,"grp":"Zweigelt"},{"id":"w025","f":"ROT","r":"Zweigelt","winzer":"Kollwentz","wein":"Leithakalk","jg":"2022","region":"Leithaberg, Großhöflein","reb":"Zweigelt","at":1,"grp":"Zweigelt"},{"id":"w024","f":"ROT","r":"Zweigelt","winzer":"Werner Achs","wein":"Goldberg","jg":"2024","region":"Neusiedlersee DAC, Gols","reb":"Zweigelt","at":1,"grp":"Zweigelt"},{"id":"w031","f":"ROT","r":"Blaufränkisch","winzer":"Moric","wein":"Reserve","jg":"2023","region":"Burgenland","reb":"Blaufränkisch","at":1,"grp":"Blaufränkisch"},{"id":"w030","f":"ROT","r":"Blaufränkisch","winzer":"Muhr","wein":"Samt & Seide","jg":"2022","region":"Carnuntum, Prellenkirchen","reb":"Blaufränkisch","at":1,"grp":"Blaufränkisch"},{"id":"w028","f":"ROT","r":"Blaufränkisch","winzer":"Nittnaus","wein":"Kalk & Schiefer","jg":"2019","region":"Neusiedlersee, Gols","reb":"Blaufränkisch","at":1,"grp":"Blaufränkisch"},{"id":"w032","f":"ROT","r":"Pinot Noir","winzer":"Gebeshuber","wein":"Gumpoldskirchen","jg":"2022","region":"Thermenregion","reb":"Pinot Noir","at":1,"grp":"Pinot Noir"},{"id":"w035","f":"ROT","r":"Pinot Noir","winzer":"Schiefer","wein":"Pinot Noir","jg":"2021","region":"Eisenberg, Königsberg","reb":"Pinot Noir","at":1,"grp":"Pinot Noir"},{"id":"w033","f":"ROT","r":"Pinot Noir","winzer":"Domaine Confuron-Gindre","wein":"Bourgogne","jg":"2022","region":"Burgund (FR)","reb":"Pinot Noir","at":0,"grp":"Pinot Noir"},{"id":"w034","f":"ROT","r":"Pinot Noir","winzer":"Domaine Ecard","wein":"Savigny-les-Beaune","jg":"2020","region":"Burgund (FR)","reb":"Pinot Noir","at":0,"grp":"Pinot Noir"},{"id":"w036","f":"ROT","r":"Merlot","winzer":"Dürnberg","wein":"Elementum","jg":"2022","region":"Niederösterreich, Rosenberg","reb":"Merlot","at":1,"grp":"Merlot"},{"id":"w041","f":"ROT","r":"Sangiovese","winzer":"Lamole di Lamole","wein":"Chianti Classico Duelame","jg":"2024","region":"Toscana (IT)","reb":"Sangiovese","at":0,"grp":"Sangiovese"},{"id":"w042","f":"ROT","r":"Barbera","winzer":"Ceste","wein":"Barbera d'Alba Sposabella","jg":"?","region":"Piemont (IT)","reb":"Barbera","at":0,"grp":"Barbera"},{"id":"w038","f":"ROT","r":"Cuvée","winzer":"Claus Preisinger","wein":"Heideboden","jg":"2023","region":"Gols, Leithagebirge","reb":"Zw / BF / Merlot","at":1,"grp":"Cuvée"},{"id":"w039","f":"ROT","r":"Cuvée","winzer":"Heinrich","wein":"Pannobile","jg":"2020","region":"Neusiedlersee, Gols","reb":"Zweigelt / Blaufränkisch","at":1,"grp":"Cuvée"},{"id":"w037","f":"ROT","r":"Cuvée","winzer":"Heinrich (f. U&K)","wein":"Nelke","jg":"2017","region":"Neusiedlersee, Gols","reb":"Zweigelt / Blaufränkisch","at":1,"grp":"Cuvée"},{"id":"w040","f":"ROT","r":"Cuvée","winzer":"Werner Achs","wein":"Xur","jg":"2022","region":"Neusiedlersee, Gols","reb":"Zw / BF / St. Laurent","at":1,"grp":"Cuvée"},{"id":"w055","f":"BUBBLES","r":"Schaumwein","winzer":"Seher","wein":"La Petite Frizzante Rosé","jg":"?","region":"Niederösterreich","reb":"Pinot Noir","at":1,"grp":"Sekt Rosé"},{"id":"w056","f":"BUBBLES","r":"Schaumwein","winzer":"De Saint Gall","wein":"Champagne 1er Cru Blanc de Blancs","jg":"n.v.","region":"Champagne (FR)","reb":"Chardonnay","at":0,"grp":"Champagner"},{"id":"w057","f":"BUBBLES","r":"Schaumwein","winzer":"La Farra","wein":"Prosecco Rosé Brut","jg":"n.v.","region":"Veneto (IT)","reb":"Glera / Pinot Nero","at":0,"grp":"Sekt Rosé"},{"id":"serena","f":"BUBBLES","r":"Schaumwein","winzer":"Serena","wein":"Piu Frizzante","jg":"n.v.","region":"Veneto (IT)","reb":"Glera","at":0,"grp":"Sekt"},{"id":"w048","f":"NATURAL","r":"Traminer","winzer":"Andreas Gsellmann","wein":"Traminer","jg":"2021","region":"Neusiedlersee, Gols","reb":"Traminer","at":1,"grp":"Naturwein weiss"},{"id":"w050","f":"NATURAL","r":"Traminer","winzer":"Heinrich","wein":"Roter Traminer Freyheit","jg":"2021","region":"Neusiedlersee, Gols","reb":"Roter Traminer","at":1,"grp":"Naturwein weiss"},{"id":"w049","f":"NATURAL","r":"Muskateller","winzer":"Heinrich","wein":"Muskat Freyheit","jg":"2022","region":"Neusiedlersee, Gols","reb":"Muskateller","at":1,"grp":"Naturwein weiss"},{"id":"w052","f":"NATURAL","r":"Pinot Noir","winzer":"Heinrich","wein":"Pinot Freyheit","jg":"2022","region":"Neusiedlersee, Gols","reb":"Pinot Noir","at":1,"grp":"Naturwein rot"},{"id":"w047","f":"NATURAL","r":"Cuvée","winzer":"Claus Preisinger","wein":"Kalk und Kiesel","jg":"2022","region":"Gols, Leithagebirge","reb":"WB / GV / Welschriesling","at":1,"grp":"Naturwein weiss"},{"id":"w051","f":"NATURAL","r":"Cuvée","winzer":"Heinrich","wein":"Naked White","jg":"2023","region":"Neusiedlersee, Gols","reb":"WB / Chardonnay / GV","at":1,"grp":"Naturwein weiss"},{"id":"w053","f":"NATURAL","r":"Cuvée","winzer":"Heinrich","wein":"Naked Red","jg":"n.v.","region":"Burgenland","reb":"Zw / BF / St. Laurent","at":1,"grp":"Naturwein rot"},{"id":"w065","f":"ROT","r":"Blaufränkisch","grp":"Blaufränkisch","winzer":"Gesellmann","wein":"Creitzer Reserve","jg":"2021","region":"Mittelburgenland DAC, Deutschkreutz","reb":"Blaufränkisch","at":1},{"id":"w066","f":"WEISS","r":"Chardonnay","grp":"Chardonnay","winzer":"Kollwentz","wein":"Leithakalk","jg":"2024","region":"Leithaberg, Großhöflein","reb":"Chardonnay","at":1}],"PLAN":{"soll":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":2,"w007":2,"w008":3,"w009":3,"w010":3,"w011":3,"w013":3,"w014":3,"w016":3,"w015":3,"w017":3,"w018":3,"w019":3,"w020":3,"w023":2,"w022":2,"w060":2,"w021":2,"w045":2,"w043":2,"w046":2,"w026":3,"w027":3,"w025":3,"w024":3,"w031":3,"w030":3,"w028":3,"w032":3,"w035":3,"w033":3,"w034":3,"w036":3,"w041":3,"w042":3,"w038":3,"w039":3,"w037":3,"w040":3,"w048":2,"w050":2,"w049":2,"w052":3,"w047":2,"w051":3,"w053":3,"w065":3,"w066":3},"schrank":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":3,"w007":3,"w008":3,"w009":3,"w010":3,"w011":3,"w013":3,"w014":3,"w016":4,"w015":4,"w017":4,"w018":4,"w019":4,"w020":4,"w023":4,"w022":4,"w060":4,"w021":4,"w045":4,"w043":4,"w046":4,"w026":1,"w027":1,"w025":1,"w024":1,"w031":1,"w030":1,"w028":1,"w032":2,"w035":2,"w033":2,"w034":2,"w036":1,"w041":2,"w042":2,"w038":2,"w039":2,"w037":2,"w040":2,"w048":4,"w050":4,"w049":4,"w052":2,"w047":4,"w051":4,"w053":2,"w065":1,"w066":3},"restorder":{"w024":0,"w026":1,"w025":2,"w027":3,"w028":4,"w030":5,"w031":6,"w065":7,"w036":8,"w032":9,"w035":10,"w033":11,"w034":12,"w041":13,"w042":14,"w037":15,"w039":16,"w040":17,"w038":18,"w053":19,"w052":20,"w001":21,"w002":22,"w003":23,"w004":24,"w005":25,"w006":26,"w007":27,"w008":28,"w009":29,"w010":30,"w011":31,"w066":32,"w013":33,"w014":34,"w015":35,"w016":36,"w017":37,"w018":38,"w019":39,"w020":40,"w021":41,"w022":42,"w023":43,"w060":44,"w043":45,"w045":46,"w046":47,"w047":48,"w051":49,"w049":50,"w048":51,"w050":52},"zone":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":3,"w007":3,"w008":3,"w009":3,"w010":3,"w011":3,"w013":3,"w014":3,"w016":3,"w015":3,"w017":3,"w018":3,"w019":3,"w020":3,"w023":4,"w022":4,"w060":4,"w021":4,"w045":2,"w043":2,"w046":2,"w026":1,"w027":1,"w025":1,"w024":1,"w031":1,"w030":1,"w028":1,"w032":1,"w035":1,"w033":1,"w034":1,"w036":1,"w041":1,"w042":1,"w038":1,"w039":1,"w037":1,"w040":1,"w055":6,"w056":6,"w057":6,"serena":6,"w048":5,"w050":5,"w049":5,"w052":5,"w047":5,"w051":5,"w053":5,"w065":1,"w066":3},"zonen":{"1":{"t":"Rot","s":"Linker Raum · Hauptregal"},"2":{"t":"Rosé","s":"Eingang · Frontregal"},"3":{"t":"Weiss","s":"Rechter Raum · Hauptregal"},"4":{"t":"Cuvée Weiss","s":"Rechter Raum · Seitenregal links"},"5":{"t":"Natural","s":"Rechter Raum · Seitenregal rechts"},"6":{"t":"Bubbles","s":"Eingang · Frontregal"},"7":{"t":"Einzelgänger","s":"Oben auf dem Regal"}},"kiste":{"w003":12},"barrot":[{"id":"w026","soll":3},{"id":"w065","soll":3},{"id":"w053","soll":3}],"bar":[{"id":"serena","soll":6},{"id":"w055","soll":2},{"id":"w056","soll":1},{"id":"w001","soll":3},{"id":"w009","soll":3},{"id":"w005","soll":3},{"id":"w043","soll":3}],"backup":[{"id":"serena","soll":2}]},"GETR":{"laden":[{"id":"saft","t":"Lade 1 · Säfte","kind":"grid","cell":30,"leerOben":1,"hinweis":"Angebrochene Packungen nach vorne ziehen – neue nach hinten.","hinweisStark":1,"grid":[["tomate","cran","johan","mango","mango","mango","mango"],["grape","anas","johan","mara","mara","mara","mara"]],"spec":[[["holunder",2],["birne",2],["limette",1],["zitrone",1]],[["sprite",2],["spritzer",3]]]},{"id":"mix","t":"Lade 4 · Mischgetränke","kind":"col","w":37,"photo":1,"cols":[["sanbitter",10],["wildberry",9],["gingerale",9],["bitterlemon",9],["tonicth",9],["tonicfent",9],["gingerbeer",8],{"versetzt":1,"platz":8,"stapel":[["gastklein",7]]}]},{"id":"soft","t":"Lade 5 · Softdrinks","kind":"col","w":46,"cols":[["cola",7],["colaz",7],["almd",7],["berry",7],["orange",7],["lemon",7]],"photo":1,"leerOben":1,"hinweis":"Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.","hinweisStark":1},{"id":"bier","t":"Lade 6 · Bier","kind":"col","w":55,"cols":[["st03",8],["st05",7],["hefe0",7],["hell",7],["dunkel",7],{"stapel":[["redale",4],["paleale",4]]}],"photo":1,"leerOben":1,"hinweis":"Gekühlte Flaschen nach vorne ziehen – neue warme nach hinten.","hinweisStark":1},{"id":"regal","t":"Regal · Gasteiner","kind":"rack","w":52,"cols":[["noblier",1],["gastill",1]],"rack":["gasteiner",18,6]}],"name":{"tomate":"Tomate","grape":"Pink Grapefruit","cran":"Cranberry","anas":"Ananas","johan":"Schwarze Johannisbeere","mango":"Mango","mara":"Maracuja","holunder":"Holundersirup","sprite":"Sprite","birne":"Weißer Pfirsich · van Nahmen","limette":"Limettensaft","zitrone":"Zitronensaft","spritzer":"Spritzerwein","sanbitter":"Sanbitter","wildberry":"Schweppes Wild Berry","gingerale":"Thomas Henry Ginger Ale","bitterlemon":"Thomas Henry Bitter Lemon","tonicth":"Thomas Henry Tonic","tonicfent":"Fentimans Tonic","gingerbeer":"Fentimans Ginger Beer","gastklein":"Gasteiner 0,25 l","cola":"Cola","colaz":"Cola Zero","almd":"Almdudler","berry":"Berry Lemonade","orange":"Orange Lemonade","lemon":"Lemon Lemonade","st03":"Stiegl 0,0 % · 0,33","st05":"Stiegl Freibier alkoholfrei","hefe0":"Franziskaner Weissbier alkoholfrei","hell":"Franziskaner Weissbier hell","dunkel":"Franziskaner Weissbier dunkel","gasteiner":"Gasteiner 1 l","gastill":"Gasteiner still","noblier":"Noblier alkoholfrei","redale":"Raschhofer Roter Engel · Red Ale","paleale":"Raschhofer Silberpfeil · Pale Ale"},"kurz":{"tonicth":"Tonic T.H.","tonicfent":"Tonic Fent.","gingerale":"Ginger Ale","bitterlemon":"Bitter Lemon","gingerbeer":"Ginger Beer","wildberry":"Wild Berry","gastklein":"Gast. 0,25","holunder":"Holunder","birne":"Pfirsich","limette":"Limette","zitrone":"Zitrone","spritzer":"Spritzer","sprite":"Sprite","st03":"0,0 klein","st05":"Freibier","hefe0":"Weissb. afr","hell":"Hell","dunkel":"Dunkel","colaz":"Zero","almd":"Almdudler","berry":"Berry","orange":"Orange","lemon":"Lemon","cola":"Cola","sanbitter":"Sanbitter","noblier":"Noblier","gastill":"Still","gasteiner":"Gast. 1 l","redale":"Red Ale","paleale":"Pale Ale"},"col":{"sanbitter":"#CC0A14","wildberry":"#C4386A","gingerale":"#9B26B6","bitterlemon":"#3E9E1E","tonicth":"#F5D000","tonicfent":"#B08A5A","gingerbeer":"#7A3F1E","gastklein":"#1D6E96","cola":"#D6202A","colaz":"#2A2A2E","almd":"#D2A83A","berry":"#99101A","orange":"#EE7F1E","lemon":"#E8C21A","st03":"#1B7FD4","st05":"#166FBE","hefe0":"#6E8CA8","hell":"#B04A12","dunkel":"#5E2A12","gasteiner":"#1D6E96","gastill":"#4E7A8E","noblier":"#9A7B44","redale":"#D51726","paleale":"#7DBE2E"},"spec":{"holunder":"#8A7E62","sprite":"#2FA84F","birne":"#C2A93E","limette":"#6E9A2A","zitrone":"#D9C43A","spritzer":"#4A6B2A"},"skal":{"st03":0.76,"gastklein":0.84}}};
 const WINES = STAMM.WINES, PLAN = STAMM.PLAN, GETR = STAMM.GETR;
 const byId = id => WINES.find(w => w.id === id);
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const num = n => (Math.round(n * 100) / 100).toLocaleString("de-AT", {maximumFractionDigits:2});
+/* Eine Nachkommastelle. „4,67 Flaschen" behauptet eine Genauigkeit, die
+   eine Rechnung über Ausschankmengen nicht hat — und macht die Spalte
+   schwer überfliegbar. */
+const num = n => (Math.round(n * 10) / 10).toLocaleString("de-AT", {maximumFractionDigits:1});
 const eur = n => (+n||0).toLocaleString("de-AT", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
 
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
@@ -314,14 +201,12 @@ async function werBinIch(){
   return null;
 }
 function verlangeAnmeldung(){
-  document.body.innerHTML=`<div style="max-width:420px;margin:18vh auto;text-align:center;
-    font:400 15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1C1C1E">
-    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#686870">Haus Hirt</div>
-    <h1 style="font-size:28px;margin:6px 0 10px">Leitung</h1>
-    <p style="color:#5A5A60;margin-bottom:22px">Diese Seite zeigt Bestände, Umsätze und Namen.
+  document.body.innerHTML=`<div class="tuer">
+    <div class="haus">Haus Hirt</div>
+    <h2>Leitung</h2>
+    <p>Diese Seite zeigt Bestände, Umsätze und Namen.
       Sie öffnet sich nur mit einer Anmeldung im Fassungstool.</p>
-    <a href="index.html" style="display:inline-block;background:#1C1C1E;color:#fff;
-      padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:600">Zum Fassungstool</a></div>`;
+    <a class="b stark" href="index.html">Zum Fassungstool</a></div>`;
 }
 
 async function ladeDaten(){
@@ -624,7 +509,10 @@ function zeichneNav(){
     const z=zaehler(s.id);
     b.innerHTML=`<span>${esc(s.t)}</span>`+
       (z?`<span class="zahl ${s.id==="zuordnung"||s.id==="abgleich"?"rot":""}">${z}</span>`:"");
-    b.onclick=()=>{ SEITE=s.id; zeichne(); window.scrollTo(0,0); };
+    /* Auf schmalen Schirmen liegt die Navigation über dem Inhalt und
+       schließt sich nach der Wahl von selbst. */
+    b.onclick=()=>{ SEITE=s.id; document.body.classList.remove("navoffen");
+      zeichne(); window.scrollTo(0,0); };
     n.appendChild(b);
   });
 }
@@ -658,14 +546,19 @@ function vHeute(m){
 
   const k=document.createElement("section");
   k.className="gitter g4";
-  const kachel=(t,w,u,kl)=>`<div class="kpi ${kl||""}"><span>${t}</span><b>${w}</b><small>${u||"&nbsp;"}</small></div>`;
+  /* Der große Slot ist für Ziffern gebaut. Ein grünes „eingegangen" darin
+     wiegt schwerer als die rote 7 daneben — obwohl nur die 7 eine Handlung
+     auslöst. Zustände bekommen deshalb die schmale Variante. */
+  const kachel=(t,w,u,kl,status)=>
+    `<div class="kpi ${kl||""}${status?" kpi--status":""}"><span>${t}</span>`+
+    `<b>${w}</b><small>${u||"&nbsp;"}</small></div>`;
   k.innerHTML=
     kachel("Tagesfassung", fassung?"eingegangen":"fehlt",
       fassung?esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein":"noch keine Fassung für diesen Tag",
-      fassung?"ok":"warn")+
-    kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE:"fehlen",
+      fassung?"ok":"warn", true)+
+    kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE+" Tagen":"fehlen",
       a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
-      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad")+
+      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true)+
     kachel("Auffällige Differenzen", grob.length,
       grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich",
       grob.length>4?"bad":grob.length?"warn":"ok")+
@@ -688,20 +581,26 @@ function vHeute(m){
     m.appendChild(s);
   }
 
-  /* Die grössten Ausreisser */
+  /* Die größten Ausreißer */
   const s2=document.createElement("section");
   const top=a.zeilen.filter(r=>Math.abs(r.diff)>=1).slice(0,10);
-  s2.innerHTML=`<h3>Grösste Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
+  s2.innerHTML=`<h3>Größte Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
       </tr></thead><tbody>${top.map(r=>`<tr>
         <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="mini">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
+        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
       </tr>`).join("")}</tbody></table></div>`
     : `<div class="karte leer">Keine Abweichung über einer Flasche.</div>`);
+  /* Der Bestellvorschlag darunter hat „Alle ansehen" — gleiche Stelle,
+     also auch hier ein Weg in die volle Ansicht. */
+  if(top.length)s2.insertAdjacentHTML("beforeend",
+    `<div class="reihe" style="margin-top:12px">
+       <button class="b leise" id="bAlleAbw">Zum vollständigen Abgleich</button></div>`);
   m.appendChild(s2);
+  if(top.length)$("#bAlleAbw").onclick=()=>{ SEITE="abgleich"; zeichne(); window.scrollTo(0,0); };
 
   /* Bestellvorschlag kompakt */
   if(best.length){
@@ -831,14 +730,16 @@ function vImport(m){
     let auto=0, offen=0, ign=0;
     z.positionen.forEach(p=>{ const zu=zuordnung(p);
       if(zu.status==="offen") offen++; else if(zu.status==="ignoriert") ign++; else auto++; });
+    /* Die Tabellenhülle bringt ihre Scrollfläche jetzt selbst mit —
+       das frühere Inline-Styling würde die neue Regel überschreiben. */
     vor.innerHTML=`<h3>Vorschau</h3>
       <div class="gitter g4" style="margin-bottom:16px">
-        <div class="kpi"><span>Betriebstag</span><b style="font-size:19px">${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc(z.nr||"")}</small></div>
+        <div class="kpi kpi--status"><span>Betriebstag</span><b>${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc(z.nr||"")}</small></div>
         <div class="kpi"><span>Positionen</span><b>${z.positionen.length}</b><small>Block „${esc(z.block)}“</small></div>
         <div class="kpi"><span>Zugeordnet</span><b>${auto}</b><small>${ign} ignoriert</small></div>
         <div class="kpi ${offen?"warn":"ok"}"><span>Offen</span><b>${offen}</b><small>brauchen eine Zuordnung</small></div>
       </div>
-      <div class="tabhuelle" style="max-height:420px;overflow:auto"><table><thead><tr>
+      <div class="tabhuelle"><table><thead><tr>
         <th>Kassenname</th><th class="r">Anzahl</th><th class="r">Umsatz</th><th>Zuordnung</th><th class="r">Flaschen</th>
       </tr></thead><tbody>${z.positionen.map(p=>{
         const zu=zuordnung(p); const w=zu.id?byId(zu.id):null;
@@ -896,7 +797,7 @@ function vBestand(m){
     if(minus.length) m.insertAdjacentHTML("beforeend",
       `<section><div class="hinweis bad">${minus.length} Positionen stehen rechnerisch unter null.
        Entweder wurde ohne Vorgang aus dem Keller geholt, oder die Zählung ist zu alt.
-       Beides löst dieselbe Massnahme aus: neu zählen.</div></section>`);
+       Beides löst dieselbe Maßnahme aus: neu zählen.</div></section>`);
   }
 
   const zonen={};
@@ -913,7 +814,7 @@ function vBestand(m){
         <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span></td>
         <td class="mini">${esc(w.reb)}</td>
         <td class="r">${b==null?'<span class="dim">—</span>'
-          :b<0?`<b style="color:var(--danger-fg)">${num(b)}</b>`:`<b>${num(b)}</b>`}</td>
+          :b<0?`<b class="neg">${num(b)}</b>`:`<b>${num(b)}</b>`}</td>
         <td class="r dim">${soll||"—"}</td>
         <td class="r">${pt?num(pt):'<span class="dim">—</span>'}</td>
         <td class="r">${rw===Infinity?'<span class="dim">—</span>':
@@ -1034,7 +935,7 @@ function vVorgaenge(m){
       <td>${v.fertig?'<span class="pill p-ok">abgeschlossen</span>':'<span class="pill p-warn">läuft</span>'}
           ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}
           ${v.fotos?` <span class="mini">${v.fotos} Foto${v.fotos>1?"s":""}</span>`:""}</td>
-      <td class="mini">${esc(v.notiz||"")}</td></tr>`).join("")
+      <td class="deutung">${esc(v.notiz||"")}</td></tr>`).join("")
       :`<tr><td colspan="7" class="leer">Keine Vorgänge in dieser Quelle.</td></tr>`}
     </tbody></table></div>`;
   m.appendChild(s);
@@ -1130,7 +1031,7 @@ function vEinst(m){
 }
 
 /* ════════════ 7d · Zählliste ════════════
-   Zählen nach Bedarf statt nach Kalender. Wer weiss, welche zwölf
+   Zählen nach Bedarf statt nach Kalender. Wer weiß, welche zwölf
    Positionen auseinanderlaufen, zählt in fünf Minuten das Richtige —
    statt in einer Stunde alles, und das zu selten. */
 function zaehlliste(){
@@ -1162,9 +1063,9 @@ function vZaehlliste(m){
     <th>Wein</th><th>Kellerbereich</th><th class="r">Rechnerisch</th><th>Warum zählen</th>
     </tr></thead><tbody>${L.map(r=>`<tr>
       <td><b>${esc(r.w.winzer)}</b> · ${esc(r.w.wein)} <span class="mini">${esc(r.w.jg)}</span></td>
-      <td class="mini">${esc((PLAN.zonen[PLAN.zone[r.w.id]]||{}).t||"—")}</td>
+      <td class="deutung">${esc((PLAN.zonen[PLAN.zone[r.w.id]]||{}).t||"—")}</td>
       <td class="r">${r.bestand==null?'<span class="dim">—</span>'
-        :r.bestand<0?`<b style="color:var(--danger-fg)">${r.bestand}</b>`:`<b>${r.bestand}</b>`}</td>
+        :r.bestand<0?`<b class="neg">${r.bestand}</b>`:`<b>${r.bestand}</b>`}</td>
       <td><span class="pill ${r.rang===0?"p-bad":r.rang===1?"p-warn":"p-grau"}">${esc(r.grund)}</span></td>
     </tr>`).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:16px">
@@ -1260,7 +1161,7 @@ function vSpeicher(m){
           <div class="mini">${esc(v.name||"ohne Namen")}${v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):""}</div></div>
         <span class="rechts"></span>
         <button class="b klein" id="spJson">Rohdaten</button>
-        <button class="b klein" id="spZu">Schliessen</button></div>
+        <button class="b klein" id="spZu">Schließen</button></div>
       ${v.notiz?`<div class="hinweis" style="margin-top:14px">${esc(v.notiz)}</div>`:""}
       ${v.zaehlung?`<div class="hinweis" style="margin-top:14px">Diese Zählung ist die Basis aller
         Bestände danach. ${Object.keys(v.zaehlung).length} Positionen, ${summe(v.zaehlung)} Flaschen.</div>`:""}
@@ -1386,7 +1287,7 @@ function vTeam(m){
         <label style="width:140px">Rolle</label>
         <select id="nRolle">${Object.keys(ROLLNAME).map(k=>
           `<option value="${k}">${ROLLNAME[k]}</option>`).join("")}</select>
-        <span class="mini" id="nHint">${esc(RECHTETEXT.service)}</span></div>
+        <span class="deutung" id="nHint">${esc(RECHTETEXT.service)}</span></div>
       <div class="reihe" style="margin-bottom:16px">
         <label style="width:140px">Code</label>
         <input type="text" id="nCode" placeholder="vier bis acht Ziffern" maxlength="8"
@@ -1412,7 +1313,7 @@ function vTeam(m){
         <td><b>${esc(p.name)}</b></td>
         <td><select class="klein" data-rp="${esc(p.id)}">${Object.keys(ROLLNAME).map(k=>
           `<option value="${k}"${p.rolle===k?" selected":""}>${ROLLNAME[k]}</option>`).join("")}</select></td>
-        <td class="mini">${esc(RECHTETEXT[p.rolle]||"")}</td>
+        <td class="deutung">${esc(RECHTETEXT[p.rolle]||"")}</td>
         <td><button class="b klein" data-ap="${esc(p.id)}">${p.aktiv?"Sperren":"Freigeben"}</button></td>
       </tr>`).join("")}</tbody></table></div>`
       :`<div class="karte leer">Noch niemand angelegt.</div>`;
@@ -1460,10 +1361,28 @@ const ANSICHT={heute:vHeute, abgleich:vAbgleich, import:vImport, bestand:vBestan
   bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste, speicher:vSpeicher,
   zuordnung:vZuordnung, rezepte:vRezepte, team:vTeam, einst:vEinst};
 
+/* Die Erklärtexte sind gut geschrieben, stehen aber dauerhaft über jeder
+   Tabelle und werden ab dem dritten Mal überlesen. Erste Zeile bleibt,
+   der Rest geht hinter einen Textknopf — greift bei jeder Ansicht, deren
+   Erklärung länger als ein Satz ist. */
+function kuerzeUnter(){
+  document.querySelectorAll(".unter").forEach(u=>{
+    if(u.dataset.kurz)return;
+    const t=u.innerHTML.trim(), i=t.indexOf(". ");
+    if(i<0||t.length<150)return;
+    u.dataset.kurz="1";
+    u.innerHTML=t.slice(0,i+1)+
+      ' <button class="b klein leise" data-mehr>Warum so gerechnet?</button>'+
+      '<span class="mehr">'+t.slice(i+2)+'</span>';
+    u.querySelector("[data-mehr]").onclick=()=>u.classList.toggle("offen");
+  });
+}
+
 function zeichne(){
   zeichneNav();
   const m=$("#inhalt"); m.innerHTML="";
   (ANSICHT[SEITE]||vHeute)(m);
+  kuerzeUnter();
   $("#tQuelle").textContent=QUELLE;
   $("#cQuelle").classList.toggle("aus", QUELLE==="Keine Daten");
   const t=letzterTag();
@@ -1473,6 +1392,18 @@ function zeichne(){
 
 $("#bNeu").onclick=async()=>{ await ladeDaten(); zeichne(); toast("Aktualisiert"); };
 $("#bFass").onclick=()=>{ location.href="index.html"; };
+
+/* Unter 900px liegt die Navigation als Blatt über dem Inhalt. Sie schließt
+   sich nach der Wahl, bei einem Tipp daneben und mit Escape. */
+$("#bNav").onclick=e=>{ e.stopPropagation(); document.body.classList.toggle("navoffen"); };
+document.addEventListener("click",e=>{
+  if(!document.body.classList.contains("navoffen"))return;
+  if(e.target.closest("nav.seite")||e.target.closest("#bNav"))return;
+  document.body.classList.remove("navoffen");
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")document.body.classList.remove("navoffen");
+});
 
 /* Zweite Ansicht im selben Browser: neue Stände kommen von selbst an */
 window.addEventListener("storage", e=>{
