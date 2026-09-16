@@ -138,7 +138,21 @@ async function vorgaengeLesen(env, url) {
 /* Der Client schickt seine eigene UUID. Doppeltes Senden schadet damit
    nicht — wichtig für die Warteschlange, die offline weiterläuft. */
 async function vorgangSchreiben(env, p, id, daten) {
-  if (!daten || !daten.mode || !daten.tag) return json({ fehler: "unvollständig" }, 422);
+   if (!daten || !daten.mode || !daten.tag) return json({ fehler: "unvollständig" }, 422);
+
+  /* Der Client zählt je Vorgang hoch. Ein Gerät, das offline war und
+     seinen alten Stand nachreicht, darf den neueren nicht überschreiben:
+     im Zweifel gewinnt die höhere Zählnummer, nicht die spätere Ankunft.
+     Die App fragt den Benutzer dann beim nächsten Start, ob sie den
+     Serverstand übernehmen soll. */
+  const alt = await env.DB.prepare(
+    `SELECT daten FROM vorgang WHERE id = ?1`).bind(id).first();
+  if (alt) {
+    const a = JSON.parse(alt.daten || "{}");
+    if ((+a.zaehlnr || 0) > (+daten.zaehlnr || 0))
+      return json({ konflikt: true, server: a }, 409);
+  }
+
   const jetzt = Date.now();
 
   await env.DB.prepare(
