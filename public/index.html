@@ -1677,10 +1677,31 @@ function renderLogin(){
         headers:{"content-type":"application/json"},body:JSON.stringify({code})});
       if((r.headers.get("content-type")||"").includes("json")){
         serverHat=true;
-        if(r.ok){ const j=await r.json(); name=j.name||null; }
-        else if(r.status===429){ laeuftPruefung=false;
-          $("#pinFehler").textContent="Zu viele Versuche. Bitte kurz warten.";
-          inp.value="";male();return; }
+        const j=await r.json().catch(()=>({}));
+        if(r.ok){ name=j.name||null; }
+        else {
+          /* Der Server sperrt nach zu vielen Fehlversuchen. Solange das
+             lautlos passiert, steht man davor und weiss nicht, warum
+             nichts geht. Also: mitzaehlen, ab vier verbleibenden warnen,
+             und im Sperrfall sagen, wann es wieder geht. */
+          laeuftPruefung=false; inp.value=""; male();
+          if(r.status===429){
+            const bis=+j.wartenBis||0;
+            const uhr=bis?new Date(bis).toLocaleTimeString("de-AT",
+              {hour:"2-digit",minute:"2-digit"}):"";
+            $("#pinFehler").textContent=uhr
+              ? "Zu viele Fehlversuche. Wieder möglich ab "+uhr+" Uhr."
+              : "Zu viele Fehlversuche. In einer Viertelstunde wieder probieren.";
+          } else {
+            const u=(j.uebrig===undefined)?null:+j.uebrig;
+            $("#pinFehler").textContent=
+              (u===0) ? "Code stimmt nicht. Die Anmeldung ist jetzt für 15 Minuten gesperrt."
+              : (u!==null&&u<=4) ? "Code stimmt nicht. Noch "+u+
+                (u===1?" Versuch":" Versuche")+", dann ist für 15 Minuten gesperrt."
+              : "Dieser Code ist nicht hinterlegt.";
+          }
+          return;
+        }
       }
     }catch(e){}
     if(!name&&!serverHat) name=await bekannterCode(code);  /* Rückfallebene */
@@ -1689,9 +1710,8 @@ function renderLogin(){
     if(name){ setUser(name);L.style.display="none";renderMenu();
       window.scrollTo(0,0);netzStart();return; }
     inp.value="";male();
-    $("#pinFehler").textContent=serverHat
-      ? "Dieser Code ist nicht hinterlegt."
-      : "Kein Netz. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";};
+    $("#pinFehler").textContent=
+      "Kein Netz. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";};
 }
 /* Ein Satz zur Lage, bevor die Kacheln kommen. Er fasst zusammen, was
    heute schon passiert ist \u2014 aus den Vorgängen des Servers, nicht aus
@@ -4197,7 +4217,7 @@ if("serviceWorker" in navigator){
 }
 
 (whoAmI()?renderMenu():renderLogin());measure();fclean();
-if(whoAmI())netzStart(); 
+if(whoAmI())netzStart();
 </script>
 </body>
 </html>
