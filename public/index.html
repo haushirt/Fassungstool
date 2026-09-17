@@ -386,12 +386,18 @@ header{background:var(--accent);color:var(--fg-on-dark);
   transition:background var(--dur-fast) var(--ease)}
 /* „Menü" und „?" sind 36px hoch — die beiden meistgedrückten Knöpfe der
    App lagen damit unter den 44px, die für den Daumen gelten. Die Optik
-   bleibt, die Trefferfläche wächst: 36 + 2×4 = 44. Dieselbe Lösung wie
-   bei den Schrittpunkten (.stpts .st::after). Der Abstand der beiden
-   Knöpfe ist 8px, die Flächen stoßen also aneinander, ohne sich zu
-   überlappen. */
+   bleibt, die Trefferfläche wächst auf --tap-min.
+   Berichtigt (Runde 2, im Browser nachgemessen): „36 + 2×4 = 44" stimmte
+   nur für „Menü". Ein absolut gesetztes ::after rechnet gegen die
+   POLSTERkante seines Bezugsrahmens — bei „?" mit 1px Rahmen kamen
+   dadurch nur 42px heraus. Jetzt steht die Größe direkt da, statt sie
+   aus Rahmenbreiten zu erschließen. Waagrecht bleibt die Fläche dabei
+   höchstens so breit wie der Knopf selbst, sonst stöße sie in den
+   Nachbarn (Abstand der beiden: 8px). */
 .home,.hilfebtn{position:relative}
-.home::after,.hilfebtn::after{content:"";position:absolute;inset:-4px}
+.home::after,.hilfebtn::after{content:"";position:absolute;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:max(100%,var(--tap-min));height:max(100%,var(--tap-min))}
 #dSel{background:var(--surface-on-dark);border:0;color:var(--fg-on-dark);
   min-height:var(--control-h-sm);padding:0 var(--space-2);border-radius:var(--radius-md);
   font-size:var(--text-sm)}
@@ -920,15 +926,36 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
    Protokoll später senden") mit einer anderen Zusage. Jetzt eine Zeile
    in voller Breite unter dem Kopf: Form, Wort und Farbe sagen dasselbe,
    damit auch bei Kellerlicht und Farbschwäche etwas ankommt. */
-.netz{display:flex;align-items:center;gap:var(--space-2);
-  padding:var(--space-1) var(--space-4);
+.netz{display:flex;align-items:flex-start;gap:var(--space-2);
+  padding:var(--space-2) var(--space-4);
   font-size:var(--text-sm);line-height:var(--leading-normal);
   font-weight:var(--weight-medium);
   background:var(--surface-3);color:var(--fg-secondary);
   border-bottom:1px solid var(--border-strong)}
-/* Punkt · Quadrat · Ring · Raute — der Zustand ist auch ohne Farbe lesbar. */
+/* Punkt · Quadrat · Ring · Raute — der Zustand ist auch ohne Farbe lesbar.
+   Der Satz darf zwei Zeilen brauchen (überholter Stand); das Zeichen sitzt
+   dann auf der ERSTEN Zeile, nicht in der Mitte des Blocks — deshalb
+   align-items:flex-start oben und der gerechnete Versatz hier. */
 .netz::before{content:"";width:10px;height:10px;flex:none;
+  margin-top:calc((var(--text-sm) * var(--leading-normal) - 10px) / 2);
   border-radius:50%;background:currentColor}
+.netztext{flex:1 1 auto;min-width:0}
+/* Quittieren ist ein Knopf, keine Geste. Sichtbar 36px, greifbar --tap-min.
+   Nicht über inset:-Npx: ein absolut gesetztes ::after rechnet gegen die
+   POLSTERkante seines Bezugsrahmens, der 1px-Rahmen fällt also heraus und
+   die Fläche wäre 2px zu klein. Die Höhe steht deshalb direkt da.
+   Den Fokusring stellt :focus-visible aus der Tokenebene. */
+.netzok{position:relative;flex:none;align-self:flex-start;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:var(--control-h-sm);padding:0 var(--space-3);
+  font:var(--weight-medium) var(--text-sm)/1.2 var(--font);
+  color:inherit;background:var(--surface);
+  border:1px solid currentColor;border-radius:var(--radius-ctl);
+  white-space:nowrap}
+.netzok::after{content:"";position:absolute;left:0;right:0;
+  top:50%;transform:translateY(-50%);min-height:var(--tap-min)}
+.netzok:active{background:var(--surface-2)}
+.netzok[hidden]{display:none}
 .netz.ok{background:var(--success-bg);color:var(--success-fg);
   border-bottom-color:var(--success-border)}
 .netz.wartet{background:var(--warn-bg);color:var(--warn-fg);
@@ -938,10 +965,20 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .netz.fehler{background:var(--danger-bg);color:var(--danger-fg);
   border-bottom-color:var(--danger-border)}
 .netz.fehler::before{border-radius:var(--radius-xs);transform:rotate(45deg)}
+/* Im Menü gibt es keine Leiste, an die sich die Zeile hängen könnte.
+   Dort steht derselbe Zustand als Block über den Kacheln — gleiche
+   Farben, gleiche Formen, gleicher Satz. Die Randfarbe muss nach
+   .netz.ok/.wartet/.fehler stehen, sonst bliebe nur die Unterkante bunt. */
+.netz--block{border:1px solid var(--border-strong);
+  border-radius:var(--radius-md);margin-bottom:var(--space-5)}
+.netz--block.ok{border-color:var(--success-border)}
+.netz--block.wartet{border-color:var(--warn-border)}
+.netz--block.fehler{border-color:var(--danger-border)}
 /* Ab 720px geht die Fläche durch, der Text fluchtet mit dem Inhalt —
-   dieselbe linke Kante wie #main. */
+   dieselbe linke Kante wie #main. Der Block im Menü sitzt schon im
+   Inhaltsraster und bleibt davon ausgenommen. */
 @media(min-width:720px){
-  .netz{padding-left:max(var(--space-4),calc(50% - var(--maxw)/2));
+  .netz:not(.netz--block){padding-left:max(var(--space-4),calc(50% - var(--maxw)/2));
     padding-right:max(var(--space-4),calc(50% - var(--maxw)/2))}}
 .gruss{margin-bottom:var(--space-5);font-size:var(--text-md);
   line-height:var(--leading-normal)}
@@ -1277,7 +1314,7 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   </div>
   <nav class="steps" id="steps" role="tablist"></nav>
 </header>
-<div class="netz" id="netz" role="status" style="display:none"></div>
+<div class="netz" id="netz" style="display:none"><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button></div>
 <div class="howto" id="howto"></div>
 <div class="tools" id="tools"><input id="q" type="search" placeholder="Wein suchen …" autocomplete="off"></div>
 </div>
@@ -1631,21 +1668,25 @@ function fernNeuer(m){
   return (v.zaehlnr||0)>eigen ? v : null;
 }
 
-/* Der Satz für einen Stand, den der Server nicht angenommen hat. Er nennt
-   die Uhrzeit des eigenen Standes — daran erkennt man ihn wieder — und,
-   wenn der Server ihn mitgeschickt hat, wer schneller war. Die Wortwahl
-   gehört gegengelesen, der Mechanismus dahinter ist der Punkt. */
+/* Der Satz für einen Stand, den der Server nicht angenommen hat.
+   Gelesen wird er im Keller oder kurz danach, müde, nach einer Stunde
+   Zählen. Drei Dinge muss er leisten, mehr nicht:
+     1. Es ist NICHT draußen — und es geht auch nicht mehr von selbst
+        hinaus (sonst wäre es eine Zeile „… wartet").
+     2. Woran erkenne ich, welchen Stand es trifft? → die eigene Uhrzeit.
+     3. Muss ich noch einmal hinunter? → Nein: „hat danach gezählt".
+   Weg ist, was nur Wettlauf erzählt („war mit einem neueren Stand
+   schneller") und die erfundene Bedienung („Tippen, wenn gesehen") —
+   quittiert wird am Knopf daneben. */
 function ueberholtSatz(l){
   const uhr=s=>{ const d=new Date(s||0);
     return isNaN(d)?"":d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}); };
   if(l.length>1)
-    return l.length+" Stände sind nicht übernommen – auf einem anderen Gerät "
-      +"gab es neuere. Tippen, wenn gesehen.";
+    return l.length+" Stände sind nicht übernommen – andere Geräte "
+      +"haben danach gezählt.";
   const e=l[0]||{}, meine=uhr(e.zeit), wer=(e.fremd&&e.fremd.name)||"";
-  return "Dein Stand"+(meine?" von "+meine+" Uhr":"")+" ist nicht übernommen – "
-    +(wer?wer+" war mit einem neueren Stand schneller."
-         :"auf einem anderen Gerät gibt es einen neueren Stand.")
-    +" Tippen, wenn gesehen.";
+  return "Dein Stand"+(meine?" von "+meine:"")+" ist nicht übernommen – "
+    +(wer?wer:"ein anderes Gerät")+" hat danach gezählt.";
 }
 /* Ein Satz, der beantwortet: Ist meine Arbeit draußen oder noch im Gerät?
    Vorher stand „Offline" in zwei Zeilen mit zwei verschiedenen Zusagen.
@@ -1654,29 +1695,41 @@ function ueberholtSatz(l){
    navigator.onLine wird mitgelesen: wer die App im Keller ohne Netz
    öffnet, bekommt sonst erst beim ersten Sendeversuch eine Auskunft. */
 function netzChip(){
-  const el=$("#netz"); if(!el)return;
+  /* Zwei Orte, ein Zustand: die Leiste unter dem Kopf (im Vorgang) und
+     der Block über den Kacheln (im Menü). Nach dem Abschluss steht man
+     im Menü — dort wurde bisher gar nichts mehr angezeigt, auch der
+     überholte Stand nicht. Sichtbar ist immer nur einer von beiden; der
+     andere liegt in einem Elternteil mit display:none. */
+  const els=document.querySelectorAll(".netz"); if(!els.length)return;
   const z=NETZ.zustand, o=NETZ.offen;
   const weg=(navigator.onLine===false)||z==="offline";
   const viele=o===1?"1 Vorgang":o+" Vorgänge";
-  /* Die Zeile ist nur anfassbar, wenn es etwas zu quittieren gibt. */
   const ueb=ueberholtOffen();
-  el.onclick=null; el.style.cursor="";
-  let t="", k="";
-  if(z==="kein-server"&&!ueb.length){ el.style.display="none"; return; }
+  let t="", k="", quittierbar=false;
   /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
      nichts hinaus. Gleich danach aber der überholte Stand — er darf nie
      hinter „Nichts offen – alles übertragen" verschwinden. */
-  if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
-  else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler";
-    el.onclick=ueberholtQuittieren; el.style.cursor="pointer"; }
+  if(z==="kein-server"&&!ueb.length){ t=""; }
+  else if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
+  else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler"; quittierbar=true; }
   else if(weg&&o>0){ t=viele+" warten – kein Netz"; k="wartet"; }
   else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
   else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" warten"
                                     :"Server antwortet nicht"; k="fehler"; }
   else if(o>0){ t=viele+" warten auf Übertragung"; k="wartet"; }
   else if(z==="verbunden"){ t="Nichts offen – alles übertragen"; k="ok"; }
-  else { el.style.display="none"; return; }
-  el.style.display=""; el.className="netz "+k; el.textContent=t;
+  els.forEach(el=>{
+    if(!t){ el.style.display="none"; return; }
+    el.style.display="";
+    /* className nicht überschreiben — der Block im Menü trägt zusätzlich
+       .netz--block und verlöre sonst seinen Rahmen. */
+    el.classList.remove("ok","wartet","offline","fehler");
+    if(k)el.classList.add(k);
+    const txt=el.querySelector(".netztext");
+    if(txt)txt.textContent=t; else el.textContent=t;
+    const btn=el.querySelector(".netzok");
+    if(btn){ btn.hidden=!quittierbar; btn.onclick=ueberholtQuittieren; }
+  });
 }
 
 /* Fertige und laufende Vorgänge einsammeln, die noch nicht draußen sind. */
@@ -1885,8 +1938,12 @@ function renderMenu(){
       ${run?`<span class="when">\u25cf Angefangen · für ${deTag(d.tag)}</span>`:""}</span>
       <span class="go" aria-hidden="true">\u203a</span></button>`;
   };
+  /* Derselbe Zustand wie unter dem Kopf, nur als Block: Nach dem Abschluss
+     landet man hier, und hier stellt sich die Frage „ist es draußen?".
+     Gefüllt wird er am Ende dieser Funktion von netzChip(). */
   $("#menu").innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool</p>
     ${grussZeile()}
+    <div class="netz netz--block" style="display:none"><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button></div>
     ${fernZeile()}
     <p class="angemeldet">Angemeldet: <b>${esc(whoAmI())}</b>
       <button class="wechseln" id="bWechseln">wechseln</button></p>
@@ -1899,6 +1956,7 @@ function renderMenu(){
   $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
   $("#bAdmin").onclick=askPin;
   $("#bArch").onclick=openArchList;
+  netzChip();
 }
 /* 2.2 · Liste der archivierten Vorgänge */
 function shellFor(titel){

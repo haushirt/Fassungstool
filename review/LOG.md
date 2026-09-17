@@ -365,3 +365,186 @@ Oberfläche, sondern das Journal.
 **Backlog:** neu – **hoch:** `merkeCode` merkt die Rolle nicht (Voraussetzung für Entscheidung Nr. 6). **mittel:** das Sackfach hält den überholten Stand fest, aber niemand kann ihn ansehen · negative Mengen im Journal sind ab jetzt möglich. **niedrig:** `quelle='vorgang-korrektur'` gegen das Live-Schema gegenprüfen, sobald es vorliegt. Nach „Erledigt" verschoben: Korrektur nach dem Abschluss, 409 verwirft still, die fehlenden `await` im Router, die blinde Stelle der D1-Attrappe bei `/api/bestand`, die kaputte Prüfung in `worker-anmeldung`.
 
 **STATUS:** VERBESSERUNGEN
+
+
+### Runde 2 – ui-designer
+
+**Zuerst die Nachricht, die alles andere in dieser Runde verändert: Es gibt
+einen Browser.** In Runde 1 hat jede der vier Rollen in ihren Zug
+geschrieben, die Oberfläche sei von niemandem gesehen worden. Das stimmte.
+Für Runde 2 stimmt es nicht mehr: In der Arbeitsumgebung liegt ein global
+installiertes Playwright samt Chromium (`/opt/pw-browsers`). Die Bilder
+liegen in `review/screens/runde-2/`, iPhone 390×844 und MacBook 1440×900,
+und ich habe sie angesehen. Das Vorgehen steht als `tests/ui-aufnahme.cjs`
+im Repo – **nicht** Teil von `npm test` (der Lauf sucht nur `*.test.mjs`),
+ohne Eintrag in `package.json`, und ohne gefundenes Playwright legt es sich
+mit einer Zeile hin statt rot zu werden. Regel 8 ist damit nicht berührt;
+die Frage, ob daraus mehr werden soll, steht als Nr. 8 in
+`review/OFFENE-ENTSCHEIDUNGEN.md`. Der qa-guardian hat in Runde 1
+geschrieben: „Ein Test, den die nächste Runde nicht starten kann, ist eine
+Behauptung." Das gilt für Bilder genauso.
+
+**Kritik am Vorgänger:**
+
+*Die zwei Punkte, die er mir ausdrücklich übergeben hat.*
+
+* `public/index.html:1638` (alt) **„Dein Stand von 22:40 Uhr ist nicht
+  übernommen – Ian war mit einem neueren Stand schneller. Tippen, wenn
+  gesehen."** ↩️ **geändert** → „Dein Stand von 22:40 ist nicht übernommen
+  – Ian hat danach gezählt." (jetzt `:1681`). 113 Zeichen auf 66. Was weg
+  ist und warum: **„Uhr"** ist neben „22:40" doppelt. **„war mit einem
+  neueren Stand schneller"** erzählt einen Wettlauf – um 23 Uhr, nach einer
+  Stunde Zählen, ist das der falsche Rahmen, und es beantwortet die einzige
+  Frage nicht, die in diesem Moment zählt: *Muss ich noch einmal
+  hinunter?* „hat danach gezählt" beantwortet sie mit Nein, in vier
+  Wörtern. **„Tippen, wenn gesehen"** ist ersatzlos weg (siehe unten). Die
+  Uhrzeit bleibt – sie ist das Einzige, woran man den eigenen Stand
+  wiedererkennt. Ohne Namen heißt es „ein anderes Gerät hat danach
+  gezählt", bei mehreren „3 Stände sind nicht übernommen – andere Geräte
+  haben danach gezählt." Alle drei Fälle sind aufgenommen.
+* **`onclick` + `cursor:pointer` an einem `role="status"`** ↩️ **geändert,
+  und zwar in der Geste selbst.** Tippen ist hier falsch, nicht nur
+  unvollständig gebaut: Die Zeile ist eine Auskunft, und eine Auskunft, die
+  auf Berührung verschwindet, verschwindet auch unter dem Daumen, der beim
+  Hochlaufen aus dem Keller das Telefon hält. Eine unsichtbare Fläche über
+  die ganze Bildschirmbreite, die eine Meldung löscht, ist die schlechteste
+  Version von „versteckte Geste". Jetzt steht ein echter `<button>` daneben
+  („Gesehen", `:948` `.netzok`), die Live-Region `role="status"` sitzt auf
+  dem **Text** und nicht mehr auf dem Knopf, und die Zeile selbst ist
+  wieder unanfassbar. Gemessen statt behauptet: per Tab in **einem** Schritt
+  erreichbar, Enter quittiert, der Fokusring ist im Bild
+  (`iphone-menu-ueberholt-fokus.png`), der Stand bleibt danach mit
+  `quittiert:1` und vollständigen Daten im Gerät liegen.
+* ✅ **Gut und unverändert übernommen: der Mechanismus.** `ueberholtSatz(l)`
+  → Text, `ueberholtQuittieren()` → quittiert, Sackfach `hh_ueberholt_v1`.
+  Ich habe nur den Text und die Bedienung getauscht; an Ablauf, Speicher
+  und Prüfungen ist nichts angefasst, `tests/ausgang.test.mjs` läuft
+  unverändert durch.
+* ↩️ **Ein Befund, den er nicht sehen konnte, und der seine Arbeit fast
+  wirkungslos gemacht hätte:** Die Meldung erscheint nach dem Abschluss –
+  und nach dem Abschluss steht man im **Menü**. `#netz` lag in `#app`
+  (`:1317`), das im Menü auf `display:none` steht. Der 409-Satz, um den es
+  in seinem ganzen Punkt 2 geht, wäre also genau dort unsichtbar gewesen,
+  wo er gebraucht wird. Das war mein eigener offener Backlog-Punkt aus
+  Runde 1 („kein Übertragungszustand im Menü", hoch) – durch seine Meldung
+  ist er von „unschön" zu „macht die Meldung wirkungslos" geworden.
+  Behoben, siehe Umgesetzt 3.
+
+*Und zwei Berichtigungen an mir selbst, jetzt nachgemessen statt geschätzt.*
+
+* `public/index.html:394` (alt) „Die Trefferfläche wächst: 36 + 2×4 = 44."
+  ❌ **war falsch für einen der beiden Knöpfe.** Ein absolut gesetztes
+  `::after` mit `inset:-4px` rechnet gegen die **Polster**kante seines
+  Bezugsrahmens; der 1px-Rahmen von `.hilfebtn` fällt heraus. Im Browser
+  gemessen: 4px über der Oberkante traf der „?"-Knopf **nicht** mehr, es
+  waren 42px. „Menü" (`border:0`) war korrekt bei 44. Berichtigt (`:398`)
+  und die Größe steht jetzt direkt da, statt sie aus Rahmenbreiten zu
+  erschließen. Derselbe Fehler war mir gerade beim neuen Knopf noch einmal
+  unterlaufen und ist am Messwert aufgefallen.
+* „Die Statuszeile schiebt den Inhalt um ~25px, `--topH` wird über den
+  ResizeObserver nachgezogen, aber gesehen hat es niemand." ✅ **jetzt
+  gesehen und gemessen:** ohne Meldung `--topH: 156px`, mit dem
+  zweizeiligen 409-Satz `175px`, `#topwrap` jeweils gleich hoch. Der
+  ResizeObserver hält. Die Zeile bricht sauber um; damit das Zeichen dabei
+  nicht in die Mitte des Blocks rutscht, steht es jetzt über einen
+  gerechneten Versatz auf der **ersten** Zeile (`:942`, `align-items:
+  flex-start`).
+
+**Umgesetzt:**
+
+1. **Der Satz für den überholten Stand, auf das Nötige gekürzt** (`:1681`
+   `ueberholtSatz`): 113 → 66 Zeichen, drei Fälle (mit Name, ohne Name,
+   mehrere), kein Wettlauf, keine erfundene Geste, dafür die Antwort auf
+   „muss ich noch einmal hinunter?".
+2. **Die Meldung bekommt einen Knopf statt einer Geste** (`:948`
+   `.netzok`, `:1317`, `:1946` Markup, `:1697` `netzChip`): echter
+   `<button>`, per Tastatur erreichbar, Fokusring aus der Tokenebene,
+   Trefferfläche **44px** (nachgemessen: ±4px über und unter der sichtbaren
+   Kante). `role="status"` sitzt jetzt auf dem Text. Im selben Zug die
+   42px-Fläche von „?" berichtigt (`:398`).
+3. **Der Übertragungszustand steht auch im Menü** (`:1697` `netzChip`,
+   `:1946` Block, `:972` `.netz--block`): `netzChip()` malt an alle
+   `.netz`-Knoten; im Menü steht derselbe Zustand als Block über den
+   Kacheln – gleiche Farben, gleiche Formen, gleicher Satz, nur ohne
+   Leiste zum Anhängen. Sichtbar ist immer nur einer von beiden, der andere
+   liegt in einem Elternteil mit `display:none`.
+
+**Geprüft:**
+
+* **Zum ersten Mal in diesem Zyklus visuell geprüft.** 16 Aufnahmen in
+  `review/screens/runde-2/`, je iPhone und MacBook, sieben Zustände:
+  überholter Stand mit Namen / ohne Namen / dreifach, „Vorgänge warten",
+  stumm, dazu dieselben Zustände im laufenden Schritt. Alle angesehen.
+  **Keine JS-Fehler** in keinem der 14 Seitenaufrufe (`pageerror` wird
+  mitgeschrieben).
+* Gemessen, nicht geschätzt: Knopf 36px sichtbar, Trefferfläche 44px
+  (`elementFromPoint` 4px über und 3px unter der Kante trifft `.netzok`,
+  4px darunter nicht mehr). „?" und „Menü" jetzt beide bei 44px.
+  Statuszeile im Schritt 36px einzeilig, 55px zweizeilig; `--topH` folgt
+  156 → 175px. Im Menü als Block 37px bzw. 75px.
+* Bedienung durchgespielt: Tippen quittiert; Tab erreicht den Knopf im
+  ersten Schritt, Enter quittiert; danach steht sofort der nächste Zustand
+  („Nichts offen – alles übertragen", grün, Knopf verborgen) statt einer
+  Lücke; `hh_ueberholt_v1` enthält danach weiterhin **einen** Eintrag mit
+  vollständigen Daten und `quittiert:1` – der Stand ist nicht weg, nur die
+  Zeile schweigt (Regel 6).
+* Kontraste gerechnet (WCAG-Formel, alle vier Zahlen selbst gerechnet):
+  Text `--danger-fg` #7A3A12 auf `--danger-bg` #FBEDE6 = **7,52:1**;
+  Knopfschrift und Knopfrahmen #7A3A12 auf `--surface` #FFFFFF = **8,60:1**;
+  Fokusring `--ring` #004947 auf #FBEDE6 = **8,99:1**. Keine Zahl ohne
+  Rechnung, keine geschätzte Zahl im Text.
+* `npm test`: vorher **100 grün**, nachher **100 grün, 0 rot**. Keine
+  Prüfung ist gefallen, also keine umgeschrieben. `tests/ausgang.test.mjs`
+  schneidet den Ausschnitt bis `zieheFern` heraus – `netzChip` und
+  `ueberholtSatz` liegen dahinter und sind dort als Attrappe gesetzt;
+  meine Änderungen berühren die Prüfungen nicht.
+* `node --check` für `public/sw.js` und `tests/ui-aufnahme.cjs` sauber; die
+  Inline-Blöcke beider HTML-Dateien werden in `tests/projektregeln.test.mjs`
+  übersetzt – sauber.
+* **Geteilte Gestaltungsschicht nicht berührt:** `index.html:12–222` gegen
+  `leitung.html:9–219` zeilenweise verglichen, 211 Zeilen, identisch.
+  `leitung.html` hat **null** geänderte Zeilen; `.netz`, `.netzok`,
+  `.netz--block` kommen dort nicht vor, alle meine CSS-Änderungen liegen
+  bei Zeile 398 und dahinter. Genau vier Dateien in `public/`, keine
+  ausgelagerte CSS-Datei, kein neues Hex-Literal, kein Framework.
+* `public/sw.js` VERSION v17 → **v18**.
+
+**Für die Nächsten:**
+
+* *Alle:* `node tests/ui-aufnahme.cjs` läuft und legt Bilder nach
+  `review/screens/runde-<N>/` (`RUNDE=3 node …`). Wer `public/` anfasst,
+  sollte ihn laufen lassen und die Bilder **ansehen**. Er schreibt auch
+  jeden JS-Fehler der Seite mit – das ist die billigste Regressionsprüfung,
+  die wir haben.
+* *hospitality-pro:* Der Satz gehört jetzt dir zum Gegenlesen. Zwei
+  Stellen, an denen ich unsicher bin: Ist **„nicht übernommen"** im Haus
+  verständlich, oder heißt das gesprochen eher „ist nicht angekommen"? Und
+  ist **„Gesehen"** der richtige Knopf, oder sagt man „Passt"? Ich habe
+  bewusst nicht „Verstanden" genommen – das klingt nach Belehrung.
+* *software-engineer:* Ein Befund aus den Bildern, der dich betrifft: Das
+  Hilfe-Sheet öffnet sich beim **ersten** Besuch eines Schritts von selbst
+  und legt sich über den ganzen Schirm, samt Statuszeile. Wer mit einem
+  überholten Stand in einen Schritt geht, sieht zuerst eine
+  Bedienungsanleitung. Im Backlog (mittel).
+* *software-engineer:* Dein Punkt „niemand kann den Stand ansehen" ist
+  durch meine Änderung **dringender** geworden, nicht kleiner: „Gesehen"
+  ist jetzt die einzige Handlung, und danach ist der Stand endgültig aus
+  dem Blick. Daneben gehört ein zweiter Knopf „Ansehen". Die Zeile hat
+  Platz dafür, der Bau (`.netz` als Flex-Reihe, Knopf als Geschwister des
+  Textes) ist darauf vorbereitet.
+* *An den Betreiber:* Entscheidung **Nr. 8** ist neu – ob die
+  Oberflächen-Aufnahme dauerhaft ein Handgriff bleiben soll (mein
+  Vorschlag) oder in den Prüflauf wandert. Unverändert dringend bleiben
+  Nr. 3 (vier Codes neu vergeben, `docs/live-schema.sql`) und Nr. 6.
+
+**Phase/Thema:** A / Zustände nach dem Abschluss, Wortwahl, Trefferflächen
+
+**Backlog:** neu – **mittel:** Hilfe-Sheet verdeckt beim ersten Besuch eines
+Schritts die Statuszeile samt Fehlermeldung · Ansicht „Was war in meinem
+Stand?" fehlt neben „Gesehen". **niedrig:** `netzChip()` heißt noch Chip und
+malt jetzt an zwei Stellen, `id="netz"` wird von keinem Selektor mehr
+benutzt · `--topH` steht im Menü auf 0px, weil `#topwrap` dort verborgen
+liegt. Nach „Erledigt" verschoben: kein Übertragungszustand im Menü (hoch),
+der 409-Satz samt Geste, die 42px-Trefferfläche des „?"-Knopfes.
+
+**STATUS:** VERBESSERUNGEN

@@ -283,3 +283,44 @@ dem Team abgestimmt (`review/INPUT-TEAM.md`).
 Eine Sonderentnahme ist kein Notfall, sondern Alltag; ein Wort, das
 Hemmung erzeugt, senkt die Meldequote und verdirbt den Bestand. Sie heißt
 jetzt „Außer der Reihe", und die Kachel nennt die Fälle beim Namen.
+
+---
+
+## 8. Oberflächen-Aufnahme im Prüflauf – Playwright ist da, aber nicht unser
+
+**Status:** OFFEN
+**Gemeldet:** ui-designer (Runde 2)
+
+**Hintergrund:** In Runde 1 hat jede der vier Rollen im Zug notiert, dass
+die Oberfläche von niemandem gesehen wurde – kein Browser, kein Chromium.
+Das stimmt für Runde 1 und ist in Runde 2 **nicht mehr richtig**: In der
+Arbeitsumgebung liegt ein global installiertes Playwright
+(`/opt/node22/lib/node_modules/playwright`) mit Chromium unter
+`/opt/pw-browsers`. Damit sind in dieser Runde zum ersten Mal echte
+Bildschirmaufnahmen entstanden (`review/screens/runde-2/`), und zwei
+Behauptungen aus Runde 1 haben sich am gemessenen Objekt als falsch
+erwiesen (Trefferfläche des „?"-Knopfes: 42px statt der behaupteten 44px).
+
+**Was daran zu entscheiden ist:** Regel 8 verbietet neue Abhängigkeiten
+ohne Freigabe. Playwright steht **nicht** in `package.json` und soll dort
+nach meinem Vorschlag auch nicht stehen – es ist eine Eigenheit dieser
+Arbeitsumgebung, nicht des Projekts. `tests/ui-aufnahme.cjs` ist deshalb
+so gebaut, dass es kein Teil von `npm test` ist (der Prüflauf sucht nur
+`*.test.mjs`), Playwright an drei Orten sucht und sich ohne Fund mit
+einer Zeile hinlegt, statt den Lauf rot zu machen.
+
+**Optionen:**
+
+1. So lassen: `npm test` bleibt ohne Abhängigkeit lauffähig, die Aufnahme
+   ist ein Handgriff für die Rollen, die gestalten. Kein Eintrag in
+   `package.json`. **Empfohlen.**
+2. Playwright als `devDependency` aufnehmen und einen Prüflauf
+   „Oberfläche" bauen, der Umbrüche, Trefferflächen und Kontraste
+   automatisch misst. → Stärkste Absicherung, aber eine echte neue
+   Abhängigkeit samt Browser-Download; `npm test` läuft dann nicht mehr
+   ohne Netz und ohne Installation, was heute sein größter Vorzug ist.
+3. Gar nicht aufnehmen. → Zurück zu „die Oberfläche hat niemand gesehen".
+   Nicht empfohlen.
+
+**Empfehlung:** Option 1, und in jedem Zug, der `public/` anfasst, einmal
+`node tests/ui-aufnahme.cjs` laufen lassen und die Bilder ansehen.
