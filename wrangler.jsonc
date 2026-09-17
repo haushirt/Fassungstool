@@ -21,6 +21,13 @@
 
   "triggers": { "crons": ["0 6 * * 5"] },
 
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  },
+
   "vars": {
     "ABSENDER": "gastronovi.com"
   }
