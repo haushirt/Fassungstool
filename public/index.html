@@ -2198,6 +2198,21 @@ function hasData(k,d){
   if(k==="nach")return sum(d.ent)||sum(d.gent)||sum(d.gzusatz);
   if(k==="ware")return (d.pos||[]).length||sum(d.gent);
 }
+/* Ein Satz über den Inhalt eines Vorgangs – für die Frage „steht schon".
+   Bewusst ohne `D()`/`summaryBig()`: die beiden lesen den GERADE offenen
+   Vorgang über globale Zustände, hier ist der bisherige gemeint. */
+function kurzInhalt(m,d){
+  if(!d) return "";
+  if(m==="ware"){
+    const pos=(d.pos||[]).filter(p=>p.id&&+p.kisten>0);
+    return pos.length+(pos.length===1?" Position":" Positionen")+" · "+
+      pos.reduce((a,p)=>a+(+p.kisten||0)*kg(p),0)+" Flaschen";
+  }
+  if(m==="nach")    return (sum(d.ent)+sum(d.gent))+" Flaschen entnommen";
+  if(m==="keller")  return Object.keys(d.zdone||{}).length+" Weine gezählt";
+  if(m==="fuellen") return sum(d.gent)+" Getränke nachgefüllt";
+  return (sum(d.rest)+sum(d.barrot)+sum(d.bar)+sum(d.backup))+" Flaschen aus dem Keller";
+}
 function start(m){
   /* Läuft derselbe Vorgang schon auf einem anderen Gerät, wird gefragt
      statt zusammengerechnet. Zwei Leute an derselben Fassung sind ein
@@ -2227,6 +2242,42 @@ function start(m){
   mode=m;branch=(m==="tag"||m==="fuellen")?"wein":null;
   const ziel=(m==="tag")?yest():today();
   const cur=S[m];
+
+  /* Zweiter Vorgang desselben Modus am selben Tag.
+     Ein Vorgang ist ein VOLLSTÄNDIGER Zustand unter dem Schlüssel
+     <modus>_<tag>. Wer nach einer abgeschlossenen Lieferung noch einmal
+     „Wareneingang" öffnete, bekam bis v25 ein leeres Formular mit
+     DEMSELBEN Schlüssel: der Server leitet die Ereignisse aus der
+     Differenz ab (src/index.js, `ereignisseAbleiten`) und nahm die erste
+     Lieferung per Gegenbuchung zurück. Zwei Lieferungen oder zwei
+     Sonderentnahmen an einem Tag sind im Haus normal — der Bestand ging
+     dabei still verloren.
+     Deshalb wird gefragt statt ersetzt, wie beim zweiten Gerät:
+     „Ergänzen" führt den bestehenden Vorgang fort (beide Lieferungen in
+     einem Zustand, der Server bucht nur den Zuwachs), „Neu beginnen"
+     bleibt möglich, sagt aber vorher, was es kostet. Der Schlüssel selbst
+     bleibt unangetastet. */
+  if(cur&&cur.finished&&cur.tag===ziel&&hasData(m,cur)&&!start._zweiter){
+    const weiter=()=>{ $("#ov").classList.remove("on"); $("#ovOk").textContent="Ja";
+      start._zweiter=true; start(m); start._zweiter=false; };
+    $("#ovT").textContent=MODES[m].t+" für "+deTag(cur.tag)+" steht schon";
+    $("#ovBody").innerHTML=`<p>Für diesen Tag ist ${esc(MODES[m].t)} bereits
+      abgeschlossen – ${esc(kurzInhalt(m,cur))}.</p>
+      <p><b>Ergänzen</b> führt ihn fort. Was du jetzt dazunimmst, kommt
+      dazu; der Tag behält einen Vorgang, und nichts geht verloren.</p>
+      <p>Ein zweiter, leerer Vorgang würde den ersten ersetzen – seine
+      Flaschen wären danach aus dem Bestand zurückgenommen.</p>
+      <button class="btn btn--leise btn--klein" id="ovNeu">Trotzdem neu beginnen</button>`;
+    $("#ov").classList.add("on");
+    $("#ovOk").textContent="Ergänzen";
+    $("#ovOk").onclick=()=>{ cur.finished=false; save(); weiter(); };
+    $("#ovBody").querySelector("#ovNeu").onclick=()=>{
+      archive(cur); S[m]=blank(m); save(); weiter(); };
+    $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
+      $("#ovOk").textContent="Ja"; mode=null; renderMenu(); };
+    return;
+  }
+
   if(cur&&(cur.finished||cur.tag!==ziel)){archive(cur);S[m]=blank(m);}
   else if(!cur)S[m]=blank(m);
   if(!S[m].name)S[m].name=whoAmI();

@@ -675,7 +675,19 @@ function gebindeGroesse(artId, kassenname){
      eingang{id:n}  Wareneingang in Flaschen                            */
 const summe = o => Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
 
-function kistenGr(p){ if(p && p.kg) return +p.kg; return (PLAN.kiste||{})[p.id] || 6; }
+/* Flaschen je Kiste einer Wareneingangs-Position.
+   Die Rangfolge ist WORTGLEICH mit der des Workers (`src/index.js`,
+   `mode === "ware"`): `kistengr` schreibt die App (public/index.html:1350,
+   :2881, :2910), `kg` kommt nur aus alten Paketen der Offline-Reihe, 6 ist
+   der Standard (`KISTE_STD`).
+   Bis v25 stand hier zuerst `p.kg` — ein Feld, das die App NIE geschrieben
+   hat — und danach `PLAN.kiste`, das die App beim Rechnen ebenfalls nicht
+   befragt. Eine Lieferung mit 2 Kisten a 20 Flaschen stand deshalb im
+   Journal mit 40 und auf diesem Schirm mit 12. Wer eine der beiden
+   Fassungen ändert, ändert beide; `tests/kisten.test.mjs` schickt dieselbe
+   Lieferung durch den Worker UND durch `normVorgang` und wird rot, sobald
+   sie auseinanderlaufen. */
+function kistenGr(p){ return (p && (+p.kistengr || +p.kg)) || 6; }
 
 function normVorgang(v){
   if(!v || !v.mode) return null;
@@ -864,12 +876,54 @@ async function sendeZuordnung(name, wert, gebindeMl){
    deshalb steht er in der Zeile daneben. */
 async function bestaetigeGebinde(name, artId, ml){
   ml=+ml||0; if(!name || !artId || !ml) return;
+  /* Zweiter Riegel neben der Ansicht: Für eine Kassenposition mit
+     Rezeptur ist `artId` ein BESTANDTEIL. `MAP[name]=artId` hiesse „Aperol
+     Spritz ist Prosecco", und der Worker schreibt das rückwirkend in jede
+     gespeicherte Berichtszeile. Es gibt keinen Papierkorb. */
+  if(REZ[name] && REZ[name].length)
+    return toast("Mischgetränk — die Größe wird beim Bestandteil bestätigt, nicht hier");
   GEB_BEST[name]=ml; if(MAP[name]!==artId){ MAP[name]=artId; schreib(K_MAP,MAP); }
   schreib(K_GEB,GEB_BEST);
   const ok=await sendeZuordnung(name, artId, ml);
   zeichne();
   toast(ok ? "Gebinde bestätigt: "+ml+" ml"
            : "Nur auf diesem Gerät gemerkt — der Server hat es nicht angenommen");
+}
+
+/* Dieselbe Bestätigung für eine ganze Liste. Der Anlass steht in der
+   Datenbank: alle Zuordnungen haben `gebinde_ml = NULL`. Seit v25 rechnet
+   keine Position ohne bestätigte Größe mehr mit — ohne einen Sammelweg
+   müsste die Leitung am ersten Morgen dreizehnmal einzeln klicken, nur um
+   überhaupt eine Zahl zu sehen.
+
+   Drei Eigenschaften, die hier wichtig sind:
+   1. Jede Zeile geht EINZELN über `POST /api/mapping` hinaus — es gibt
+      keinen Sammelendpunkt, und es soll auch keiner erfunden werden.
+   2. Gemerkt wird erst, was der Server angenommen hat. Anders als beim
+      einzelnen Klick (dort sieht der Mensch die Rückmeldung sofort und
+      kann es wiederholen) wäre eine halb übernommene Liste im Gerät sonst
+      eine zweite Wahrheit neben der Datenbank.
+   3. Scheitert eine Anfrage, wird ABGEBROCHEN, nicht weitergemacht: der
+      wahrscheinliche Grund ist kein Zufall, sondern fehlendes Netz oder
+      ein fehlendes Recht (403), und beides gilt für alle folgenden Zeilen
+      genauso. Was durchkam, steht; der Rest bleibt unangetastet in der
+      Liste stehen und kann später noch einmal. */
+async function bestaetigeAlleGebinde(liste){
+  const gueltig=(liste||[]).filter(o=>o && o.id && +o.ml>0
+    && !(REZ[o.name] && REZ[o.name].length));    /* nie eine Rezeptzeile, siehe oben */
+  if(!gueltig.length) return {bestaetigt:0, gesamt:0};
+  let n=0, abbruch=false;
+  for(const o of gueltig){
+    const ok=await sendeZuordnung(o.name, o.id, +o.ml);
+    if(!ok){ abbruch=true; break; }
+    GEB_BEST[o.name]=+o.ml; MAP[o.name]=o.id; n++;
+  }
+  schreib(K_GEB,GEB_BEST); schreib(K_MAP,MAP);
+  zeichne();
+  toast(abbruch
+    ? n+" von "+gueltig.length+" Größen bestätigt — der Rest steht noch da"
+    : n+" Größen bestätigt");
+  return {bestaetigt:n, gesamt:gueltig.length};
 }
 
 function dateiLaden(){
@@ -1093,11 +1147,18 @@ function abgleich(tag, spanne){
      noch in die Differenz ein — sonst sähe eine fehlende Zahl aus wie
      Schwund. Mehrere Kassenzeilen desselben Namens (Bar/Restaurant,
      Regel 7) werden hier zusammengezählt. */
-  const merkeOhneGroesse=(p, artId, r)=>{
+  const merkeOhneGroesse=(p, artId, r, rezept)=>{
     const da=ohneGroesse.find(o=>o.name===p.name);
     if(da){ da.anzahl+=(+p.anzahl||0); return; }
+    /* `rezept` ist wichtiger, als es aussieht: bei einem zerlegten
+       Mischgetränk ist `id` NICHT der Artikel der Kassenposition, sondern
+       der BESTANDTEIL, dem die Größe fehlt. Wer daraus eine Zuordnung
+       macht, schreibt „Aperol Spritz = Prosecco" — und der Worker zieht
+       damit rückwirkend alle gespeicherten Berichtszeilen nach
+       (src/index.js, `UPDATE fassungszeile SET artikel …`). Diese Zeilen
+       bekommen deshalb keinen Bestätigungsknopf. */
     ohneGroesse.push({name:p.name, anzahl:(+p.anzahl||0), id:artId,
-      fehlt:r.fehlt, aus:r.aus, geb:r.geb});
+      fehlt:r.fehlt, aus:r.aus, geb:r.geb, rezept:!!rezept});
   };
   Object.keys(ZBER).filter(imFenster).sort().forEach(t=>{
     const z=ZBER[t]; berichte.push(z);
@@ -1110,7 +1171,7 @@ function abgleich(tag, spanne){
         const gebs=r.map(x=>gebindeGroesse(x.id, null));
         const luecke=gebs.findIndex(g=>g.quelle!=="bestaetigt");
         if(luecke>=0){
-          merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]});
+          merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]}, true);
           return;
         }
         r.forEach((x,i)=>verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml);
@@ -1264,7 +1325,8 @@ function vHeute(m){
      steht die Zahl hier und nicht bei den Abweichungen. */
   if(a.ohneGroesse.length) fehlt.push("Größe fehlt: "+a.ohneGroesse.length
     +" zugeordnete Kassenpositionen ("+num(a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0))
-    +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung.");
+    +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
+    +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else if(minus.length) fehlt.push(minus.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
   if(fehlt.length){
@@ -1376,11 +1438,14 @@ function vAbgleich(m){
         <th>Kassenname</th><th class="r">Menge</th><th>Artikel</th><th>Was fehlt</th><th>Vorschlag</th>
       </tr></thead><tbody>${a.ohneGroesse.map(o=>`<tr>
         <td>${esc(o.name)}</td><td class="r">${num(o.anzahl)}</td>
-        <td>${esc(artName(o.id))}</td>
-        <td>${o.fehlt==="ausschank"
+        <td>${o.rezept ? "Mischgetränk · Bestandteil "+esc(artName(o.id)) : esc(artName(o.id))}</td>
+        <td>${o.rezept
+          ? "Für "+esc(artName(o.id))+" fehlt die Flaschengröße"
+          : o.fehlt==="ausschank"
           ? "Die Ausschankmenge steht nicht im Kassennamen"
           : "Die Gebindegröße des Artikels ist nicht bestätigt"}</td>
-        <td>${o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
+        <td>${o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
+          : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
           : o.geb.ml
             ? `Vorschlag: ${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span>
                <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
@@ -1390,6 +1455,29 @@ function vAbgleich(m){
     m.appendChild(s);
     s.querySelectorAll("button[data-geb]").forEach(b=>b.onclick=()=>
       bestaetigeGebinde(b.dataset.geb, b.dataset.art, +b.dataset.ml));
+
+    /* Der Sammelweg. Er steht bewusst UNTER der Tabelle: erst die Liste
+       lesen (Kassenname, Artikel, Vorschlag, Herkunft), dann bestätigen.
+       Angefasst wird nur, was einen Vorschlag hat — Positionen, bei denen
+       die Ausschankmenge im Kassennamen fehlt, kann niemand vorschlagen,
+       und ein Sammelknopf darf sie nicht stillschweigend mitnehmen. */
+    const vorschlaege=a.ohneGroesse
+      .filter(o=>o.fehlt==="gebinde" && !o.rezept && o.id && o.geb && +o.geb.ml>0)
+      .map(o=>({name:o.name, id:o.id, ml:+o.geb.ml}));
+    const ohneVorschlag=a.ohneGroesse.length-vorschlaege.length;
+    if(vorschlaege.length){
+      const z=document.createElement("div");
+      z.className="hinweis";
+      z.innerHTML=`Für ${vorschlaege.length} dieser Positionen steht oben ein Vorschlag samt Herkunft.
+        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt: dort fehlt die Ausschankmenge im Kassennamen, oder es ist ein Mischgetränk." : ""}
+        <button class="b" id="bGebAlle" style="margin-left:8px">Alle ${vorschlaege.length} Vorschläge übernehmen</button>`;
+      s.appendChild(z);
+      const bAlle=z.querySelector("#bGebAlle");
+      bAlle.onclick=async()=>{
+        bAlle.disabled=true; bAlle.textContent="Wird bestätigt …";
+        await bestaetigeAlleGebinde(vorschlaege);   /* zeichnet danach neu */
+      };
+    }
   }
 
   const s=document.createElement("section");
@@ -1424,9 +1512,11 @@ function csvAbgleich(tag,a){
      des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
   if(a.ohneGroesse.length){ L.push("",["Größe nicht bestätigt — nicht gerechnet"].map(e).join(";"),
     ["Kassenname","Anzahl","Artikel","Was fehlt","Vorschlag ml"].map(e).join(";"));
-    a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,artName(o.id),
-      o.fehlt==="ausschank"?"Ausschankmenge im Kassennamen":"Gebindegröße des Artikels",
-      o.geb.ml||""].map(e).join(";"))); }
+    a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,
+      (o.rezept?"Bestandteil ":"")+artName(o.id),
+      o.rezept?"Gebindegröße des Bestandteils"
+        :o.fehlt==="ausschank"?"Ausschankmenge im Kassennamen":"Gebindegröße des Artikels",
+      o.rezept?"":(o.geb.ml||"")].map(e).join(";"))); }
   hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
 }
 function hol(name, inhalt, typ){

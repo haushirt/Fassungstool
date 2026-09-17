@@ -48,8 +48,12 @@ function umgebung(antwortet = () => new Response("{}", { status: 200 })) {
   /* `let MAP`/`let ZBER` bleiben im Geltungsbereich des Ausschnitts —
      diese eine Zeile reicht sie heraus, ohne den Quelltext zu ändern. */
   vm.runInContext(QUELLE + `
+    /* zeichne() steht erst in Abschnitt 7 und damit ausserhalb dieses
+       Ausschnitts; die Bestaetigungswege rufen es am Ende auf. */
+    globalThis.zeichne = () => { globalThis.__neugezeichnet = (globalThis.__neugezeichnet||0)+1; };
     globalThis.__f = { flaschen, gebindeGroesse, abgleich, artName, GEBINDE_STANDARD,
-      ladeZuordnung, sendeZuordnung, zeichne:()=>{},
+      ladeZuordnung, sendeZuordnung, bestaetigeAlleGebinde, zeichne:()=>{},
+      stand:()=>({map:MAP, geb:GEB_BEST}),
       setzte:(map,geb,zber,vorg)=>{ MAP=map||{}; GEB_BEST=geb||{};
         ZBER=zber||{}; VORGAENGE=vorg||[]; REZ={}; } };`,
     s, { filename: "leitung.html#gebinde" });
@@ -255,5 +259,77 @@ describe("Der Weg zum Server", () => {
     assert.match(w, /const \{ kassenname, artikel, ignoriert, gebinde_ml/);
     assert.match(w, /INSERT INTO mapping \(fremd, status, artikel, gebinde_ml, wer, angelegt\)/);
     assert.match(lies("docs", "live-schema.sql"), /gebinde_ml INTEGER/);
+  });
+});
+
+describe("Sammelbestätigung: ein Knopf für alle Vorschläge", () => {
+  /* Der Anlass steht in der Live-Datenbank: alle 13 Zuordnungen haben
+     `gebinde_ml = NULL`. Seit v25 rechnet keine Position ohne bestätigte
+     Größe mit — ohne Sammelweg müsste die Leitung am ersten Morgen
+     dreizehnmal einzeln klicken, nur um überhaupt eine Zahl zu sehen. */
+  const LISTE = [
+    { name: "GV Leindl Langenlois 1/8 l", id: "w001", ml: 750 },
+    { name: "MU Muster, Gelber Muskateller Styria 0,75 l", id: "w018", ml: 750 },
+    { name: "Gasteiner Quellwasser 1l", id: "gasteiner", ml: 1000 }
+  ];
+
+  test("jede Zeile geht einzeln über POST /api/mapping — mit Artikel und Größe", async () => {
+    const { f, gesendet } = umgebung();
+    f.setzte({}, {}, {}, []);
+    const r = await f.bestaetigeAlleGebinde(LISTE);
+    assert.equal(r.bestaetigt, 3);
+    assert.equal(gesendet.length, 3, "drei Anfragen, kein erfundener Sammelendpunkt");
+    assert.deepEqual(gesendet.map(g => g.url), ["/api/mapping", "/api/mapping", "/api/mapping"]);
+    assert.deepEqual(gesendet[2].daten, { kassenname: "Gasteiner Quellwasser 1l",
+      artikel: "gasteiner", ignoriert: 0, gebinde_ml: 1000 });
+    const st = f.stand();
+    assert.equal(st.geb["GV Leindl Langenlois 1/8 l"], 750);
+    assert.equal(st.map["GV Leindl Langenlois 1/8 l"], "w001");
+  });
+
+  test("danach rechnen die Positionen mit", async () => {
+    const { f } = umgebung();
+    f.setzte({}, {}, zber(), [{ mode: "tag", tag: BERICHT.tag, wein: { w001: 1 }, getr: {} }]);
+    await f.bestaetigeAlleGebinde(LISTE);
+    const a = f.abgleich(BERICHT.tag, 1);
+    nah(a.verk.w001, 4 * 125 / 750, "vier Achtel aus der 0,75-l-Flasche");
+    assert.equal(a.ohneGroesse.some(o => o.name === "GV Leindl Langenlois 1/8 l"), false);
+  });
+
+  test("scheitert eine Anfrage, steht der Rest noch da", async () => {
+    /* 403 heisst: keine Leitung. Der Grund gilt für jede folgende Zeile
+       genauso — deshalb wird abgebrochen und nicht zwölfmal vergeblich
+       gefragt. Gemerkt wird nur, was der Server angenommen hat. */
+    let n = 0;
+    const { f, gesendet } = umgebung(() => (++n === 2
+      ? new Response("{}", { status: 403 })
+      : new Response("{}", { status: 200 })));
+    f.setzte({}, {}, {}, []);
+    const r = await f.bestaetigeAlleGebinde(LISTE);
+    assert.equal(r.bestaetigt, 1, "eine durch, dann Schluss");
+    assert.equal(gesendet.length, 2, "nach dem Fehlschlag wird nicht weitergefragt");
+    const st = f.stand();
+    assert.equal(st.geb["MU Muster, Gelber Muskateller Styria 0,75 l"], undefined,
+      "nichts örtlich merken, was der Server nicht hat");
+    assert.equal(st.geb["Gasteiner Quellwasser 1l"], undefined);
+    assert.equal(st.geb["GV Leindl Langenlois 1/8 l"], 750, "was durchkam, bleibt");
+  });
+
+  test("ohne Vorschlag wird nichts angefasst", async () => {
+    const { f, gesendet } = umgebung();
+    f.setzte({}, {}, {}, []);
+    const r = await f.bestaetigeAlleGebinde(
+      [{ name: "Sanbitter Spritz 1 Glas", id: "sanbitter", ml: 0 },
+       { name: "Käse", id: null, ml: 750 }]);
+    assert.equal(r.gesamt, 0);
+    assert.equal(gesendet.length, 0);
+  });
+
+  test("der Sammelknopf nimmt nur Positionen mit Vorschlag auf", () => {
+    /* Die Liste entsteht in `vAbgleich`; sie darf die Positionen, bei
+       denen die AUSSCHANKMENGE im Kassennamen fehlt, nicht mitnehmen —
+       für die gibt es keinen Vorschlag, nur eine Entscheidung. */
+    const quelle = lies("public", "leitung.html");
+    assert.match(quelle, /\.filter\(o=>o\.fehlt==="gebinde" && o\.id && o\.geb && \+o\.geb\.ml>0\)/);
   });
 });

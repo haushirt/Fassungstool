@@ -295,6 +295,57 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      geklickt && Math.abs(geklickt.verkauf - 4 * 125 / 750) < 0.001 && !geklickt.nochOffen,
      geklickt && String(geklickt.verkauf));
 
+  /* ── 8 · Alle Vorschläge auf einmal ─────────────────────────────────
+     In der Live-Datenbank hat KEINE Zuordnung eine bestätigte
+     Gebindegröße. Einzeln wären das dreizehn Klicks, bevor der Abgleich
+     am Morgen überhaupt eine Zahl zeigt. */
+  console.log("\n8 · Sammelbestätigung der Gebindegrößen");
+  /* Eine Position, für die es keinen Vorschlag geben KANN: im Kassennamen
+     steht „1 Glas", keine Ausschankmenge. Sie muss in der Liste stehen
+     bleiben, und der Sammelknopf darf sie nicht mitnehmen. */
+  await p.evaluate(async () => {
+    MAP["Sanbitter Spritz 1 Glas"] = "sanbitter"; schreib(K_MAP, MAP);
+    await sendeZuordnung("Sanbitter Spritz 1 Glas", "sanbitter");
+    zeichne();
+  });
+  await p.waitForTimeout(500);
+
+  const vorher = await p.evaluate(() => {
+    const a = abgleich("2026-09-16", 1);
+    const mit = a.ohneGroesse.filter(o => o.fehlt === "gebinde" && o.id && o.geb && o.geb.ml);
+    const b = document.getElementById("bGebAlle");
+    return { offen: a.ohneGroesse.length, mitVorschlag: mit.length,
+             ohneVorschlag: a.ohneGroesse.length - mit.length,
+             knopf: b ? b.textContent.trim() : null };
+  });
+  ok("es gibt einen Sammelknopf mit der Zahl darin",
+     !!vorher.knopf && vorher.knopf.includes(String(vorher.mitVorschlag)), vorher.knopf);
+  ok("es gibt überhaupt etwas zu bestätigen", vorher.mitVorschlag > 0,
+     vorher.mitVorschlag + " mit Vorschlag, " + vorher.ohneVorschlag + " ohne");
+
+  const mapVorher = DB.zeilen("mapping").filter(r => r.gebinde_ml).length;
+  const nachher = await p.evaluate(async () => {
+    document.getElementById("bGebAlle").click();
+    await new Promise(r => setTimeout(r, 1500));
+    const a = abgleich("2026-09-16", 1);
+    return { offen: a.ohneGroesse.length,
+             mitVorschlag: a.ohneGroesse.filter(o => o.fehlt === "gebinde" && o.geb && o.geb.ml).length,
+             gerechnet: Object.keys(a.verk).length,
+             meldung: (document.getElementById("toast") || {}).textContent || "" };
+  });
+  const mapNachher = DB.zeilen("mapping").filter(r => r.gebinde_ml).length;
+  ok("jede bestätigte Größe steht einzeln in der Datenbank `mapping`",
+     mapNachher - mapVorher === vorher.mitVorschlag,
+     (mapNachher - mapVorher) + " neue Zeilen mit gebinde_ml");
+  ok("die Rückmeldung nennt die Zahl",
+     new RegExp(vorher.mitVorschlag + " Größen bestätigt").test(nachher.meldung), nachher.meldung);
+  ok("danach steht keine Position mehr mit einem offenen Vorschlag da",
+     nachher.mitVorschlag === 0, nachher.mitVorschlag);
+  ok("was keinen Vorschlag hat, bleibt unangetastet",
+     nachher.offen === vorher.ohneVorschlag, nachher.offen + " bleiben");
+  ok("jetzt rechnen die Positionen mit", nachher.gerechnet > 0,
+     nachher.gerechnet + " Artikel in der Mengenrechnung");
+
   /* ── Ergebnis ───────────────────────────────────────────────────────── */
   await browser.close(); srv.close();
   console.log("\n══ Ergebnis ══");
