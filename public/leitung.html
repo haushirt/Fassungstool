@@ -1860,7 +1860,7 @@ function vTeam(m){
         <span class="deutung" id="nHint">${esc(RECHTETEXT.service)}</span></div>
       <div class="reihe" style="margin-bottom:16px">
         <label style="width:140px">Code</label>
-        <input type="text" id="nCode" placeholder="vier bis acht Ziffern" maxlength="8"
+        <input type="text" id="nCode" placeholder="sechs bis acht Ziffern" maxlength="8"
           inputmode="numeric" style="width:180px">
         <button class="b klein" id="nWuerfel">Vorschlagen</button></div>
       <div class="reihe">
@@ -1871,8 +1871,17 @@ function vTeam(m){
 
   $("#nRolle").onchange=e=>{ $("#nHint").textContent=RECHTETEXT[e.target.value]||""; };
   $("#nWuerfel").onclick=()=>{
-    const a=new Uint32Array(1); crypto.getRandomValues(a);
-    $("#nCode").value=String(1000+(a[0]%9000));
+    /* Sechs Ziffern statt vier: die vier ersten Codes des Hauses sind aus
+       der Geschichte des Anhangs bekannt und werden ersetzt. Der Vorschlag
+       darf nicht wieder vierstellig sein, sonst schlägt die Taste genau
+       das vor, was nicht mehr sein soll.
+       Der Rest einer 32-Bit-Zahl geteilt durch 900000 bevorzugt die
+       niedrigen Werte leicht; was über der letzten vollen Runde liegt,
+       wird deshalb verworfen und neu gewürfelt. */
+    const a=new Uint32Array(1), spanne=900000;
+    const grenze=Math.floor(4294967296/spanne)*spanne;
+    do{ crypto.getRandomValues(a); }while(a[0]>=grenze);
+    $("#nCode").value=String(100000+(a[0]%spanne));
   };
 
   let LEUTE=[];
@@ -1918,7 +1927,7 @@ function vTeam(m){
   $("#nAdd").onclick=()=>{
     const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();
     if(!nm) return toast("Ohne Namen geht es nicht");
-    if(!/^\d{4,8}$/.test(code)) return toast("Der Code hat vier bis acht Ziffern");
+    if(!/^\d{6,8}$/.test(code)) return toast("Der Code hat sechs bis acht Ziffern");
     const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
     sende({id:da?da.id:undefined, name:nm, rolle:$("#nRolle").value, code, aktiv:1});
     $("#nName").value=""; $("#nCode").value="";

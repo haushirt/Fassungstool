@@ -1055,6 +1055,13 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   font-variant-numeric:tabular-nums;cursor:pointer}
 .ztaste:active{background:var(--surface-3)}
 .ztaste--weg{font-size:var(--text-base);color:var(--fg-muted)}
+/* Bei wechselnder Codelänge kann die App nicht raten, wann der Code zu
+   Ende ist — es braucht eine Taste dafür. Sie liegt, wo bis v21 ein leeres
+   Feld war: untere Reihe, linke Ecke, in Daumenweite. Sie leuchtet erst,
+   wenn der Code lang genug ist, damit niemand gegen eine tote Taste tippt. */
+.ztaste--ok{background:var(--accent);border-color:var(--accent);color:var(--fg-on-dark)}
+.ztaste--ok:disabled{background:var(--surface-3);border-color:var(--border-strong);
+  color:var(--fg-subtle);cursor:default}
 .login h1{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
   letter-spacing:0;margin:0 0 var(--space-1)}
 .menu h1{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
@@ -1362,6 +1369,14 @@ async function codeSumme(code){
 async function merkeCode(code,name){
   const k=await codeSumme(code);
   const m=(()=>{try{return JSON.parse(localStorage.getItem(K_BEKANNT))||{};}catch(e){return {};}})();
+  /* Pro Person genau ein Code — der zuletzt beim Server bestätigte. Sonst
+     bleibt ein ersetzter Code auf jedem Gerät liegen, das ihn einmal
+     gesehen hat: Er käme ohne Netz weiter in die App und öffnete
+     Verwaltung und Freigabe. Die vier ersten Codes des Hauses sind aus der
+     Geschichte des Anhangs bekannt; sie zu ersetzen hilft nur, wenn sie
+     auf den Geräten auch verschwinden. Das geschieht bei der ersten
+     Anmeldung mit dem neuen Code. */
+  for(const s of Object.keys(m)) if(m[s]===name&&s!==k) delete m[s];
   m[k]=name; try{localStorage.setItem(K_BEKANNT,JSON.stringify(m));}catch(e){}
 }
 async function bekannterCode(code){
@@ -1841,29 +1856,53 @@ function renderLogin(){
   L.innerHTML=`<div class="loginbox">
     <h1 class="vh">Haus Hirt</h1><span class="marke"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1352 505" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M592 501C573 499 558 495 552 490C532 475 527 444 535 373C538 339 539 321 537 298C535 280 530 247 530 251C530 252 525 305 519 368C510 467 509 484 507 486L505 488 468 489C357 492 307 488 247 471C204 459 152 438 114 416C107 412 102 409 101 410C101 410 95 415 88 420C59 442 36 450 21 443C1 433 -4 396 13 384C27 374 54 374 84 382C87 383 90 384 91 384C91 384 90 380 89 377C73 324 83 290 115 292C155 295 158 331 123 384C119 391 115 396 115 397C113 399 157 422 188 435C214 446 275 464 279 463C280 463 276 459 270 454C234 423 230 393 259 378C291 360 312 388 315 455L316 470 321 470C345 473 364 474 399 474C440 475 495 474 495 473C495 467 535 35 536 30C540 14 547 4 558 3C572 2 582 11 582 26C582 38 578 45 572 45C566 44 564 41 567 32C569 24 568 21 564 19C558 16 553 21 551 32C550 34 547 66 544 101L538 166 540 169C542 171 544 175 546 178C550 183 550 184 552 183C557 178 598 119 596 119C578 113 568 107 566 99C563 88 572 80 599 65C607 61 611 58 614 54C631 36 637 32 648 32C660 32 666 37 673 54L676 62 688 69C711 82 720 94 711 104C709 106 690 116 687 116C684 116 686 119 699 140C718 171 724 184 727 198C732 220 736 244 741 296C743 312 744 327 744 328L745 332 758 331C767 331 775 332 786 333C829 339 825 338 828 336C829 335 833 328 838 319C847 300 850 298 859 297C876 296 901 310 908 325C917 344 903 359 880 356L874 356 874 364C870 402 860 428 845 435L840 437 842 450C844 464 845 469 847 471C848 473 854 473 920 473C991 473 997 473 1026 470L1036 469 1036 463C1036 453 1038 432 1040 420C1047 380 1065 364 1090 376C1113 387 1118 407 1103 429C1098 436 1082 453 1074 460L1070 463 1079 461C1104 455 1141 443 1169 432C1190 422 1237 399 1237 397C1237 397 1233 391 1229 384C1198 338 1196 304 1223 294C1243 286 1261 293 1267 312C1272 325 1270 353 1262 377C1261 380 1260 383 1261 383C1261 383 1265 382 1271 381C1329 366 1358 383 1345 424C1343 431 1337 438 1331 441C1315 449 1291 441 1258 415L1249 408 1236 416C1204 433 1169 449 1134 461C1066 484 1005 492 913 489C892 488 867 488 858 488C843 488 839 488 838 487C834 483 829 466 827 447C826 438 826 438 823 438C821 438 820 439 820 444C819 446 818 453 816 459C815 465 814 471 814 473C814 475 813 477 809 480C803 485 802 485 801 481C798 477 799 470 802 456C804 450 805 442 805 439L806 434 801 431C798 429 795 426 794 424L792 421 779 421L767 421 765 429C761 441 761 447 768 464C775 480 775 482 769 485C764 487 761 485 756 472C754 466 751 461 751 461C751 461 750 464 749 467C747 478 736 491 724 497C714 502 706 503 690 500C677 499 676 499 652 500C630 502 600 502 592 501Z M644 485C659 484 671 484 680 485C708 486 713 486 719 483C725 479 730 473 734 466C740 453 739 398 731 344C731 338 729 320 727 303C720 230 715 199 707 184C703 175 693 159 678 136C663 112 663 109 674 105C684 101 698 95 698 94C698 93 691 87 680 82C667 74 665 72 660 61C655 49 653 47 648 47C643 47 637 51 629 60C621 70 620 71 604 80C589 88 581 94 581 95C582 97 592 102 601 104C606 105 611 106 612 107C615 107 617 113 616 115C614 122 573 182 563 192C555 201 548 202 540 195L538 193 538 195C538 196 540 213 543 232C554 311 555 321 549 372C544 419 545 454 552 467C561 484 586 489 644 485Z M300 448C297 411 288 388 276 388C269 388 257 396 255 402C252 413 265 431 290 450C295 455 300 458 300 458C300 458 300 453 300 448Z M1063 449C1086 430 1099 413 1097 403C1095 396 1083 387 1075 387C1063 387 1055 409 1051 448C1051 459 1050 459 1063 449Z M42 429C52 426 74 413 85 403L89 399 83 398C52 389 28 389 20 398C18 401 18 402 18 409C19 426 27 433 42 429Z M1325 427C1332 424 1336 406 1332 399C1329 392 1316 389 1299 391C1288 392 1263 398 1263 399C1263 401 1282 415 1293 421C1306 428 1319 431 1325 427Z M841 419C846 415 852 403 855 390C858 376 858 374 859 357C860 337 861 336 873 340C884 343 896 341 896 336C896 329 881 316 867 313C858 311 859 310 846 337C843 343 837 349 832 351C827 354 822 353 797 350C776 347 749 345 747 347C747 348 748 355 748 363C749 372 750 385 751 394C752 403 752 410 752 410C753 410 755 409 758 408C762 407 767 406 782 405C803 405 804 405 805 412C805 416 806 417 810 419C820 424 835 424 841 419Z M112 374C126 352 132 337 132 324L132 316 129 313C123 307 110 305 103 309C94 315 94 339 103 371C105 380 106 382 106 382C107 382 109 379 112 374Z M1248 373C1257 339 1257 315 1248 309C1242 304 1225 307 1220 314C1216 320 1219 335 1228 352C1233 363 1244 381 1245 381C1245 381 1247 377 1248 373Z M635 134C628 130 621 113 621 95C621 87 622 86 641 88C665 90 666 91 659 111C654 128 644 137 635 134Z M644 116C645 114 646 110 647 107L649 102 644 102C638 101 634 101 634 102C634 103 637 116 638 118C639 121 641 121 644 116Z"/></svg><span class="vh">Haus Hirt</span></span><p class="sub">Fassungstool</p>
     <p class="loginhilfe">Bestände prüfen, fassen und protokollieren.
-      Melde dich mit deinem persönlichen Code an – er steht später im Protokoll.</p>
-    <div class="pinreihe" id="pinReihe" aria-hidden="true">
-      <span class="pinfeld"></span><span class="pinfeld"></span>
-      <span class="pinfeld"></span><span class="pinfeld"></span></div>
+      Melde dich mit deinem persönlichen Code an – er steht später im Protokoll.
+      Code eintippen, dann auf \u2713.</p>
+    <div class="pinreihe" id="pinReihe" aria-hidden="true"></div>
     <input id="uCode" class="input input--pin vh" type="tel" inputmode="none"
-      maxlength="4" autocomplete="off" aria-label="Code eingeben">
+      maxlength="8" autocomplete="off" aria-label="Code eingeben">
     <p class="pinfehler" id="pinFehler" role="status"></p>
     <div class="block" id="pinBlock">
       ${[1,2,3,4,5,6,7,8,9].map(z=>`<button class="ztaste" data-z="${z}">${z}</button>`).join("")}
-      <span></span><button class="ztaste" data-z="0">0</button>
+      <button class="ztaste ztaste--ok" data-ok aria-label="Anmelden" disabled>\u2713</button>
+      <button class="ztaste" data-z="0">0</button>
       <button class="ztaste ztaste--weg" data-weg aria-label="Letzte Ziffer löschen">⌫</button>
     </div></div>`;
   const inp=$("#uCode");
+  /* Das Feld nahm bis v21 genau vier Ziffern. Die vier ersten Codes des
+     Hauses sind aus der Geschichte des Anhangs bekannt und werden durch
+     längere ersetzt — mit einem sechsstelligen Code wäre hier niemand mehr
+     hereingekommen. Vier bleiben zulässig, bis die neuen vergeben sind;
+     danach gibt es keinen vierstelligen Code mehr, der hier durchkommt. */
+  const MIN=4, MAX=8;
+  /* Angemeldet wird auf Tastendruck statt bei der vierten Ziffer: Wenn der
+     Code vier bis acht Ziffern haben kann, weiss nur der Mensch vor dem
+     Gerät, wann er zu Ende ist. Wer bis v21 einen längeren Code eintippte,
+     schickte die ersten vier los, bekam „Code stimmt nicht" und ein
+     geleertes Feld — nach zehn davon steht das Haus vor der Sperre. */
   const male=()=>{
     const v=inp.value;
-    document.querySelectorAll("#pinReihe .pinfeld").forEach((f,i)=>
-      f.classList.toggle("voll",i<v.length));};
+    /* Sechs Felder als Grundmass — soviel hat ein neuer Code. Mehr nur,
+       wenn wirklich mehr eingetippt ist; ein Feld zuwenig sähe aus wie ein
+       verschluckter Tastendruck. */
+    const n=Math.min(MAX,Math.max(6,v.length));
+    $("#pinReihe").innerHTML=Array.from({length:n},(_,i)=>
+      '<span class="pinfeld'+(i<v.length?" voll":"")+'"></span>').join("");
+    const t=$("#pinBlock [data-ok]"); if(t)t.disabled=v.length<MIN;};
   $("#pinBlock").onclick=e=>{
-    const b=e.target.closest("button");if(!b)return;
-    if(b.dataset.weg)inp.value=inp.value.slice(0,-1);
-    else if(inp.value.length<4)inp.value+=b.dataset.z;
-    $("#pinFehler").textContent="";male();pruefe();};
-  inp.oninput=()=>{male();pruefe();};
+    const b=e.target.closest("button");if(!b||b.disabled)return;
+    /* `data-weg` und `data-ok` stehen ohne Wert in der Zeile, dataset
+       liefert dafür "" — ein Wahrheitstest darauf ist immer falsch. Bis
+       v21 hängte die Löschtaste deshalb „undefined" an den Code, statt
+       die letzte Ziffer zu nehmen. Gefragt wird jetzt, ob es die Angabe
+       überhaupt gibt. */
+    if("weg" in b.dataset){inp.value=inp.value.slice(0,-1);
+      $("#pinFehler").textContent="";male();return;}
+    if("ok" in b.dataset){$("#pinFehler").textContent="";male();pruefe();return;}
+    if(inp.value.length<MAX)inp.value+=b.dataset.z;
+    $("#pinFehler").textContent="";male();};
+  inp.oninput=()=>{male();};
+  inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();pruefe();}};
   male();
   /* Erst den Server fragen — dort stehen die Personen, dort werden sie
      gepflegt, und nur dort entsteht die Sitzung, die der Server für die
@@ -1872,7 +1911,7 @@ function renderLogin(){
   let laeuftPruefung=false;
   const pruefe=async()=>{
     const code=inp.value;
-    if(code.length<4||laeuftPruefung)return;
+    if(code.length<MIN||laeuftPruefung)return;
     laeuftPruefung=true;
     $("#pinFehler").textContent="";
     let name=null, serverHat=false;
@@ -2052,8 +2091,8 @@ function openArchDoc(k){
 function askPin(){
   $("#ovT").textContent="Verwaltung";
   $("#ovBody").innerHTML=`<p>Zum Öffnen deinen persönlichen Code eingeben — denselben wie beim Anmelden.</p>
-    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4"
-      placeholder="••••" aria-label="Persönlicher Code">
+    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="8"
+      placeholder="••••••" aria-label="Persönlicher Code">
     <p class="pinfehler" id="pinMeld" role="status"></p>`;
   $("#ov").classList.add("on");
   const inp=$("#pinIn");setTimeout(()=>inp.focus(),50);
@@ -3985,7 +4024,7 @@ function freigabe(offen){
       steht mit deinem Namen im Protokoll \u2014 die Leitung sieht sie morgen fr\u00fch.</p>
     <label class="f"><span>Dein pers\u00f6nlicher Code</span>
       <input id="fgCode" class="input input--pin" type="tel" inputmode="numeric"
-        maxlength="4" placeholder="\u2022\u2022\u2022\u2022"></label>
+        maxlength="8" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022"></label>
     <p class="pinfehler" id="fgMeld" role="status"></p>`;
   $("#ov").classList.add("on");
   const inp=$("#fgCode");setTimeout(()=>inp.focus(),60);

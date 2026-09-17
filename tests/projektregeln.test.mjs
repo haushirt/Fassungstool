@@ -161,3 +161,61 @@ describe("Rollen (Regel 4)", () => {
     assert.deepEqual(namen.sort(), ["leitung", "service", "wirtschaft"]);
   });
 });
+
+/* Auflage 2 vor dem Livegang: Die vier ersten Codes des Hauses sind aus
+   der Geschichte des Anhangs bekannt und werden durch längere ersetzt.
+   Das ist keine Einstellung im Dashboard, sondern eine Zusage des Codes:
+   Wer einen sechsstelligen Code vergibt, muss ihn auch eintippen können.
+   Bis v21 hörte jedes Codefeld nach vier Ziffern auf — die Umstellung
+   hätte das Haus ausgesperrt, ohne dass irgendwo ein Fehler erscheint. */
+describe("Codelänge: was der Worker vergibt, muss die App annehmen", () => {
+  const app = lies("public", "index.html");
+  const leitung = lies("public", "leitung.html");
+  const worker = lies("src", "index.js");
+
+  test("der Worker vergibt keine vierstelligen Codes mehr", () => {
+    const m = /!\/\^\\d\{(\d),(\d)\}\$\/\.test\(code\)/.exec(worker);
+    assert.ok(m, "die Prüfung der Codelänge in personSchreiben() ist weg oder umgebaut");
+    assert.equal(m[1], "6", "Mindestlänge ist nicht sechs Ziffern");
+    assert.equal(m[2], "8", "Höchstlänge ist nicht acht Ziffern");
+  });
+
+  test("das Backoffice prüft dieselbe Länge wie der Worker", () => {
+    assert.match(leitung, /\/\^\\d\{6,8\}\$\//,
+      "das Backoffice liesse eine Länge durch, die der Worker ablehnt");
+  });
+
+  test("die Taste zum Vorschlagen bietet keinen vierstelligen Code an", () => {
+    const m = /#nCode"\)\.value=String\((\d+)\+/.exec(leitung);
+    assert.ok(m, "der Vorschlag ist weg oder umgebaut");
+    assert.ok(String(m[1]).length >= 6,
+      "der Vorschlag ist wieder vierstellig: " + m[1]);
+  });
+
+  test("jedes Codefeld der App nimmt acht Ziffern", () => {
+    const felder = [...app.matchAll(/<input[^>]*class="[^"]*input--pin[^"]*"[^>]*>/gs)];
+    assert.ok(felder.length >= 3, "erwartet: Anmeldung, Verwaltung, Freigabe");
+    for (const f of felder) {
+      const m = /maxlength="(\d+)"/.exec(f[0]);
+      assert.ok(m, "Codefeld ohne maxlength: " + f[0].slice(0, 80));
+      assert.equal(m[1], "8",
+        "dieses Codefeld nimmt nur " + m[1] + " Ziffern: " + f[0].slice(0, 80));
+    }
+  });
+
+  test("die Anmeldung schickt erst auf Tastendruck ab", () => {
+    const s = inlineSkript();
+    assert.match(s, /\[data-ok\]/, "die Bestätigungstaste fehlt");
+    assert.equal(/inp\.oninput=\(\)=>\{male\(\);pruefe\(\);\}/.test(s), false,
+      "die Anmeldung schickt wieder bei jeder Ziffer ab — bei wechselnder "
+      + "Länge verbrennt das die Versuche bis zur Sperre");
+  });
+
+  test("die Löschtaste fragt nicht auf Wahrheit ab (dataset liefert \"\")", () => {
+    const s = inlineSkript();
+    assert.equal(/if\(b\.dataset\.weg\)/.test(s), false,
+      "`data-weg` ohne Wert ist \"\" und damit falsch — die Löschtaste "
+      + "hängte so ein undefined an den Code");
+    assert.match(s, /"weg" in b\.dataset/);
+  });
+});

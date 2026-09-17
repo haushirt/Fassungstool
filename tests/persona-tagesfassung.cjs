@@ -21,6 +21,13 @@
    Ergebnis: review/screens/runde-<N>-qa/   (Ordner über RUNDE unten). */
 
 const RUNDE = process.env.RUNDE || "2";
+/* Bei jedem Lauf gewürfelt, wie in `tests/durchstich.cjs`: So kann keine
+   erfundene Ziffernfolge je zufällig mit einem Code aus dem Haus
+   zusammenfallen und für immer in der Geschichte stehen (Regel 9).
+   Sechs Ziffern, wie sie der Worker seit dem 17.09. verlangt. */
+const wuerfel = () => String(require("crypto").randomInt(100000, 1000000));
+const CODE = wuerfel();
+let FALSCH = wuerfel(); while (FALSCH === CODE) FALSCH = wuerfel();
 
 const ORTE = [
   "playwright",
@@ -49,7 +56,7 @@ const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
    reagiert; er ist KEIN Beweis über den echten Worker. Wofür er da ist:
    sichtbar zu machen, was die App tut, wenn ein Server antwortet. */
 const SERVER = {
-  codes: { "4711": { name: "Lena", rolle: "service" } },
+  codes: { [CODE]: { name: "Lena", rolle: "service" } },
   vorgaenge: {},          /* schluessel -> daten */
   puts: [],               /* jede angekommene Übertragung, der Reihe nach */
   angemeldet: false,
@@ -150,14 +157,16 @@ async function hilfeWeg(p, wo) {
   console.log("1. Anmeldung sieht:", anmeldeText.slice(0, 200));
 
   /* Falscher Code zuerst — so fängt ein erster Tag oft an. */
-  for (const z of "9999") await p.locator('[data-z="' + z + '"]').click();
+  for (const z of FALSCH) await p.locator('[data-z="' + z + '"]').click();
+  await p.locator("[data-ok]").click();
   await p.waitForTimeout(400);
   const fehlerSatz = await p.locator("#pinFehler").textContent();
   console.log("   falscher Code →", JSON.stringify(fehlerSatz));
   await bild(p, "anmeldung-falscher-code");
 
   /* Jetzt der richtige. */
-  for (const z of "4711") await p.locator('[data-z="' + z + '"]').click();
+  for (const z of CODE) await p.locator('[data-z="' + z + '"]').click();
+  await p.locator("[data-ok]").click();
   await p.waitForTimeout(600);
   const imMenu = await p.evaluate(() => {
     const m = document.getElementById("menu");

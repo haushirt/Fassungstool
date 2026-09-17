@@ -51,8 +51,9 @@ const PORT = 8934;
 /* Bei jedem Lauf gewürfelt statt im Quelltext festgeschrieben. So kann
    keine erfundene Ziffernfolge je zufällig mit einem Code aus dem Haus
    zusammenfallen, und es steht nichts Codeartiges in der Geschichte
-   (Regel 9). */
-const CODE = String(require("crypto").randomInt(1000, 10000));
+   (Regel 9). Sechs Ziffern, wie sie der Worker seit dem 17.09. verlangt —
+   mit vier lässt sich keine Person mehr anlegen. */
+const CODE = String(require("crypto").randomInt(100000, 1000000));
 
 let fehler = 0, geprueft = 0;
 const ok = (satz, bedingung, dazu) => {
@@ -146,7 +147,19 @@ const ok = (satz, bedingung, dazu) => {
   console.log("\n1 · Anmeldung im Keller");
   await p.goto(BASIS + "/index.html", { waitUntil: "load" });
   await p.waitForTimeout(400);
+  /* Erst eine Ziffer zuviel und wieder weg: Die Löschtaste hängte bis v21
+     „undefined" an den Code, weil `data-weg` ohne Wert dasteht. Fällt das
+     hier durch, kommt im Keller niemand mehr herein, der sich vertippt. */
+  await p.locator('[data-z="7"]').click();
+  await p.locator("[data-weg]").click();
+  const nachWeg = await p.evaluate(() => document.getElementById("uCode").value);
+  ok("die Löschtaste nimmt die letzte Ziffer weg", nachWeg === "", JSON.stringify(nachWeg));
+
   for (const z of CODE) await p.locator('[data-z="' + z + '"]').click();
+  const vorOk = await p.evaluate(() =>
+    getComputedStyle(document.getElementById("menu")).display !== "none");
+  ok("ohne Bestätigung wird nichts abgeschickt", !vorOk);
+  await p.locator("[data-ok]").click();
   await p.waitForTimeout(700);
   const imMenu = await p.evaluate(() =>
     getComputedStyle(document.getElementById("menu")).display !== "none");

@@ -488,7 +488,12 @@ async function personSchreiben(env, body) {
   if (!name || !rolle) return json({ fehler: "name und rolle nötig" }, 422);
 
   if (code) {
-    if (!/^\d{4,8}$/.test(code)) return json({ fehler: "Code: vier bis acht Ziffern" }, 422);
+    /* Vier Ziffern sind seit dem 17.09. nicht mehr zu vergeben: die vier
+       ersten Codes des Hauses standen im Klartext in der Geschichte des
+       Anhangs, und 10 000 Möglichkeiten sind an einem Abend durchprobiert.
+       Geprüft wird hier nur das Vergeben — bestehende Prüfsummen bleiben
+       gültig, sonst käme niemand mehr hinein, um sie zu ersetzen. */
+    if (!/^\d{6,8}$/.test(code)) return json({ fehler: "Code: sechs bis acht Ziffern" }, 422);
     const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
     const hash = await hashe(code, salt);
     await env.DB.prepare(
