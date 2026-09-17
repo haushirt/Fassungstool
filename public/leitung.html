@@ -21,10 +21,10 @@
    leitung.html (Backoffice, Maus). Wer hier etwas ändert, ändert es an
    beiden Stellen — das ist der ganze Zweck der Datei.
 
-   Einbinden als ERSTES Stylesheet, vor dem seiteneigenen <style>:
-     <link rel="stylesheet" href="tokens.css?v=12">
-   Die Zahl bei jeder Änderung erhöhen, sonst lädt das iPhone die alte
-   Fassung aus dem Zwischenspeicher.
+   NICHT als Datei einbinden. tokens.css gab es kurz als eigene Datei;
+   ohne Bauschritt muss sie von Hand mitgeliefert werden, und fehlt sie,
+   steht die Seite nackt da. Der Block gehört deshalb in jede Seite
+   hinein — wortgleich, siehe Kasten oben.
 
    Dichte: leitung.html setzt am <html> data-dichte="maus".
    ═══════════════════════════════════════════════════════════════════ */
@@ -219,10 +219,10 @@
   clip:rect(0 0 0 0);white-space:nowrap}
 /* ═══════════════════════════════════════════════════════════════════
    Fassungstool · leitung.css
-   Was nur das Backoffice braucht. Alles Gemeinsame steht in tokens.css
-   und wird VORHER eingebunden:
-     <link rel="stylesheet" href="tokens.css?v=12">
-     <link rel="stylesheet" href="leitung.css?v=12">
+   Was nur das Backoffice braucht. Alles Gemeinsame steht im Block
+   darüber — in derselben Datei, nicht als eigenes Stylesheet. Auch
+   leitung.css gab es kurz als Datei; sie ist aus demselben Grund wieder
+   hier hereingezogen worden.
    Am <html> steht data-dichte="maus".
    ═══════════════════════════════════════════════════════════════════ */
 

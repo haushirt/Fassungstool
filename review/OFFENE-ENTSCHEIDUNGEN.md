@@ -60,6 +60,7 @@ Status: OFFEN | FREIGEGEBEN | ABGELEHNT. Freigaben bitte direkt hier eintragen, 
 | **sofort** | `ANLAGE_OFFEN` im Dashboard löschen. Solange sie steht, legt sich jeder mit der Adresse ein Konto mit Rolle `leitung` an. | Projektanleitung §1, §8 |
 | hoch | `docs/live-schema.sql` erzeugen: `SELECT name, sql FROM sqlite_master WHERE type='table';` in der D1-Console, Ergebnis als Datei einchecken. | Regel 3, Projektanleitung §5 |
 | hoch | `tests/fixtures/` füllen – anonymisierte Z-Berichte und Zählungen. | `CLAUDE.md`, Testdaten |
+| **sofort** | Die vier persönlichen Codes neu vergeben. Sie stehen im Klartext in der Git-Historie (`public/index.html`, Stände vor v11) und wurden bis dahin öffentlich ausgeliefert; die Historie darf niemand umschreiben (Regel 1). Nicht wieder vierstellig. | qa-guardian, Runde 1 |
 | mittel | Sicherung der D1 einrichten. D1 hat keinen Papierkorb. | Projektanleitung §8 |
 | mittel | `WORKER-ANPASSUNG.md` und `ANMELDESPERRE.md` nachreichen oder als überholt erklären. | Projektanleitung §8 |
 | mittel | `review/INPUT-TEAM.md` mit dem Team ausfüllen – hat laut `CLAUDE.md` Vorrang vor eigenen Ideen. | `CLAUDE.md` |
@@ -100,7 +101,8 @@ Status: OFFEN | FREIGEGEBEN | ABGELEHNT. Freigaben bitte direkt hier eintragen, 
 
 **Status:** OFFEN
 **Gemeldet:** hospitality-pro, Runde 1
-**Betrifft:** `public/index.html:1782` (Menüknopf „Verwaltung"), `:1911` (`askPin`), `:1975` (`renderAdmin`), `hh_cfg_v9`
+**Betrifft:** `public/index.html:1836` (Menüknopf „Verwaltung", `bAdmin`), `:1899` (`askPin`), `:1933` (`renderAdmin`), `:1956` (`.aSoll`), `hh_cfg_v9`
+**Zeilenangaben am 17.09. von qa-guardian nachgezogen** – die ursprünglichen stammten aus einem Stand vor den Änderungen dieser Runde.
 
 **Was sich geändert hat:** Bis Runde 1 lag hinter „Verwaltung" ein eigener
 Verwaltungscode. Der stand im Klartext in der ausgelieferten Datei und
@@ -179,6 +181,51 @@ Stammdaten. Service meldet den Zustand, die Leitung entscheidet den Ersatz.
 ändern darf, gilt: **Eine Soll-Änderung ist eine Stammdatenänderung und
 muss gezeichnet sein** – Name, Zeit, alter Wert, neuer Wert. Ohne das ist
 jede Zahl im Keller später unwiderlegbar und unbelegbar zugleich.
+
+---
+
+**Nachgeprüft (qa-guardian, Runde 1) — zwei Berichtigungen und ein Urteil:**
+
+*Berichtigung 1, Umfang.* Der Editor betrifft **nur die Bar**: `renderAdmin()`
+baut genau zwei Blöcke, `barrot` (Rotweine) und `bar` (Barkühlschrank), und
+schreibt nach `hh_cfg_v9`. Die Soll-Mengen des **Restaurants** stehen in
+`PLAN.soll` und sind über die App nicht änderbar; Schränke und Laden auch
+nicht. Der Satz „Soll-Menge je Platz (Bar, Schrank, Lade)" oben ist in der
+Sache richtig gemeint, trifft aber heute nur die Bar-Plätze. Alles Übrige am
+Befund ist nachgeprüft und stimmt: `oninput` → `saveCfg` bei jedem
+Tastendruck (`public/index.html:1956`), kein Name, keine Zeit, kein Journal,
+und `hh_cfg_v9` liegt im `localStorage` eines Geräts.
+
+*Berichtigung 2, Vergleichsmaßstab.* Vor Runde 1 lag hinter „Verwaltung" ein
+vierstelliger Verwaltungscode, der **im Klartext in der ausgelieferten Datei
+stand**. Zugang hatte damit nicht „die Leitung", sondern jeder, der die Seite
+aufrufen und den Quelltext lesen konnte — auch ein Gast im Haus-WLAN. Gemessen
+daran hat `bekannterCode()` den Kreis **verkleinert** (nur noch Codes, die auf
+diesem Gerät einmal angemeldet waren), nicht vergrössert. Vergrössert wurde er
+allein gegenüber der *beabsichtigten* Sperre, die es nie gab.
+
+*Urteil zur Regelfrage.* Kein Verstoss gegen eine harte Regel, also kein
+Rückbau. Regel 9 verlangte die Entfernung des Klartext-Codes — sie ist erfüllt.
+Regel 4 ist eine Schema-Regel („Code und Schema müssen zusammenpassen") und
+zählt die Rollen auf, die in der Spalte `person.rolle` stehen; der Editor rührt
+keine Tabelle und keine Spalte an, sondern den Gerätespeicher. Eine Regel, die
+verlangt, dass jede Funktion der App an eine Rolle gebunden ist, gibt es in
+`CLAUDE.md` nicht. Die beiden möglichen Rückbauten wären ausserdem beide
+schlechter: den Klartext-Code zurückholen verletzt Regel 9, den Editor
+streichen macht Glasweine nirgends änderbar (Projektanleitung §8 A ist nicht
+gebaut). **Es ist eine Betriebsentscheidung, keine Regelverletzung — und
+Betriebsentscheidungen gehören laut `CLAUDE.md` genau hierher.** Der
+hospitality-pro hat also richtig gehandelt, sie hier einzutragen statt
+zurückzudrehen; seine Sachargumente gegen den heutigen Zustand bleiben davon
+unberührt und sind die besseren.
+
+*Dazu ein eigener Befund, der unabhängig von der Entscheidung gilt:*
+`bekannterCode(code)` prüft, ob **irgendein** Code auf diesem Gerät schon
+einmal angemeldet war — nicht, ob es der Code der Person ist, die gerade
+angemeldet ist (`public/index.html:1330`). Am geteilten iPad genügt also der
+Code einer Kollegin; ins Protokoll kommt trotzdem der Name aus `whoAmI()`.
+Wer Option 2 baut, sollte beides in einem Zug erledigen: Rolle merken **und**
+gegen den eigenen Code prüfen.
 
 ---
 

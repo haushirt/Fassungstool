@@ -24,10 +24,10 @@
    leitung.html (Backoffice, Maus). Wer hier etwas ändert, ändert es an
    beiden Stellen — das ist der ganze Zweck der Datei.
 
-   Einbinden als ERSTES Stylesheet, vor dem seiteneigenen <style>:
-     <link rel="stylesheet" href="tokens.css?v=12">
-   Die Zahl bei jeder Änderung erhöhen, sonst lädt das iPhone die alte
-   Fassung aus dem Zwischenspeicher.
+   NICHT als Datei einbinden. tokens.css gab es kurz als eigene Datei;
+   ohne Bauschritt muss sie von Hand mitgeliefert werden, und fehlt sie,
+   steht die Seite nackt da. Der Block gehört deshalb in jede Seite
+   hinein — wortgleich, siehe Kasten oben.
 
    Dichte: leitung.html setzt am <html> data-dichte="maus".
    ═══════════════════════════════════════════════════════════════════ */

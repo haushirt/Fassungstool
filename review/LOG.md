@@ -126,3 +126,200 @@ Eine Korrektur an der Doku statt am Code: `UEBERGABE-TECHNISCH.md` §3.2 und §9
 **Backlog:** neu – **hoch:** Soll-Mengen/Glasweine für jede Servicekraft änderbar, ungezeichnet und gerätelokal (→ Entscheidung Nr. 6) · Sonderentnahme ohne Grund, Bruch/Personal/Küche nicht unterscheidbar (→ Entscheidung Nr. 7). **mittel:** Datum frei auf jeden Tag stellbar, auch in die Zukunft, ohne Rückfrage · Hilfe zum Restaurant-Schritt nennt feste Soll-Zahlen · Hilfe zum Abschluss-Schritt ist eine Foto-Anleitung · zwei Wörter für denselben Gang („Keller" vs. „Holen"). **niedrig:** Kistengröße Ott (w003) mit 12 angenommen, nie am Lieferschein geprüft.
 
 **STATUS:** VERBESSERUNGEN
+
+
+### Runde 1 – qa-guardian
+
+**Regelprüfung (die 14 harten Regeln):** ein Fund, sonst sauber. `package.json`
+enthielt das Skript `"schema": "wrangler d1 execute fassung --remote --file=./schema.sql"`
+– ein Befehl gegen die **Live-Datenbank** mit genau der Datei, die Regel 3 nie
+ausgeführt sehen will, erreichbar mit einem versehentlichen `npm run schema`.
+Entfernt. Regel 1 (nur `v2-review`), 2 (kein Deploy, kein `--remote`), 5
+(Automapping bleibt aus), 6 (Journal append-only, Queue nicht aufgeweicht),
+7 (die vier gastronovi-Eigenheiten stehen unverändert in `gnparse.js`), 8
+(keine neue Abhängigkeit – das Prüfgerüst läuft mit Bordmitteln von Node),
+11 (`RUNDEN` unverändert bei 1000), 12 (`wrangler.jsonc` nicht angefasst),
+14 (`idem`, `zbericht`, `schluessel`/`zaehlnr`/`geraet` weder verwendet noch
+gelöscht – jetzt als Prüfung in `tests/schema.test.mjs`) sind eingehalten.
+
+**Zur vorgelegten Frage (Verwaltungs-Editor an `bekannterCode()`): kein
+Regelverstoß, kein Rückbau.** Ausführlich in `review/OFFENE-ENTSCHEIDUNGEN.md`
+Nr. 6, kurz: Regel 9 verlangte den Klartext-Code zu entfernen – erfüllt.
+Regel 4 ist eine Schema-Regel („Code und Schema müssen zusammenpassen") und
+zählt die Werte der Spalte `person.rolle` auf; der Editor rührt keine Tabelle
+an, sondern `hh_cfg_v9` im Gerätespeicher. Eine Regel, die jede Funktion der
+App an eine Rolle bindet, steht nicht in `CLAUDE.md`. Entscheidend ist der
+Vergleichsmaßstab: Vorher stand der Verwaltungscode **im Klartext in der
+ausgelieferten Datei** – Zugang hatte damit nicht „die Leitung", sondern jeder,
+der den Quelltext lesen konnte. `bekannterCode()` hat den Kreis verkleinert,
+nicht vergrößert; größer wurde er nur gegenüber einer Sperre, die es nie gab.
+Beide möglichen Rückbauten wären schlechter: Klartext zurückholen verletzt
+Regel 9, den Editor streichen macht Glasweine nirgends änderbar (§8 A ist nicht
+gebaut). Damit ist es eine Betriebsentscheidung – und die gehört laut
+`CLAUDE.md` genau in `OFFENE-ENTSCHEIDUNGEN.md`. Der hospitality-pro hat
+richtig gehandelt; seine Sachargumente bleiben davon unberührt und sind die
+besseren. Ich habe die Entscheidung deshalb nicht vorweggenommen, sondern
+belegt und in zwei Punkten berichtigt.
+
+**Kritik am Vorgänger:**
+
+*software-engineer*
+* `src/index.js:175` 409-Guard ✅ nachgeprüft, stimmt – der Guard liest die
+  gespeicherte `zaehlnr` und antwortet `409 {konflikt, server}`. Die
+  Doku-Korrektur war berechtigt.
+* `src/index.js:101`, `:127` Sperrlogik ✅ nachgerechnet, nicht nur gelesen:
+  `fehl[fehl.length - SPERRE.versuche] + fenster` trifft den ältesten noch
+  zählenden Fehlversuch (auch bei mehr als zehn), `uebrig` zählt 9→0. Elf
+  eigene Prüfungen bestätigen es, sie laufen jetzt bei jedem `npm test` mit.
+* `src/index.js:449` `console.error("api-fehler", m, pfad, …)` ✅ – `m` und
+  `pfad` stehen **vor** dem `try`, der `catch` kann sie also lesen. Wären sie
+  im `try` deklariert, hätte genau diese Zeile jeden Fehler in ein echtes 1101
+  verwandelt. Geprüft, weil es der häufigste Fehler in dieser Bauform ist.
+* „grep über `public/` und `src/`: kein PIN, kein Zahlencode mehr im
+  Quelltext" ↩️ **halbe Auskunft.** Für HEAD stimmt es. Die vier persönlichen
+  Codes stehen aber weiter im Klartext in der Git-Historie (`public/index.html`,
+  zwei ältere Stände, `const USER={…}`) und wurden bis v11 öffentlich
+  ausgeliefert. Umschreiben darf sie niemand (Regel 1). Regel 9 ist damit im
+  Repo erfüllt, in der Welt nicht: die Codes gehören neu vergeben. Backlog hoch,
+  Aufgabe in Nr. 3 eingetragen.
+* „Smoke-Test … 11 Prüfungen grün (Scratchpad, nicht im Repo)" ↩️ Ein Test, den
+  die nächste Runde nicht starten kann, ist eine Behauptung. Seine Fälle sind
+  jetzt als `tests/worker-anmeldung.test.mjs` eingecheckt und laufen wieder.
+* `package.json` ❌ übersehen: Wer den Klartext-Code jagt, sollte auch das
+  Skript sehen, das `schema.sql` gegen die Live-DB feuert. Entfernt.
+
+*ui-designer*
+* „Geteilte Gestaltungsschicht: Zeile 1–210 in beiden Dateien byteweise
+  verglichen – identisch" ↩️ **als Zeilenangabe falsch.** Schon Zeile 1–10
+  unterscheidet sich (`leitung.html` hat `data-dichte="maus"` und einen
+  `<title>`, `index.html` vier iOS-Metazeilen). Der gemeinsame Block läuft
+  `index.html:12–222` gegen `leitung.html:9–219`, 211 Zeilen, und der ist
+  wortgleich – nachgemessen. Die Aussage stimmt, die Beweisführung nicht.
+  Konsequenz: Die Prüfung in `tests/projektregeln.test.mjs` sucht jetzt nach
+  **Marken** im Text, nicht nach Zeilennummern; sie altert nicht.
+* Kontraste ↩️ **fünf von acht stimmen, zwei Begründungszahlen nicht.**
+  Nachgerechnet mit der WCAG-Formel: `--danger` auf Cream 4,49 (behauptet 4,4) ✓,
+  `--danger-fg` 7,09 (7,0) ✓, `--fg-secondary` auf `--surface-3` 6,44 (6,3) ✓,
+  `--success-on-dark` auf Cream 1,73 (1,7) ✓. Aber: `--success-on-dark` auf der
+  Kopfleiste ist **4,90:1, nicht 3,7:1**, und `--fg-on-dark-3` dort **4,61:1,
+  nicht 3,4:1** – beide bestehen AA für Fließtext. „über 7:1" für
+  `--success-fg`/`--warn-fg` ist 6,86 bzw. 6,96. Der Umbau bleibt richtig, denn
+  der wirkliche Fehlgriff war der Chip auf Cream (1,73:1) – aber zwei der drei
+  Zahlen, mit denen er begründet wurde, halten nicht.
+* Klammerbilanz und `node --check` ✅ bestätigt, jetzt dauerhaft als Prüfung.
+* „nichts davon ist visuell gesehen" ✅ – vorbildlich, dass es dasteht. Gilt
+  für mich genauso: kein Browser, kein Playwright, kein Persona-Lauf.
+
+*hospitality-pro*
+* `offenList()`/`offenZiel()` (`:3856`, `:3840`) ✅ im Code nachgelesen:
+  Reihenfolge, Anzahl, Einzahl/Mehrzahl und die Sprungziele sind wie
+  beschrieben; die Fassungsliste steht zuletzt und hat kein Ziel.
+* Vorgangsschlüssel ✅ `blank(m)` setzt `tag: m==="tag" ? yest() : today()`
+  (`:1422`) – am 17.09. also `tag_2026-09-16`. Stimmt.
+* Gestaltungsschicht `index.html:13–216` == `leitung.html:10–213` ✅ – stimmt,
+  ist eine Teilmenge des tatsächlichen Blocks (12–222 / 9–219).
+* Entscheidung Nr. 6, Umfang ↩️ **berichtigt:** `renderAdmin()` baut genau zwei
+  Blöcke, `barrot` und `bar`. Die Soll-Mengen des **Restaurants** stehen in
+  `PLAN.soll` und sind über die App nicht änderbar, Schränke und Laden auch
+  nicht. „Soll-Menge je Platz (Bar, Schrank, Lade)" trifft heute nur die Bar.
+  Der Rest des Befunds ist nachgeprüft und stimmt, einschließlich `oninput` →
+  `saveCfg` bei jedem Tastendruck (`:1956`).
+
+*Alle drei:* Die Zeilenangaben im Backlog waren am Ende der Runde schon falsch –
+`public/index.html:1842` zeigte auf eine schließende Klammer, `:1782` auf eine
+Hilfsfunktion, `:1975` auf einen Knopf. In einer Datei mit 4 337 Zeilen altern
+Zeilennummern binnen eines Zuges. Alle 21 nachgezogen und um den Funktions- oder
+Selektornamen ergänzt; künftig bitte gleich so.
+
+**Umgesetzt:**
+1. Prüfgerüst unter `tests/` – `npm test`, 78 Prüfungen, ohne Netz, ohne
+   Installation, ohne neue Abhängigkeit (Regel 8): Anmeldung/Sperre/Rechte,
+   Ausgang und Offline, Vorgänge/Idempotenz/Ereignisse, Z-Bericht-Parser,
+   Projektregeln. Schema- und Fixture-Abgleich melden sich **sichtbar als
+   übersprungen**, solange die Dateien fehlen.
+2. `npm run schema` aus `package.json` entfernt (Live-DB + `schema.sql`, Regeln
+   2 und 3); dafür `npm test`.
+3. Die Anleitung „Einbinden als ERSTES Stylesheet: `<link … tokens.css>`" aus
+   beiden Gestaltungsblöcken entfernt – wer ihr folgt, verweist auf eine Datei,
+   die es nicht gibt, und die Seite steht nackt da (§10). Wortgleich in beiden
+   Dateien, `sw.js` VERSION v15 → **v16**.
+
+**Geprüft:**
+* `node --check` für `src/index.js`, `src/gnparse.js`, `src/gnmap.js`,
+  `public/sw.js` – sauber. Die Inline-Blöcke **beider** HTML-Dateien werden in
+  `tests/projektregeln.test.mjs` mit `new vm.Script(…)` übersetzt (nicht
+  ausgeführt) – sauber. `src/stamm.json` ist gültiges JSON.
+* Gestaltungsschicht: `index.html:13–216` == `leitung.html:10–213` bestätigt;
+  der tatsächlich gemeinsame Block ist länger (12–222 / 9–219, 211 Zeilen) und
+  ebenfalls identisch – auch nach meiner eigenen Änderung daran.
+* `sw.js` VERSION: v12 → v13 → v14 → v15 war korrekt fortgeschrieben, je
+  Änderung an `public/` genau ein Schritt. Endstand der Runde nach meiner
+  Änderung: **v16**. Der Vorrat enthält alle drei ausgelieferten Dateien,
+  `/api/` ist vom Zwischenspeicher ausgenommen (beides jetzt als Prüfung).
+* Idempotenz und Ausgang, am echten Code aus `index.html` und `src/index.js`:
+  doppeltes Senden schreibt **eine** Zeile und **einen** Satz Ereignisse; je
+  Schlüssel liegt höchstens ein Eintrag im Ausgang, der neuere ersetzt den
+  älteren; offline bleibt alles im Gerät, nach dem Netzabbruch geht der Rest der
+  Reihe nach hinaus; 401 hält den Vorgang fest; 500/429 ebenso; ein laufender
+  Vorgang bewegt den Bestand nicht.
+* Rollen: ohne Keks 401, gefälschter oder mit fremdem Geheimnis signierter Keks
+  401, `service` auf `/api/mapping` 403, deaktivierte Person kommt mit altem
+  Keks nicht mehr hinein, unbekannter Endpunkt 404 statt 500.
+* Z-Bericht-Parser gegen einen nachgebauten Bericht: alle vier Eigenheiten aus
+  Regel 7 halten (doppelte Namen summiert, 0-€-Zeilen zählen, letzte Größe
+  gewinnt, keine Warengruppe); Summenzeilen und der Zahlungsartenblock werden
+  nicht als Positionen gelesen.
+* **Abgleich der SQL-Stellen mit dem Live-Schema war NICHT möglich:**
+  `docs/live-schema.sql` fehlt. `schema.sql` ist nach Regel 3 keine gültige
+  Quelle und wurde nicht ersatzweise herangezogen; erfunden habe ich nichts.
+  Was ohne Schema prüfbar war, ist geprüft (Regel 14, kein DROP/ALTER, Journal
+  nur mit INSERT, keine zusammengesetzten SQL-Zeichenketten). Sobald die Datei
+  im Repo liegt, läuft der Spaltenabgleich automatisch mit – die Mechanik ist
+  gegen eine Wegwerfdatei erprobt und meldet fehlende Tabellen korrekt.
+* **Rechnerischer Abgleich mit `tests/fixtures/` war NICHT möglich:** der Ordner
+  ist leer. Die Prüfung dafür steht und meldet sich als übersprungen.
+* **Persona-Test per Playwright war NICHT möglich:** kein Browser, kein
+  Chromium, kein Prüfserver, keine `node_modules` in dieser Umgebung. Die
+  Oberfläche ist in dieser Runde von niemandem gesehen worden – von allen drei
+  Vorgängern nicht und von mir nicht. Das bleibt die größte Lücke der Runde.
+* Regel 9: in `public/`, `src/`, allen Markdown-Dateien und **allen sechs
+  Commit-Nachrichten dieser Runde** steht kein Code, kein Passwort, kein Secret.
+  Einzige Fundstelle ist die Git-Historie (siehe oben).
+
+**Für die Nächsten:**
+* *Alle:* `npm test` vor der Übergabe laufen lassen und das Ergebnis in den Zug
+  schreiben. Wer etwas ändert, das eine Prüfung zu Fall bringt, schreibt die
+  Prüfung um – nicht weg. Drei Prüfungen halten **bekannte Lücken** fest und
+  sind so kommentiert; wenn sie fallen, ist das der Beweis, dass die Lücke
+  geschlossen wurde.
+* *software-engineer:* Zwei Befunde mit Priorität hoch, beide belegt durch
+  Prüfungen: (a) Eine Korrektur nach dem Abschluss erreicht den Bestand nie –
+  `ereignisseAbleiten` steigt aus, sobald Ereignisse da sind, der Vorgang wird
+  aber überschrieben. Anzeige und Bestand laufen dann still auseinander.
+  Append-only heißt Gegenbuchung, nicht Auslassung. (b) Nach einem 409 verwirft
+  die App den eigenen Eintrag und meldet „Nichts offen – alles übertragen".
+* *hospitality-pro / ui-designer:* Dazu gehört ein Satz auf dem Schirm, den es
+  noch nicht gibt: „Deine Zählung von 22:40 ist nicht übernommen – auf einem
+  anderen Gerät gibt es einen neueren Stand." Wer das formuliert, entscheidet,
+  ob jemand um 23 Uhr noch einmal in den Keller geht.
+* *An den Betreiber:* Vier Aufgaben, alle in Nr. 3: `ANLAGE_OFFEN` löschen,
+  **die vier Codes neu vergeben** (sie stehen in der Historie), `docs/live-schema.sql`
+  einchecken, `tests/fixtures/` füllen. Die beiden letzten schalten je einen
+  ganzen Prüfblock scharf, der heute übersprungen wird.
+
+**Phase/Thema:** A / Prüfgerüst, Regelprüfung, Datenintegrität
+
+**Backlog:** neu – **hoch:** Korrektur nach Abschluss erreicht den Bestand nicht ·
+409 verwirft still und meldet Vollzug · die vier Codes stehen in der Git-Historie.
+**mittel:** „Übernehmen" holt auch abgeschlossene fremde Vorgänge und legt sie
+doppelt ab · `bekannterCode()` prüft nicht den Code der angemeldeten Person.
+**niedrig:** toter Parameter `status` in `inDenAusgang` · Oberfläche weiterhin
+ungeprüft (kein Persona-Lauf). Nach „Erledigt": `npm run schema`, die
+tokens.css-Anleitung, das Prüfgerüst.
+
+**STATUS:** VERBESSERUNGEN
+
+**Rundenfazit:** Drei solide Züge mit echten Verbesserungen – aber jeder hat
+etwas als „geprüft" ausgegeben, das er so nicht geprüft hatte; ab jetzt prüft
+`npm test` mit, und die zwei schwersten Funde der Runde betreffen nicht die
+Oberfläche, sondern das Journal.
