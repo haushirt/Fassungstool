@@ -45,7 +45,40 @@ die ungeprüften Plätze und die Annahme dahinter. Der Satz zum überholten
 Stand nennt den Vorgang beim Namen. Das Backoffice sagt in jeder Ansicht,
 warum nichts dasteht, statt eine leere Tabelle zu zeigen.
 
-**Prüfgerüst.** `npm test` (170 Prüfungen) und `node tests/durchstich.cjs`
+**Der erste echte Z-Bericht liegt im Repo — und hat den Leser widerlegt.**
+`tests/fixtures/zbericht-37-extended.csv` ist der anonymisierte Abschluss
+Nr. 37 (Nacht vom 15. auf den 16.09.). Beim ersten Lauf las `parseZ`
+daraus **106 Positionen mit 1345,75 Stück und 5166,70 €** statt 50 Zeilen
+mit 145 Stück und 602,50 €: Steuersätze, Kellner, Zimmerbuchungen und
+Warengruppen landeten als Getränke im Wareneinsatz. Der Grund ist die
+Form, die niemand kannte — der echte Bericht eröffnet jede Tabelle mit
+einer Spaltenüberschrift („Positionen | Anzahl | Betrag"), trennt seine
+Teile mit Rauten statt Strichen, schreibt die Z-Nummer in zwei Felder und
+seine Leerzeilen als vier leere Felder. Alles vier ist jetzt gelesen, der
+Positionsblock wird beim Namen genommen, und die Summe wird gegen zwei
+Summen des Berichts selbst geprüft.
+
+**Der teuerste Einzelfund: „1/8 l" war acht Liter.** Der offene Wein heisst
+im echten Bericht „GV Leindl Langenlois 1/8 l". Die Mengensuche griff auf
+„8 l" und gab 8000 ml zurück statt 125 — Faktor 64, auf der halben
+Weinkarte, und damit auf jeder Zahl, die Ausschank mit Fassung vergleicht.
+Der nachgebaute Bericht schrieb „1/8" ohne Einheit und traf die Falle nie.
+Mitbehoben: derselbe Fehler im Kern der Bezeichnung, der „GV Leindl
+Langenlois 1/" stehen liess, sodass Glas und Flasche desselben Weins nie
+zusammenfanden.
+
+**Rabatt und Storno sind Verbrauch** (deine Vorgabe: die Ware ist in beiden
+Fällen entnommen). Am Bericht nachgerechnet: Der Rabatt steckt bereits in
+den Positionen — 602,50 − 52,00 Welcomedrink = 550,50 Umsatz, auf den
+Cent. Für die Fassung ist nichts hinzuzuzählen; der Rabatt zieht allein am
+Geld. Der Storno dagegen fehlt den Positionen (die 4,20 sind in den 602,50
+nicht enthalten), und der Bericht nennt nur den Grund
+(„Bedienerfehler"), nicht den Artikel. Diese eine Einheit geht deshalb als
+Zahl mit hinaus — in die Antwort des Imports und in die Journalnotiz der
+eingegangenen Mail —, statt lautlos zu fehlen und in der ersten
+Kellerzählung als Schwund wieder aufzutauchen.
+
+**Prüfgerüst.** `npm test` (195 Prüfungen) und `node tests/durchstich.cjs`
 (35 Punkte) laufen ohne Netz und ohne Installation. Der Durchstich fasst
 App und Worker gleichzeitig an, gegen eine Datenbank, die aus
 `docs/live-schema.sql` aufgebaut ist — die Attrappe, die drei Runden lang
@@ -120,7 +153,7 @@ diesen Stand live, sonst nimmt das Anmeldefeld den neuen Code nicht an.
 | 4 | direkt nach dem Livegang | **Die vier persönlichen Codes neu vergeben.** Ablauf unten. |
 | 5 | direkt danach | **`ANLAGE_OFFEN` im Dashboard löschen.** Solange die Variable steht, legt sich jeder mit der Adresse ein Konto mit Rolle `leitung` an. Offen seit 01.09. |
 | 6 | erster Abend | **Jemanden neben die Servicekraft stellen**, die die erste Fassung macht — bei Schritt 3 „Holen". Und beim ersten Kontakt der Geräte zusehen: Die Reihe schickt die liegengebliebenen Fassungen auf einmal nach. Das sieht aus wie ein Fehler und ist richtig so. |
-| 7 | erste Woche | **Keine Zahl aus „Verkauf ↔ Fassung"** für eine Bestellung oder eine Abrechnung verwenden, bis ein echter Z-Bericht durch den Parser gelaufen ist (siehe „Was ausdrücklich NICHT gebaut wurde"). |
+| 7 | erste Woche | **Zahlen aus „Verkauf ↔ Fassung" in der ersten Woche gegenlesen**, bevor eine Bestellung oder Abrechnung darauf steht. Der erste echte Bericht liegt jetzt vor und wird richtig gelesen — aber es ist ein Bericht aus einer Nacht. Die Gegenprobe steht im Bericht selbst: Die Stückzahl und die Summe des Werkzeugs müssen mit „Warengruppen" und „Hauptwarengruppen" übereinstimmen (bei Nr. 37: 145 Stück, 602,50 €). |
 
 ### Auflage 4 Schritt für Schritt — die vier Codes
 
@@ -164,14 +197,19 @@ Vierstellige Codes nimmt das Backoffice nicht mehr an, die Taste
 
 ## Was ausdrücklich NICHT gebaut wurde
 
-* **Der gespaltene Z-Bericht.** Ist ein gastronovi-Bericht nach
-  Kostenstellen gespalten, wählt `parseZ` genau einen Block — den mit den
-  meisten Positionszeilen — und verwirft die anderen ohne Meldung.
-  Nachgestellt: 179,50 € statt 345,50 €, und der Import meldet Erfolg. Ob
-  der echte Bericht so aussieht, weiss niemand, solange keiner in
-  `tests/fixtures/` liegt. Nicht auf Verdacht geändert (Regel 7). Das
-  Verhalten ist in `tests/zbericht.test.mjs` festgehalten, die Entscheidung
-  liegt als Nr. 12 vor.
+* **Der gespaltene Z-Bericht.** Die Frage ist am echten Bericht
+  beantwortet: **Nr. 37 ist nicht gespalten.** Bar und Restaurant stehen
+  als Tagessumme („Kostenstellen": 24 / 299,00 und 29 / 251,50), die
+  Artikel stehen in einem einzigen Block „Positionen"; getrennt gebucht
+  sind sie trotzdem, und genau das ist Eigenheit 1 (derselbe Wein zweimal,
+  wird summiert). Der Positionsblock wird jetzt beim Namen gewählt, nicht
+  mehr nach Zeilenzahl — damit gewinnt er auch gegen die beiden
+  Warengruppen-Tabellen, die dieselben Artikel zusammengefasst noch einmal
+  enthalten. Der alte Weg (grösster Block) bleibt als Rückfall für
+  Berichte ohne diesen Namen, und mit ihm die Lücke: Ein tatsächlich
+  gespaltener Bericht ohne „Positionen"-Überschrift verlöre weiter die
+  kleinere Hälfte. Festgehalten in `tests/zbericht.test.mjs`, Entscheidung
+  Nr. 12 — jetzt mit Befund.
 * **Getränke-Automapping** bleibt aus (Regel 5).
 * **Der Grund bei der Sonderentnahme** (Bruch, Personal, Küche,
   Verkostung) — fachliche Entscheidung Nr. 7, kein Agentenbeschluss.
@@ -186,11 +224,13 @@ Vierstellige Codes nimmt das Backoffice nicht mehr an, die Taste
 
 | Prüfung | Ergebnis |
 |---|---|
-| `npm test` | 170 Prüfungen, alle grün. Ohne Netz, ohne Installation, Bordmittel von Node 22. |
+| `npm test` | 195 Prüfungen, alle grün. Ohne Netz, ohne Installation, Bordmittel von Node 22. |
+| `tests/zbericht-37.test.mjs` | 24 Prüfungen am echten Bericht Nr. 37: Kopf, Blockwahl, die vier Eigenheiten mit ihren Zahlen, Rabatt und Storno, und der ganze Weg durch den Worker bis in `fassungszeile` (48 Zeilen, 145 Stück, 602,50 €, `ausschankMl` 125 für das Achtel). |
 | `node tests/durchstich.cjs` | 35 von 35 Punkten. Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. **Vor jedem Livegang laufen lassen.** |
 | `node tests/persona-tagesfassung.cjs` | Anmeldung mit sechsstelligem Code, Tagesfassung bis zum Abschluss, Abbruch, Offline, doppeltes Absenden, abgelaufene Sitzung — durchgelaufen. |
 | Anmeldung am iPhone-Maß (Chromium) | Sechs Felder, ✓ dunkel bis zur vierten Ziffer, danach hell; Löschtaste nimmt die letzte Ziffer; acht Ziffern sind die Grenze. |
 
 Nicht geprüft: **Safari auf einem Telefon** (alles Visuelle ist Chromium in
-iPhone-Maßen), der **Mailweg ab dem Postfach** (Dashboard) und die
-**Rechnung an einem echten Z-Bericht**.
+iPhone-Maßen) und der **Mailweg ab dem Postfach** (Dashboard). Der echte
+Z-Bericht ist geprüft — einer, aus einer Nacht. Ein zweiter aus einer
+anderen Woche wäre die billigste weitere Sicherheit.

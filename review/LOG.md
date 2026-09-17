@@ -1809,3 +1809,75 @@ nach „Erledigt" verschoben.
 **STATUS:** VERBESSERUNGEN — die Codeseite der Auflagen ist fertig und
 geprüft; die sieben Auflagen selbst liegen beim Betreiber und sind in
 `review/ERGEBNIS.md` als Ablauf hinterlegt.
+
+
+---
+
+### Runde 4 – Hauptsitzung (erster echter Z-Bericht)
+
+**Kritik am Vorgänger:** Der qa-guardian nennt den fehlenden echten
+Z-Bericht „die grösste verbleibende Unsicherheit" (`review/LOG.md:1708`)
+und schreibt: „Prüfungen können jahrelang grün sein und nichts beweisen."
+* ✅ übernommen, und der Satz hat sich beim ersten Lauf bestätigt: Die 24
+  grünen Prüfungen am Parser beschrieben eine Form, die es nicht gibt. Der
+  echte Bericht Nr. 37 hat vier Formannahmen auf einmal widerlegt.
+* ↩️ geändert: „**Nicht auf Verdacht ändern** (Regel 7)"
+  (`tests/zbericht.test.mjs:121`) war richtig, solange kein echter Bericht
+  vorlag. Er liegt jetzt vor — also ist geändert worden, aber nur, was der
+  Bericht selbst zeigt, und jede Änderung ist an seinen eigenen Summen
+  gegengerechnet (145 Stück, 602,50 €, an drei Stellen im Bericht).
+* ↩️ geändert: Die Prüfung auf gespaltene Berichte
+  (`tests/zbericht.test.mjs:194`) zählte ALLE Zeilen einer Sektion. Damit
+  hätte sie den Bezahlartenblock (eine Buchung, 26 Zimmernummern darunter)
+  für einen zweiten Positionsblock gehalten. `sektionen[].n` zählt jetzt
+  nur, was nach einer Position aussieht.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. `tests/fixtures/zbericht-37-extended.csv` eingecheckt und
+   `tests/zbericht-37.test.mjs` dagegen geschrieben — 24 Prüfungen, vom
+   Kopf bis in `fassungszeile`.
+2. `gnparse.js` an die echte Form: Spaltenüberschrift als Sektionskopf,
+   Rauten als Trenner, Z-Nummer aus zwei Feldern, Leerzeilen aus leeren
+   Feldern, Positionsblock beim Namen. Vorher 106 Positionen mit 1345,75
+   Stück und 5166,70 €, jetzt 48 mit 145 und 602,50 €.
+3. „1/8 l" ist ein Achtel, nicht acht Liter (Faktor 64 auf jedem offenen
+   Wein) — in `ml()` und in `kern()`. Rabatt und Storno gehen als Zahl
+   heraus; der Import und die Journalnotiz nennen den Storno.
+
+**Geprüft:** `npm test` 195 grün (vorher 170; 24 neue am echten Bericht,
+davon vier durch den Worker in eine echte SQLite-DB aus
+`docs/live-schema.sql`). `node tests/durchstich.cjs` 35/35. Die
+Gegenprobe des Berichts an sich selbst geht auf: Positionen 145 Stück /
+602,50 € = Hauptwarengruppen (87 + 58) = Warengruppen. Rabattrechnung
+602,50 − 52,00 = 550,50 = „Umsatz Total", auf den Cent. Der Storno (4,20)
+ist in keiner dieser Summen enthalten — daran hängt die Antwort unten.
+Die 16 Prüfungen am nachgebauten Bericht sind unverändert grün geblieben.
+
+**Für die Nächsten:**
+* An den **controller**: Rabatt und Storno zählen nach Vorgabe des
+  Betreibers beide als Verbrauch. Der Rabatt steckt schon in den
+  Positionen (nichts zu tun), der Storno nicht — und er nennt keinen
+  Artikel, nur einen Grund. Verbrauch ist damit 145 + 1 Stück, davon eines
+  unzuordenbar. Wie das in der Bewertung behandelt wird, ist eine Frage
+  für Phase B.
+* An den **qa-guardian**: `tests/fixtures/` hat jetzt einen Bericht aus
+  EINER Nacht. Ein zweiter aus einer anderen Woche wäre die billigste
+  weitere Sicherheit — besonders einer mit Fassbier und einem Tag ohne
+  Frühstück.
+* An den **hospitality-pro**: 58 der 145 Stück sind Speisen mit 0,00 €
+  (HP-Eier, Beilagen, „Zwänge | Auswahl [Food]"). Sie werden gelesen und
+  fallen erst bei der Zuordnung heraus. Ob sie in der Liste der Leitung
+  auftauchen sollen, ist eine Bedienfrage.
+
+**Phase/Thema:** A / Z-Bericht am echten Beispiel
+
+**Backlog:** neu unter „hoch": Der Rückfall der Blockwahl bleibt blind für
+gespaltene Berichte ohne „Positionen"-Überschrift. Neu unter „mittel":
+Regel 7 nennt vier Eigenheiten, es sind acht. Vier Punkte nach „Erledigt",
+darunter der seit Runde 1 offene „`tests/fixtures/` fehlt".
+
+**STATUS:** VERBESSERUNGEN — der Z-Bericht wird jetzt richtig gelesen und
+ist am echten Beispiel geprüft. Das Urteil „Z-Bericht nein" aus Runde 3
+ist damit überholt; es bleibt bei einem Bericht aus einer Nacht, deshalb
+in der ersten Woche gegenlesen statt blind verwenden.

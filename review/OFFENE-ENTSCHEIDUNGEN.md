@@ -526,6 +526,26 @@ Zwei Dinge dazu aus der Praxis:
 
 ## 12. Ein Z-Bericht, zwei Blöcke — welcher gewinnt?
 
+> **BEFUND vom 17.09.2026, am echten Bericht (Hauptsitzung, Runde 4):**
+> **Bericht Nr. 37 ist NICHT gespalten.** Bar und Restaurant stehen als
+> Tagessumme in der Tabelle „Kostenstellen" (24 / 299,00 und 29 / 251,50),
+> die Artikel stehen in EINEM Block „Positionen". Getrennt gebucht sind
+> sie trotzdem — derselbe Wein erscheint zweimal in diesem einen Block,
+> und genau das ist Eigenheit 1 (wird summiert).
+> Geändert wurde deshalb nur die Blockwahl: Der Positionsblock wird jetzt
+> **beim Namen** genommen („Positionen" / „Artikel" / „Artikelumsätze"),
+> nicht mehr nach Zeilenzahl. Das war nötig, weil der echte Bericht
+> daneben zwei Warengruppen-Tabellen führt, die dieselben Artikel
+> zusammengefasst noch einmal enthalten — über die blosse Zeilenzahl
+> gewinnt der richtige Block nur, solange das Haus mehr Artikel als
+> Warengruppen führt.
+> **Offen bleibt allein Frage 2 unten**, und sie ist jetzt hypothetisch:
+> Ein Bericht ohne diesen Namen fällt auf den alten Weg zurück (grösster
+> Block gewinnt) und verlöre eine zweite Hälfte weiter lautlos. Solange
+> gastronovi für dieses Haus so ausgibt wie in Nr. 37, tritt der Fall
+> nicht ein. Nachgestellt bleibt er in `tests/zbericht.test.mjs`.
+
+
 *Gefunden vom qa-guardian, Runde 3. Das ist aus meiner Sicht die grösste
 offene Unsicherheit vor dem Livegang.*
 

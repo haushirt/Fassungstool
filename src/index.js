@@ -422,7 +422,13 @@ async function fassungsliste(env, text, wer) {
   }));
 
   const offen = z.positionen.filter(p => !kennt.has(p.name) && !mappe(p.name)).length;
-  return json({ tag: z.tag, positionen: z.positionen.length, offen });
+  /* Storno und Rabatt gehen mit hinaus. Beides ist Verbrauch (Vorgabe vom
+     17.09.), aber nur der Rabatt steht schon in den Positionen — der
+     Storno nennt einen Grund („Bedienerfehler"), keinen Artikel, und
+     fehlt dem Positionsblock. Ohne diese Zahl fehlt er lautlos und taucht
+     in der ersten Kellerzählung als Schwund wieder auf. */
+  return json({ tag: z.tag, positionen: z.positionen.length, offen,
+                rabatt: z.rabatte.anzahl, storno: z.storno.anzahl });
 }
 
 async function fassungslistenLesen(env, url) {
@@ -648,7 +654,8 @@ export default {
     ctx.waitUntil((async () => {
       try {
         const j = await (await fassungsliste(env, text, "email:" + von)).json();
-        await notiz(env, "email", `Z-Bericht ${j.tag}: ${j.positionen} Positionen, ${j.offen} offen`);
+        await notiz(env, "email", `Z-Bericht ${j.tag}: ${j.positionen} Positionen, ${j.offen} offen`
+          + (j.storno ? `, ${j.storno} storniert — keinem Artikel zuzuordnen` : ""));
       } catch (e) { await notiz(env, "email", "Fehler: " + e.message); }
     })());
   },

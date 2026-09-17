@@ -32,22 +32,29 @@ export function felder(zeile) {
   });
 }
 
-const istStrich = z => /^[\s"'\-–—_=]*[-–—_=]{5,}[\s"'\-–—_=]*$/.test(z);
+/* Strichlinie. Der echte Bericht (Nr. 37) trennt die drei grossen Teile
+   — Z-Bericht, Detailbericht, Abrechnung — mit Rauten statt Strichen;
+   ohne sie stünde „Detailbericht" als Zeile im Positionsblock. */
+const istStrich = z => /^[\s"'\-–—_=#]*[-–—_=#]{5,}[\s"'\-–—_=#]*$/.test(z);
 
-/* Ausschankmenge in Millilitern. Es gilt das letzte Vorkommen im Namen. */
+/* Ausschankmenge in Millilitern. Es gilt das letzte Vorkommen im Namen.
+
+   Der Bruch steht VOR der Einheit und schluckt sie mit: Im echten Bericht
+   heisst der offene Wein „GV Leindl Langenlois 1/8 l" — ein Achtel Liter.
+   Bis zum 17.09. griff hier die Einheitensuche zuerst, las „8 l" und gab
+   8000 ml zurück: Faktor 64 auf jedem offenen Wein, und damit auf der
+   halben Weinkarte. Aufgefallen ist es erst am ersten echten Z-Bericht;
+   der nachgebaute schrieb „1/8" ohne Einheit und traf die Falle nie. */
 export function ml(text) {
   if (!text) return null;
   const s = String(text).toLowerCase();
   let letzte = null, m;
-  const rx = /(\d+(?:[.,]\d+)?)\s*(ml|cl|l)\b/g;
+  const rx = /(\d)\s*\/\s*(\d)\s*l?\b|(\d+(?:[.,]\d+)?)\s*(ml|cl|l)\b/g;
   while ((m = rx.exec(s))) letzte = m;
-  if (letzte) {
-    const v = parseFloat(letzte[1].replace(",", "."));
-    return letzte[2] === "ml" ? v : letzte[2] === "cl" ? v * 10 : v * 1000;
-  }
-  const br = /(\d)\s*\/\s*(\d)\b/.exec(s);          // 1/8 Wein = 125 ml
-  if (br) return 1000 * (+br[1] / +br[2]);
-  return null;
+  if (!letzte) return null;
+  if (letzte[1]) return 1000 * (+letzte[1] / +letzte[2]);   // 1/8 l = 125 ml
+  const v = parseFloat(letzte[3].replace(",", "."));
+  return letzte[4] === "ml" ? v : letzte[4] === "cl" ? v * 10 : v * 1000;
 }
 
 /* Kernbezeichnung: der Positionsname ohne die Grössenangabe am Ende.
@@ -71,7 +78,11 @@ export function kern(name) {
      Angabe stehen. */
   do {
     vorher = t;
-    t = t.replace(/[\s,;·|]*\b\d+(?:[.,]\d+)?\s*(?:ml|cl|l)\b\.?\s*$/i, "")
+    /* Der Bruch MIT Einheit zuerst („… 1/8 l"): Schnitte die Einheit
+       allein zuerst, bliebe „GV Leindl Langenlois 1/" stehen — und Glas
+       und Flasche desselben Weins fänden nie zusammen. */
+    t = t.replace(/[\s,;·|]*\b\d\s*\/\s*\d\s*(?:ml|cl|l)\b\.?\s*$/i, "")
+         .replace(/[\s,;·|]*\b\d+(?:[.,]\d+)?\s*(?:ml|cl|l)\b\.?\s*$/i, "")
          .replace(/[\s,;·|]*\b\d\s*\/\s*\d\b\s*$/, "")
          .replace(/[\s,;·|]+$/, "")
          .trim();
@@ -90,7 +101,23 @@ export function parseZ(text) {
     if (istStrich(z)) { strichZuvor = true; return; }
     const f = felder(z).filter((x, i, a) => !(x === "" && i === a.length - 1));
     if (!f.length) return;
-    if (strichZuvor && f.filter(x => x !== "").length === 1) {
+    /* Eine Leerzeile des Berichts ist `""\t""\t""\t""` — nach `trim()`
+       nicht leer, sondern vier leere Felder. Ohne diese Zeile stünde in
+       jeder Sektion eine Geisterzeile, und die Zählung darunter
+       behauptete Positionszeilen, wo keine sind. */
+    if (!f.some(x => x !== "")) return;
+    /* Eine Sektion beginnt nach einer Strichlinie — entweder mit einem
+       nackten Titel („Zeitraum") oder, und das ist die Form des echten
+       Berichts, mit einer Spaltenüberschrift: „Positionen | Anzahl |
+       Betrag". Bis zum 17.09. galt nur die erste Form. Damit fiel im
+       echten Bericht Nr. 37 KEINE einzige Tabelle auf eine eigene
+       Sektion: Kostenstellen, Kellner, Bezahlarten, Warengruppen und die
+       Positionen landeten alle im „Steuerbericht", und `parseZ` las 106
+       Positionen mit 1345,75 Stück und 5166,70 € statt 50 mit 145 und
+       602,50 €. Unterschieden wird an den Zahlen: In einer Überschrift
+       steht rechts keine. */
+    const ueberschrift = f.slice(1).every(x => x === "" || zahl(x) === null);
+    if (strichZuvor && (f.filter(x => x !== "").length === 1 || ueberschrift)) {
       akt = { titel: f.find(x => x !== "") || "(ohne Titel)", zeilen: [] };
       sekt.push(akt); strichZuvor = false; return;
     }
@@ -107,15 +134,38 @@ export function parseZ(text) {
       if (d) { tag = `${d[3]}-${String(d[2]).padStart(2, "0")}-${String(d[1]).padStart(2, "0")}`; break; }
     }
   }
+  /* Die Z-Nummer steht im echten Bericht als eigene Zeile in zwei
+     Feldern („Z" | „37"); der Kopf anderer Häuser schreibt sie in einen
+     Satz („Tagesabschluss Z 417"). Beide Formen, Felder zuerst — im
+     gequoteten Bericht steht zwischen Z und Nummer ein Anführungszeichen
+     und ein Tabulator, an denen die Suche im Fliesstext scheitert. */
   let nr = "";
-  const mz = /Z\s*(\d+)/.exec(alle.slice(0, 25).join(" "));
-  if (mz) nr = "Z " + mz[1];
+  for (const z of alle.slice(0, 25)) {
+    const f = felder(z);
+    if (/^z$/i.test(f[0] || "") && zahl(f[1]) != null) { nr = "Z " + f[1].trim(); break; }
+  }
+  if (!nr) {
+    const mz = /Z\s*(\d+)/.exec(alle.slice(0, 25).join(" "));
+    if (mz) nr = "Z " + mz[1];
+  }
 
-  /* Positionsblock: die Sektion mit den meisten Zeilen aus Text und Zahl */
-  let beste = null, bestN = 0;
-  sekt.forEach(s => {
-    const n = s.zeilen.filter(f =>
-      f.length >= 2 && f[0] && !/^\d/.test(f[0]) && zahl(f[1]) != null).length;
+  /* Positionsblock. Zuerst beim Namen: Der echte Bericht überschreibt ihn
+     mit „Positionen", und daneben stehen „Warengruppen" und
+     „Warengruppen (inner/außer Haus)" — zwei Tabellen, die dieselben
+     Artikel noch einmal zusammengefasst enthalten. Über die blosse Zahl
+     der Zeilen gewinnt der Positionsblock nur, solange ein Haus mehr
+     Artikel als Warengruppen führt. Das ist keine Eigenschaft, auf die
+     man sich verlässt.
+     Ohne einen solchen Namen bleibt es beim Alten: die Sektion mit den
+     meisten Zeilen aus Text und Zahl. Das ist weiter die einzige Abwehr
+     gegen den Zahlungsartenblock. */
+  const zaehl = s => s.zeilen.filter(f =>
+    f.length >= 2 && f[0] && !/^\d/.test(f[0]) && zahl(f[1]) != null).length;
+  const NAME = /^(positionen|artikel|artikelums(a|ä)tze)$/i;
+  let beste = sekt.find(s => NAME.test(s.titel) && zaehl(s) > 0) || null;
+  let bestN = beste ? zaehl(beste) : 0;
+  if (!beste) sekt.forEach(s => {
+    const n = zaehl(s);
     if (n > bestN) { bestN = n; beste = s; }
   });
 
@@ -133,10 +183,43 @@ export function parseZ(text) {
   });
 
   const positionen = Object.values(map).sort((a, b) => b.anzahl - a.anzahl);
+
+  /* Rabatte und Stornos — beides ist Verbrauch (Vorgabe des Betreibers:
+     die Ware ist in beiden Fällen aus dem Keller heraus).
+
+     RABATT: Die Ware steht bereits im Positionsblock, zum vollen Preis.
+     Der Rabatt zieht nur am Geld. Im echten Bericht Nr. 37 geht die
+     Rechnung auf: Positionen 602,50 − Rabatt 52,00 = Umsatz 550,50. Für
+     die Fassung ist also nichts hinzuzuzählen — aber wer Euro mit Euro
+     vergleicht, vergleicht falsch. Es zählen die Stück.
+
+     STORNO: Die Ware steht NICHT im Positionsblock (602,50 enthält die
+     4,20 nicht). Sie fehlt dem Verbrauch also. Der Bericht nennt nur den
+     GRUND („Bedienerfehler"), nicht den Artikel — welche Flasche offen
+     ist, sagt er nicht. Mehr als Zahl und Betrag ist daraus nicht zu
+     holen; beides steht hier, damit es sichtbar bleibt statt lautlos zu
+     fehlen. */
+  const block = (rx) => {
+    const s = sekt.find(x => rx.test(x.titel));
+    const zeilen = (s ? s.zeilen : []).filter(f =>
+      f.length >= 2 && f[0] && !/^(total|summe|gesamt)/i.test(f[0]) && zahl(f[1]) != null)
+      .map(f => ({ name: f[0], anzahl: zahl(f[1]),
+                   betrag: (zahl(f[3]) != null ? zahl(f[3]) : zahl(f[2])) || 0 }));
+    return { anzahl: zeilen.reduce((a, r) => a + r.anzahl, 0),
+             betrag: zeilen.reduce((a, r) => a + r.betrag, 0),
+             gruende: zeilen };
+  };
+
   return {
     tag, nr, block: beste ? beste.titel : "—",
-    sektionen: sekt.map(s => ({ titel: s.titel, n: s.zeilen.length })),
+    /* `n` ist die Zahl der Zeilen, die nach einer Position AUSSEHEN —
+       nicht die Zahl der Zeilen überhaupt. Sonst hält die Prüfung auf
+       gespaltene Berichte den Bezahlartenblock (eine Buchung, 26
+       Zimmernummern darunter) für einen zweiten Positionsblock. */
+    sektionen: sekt.map(s => ({ titel: s.titel, n: zaehl(s) })),
     positionen,
-    umsatz: positionen.reduce((a, p) => a + (p.umsatz || 0), 0)
+    umsatz: positionen.reduce((a, p) => a + (p.umsatz || 0), 0),
+    rabatte: block(/^rabatt/i),
+    storno: block(/^storn/i)
   };
 }

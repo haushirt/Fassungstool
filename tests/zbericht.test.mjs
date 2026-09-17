@@ -118,11 +118,15 @@ describe("Z-Bericht lesen", () => {
    Fehler, keine Meldung — im Backoffice steht eine plausible Zahl, der
    halbe Ausschank fehlt darin.
 
-   Diese Prüfungen ÄNDERN das Verhalten nicht (Regel 7: an `gnparse.js`
-   wird nicht auf Verdacht geschraubt, und ohne echten Bericht ist jede
-   Änderung geraten). Sie halten es fest, damit der nächste es sieht statt
-   es zu entdecken. Die Entscheidung steht in
-   `review/OFFENE-ENTSCHEIDUNGEN.md`.                                    */
+   NACHTRAG 17.09., Runde 4: Der echte Bericht liegt vor
+   (`tests/zbericht-37.test.mjs`) und ist NICHT gespalten — Bar und
+   Restaurant stehen dort als Tagessumme, die Artikel in einem Block
+   „Positionen". Geändert wurde daraufhin nur die Blockwahl: Trägt eine
+   Sektion diesen Namen, gewinnt sie. Die Prüfungen hier beschreiben
+   deshalb weiter den RÜCKFALL — Berichte ohne solchen Namen, bei denen es
+   beim grössten Block bleibt. Dort besteht die Lücke unverändert, und
+   auch die Entscheidung dazu bleibt offen
+   (`review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 12, jetzt mit Befund).         */
 describe("Z-Bericht: welcher Block gewinnt", () => {
   const zeile = (n, a, p, u) => T(n, a, p, u);
   const kopf = [T("Tagesabschluss Z 412", "", "", ""),
