@@ -324,3 +324,82 @@ einer Zeile hinlegt, statt den Lauf rot zu machen.
 
 **Empfehlung:** Option 1, und in jedem Zug, der `public/` anfasst, einmal
 `node tests/ui-aufnahme.cjs` laufen lassen und die Bilder ansehen.
+
+---
+
+## 9. Fotoschritt „Fassungsliste" – was wirklich wegfällt, wenn er wegfällt
+
+**Status:** OFFEN
+**Gemeldet:** hospitality-pro (Runde 2), auf Bitte des Betreibers beurteilt
+**Betrifft:** `public/index.html:3885` (`rFotos` im Abschluss), `:4044`
+(`offenList`, Punkt „Fassungsliste noch nicht fotografiert"), `:1352`
+(Kacheltext), Projektanleitung §8 C, `UEBERGABE-TECHNISCH.md` §9.2 C
+
+**Warum das hier steht:** Der Kacheltext der Tagesfassung endet weiter mit
+„Liste fotografieren". Solange der Schritt existiert, ist der Text richtig –
+er beschreibt, was die App verlangt. Die Frage ist nicht das Wort, sondern
+der Schritt. Ich habe ihn nicht angefasst; das ist ein Umbau.
+
+**Ist-Ablauf (im Browser angesehen, `runde-2b`):** Schritt 4 „Abschluss"
+zeigt von oben nach unten: die große Zahl „0 Flaschen aus dem Keller", dann
+die Überschrift **Fassungsliste** mit dem dunklen Knopf **„Foto aufnehmen"**,
+dann die offenen Punkte, dann als heller Knopf „Fertig – Protokoll
+erstellen". Der auffälligste Knopf im letzten Schritt der Tagesfassung ist
+damit das Foto, nicht der Abschluss.
+
+**Drei Befunde aus dem Betrieb, alle belegbar:**
+
+1. **Das Foto sieht die Leitung nie.** Fotos bleiben in der IndexedDB des
+   Geräts, im Vorgang reist nur ihr Schlüssel (Projektanleitung §3, „Was
+   nicht überträgt"). Die Leitung arbeitet am MacBook und liest vom Server –
+   dort ist das Bild nicht. Ein Arbeitsschritt, dessen Ergebnis nie jemand
+   ansieht, hört im Betrieb binnen weniger Wochen von selbst auf. Er hört
+   aber nicht auf, in der Liste der offenen Punkte zu stehen.
+2. **Das Foto ist kein Beweis, obwohl es wie einer aussieht.** „Wir haben es
+   geholt, es ist nur nicht gebucht" ist der häufigste Streitfall am Morgen.
+   Das Bild dazu liegt auf genau einem Telefon und ist weg, sobald der
+   Browserspeicher geleert wird oder das Gerät wechselt. Wer sich darauf
+   verlässt, verlässt sich auf nichts.
+3. **Der schwerste Punkt: das Foto treibt die Freigabe.** Ist alles geprüft,
+   alles geholt und nur das Foto fehlt, steht im Abschluss „Ein Punkt ist
+   noch offen", und „Fertig – Protokoll erstellen" führt in den Dialog
+   „Trotzdem abschließen?" mit Code-Eingabe. Im Protokoll steht danach
+   **„Ohne Bestätigung freigegeben von …"** – auf einer tadellosen
+   Tagesfassung. Zwei Schäden auf einmal: Die Servicekraft lernt, dass die
+   Freigabe der normale Weg aus dem Abschluss ist (sie soll die Ausnahme
+   sein), und die Leitung bekommt am Morgen eine Warnung, die nichts
+   bedeutet. Nach ein paar Wochen liest sie diese Warnung nicht mehr – und
+   dann auch die echte nicht.
+
+**Meine Beurteilung:** Der Schritt gehört weg, so wie §8 C es vorsieht – und
+zwar nicht wegen des Fotos, sondern wegen Befund 3. Was die Liste leistet
+(„was stand auf dem Zettel?"), leistet der Vortagsabgleich nicht; der
+beantwortet eine andere Frage („stimmt die Entnahme von gestern mit dem
+Ausschank überein?"). Das ist kein Einwand: Die erste Frage beantwortet ein
+Bild, das niemand ansieht, auch nicht.
+
+**Was ausdrücklich NICHT gebaut werden soll:** kein Upload der Fotos auf den
+Server (Nutzlast, Speicher, Datenschutz – dafür sind sie zu wenig wert),
+keine Texterkennung, kein Abtippen der Fassungsliste von Hand.
+
+**Soll-Ablauf (Vorschlag, nicht gebaut):**
+
+1. Im Abschluss fällt der Block „Fassungsliste / Foto aufnehmen" ersatzlos
+   weg, ebenso der Punkt „Fassungsliste noch nicht fotografiert" in
+   `offenList()`. Damit ist eine vollständige Fassung wieder ohne Freigabe
+   abschließbar.
+2. An seine Stelle tritt der Vortagsabgleich: die Zeilen, bei denen die
+   Entnahme von gestern und der verkaufte Ausschank um mindestens eine
+   Flasche auseinanderliegen (`GET /api/fassungsliste?tag=…`).
+3. Der Kacheltext der Tagesfassung endet dann auf „… aus dem Keller holen,
+   Gestern gegenprüfen." – **erst dann**, nicht vorher.
+4. Bereits aufgenommene Fotos bleiben in der IndexedDB und in archivierten
+   Protokollen sichtbar; `fclean()` räumt sie ohnehin mit dem Vorgang weg.
+
+**Zwischenschritt, falls der Umbau wartet (eine Zeile, Entscheidung nötig):**
+Den Punkt „Fassungsliste noch nicht fotografiert" aus `offenList()` nehmen
+und das Foto als freiwillige Beigabe stehenlassen. Das nimmt Befund 3 sofort
+die Spitze, ohne dass jemand den Abschluss umbaut. Ich habe es nicht getan,
+weil damit ein offener Punkt verschwindet, den heute jemand bewusst
+hineingeschrieben hat – das ist eine Entscheidung des Hauses, keine
+Wortwahl.

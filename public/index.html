@@ -1416,9 +1416,17 @@ function lastStep(){return steps().length-1;}
 const HOWTO={
  tag:[
   {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach. Die Tagesfassung läuft immer auf den Vortag – das Datum im Kopf stimmt so.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
-  {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Soll: 3 Flaschen, je 2 bei Riesling, Rosé, Cuvée Weiss und Naturwein weiss.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
+  /* Die Soll-Mengen standen hier als feste Zahlen im Fließtext. Sie stehen
+     ohnehin bei jedem Wein auf dem Schirm („Soll 3") — und sobald die
+     Leitung eines ändert, widerspricht die Hilfe dem, was danebensteht. */
+  {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Das Soll steht bei jedem Wein — du tippst herunter auf das, was noch dasteht.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
   {t:"Holen und einräumen",p:"Diese Flaschen fehlen, sortiert nach Laufweg. Holen, einräumen, abhaken – die Zeile wandert nach unten zu Bar oder Restaurant.",tip:"Weg: Rot, Rosé, Weiss, Cuvée, Natural, Bubbles. Zusätzlich Entnommenes unten eintragen."},
-  {t:"Fassungsliste fotografieren",p:"Die Liste von der Rezeption abfotografieren – sie ersetzt das Abtippen. Mehrere Seiten sind möglich.",tip:"Das Foto geht mit dem Protokoll mit."}],
+  /* Der Schritt heißt „Abschluss", die Hilfe hieß „Fassungsliste
+     fotografieren" — wer hier auf das Fragezeichen tippt, steht um
+     23 Uhr vor „Fertig – Protokoll erstellen" und will wissen, was der
+     Knopf auslöst, nicht wie man ein Foto macht. Das Foto bleibt ein
+     Satz, es ist ja noch da (Projektanleitung §8 C nimmt es heraus). */
+  {t:"Abschluss",p:"Oben steht, was noch offen ist – jede Zeile springt hin. „Fertig – Protokoll erstellen“ schließt die Fassung ab und schickt sie los; ohne Netz geht sie hinaus, sobald wieder Empfang da ist. Die Fassungsliste von der Rezeption abfotografieren, mehrere Seiten sind möglich.",tip:"Ist noch etwas offen, fragt das Tool nach. Freigeben geht mit deinem eigenen Code."}],
  fuellen:[
   {t:"Getränke an der Bar prüfen",p:"Nur die Getränkeladen – Wein bleibt außen vor.",tip:"Lade für Lade durchgehen und jede einzeln bestätigen."},
   {t:"Holen und einräumen",p:"Das Fehlende aus dem Getränkelager holen und einräumen. Abgehaktes wandert nach unten.",tip:"Oben steht, wie viele Kisten du brauchst."},
@@ -1679,14 +1687,37 @@ function fernNeuer(m){
    schneller") und die erfundene Bedienung („Tippen, wenn gesehen") —
    quittiert wird am Knopf daneben. */
 function ueberholtSatz(l){
-  const uhr=s=>{ const d=new Date(s||0);
-    return isNaN(d)?"":d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}); };
-  if(l.length>1)
-    return l.length+" Stände sind nicht übernommen – andere Geräte "
-      +"haben danach gezählt.";
-  const e=l[0]||{}, meine=uhr(e.zeit), wer=(e.fremd&&e.fremd.name)||"";
-  return "Dein Stand"+(meine?" von "+meine:"")+" ist nicht übernommen – "
-    +(wer?wer:"ein anderes Gerät")+" hat danach gezählt.";
+  /* Welcher Vorgang? „Dein Stand" allein sagt es nicht. An einem Abend
+     laufen leicht drei: Tagesfassung, eine Sonderentnahme für die Küche,
+     ein Nachfüllen an der Bar. Ob die Stunde Zählen weg ist oder eine
+     Flasche für den Koch, ist ein Unterschied — und bei mehreren Ständen
+     war „3 Stände sind nicht übernommen" gar keine Auskunft mehr.
+     Der Name steht deshalb vorn wie eine Betreffzeile. Er hängt nicht am
+     Artikel: „Deine Nachfüllen" gäbe es sonst. */
+  const name=e=>{ const m=(e.daten&&e.daten.mode)
+      ||String(e.schluessel||"").split("_")[0];
+    return (MODES[m]&&MODES[m].t)||"Vorgang"; };
+  /* Die Uhrzeit allein genügt nur am selben Tag. Ein Gerät, das über
+     Nacht ohne Netz im Spind lag, meldet sonst „von 20:40" und meint
+     gestern — und der eigene Stand ist am Datum nicht wiederzuerkennen. */
+  const wann=s=>{ const d=new Date(s||0); if(isNaN(d))return "";
+    const uhr=d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
+    const h=new Date(), tage=Math.round(
+      (new Date(h.getFullYear(),h.getMonth(),h.getDate())
+       -new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+    if(tage<=0)return uhr;
+    if(tage===1)return "gestern "+uhr;
+    return d.toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit"})+" "+uhr; };
+  if(l.length>1){
+    const n=l.map(name);
+    return n.length<=3
+      ? "Nicht übernommen: "+n.join(", ")+". Andere Geräte haben danach gezählt."
+      : l.length+" Stände sind nicht übernommen – andere Geräte "
+        +"haben danach gezählt.";
+  }
+  const e=l[0]||{}, meine=wann(e.zeit), wer=(e.fremd&&e.fremd.name)||"";
+  return name(e)+": Dein Stand"+(meine?" von "+meine:"")+" ist nicht "
+    +"übernommen – "+(wer?wer:"ein anderes Gerät")+" hat danach gezählt.";
 }
 /* Ein Satz, der beantwortet: Ist meine Arbeit draußen oder noch im Gerät?
    Vorher stand „Offline" in zwei Zeilen mit zwei verschiedenen Zusagen.
@@ -2609,7 +2640,22 @@ function rHol(m){
   const d=D(),items=holList();
   if(!items.length){
     lagerKopf(m,"Weinkeller","",0,0);
-    add(m,"box good","<b>Kein Wein zu holen.</b><br>Alle Kühlschränke sind voll.");
+    /* „Kein Wein zu holen" ist nur dann eine Auskunft, wenn vorher gezählt
+       wurde. Ungeprüft gilt in der Fassung als voll — wer Schritt 1 und 2
+       überspringt oder unterbricht, bekam hier bisher „Alle Kühlschränke
+       sind voll" und ging leer hinauf. Das ist der teuerste Irrtum im
+       ganzen Ablauf: Es fällt erst am nächsten Abend am Tisch auf.
+       (Dazu: Kühlschränke stehen weder an der Bar noch im Restaurant —
+       dort sind es Laden und Schränke.) */
+    const ungeprueft=barUnits().filter(u=>!barDone(u)).length
+      +[1,2,3,4].filter(n=>!schrankFertig(n)).length;
+    if(ungeprueft)
+      add(m,"box","<b>Nichts zu holen \u2014 aber "
+        +(ungeprueft===1?"1 Platz ist":ungeprueft+" Pl\u00e4tze sind")
+        +" noch nicht gepr\u00fcft.</b><br>Was nicht gez\u00e4hlt ist, gilt als voll. "
+        +"Vorher noch fertig pr\u00fcfen \u2013 zur\u00fcck zu Bar und Restaurant.");
+    else
+      add(m,"box good","<b>Kein Wein zu holen.</b><br>Bar und Restaurant sind voll.");
     weinLagerExtra(m);rZusatz(m);return;}
   const offen=items.filter(it=>!d.holt[it.w.id]),fertig=items.filter(it=>d.holt[it.w.id]);
   // Kisten-Info oben
@@ -3582,7 +3628,17 @@ function gHolBlock(m){
     info.innerHTML=`<div><b>${fl}</b> Flaschen holen</div>
       <div><b>${ki}</b> Tragekiste${ki!==1?"n":""} (à ${TRAGEKISTE} Fl.)</div>`;
     kopf.parentNode.insertBefore(info,kopf.nextSibling);}
-  if(!f.length){add(m,"box good","<b>Nichts zu holen.</b><br>Alle Laden sind voll.");}
+  if(!f.length){
+    /* Dieselbe Falle wie im Weinkeller (siehe rHol): Eine Lade, die
+       niemand bestätigt hat, gilt als voll — „Alle Laden sind voll" war
+       dann keine Zählung, sondern eine Annahme. */
+    const oL=ALLE_LADEN().filter(L=>!(d0.gdone||{})[L.id]).length;
+    if(oL)
+      add(m,"box","<b>Nichts zu holen \u2014 aber "
+        +(oL===1?"1 Lade ist":oL+" Laden sind")
+        +" noch nicht best\u00e4tigt.</b><br>Was nicht gez\u00e4hlt ist, gilt als voll. "
+        +"Vorher noch die offenen Laden an der Bar pr\u00fcfen.");
+    else add(m,"box good","<b>Nichts zu holen.</b><br>Alle Laden sind voll.");}
   else{
     /* Wie beim Wein: erledigte Zeilen wandern nach unten. */
     const offen=f.filter(x=>!d0.gholt[x.id]),fertig=f.filter(x=>d0.gholt[x.id]);

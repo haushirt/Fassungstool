@@ -74,7 +74,13 @@ const ueb = (mehr) => ({ schluessel: "tag_2026-09-16", id: "a",
 
 const UEB_NAME = [ueb({ fremd: { name: "Ian", zeit: "", zaehlnr: 7 } })];
 const UEB_OHNE = [ueb({})];
-const UEB_DREI = [1, 2, 3].map(i => ueb({ schluessel: "m" + i, id: "a" + i }));
+/* Drei Stände heißt im Betrieb drei VERSCHIEDENE Vorgänge — an einem Abend
+   laufen Tagesfassung, eine Sonderentnahme für die Küche und ein Nachfüllen
+   an der Bar. Dreimal derselbe Modus kommt nicht vor (je Schlüssel liegt nur
+   ein Eintrag im Sackfach) und ergäbe ein Bild, das lügt. */
+const UEB_DREI = ["tag", "nach", "fuellen"].map((m, i) => ueb({
+  schluessel: m + "_2026-09-16", id: "a" + i,
+  daten: { mode: m, tag: "2026-09-16" } }));
 const AUSGANG2 = [{ schluessel: "a", id: "1", daten: {}, versuche: 0 },
                   { schluessel: "b", id: "2", daten: {}, versuche: 0 }];
 

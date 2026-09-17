@@ -548,3 +548,208 @@ liegt. Nach „Erledigt" verschoben: kein Übertragungszustand im Menü (hoch),
 der 409-Satz samt Geste, die 42px-Trefferfläche des „?"-Knopfes.
 
 **STATUS:** VERBESSERUNGEN
+
+
+### Runde 2 – hospitality-pro
+
+**Zuerst, weil es den Rest dieses Zuges erklärt: Ich habe die App diesmal
+gesehen.** Der ui-designer hat den Browser gefunden, ich habe ihn benutzt
+und bin die Tagesfassung Schritt für Schritt durchgegangen — Menü,
+Bar, Restaurant, Keller, Abschluss, dazu das Getränkelager und das
+Nachfüllen. Der wichtigste Fund dieses Zuges war im Code nicht zu sehen,
+sondern nur auf dem Schirm (Punkt 1 unten). Was gesehen und was gelesen
+ist, steht unter „Geprüft" getrennt.
+
+**Kritik am Vorgänger:**
+
+*Die zwei Wortfragen, die der ui-designer mir ausdrücklich vorgelegt hat.*
+
+* **„nicht übernommen" oder „nicht angekommen"?** ✅ **„nicht übernommen"
+  bleibt, ohne Abstriche.** Die beiden Sätze bedeuten im Haus zwei
+  verschiedene Dinge, und die Verwechslung wäre teuer. „Ist nicht
+  angekommen" heißt bei uns: Netz, Funkloch, nochmal schicken — und
+  genau das ist die falsche Handlung, denn nochmal schicken hilft hier
+  nie. Wer „nicht angekommen" liest, geht im Zweifel wieder hinunter und
+  zählt ein zweites Mal ins Leere. „Nicht übernommen" heißt: es ist
+  angekommen, es wurde abgelehnt, ein anderer war vorher da. Das Wort ist
+  im Haus geläufig (eine Bestellung, die nicht übernommen wurde, ist
+  nicht verschwunden, sondern abgelehnt). Dass der Halbsatz danach
+  gleich sagt, wer gezählt hat, macht es endgültig eindeutig.
+* **„Gesehen" oder „Passt"?** ✅ **„Gesehen" bleibt.** „Passt" ist bei uns
+  die geläufigere Antwort, aber es ist eine **Zustimmung** — „passt so,
+  ist in Ordnung". Hier ist gerade nicht alles in Ordnung: Der eigene
+  Stand ist weg, und ob Ians Stand vollständig ist, weiß in diesem
+  Moment niemand. Ein Knopf, der „Passt" sagt, nimmt eine Zusage ab, die
+  die Servicekraft nicht geben kann. „Gesehen" sagt genau, was es tut:
+  zur Kenntnis genommen, die Zeile schweigt. Das ist auch die Antwort,
+  die man der Chefin gibt. „Verstanden" war richtig verworfen.
+* ↩️ **Was in der Meldung aber gefehlt hat: welcher Vorgang.** Um 23 Uhr
+  ist „Dein Stand von 20:40" keine Auskunft. An einem Abend laufen leicht
+  drei Vorgänge — die Tagesfassung, eine Sonderentnahme für die Küche, ein
+  Nachfüllen an der Bar. Ob die Stunde Zählen weg ist oder eine Flasche
+  für den Koch, ist der ganze Unterschied. Und bei mehreren stand nur
+  „3 Stände sind nicht übernommen" — damit kann niemand etwas anfangen.
+  Behoben, siehe Umgesetzt 2.
+* ↩️ **Und: die Uhrzeit allein stimmt nur am selben Tag.** Ein iPad, das
+  über Nacht ohne Netz im Spind liegt, meldete am Morgen „von 20:40" und
+  meinte gestern. Jetzt „gestern 20:40" bzw. „12.09. 20:40".
+* ✅ **Gut und ohne Änderung: der Knopf statt der Geste.** Eine Auskunft,
+  die unter dem Daumen verschwindet, während man mit dem Telefon in der
+  Hand aus dem Keller hochgeht, ist keine Auskunft. Der ui-designer hat
+  recht, und der Fokusring im Bild ist der Beleg.
+* **Zur Frage des software-engineers, ob „Gesehen" als einzige Handlung
+  im Betrieb tragbar ist: nein, aber es ist nicht dringend.** Tragbar
+  wäre es, wenn der Satz die Frage beantwortet, die um 23 Uhr zählt —
+  „muss ich noch einmal hinunter?". Das tut er, solange der andere Stand
+  vollständig ist. Der 409 hängt aber an der Zählnummer, nicht an der
+  Vollständigkeit: Ian kann mit einem halb gezählten Stand gewinnen, und
+  dann ist meine Stunde Arbeit weg, ohne dass es jemand merkt. Deshalb
+  gehört „Ansehen" daneben (steht als Backlog-Punkt des software-engineers
+  unter Mittel, ich lasse ihn dort). **Dringend ist es nicht**, weil der
+  Fall selten und der Ausweg im Haus kurz ist: man fragt Ian. Was das
+  Werkzeug dafür liefern muss, ist der Name — und den liefert es jetzt.
+
+*Und ein Punkt an mich selbst aus Runde 1.*
+
+* `public/index.html:1352` Kacheltext „… Liste fotografieren" ✅ **bleibt
+  vorerst und ist richtig**, solange der Schritt existiert — beurteilt,
+  nicht angefasst, ausführlich in `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 9.
+  Kurz: Der Schritt gehört weg, aber nicht wegen des Fotos. Das Foto
+  verlässt das Gerät nie (Projektanleitung §3), die Leitung sieht es also
+  nie — ein Arbeitsschritt, dessen Ergebnis niemand ansieht, hört im
+  Betrieb von selbst auf. **Der schwere Punkt ist ein anderer, und den
+  habe ich im Browser durchgespielt:** Ist alles geprüft, alles geholt und
+  fehlt nur das Foto, meldet der Abschluss „Ein Punkt ist noch offen" und
+  „Fertig – Protokoll erstellen" führt in „Trotzdem abschließen?" mit
+  Code-Eingabe. Im Protokoll steht danach „Ohne Bestätigung freigegeben
+  von …" — auf einer tadellosen Tagesfassung. Die Servicekraft lernt so,
+  dass die Freigabe der normale Weg aus dem Abschluss ist; die Leitung
+  lernt, eine Warnung zu überlesen, die meistens nichts bedeutet. Das ist
+  der Grund, aus dem der Schritt fallen soll, und es ist der einzige, der
+  eilt.
+
+**Umgesetzt:**
+
+1. **Der Keller-Schritt hat gelogen, wenn vorher nicht gezählt wurde**
+   (`:2650` `rHol`, `:3635` `gHolBlock`). Wer Schritt 1 und 2 überspringt
+   oder unterbricht — Schichtwechsel, Gast im Restaurant, Telefon —, las
+   im Keller „Kein Wein zu holen. **Alle Kühlschränke sind voll.**" und
+   ging leer hinauf. In Wahrheit war nichts gezählt: Ungeprüft gilt in der
+   Fassung als voll. Jetzt nennt die Meldung die Zahl der ungeprüften
+   Plätze bzw. Laden und die Annahme dahinter („Was nicht gezählt ist,
+   gilt als voll"); dieselbe Falle im Getränkelager mitbehoben. Nebenbei
+   raus: Kühlschränke stehen weder an der Bar noch im Restaurant, dort
+   sind es Laden und Schränke.
+2. **Der 409-Satz nennt den Vorgang** (`:1689` `ueberholtSatz`): der Name
+   steht vorn wie eine Betreffzeile, weil er nicht am Artikel hängen darf
+   („Deine Nachfüllen" gäbe es sonst). Einer: „Tagesfassung: Dein Stand
+   von 20:40 ist nicht übernommen – Ian hat danach gezählt." Mehrere:
+   „Nicht übernommen: Tagesfassung, Sonderentnahme, Nachfüllen. Andere
+   Geräte haben danach gezählt." Ab vier bleibt es bei der Anzahl. Dazu
+   „gestern 20:40" bzw. „12.09. 20:40" für Stände, die nicht von heute
+   sind.
+3. **Zwei Hilfetexte, die im falschen Moment das Falsche sagen**
+   (`:1422`, `:1429`, beide aus meinem eigenen Backlog): Die Hilfe zum
+   Restaurant-Schritt nannte feste Soll-Zahlen im Fließtext — das Soll
+   steht ohnehin bei jedem Wein auf dem Schirm („Soll 3"), im Browser
+   nachgesehen. Und die Hilfe zum vierten Schritt hieß „Fassungsliste
+   fotografieren", während der Schritt „Abschluss" heißt: Wer dort um
+   23 Uhr auf „?" tippt, will wissen, was „Fertig – Protokoll erstellen"
+   auslöst, und bekam eine Foto-Anleitung. Sie heißt jetzt „Abschluss" und
+   sagt: abschließen, senden, ohne Netz später — und dass die Freigabe mit
+   dem eigenen Code geht. Das Foto bleibt ein Satz, solange es den Schritt
+   gibt.
+
+**Geprüft:**
+
+* **Gesehen, nicht gelesen** — mit Playwright und Chromium, 390×844:
+  die Tagesfassung von der Anmeldung bis zum Abschluss (Menü → Bar →
+  Restaurant → Keller/Weinkeller → Keller/Getränkelager → Abschluss), dazu
+  Nachfüllen bis zum Holen-Schritt. **Keine JS-Fehler** in keinem der
+  Läufe. Neue Bilder in `review/screens/runde-2b/` (sechs von mir, der
+  Rest aus dem Lauf von `tests/ui-aufnahme.cjs`).
+* **Die drei Änderungen am Bild und am Text nachgemessen, nicht
+  angenommen:** Keller ohne jede Prüfung → „Nichts zu holen — aber 11
+  Plätze sind noch nicht geprüft." (roter Kasten); ein einzelner offener
+  Schrank → „1 Platz ist" (Einzahl geprüft, sie fehlte im ersten Anlauf);
+  alles geprüft → der grüne Kasten „Kein Wein zu holen. Bar und Restaurant
+  sind voll." Getränkelager: 6 Laden offen in der Tagesfassung, 5 im
+  Nachfüllen (Lade 3 fällt dort weg — stimmt) und der grüne Kasten, sobald
+  alle bestätigt sind.
+* **409-Satz in sechs Fällen aufgenommen und gemessen:** mit Name (81
+  Zeichen, 3 Zeilen, 75px), ohne Name (97), gestern (89, 4 Zeilen, 93px),
+  fünf Tage alt (93), zwei Vorgänge (83), fünf Vorgänge (Rückfall auf die
+  Anzahl, 68). `--topH` folgt der gewachsenen Kopfzeile auf 193px, der
+  Knopf „Gesehen" bleibt bei 44px Trefferfläche, per Tab in einem Schritt
+  erreichbar, Enter quittiert, der Stand bleibt mit `quittiert:1` im
+  Gerät.
+* **Hilfetexte im geöffneten Sheet gelesen**, nicht nur im Quelltext:
+  Titel „Abschluss" bzw. „Restaurant prüfen", Text vollständig, keine
+  abgeschnittene Zeile.
+* **Ein Fehler, den mir erst der Prüflauf gezeigt hat:** Im neuen
+  Hilfetext stand ein typografisches Anführungszeichen unten („) mit einem
+  geraden Zeichen (") als Abschluss — das beendet die JS-Zeichenkette.
+  `npm test` war rot („Unexpected identifier 'schließt'"), behoben,
+  wieder grün. Genau die Prüfung, die der qa-guardian in Runde 1 gebaut
+  hat.
+* `npm test`: vorher **100 grün**, nachher **100 grün, 0 rot**. Keine
+  Prüfung gefallen, also keine umgeschrieben.
+* **Geteilte Gestaltungsschicht nicht berührt:** `index.html:12–222` gegen
+  `leitung.html:9–219`, 211 Zeilen, zeilenweise verglichen — identisch.
+  `leitung.html` hat **null** geänderte Zeilen und steht nicht im `git
+  status`. Kein neues Hex, keine neue Datei in `public/`, kein Framework,
+  keine Schemaarbeit. `public/sw.js` VERSION v18 → **v19**.
+* **Eine Testvorlage berichtigt** (`tests/ui-aufnahme.cjs`): Der Fall
+  „drei überholte Stände" setzte dreimal denselben Modus. Je Schlüssel
+  liegt aber nur ein Eintrag im Sackfach — dreimal „Tagesfassung" kann es
+  nicht geben, und das Bild hätte gelogen. Jetzt Tagesfassung,
+  Sonderentnahme, Nachfüllen: der Abend, den es wirklich gibt.
+* **Nicht geprüft:** nichts auf einem echten iPhone, nur im nachgebauten
+  Gerät. Und der Abschluss mit einer vollständig gezählten Fassung ist
+  nicht durchgespielt (dafür müsste man 57 Weine antippen) — die
+  Freigabe-Falle in Nr. 9 habe ich über den Zustand im Speicher erzeugt,
+  nicht durch echtes Zählen.
+
+**Für die Nächsten:**
+
+* *ui-designer:* Im Abschluss der Tagesfassung ist „Foto aufnehmen" der
+  dunkle Hauptknopf und „Fertig – Protokoll erstellen" der helle daneben.
+  Der auffälligste Knopf im letzten Schritt ist der Nebenschritt. Ich habe
+  ihn nicht angerührt, weil er mit Entscheidung Nr. 9 zusammenhängt —
+  aber wenn Nr. 9 anders ausgeht als ich vorschlage, gehört die
+  Rangfolge trotzdem umgedreht. Backlog, mittel.
+* *ui-designer:* Zwei Wörter für denselben Gang stehen noch offen
+  („Keller" in der Tagesfassung, „Holen" im Nachfüllen). Ich hatte drei
+  Punkte und habe die schwereren genommen. Aus meiner Sicht gewinnt
+  **„Holen"** — es ist das, was man tut, und es passt auf beide Räume
+  (Weinkeller und Getränkelager). „Keller" ist der Ort, und der steht
+  ohnehin in den Reitern.
+* *software-engineer:* „Ungeprüft gilt als voll" ist die tragende Annahme
+  der ganzen Fassung und steht jetzt in zwei Leermeldungen — sonst
+  nirgends. Eine neue Kraft ohne Einschulung erfährt sie nie. Ein Satz in
+  `BEDIEN` (`:2263`) wäre der richtige Ort, das ist deine oder die des
+  ui-designers Wahl. Backlog, mittel.
+* *An den Betreiber:* **Entscheidung Nr. 9 ist neu** (Fotoschritt). Sie
+  hat einen Zwischenschritt, der eine Zeile kostet und den eiligen Teil
+  sofort entschärft: den Punkt „Fassungsliste noch nicht fotografiert"
+  aus `offenList()` nehmen. Ich habe ihn nicht gebaut, weil damit ein
+  offener Punkt verschwindet, den jemand bewusst hineingeschrieben hat.
+  Unverändert dringend aus meiner Rolle: **Nr. 6** (wer darf Soll-Mengen
+  ändern) und **Nr. 7** (Sonderentnahme ohne Grund) — beide seit Runde 1
+  offen, beide kosten jeden Tag Zahlen, die niemand mehr erklären kann.
+  Und `review/INPUT-TEAM.md` ist immer noch leer: Die fünf Gründe der
+  Sonderentnahme und der Laufweg im Keller gehören mit Asad, Ian und
+  Marinus gegengelesen, bevor jemand Knöpfe dafür baut.
+
+**Phase/Thema:** A / Tagesfassung – Plausibilität im Keller, Wortwahl nach
+dem Abschluss, Hilfe im richtigen Moment
+
+**Backlog:** neu – **hoch:** Der Fotoschritt treibt die Freigabe; eine
+tadellose Tagesfassung wird als „ohne Bestätigung freigegeben" protokolliert
+(→ Entscheidung Nr. 9). **mittel:** „Foto aufnehmen" ist im Abschluss der
+Hauptknopf, „Fertig" der Nebenknopf · „Ungeprüft gilt als voll" steht
+nirgends in der Bedienungshilfe. Nach „Erledigt" verschoben: die lügende
+Leermeldung im Keller, der 409-Satz ohne Vorgangsnamen, die Soll-Zahlen in
+der Restaurant-Hilfe, die Foto-Anleitung im Abschluss-Schritt.
+
+**STATUS:** VERBESSERUNGEN
