@@ -217,6 +217,15 @@
   color:var(--fg-on-dark);width:auto;height:24px;max-width:none}
 .tuer .marke{margin:0 auto var(--space-3)}
 .tuer .marke svg{max-width:220px;margin:0 auto}
+/* Die sicheren Ränder des Geräts. `viewport-fit=cover` im Kopf lässt die
+   Seite unter die Statusleiste und unter den Home-Balken laufen — ohne
+   diese zwei Werte liegt die Kopfzeile unter der Uhrzeit des iPhones.
+   Als Token, nicht direkt als `env()`: So lässt sich der Rand für eine
+   Aufnahme auf einen festen Wert stellen und die Wirkung nachsehen, auch
+   auf einem Schirm ohne Aussparung. */
+:root{--sicher-oben:env(safe-area-inset-top,0px);
+      --sicher-unten:env(safe-area-inset-bottom,0px)}
+
 /* Für Bildschirmlesegeräte bleibt der Name stehen, sichtbar ist er nicht. */
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap}
@@ -373,8 +382,13 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 
 /* ═══════════════ Kopf ═══════════════ */
 .topwrap{position:sticky;top:0;z-index:var(--z-top)}
+/* Der obere sichere Rand gehört in die POLSTERUNG des Kopfes, nicht in
+   einen Abstand darüber: Der Farbgrund läuft dann bis unter die
+   Statusleiste durch, und „Tagesfassung" steht darunter statt unter der
+   Uhrzeit. Am iPhone mit Aussparung sind das 47–59 px, auf jedem anderen
+   Gerät null — die Zeile ändert dort nichts. */
 header{background:var(--accent);color:var(--fg-on-dark);
-  padding:var(--space-2) var(--space-4) 0}
+  padding:calc(var(--space-2) + var(--sicher-oben)) var(--space-4) 0}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3)}
 .hd h1{margin:0;font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
   letter-spacing:.01em}
@@ -1027,7 +1041,7 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 /* ═══════════════ Anmeldung ═══════════════ */
 /* Zeichen und Untertitel stehen mittig über dem linksbündigen Text —
    die Marke ist ein Kopf, keine Zeile im Satz. */
-.loginbox{display:flex;flex-direction:column}
+.loginbox{display:flex;flex-direction:column;padding-top:var(--sicher-oben)}
 .loginbox .marke{margin:var(--space-6) auto var(--space-2)}
 .loginbox .marke svg{margin:0 auto}
 .loginbox>.sub{text-align:center;margin-bottom:var(--space-6)}
@@ -1152,15 +1166,26 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
  border-color:var(--danger-border);background:var(--danger-bg)}
 /* Der Griff versprach eine Ziehgeste, die es nicht gibt. */
 .drwh{display:none}
+/* Die Säulen stehen unten bündig — so, wie die Flaschen in der Lade auf
+   dem Boden stehen. Die ZAHLEN darüber sollen aber eine Reihe bilden: Man
+   liest sie quer, von links nach rechts. Bis v24 hingen sie an der Höhe
+   der jeweiligen Säule: Wo weniger Flaschen stehen (die kleinen Gasteiner,
+   sieben statt zehn), sass die Zahl 45 px tiefer als bei den Nachbarn und
+   die Reihe war nicht mehr zu überfliegen.
+   Deshalb: alle Säulen gleich hoch (`stretch`), der Inhalt unten bündig
+   (`flex-end`), und die Zahl schiebt sich mit `margin-bottom:auto` nach
+   oben. Die Flaschen bleiben unten, die Zahlen stehen auf einer Linie. */
 .drwi{padding:var(--space-4) var(--space-3) var(--space-3);display:flex;
- gap:var(--space-2);justify-content:center;align-items:flex-end;
+ gap:var(--space-2);justify-content:center;align-items:stretch;
  touch-action:auto;overflow:hidden;
  background:var(--surface-2);box-shadow:inset 0 1px 3px rgba(28,28,30,.06)}
 .drwi.top{align-items:flex-start}
-.gcol{display:flex;flex-direction:column;align-items:center;position:relative;flex-shrink:0}
+.gcol{display:flex;flex-direction:column;align-items:center;position:relative;
+ flex-shrink:0;justify-content:flex-end}
 .gnum{font-size:var(--text-sm);font-weight:var(--weight-bold);
  font-variant-numeric:tabular-nums;line-height:var(--leading-tight);
- letter-spacing:-.02em;margin-bottom:var(--space-2);color:var(--fg)}
+ letter-spacing:-.02em;margin-bottom:auto;padding-bottom:var(--space-2);
+ color:var(--fg)}
 .gnum.low{color:var(--danger)}
 .gnum .tot{font-size:var(--text-xs);font-weight:var(--weight-medium);color:var(--fg-subtle);
  text-decoration:none}
@@ -1674,7 +1699,13 @@ async function zieheFern(){
        nächsten Menüaufruf unsichtbar. */
     const nachher=JSON.stringify(Object.keys(FERN).sort().map(k=>[k,FERN[k].zaehlnr,FERN[k].status]));
     if(vorher!==nachher && !mode && whoAmI() && $("#menu").style.display!=="none"){
+      /* Das Menü wird alle drei Minuten und bei jedem Zurückholen der App
+         nachgezogen. Wer gerade in der Kachelliste scrollt, stünde danach
+         wieder ganz oben — der zweite Grund für das Springen. Die Stelle
+         wird deshalb gemerkt und zurückgesetzt. */
+      const stelle=window.scrollY;
       renderMenu();
+      if(stelle) window.scrollTo(0,stelle);
     }
   }catch(e){ NETZ.zustand="offline"; }
   netzChip();
@@ -1755,6 +1786,13 @@ function netzChip(){
   const weg=(navigator.onLine===false)||z==="offline";
   const viele=o===1?"1 Vorgang":o+" Vorgänge";
   const ueb=ueberholtOffen();
+  /* WORTTRENNUNG (Punkt aus dem Test am 17.09.): Auf der Startseite
+     standen zwei Zeilen übereinander, die beide „offen" sagten und
+     Verschiedenes meinten — „Die Tagesfassung ist heute noch offen"
+     (die ARBEIT) und darunter grün „Nichts offen – alles übertragen"
+     (die ÜBERTRAGUNG). Wer den grünen Satz las, hielt den Abend für
+     erledigt. Das Wort „offen" gehört seither der Arbeit allein; diese
+     Zeile hier spricht nur noch vom Weg ans Haus. */
   let t="", k="", quittierbar=false;
   /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
      nichts hinaus. Gleich danach aber der überholte Stand — er darf nie
@@ -1762,12 +1800,12 @@ function netzChip(){
   if(z==="kein-server"&&!ueb.length){ t=""; }
   else if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
   else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler"; quittierbar=true; }
-  else if(weg&&o>0){ t=viele+" warten – kein Netz"; k="wartet"; }
+  else if(weg&&o>0){ t=viele+" noch nicht übertragen – kein Netz"; k="wartet"; }
   else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
   else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" warten"
                                     :"Server antwortet nicht"; k="fehler"; }
   else if(o>0){ t=viele+" warten auf Übertragung"; k="wartet"; }
-  else if(z==="verbunden"){ t="Nichts offen – alles übertragen"; k="ok"; }
+  else if(z==="verbunden"){ t="Alles ans Haus übertragen"; k="ok"; }
   els.forEach(el=>{
     if(!t){ el.style.display="none"; return; }
     el.style.display="";
@@ -1776,7 +1814,13 @@ function netzChip(){
     el.classList.remove("ok","wartet","offline","fehler");
     if(k)el.classList.add(k);
     const txt=el.querySelector(".netztext");
-    if(txt)txt.textContent=t; else el.textContent=t;
+    /* Im Menü steht der Zustand als Block über den Kacheln, direkt unter
+       dem Satz zum Tag. Dort bekommt er seine Überschrift, damit die
+       beiden Zeilen nicht mehr verwechselt werden können. Unter dem Kopf
+       eines laufenden Vorgangs bleibt es beim knappen Satz. */
+    const imMenue=el.classList.contains("netz--block");
+    const satz=imMenue ? "Übertragung: "+t.charAt(0).toLowerCase()+t.slice(1) : t;
+    if(txt)txt.textContent=satz; else el.textContent=satz;
     const btn=el.querySelector(".netzok");
     if(btn){ btn.hidden=!quittierbar; btn.onclick=ueberholtQuittieren; }
   });
@@ -3587,9 +3631,18 @@ function drwBox(L,ohneTitel){
                          :Math.round(M.H*n/ges)-(teile.length>1?GGAP:0);
         const stk=gStack(k,n,hoehe,L.leerOben);
         /* Halbe Punkthoehe nach unten: die Spalte sitzt in den Luecken
-           der Nachbarspalte, nicht auf gleicher Hoehe. */
-        if(c.versetzt)stk.style.marginTop=
-          (c.versetzt<0?-1:1)*Math.round((dd+GGAP)/2)+"px";
+           der Nachbarspalte, nicht auf gleicher Hoehe.
+
+           Der Abstand wird unten wieder abgezogen. Sonst ist die Spalte um
+           eine halbe Punkthöhe HÖHER als ihre Nachbarn — und weil die Lade
+           unten bündig steht (`.drwi{align-items:flex-end}`), rutscht die
+           ganze Spalte samt ihrer Zahl nach oben. Genau das sah man bei den
+           kleinen Gasteinern: die Zahl stand höher als bei allen anderen. */
+        if(c.versetzt){
+          const v=(c.versetzt<0?-1:1)*Math.round((dd+GGAP)/2);
+          stk.style.marginTop=v+"px";
+          stk.style.marginBottom=(-v)+"px";
+        }
         stk.querySelectorAll(".gpt").forEach(pt=>pt.dataset.col=ckey);
         cv.append(num,stk);});
       const b=document.createElement("div");b.className="gbase";cv.appendChild(b);
@@ -4554,8 +4607,17 @@ if(window.ResizeObserver){
   const ro=new ResizeObserver(()=>measure());
   ["#topwrap"].forEach(s=>{const el=$(s);if(el)ro.observe(el);});
 }
-let rsz=null;
+/* Safari am iPhone feuert `resize` BEIM SCROLLEN: Die Adressleiste fährt
+   ein und aus, die Höhe des Fensters ändert sich, die Breite nicht. Bis
+   v24 baute das jedes Mal die Lade neu (`render()`), die Seite verlor
+   ihre Höhe und sprang nach oben — immer wieder, mitten im Zählen.
+   Neu gezeichnet wird deshalb nur bei einer Änderung der BREITE: Drehen
+   des Geräts, geteilter Schirm. `measure()` läuft weiter bei jedem
+   Ereignis, es misst nur und zeichnet nicht. */
+let rsz=null, breiteZuvor=window.innerWidth;
 window.addEventListener("resize",()=>{measure();
+  if(window.innerWidth===breiteZuvor)return;
+  breiteZuvor=window.innerWidth;
   clearTimeout(rsz);rsz=setTimeout(()=>{if(document.querySelector(".drw"))render();},180);});
 
 /* 2.3 · Offline-Hinweis, kein Blocker. Die eigene Zeile ist entfallen —

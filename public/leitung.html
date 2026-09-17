@@ -214,6 +214,15 @@
   color:var(--fg-on-dark);width:auto;height:24px;max-width:none}
 .tuer .marke{margin:0 auto var(--space-3)}
 .tuer .marke svg{max-width:220px;margin:0 auto}
+/* Die sicheren Ränder des Geräts. `viewport-fit=cover` im Kopf lässt die
+   Seite unter die Statusleiste und unter den Home-Balken laufen — ohne
+   diese zwei Werte liegt die Kopfzeile unter der Uhrzeit des iPhones.
+   Als Token, nicht direkt als `env()`: So lässt sich der Rand für eine
+   Aufnahme auf einen festen Wert stellen und die Wirkung nachsehen, auch
+   auf einem Schirm ohne Aussparung. */
+:root{--sicher-oben:env(safe-area-inset-top,0px);
+      --sicher-unten:env(safe-area-inset-bottom,0px)}
+
 /* Für Bildschirmlesegeräte bleibt der Name stehen, sichtbar ist er nicht. */
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap}
