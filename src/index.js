@@ -285,10 +285,24 @@ async function ereignisseAbleiten(env, vid, d, p) {
   if (d.mode === "ware") {
     (d.pos || []).forEach(x => {
       if (!x.id || x.id === "__neu" || !(+x.kisten > 0)) return;
-      zu("eingang", x.id, (+x.kisten) * (+x.kg || 6), "keller");
+      /* Die App legt die Kistengröße als `kistengr` ab
+         (public/index.html:1350, :2881, :2910). `kg` gab es nie — der
+         Ausdruck war immer undefined, und damit zählte JEDE Kiste sechs
+         Flaschen. Beim Zwölfer (Ott · Fass 4) kam die halbe Lieferung in
+         der Datenbank an, während der Schirm „24 Flaschen · 12er Kisten"
+         zeigte. Beide Namen lesen, damit auch ein Paket aus der
+         Offline-Reihe eines alten Geräts richtig ankommt. */
+      zu("eingang", x.id, (+x.kisten) * (+x.kistengr || +x.kg || 6), "keller");
     });
+    /* Im Wareneingang heisst `gent`: GELIEFERT („Was wurde geliefert —
+       pro Position die gelieferte Anzahl Flaschen", public/index.html:1465).
+       Bis v22 lief es durch dieselbe Zeile wie die Sonderentnahme und
+       stand als Entnahme im Journal: 24 gelieferte Cola wurden zu −24,
+       ein Vorzeichenfehler von 48 Flaschen je Lieferung. */
+    Object.keys(d.gent || {}).forEach(id => zu("eingang", id, d.gent[id], "lager"));
+  } else {
+    Object.keys(d.gent || {}).forEach(id => zu("entnahme", id, d.gent[id], "lager"));
   }
-  Object.keys(d.gent || {}).forEach(id => zu("entnahme", id, d.gent[id], "lager"));
   Object.keys(d.gzusatz || {}).forEach(id => zu("entnahme", id, d.gzusatz[id], "lager"));
 
   /* Was steht für diesen Vorgang schon im Journal?
@@ -482,9 +496,14 @@ async function mappingSchreiben(env, p, body) {
          +gebinde_ml || null, p.name, Date.now()).run();
 
   /* Die schon eingelesenen Zeilen ziehen nach — sonst gilt die Zuordnung
-     erst ab dem nächsten Bericht. */
-  if (artikel) await env.DB.prepare(
-    `UPDATE fassungszeile SET artikel = ?1 WHERE rohbez = ?2`).bind(artikel, kassenname).run();
+     erst ab dem nächsten Bericht. Auch beim Zurücknehmen: Wer eine
+     Position auf „ignoriert" setzt, will sie aus der Rechnung heraus
+     haben. Bis v22 lief der UPDATE nur mit einem Artikel, die Zeile
+     behielt den alten — und „Verkauf ↔ Fassung" rechnete weiter mit
+     etwas, das die Leitung gerade ausgeschlossen hatte. */
+  await env.DB.prepare(
+    `UPDATE fassungszeile SET artikel = ?1 WHERE rohbez = ?2`
+  ).bind(artikel || null, kassenname).run();
   return json({ ok: true });
 }
 
@@ -634,8 +653,14 @@ export default {
      einmal fremder Text: geprüft wird der Absender und die Form. */
   async email(message, env, ctx) {
     const von = (message.from || "").toLowerCase();
-    const erlaubt = (env.ABSENDER || "").split(",").map(s => s.trim()).filter(Boolean);
-    if (erlaubt.length && !erlaubt.some(d => von.endsWith(d))) {
+    const erlaubt = (env.ABSENDER || "").split(",")
+      .map(s => s.trim().toLowerCase().replace(/^@/, "")).filter(Boolean);
+    /* Geprüft wird die DOMÄNE, nicht das Ende der Adresse. `endsWith`
+       auf der ganzen Adresse liess `post@boesegastronovi.com` durch,
+       solange `gastronovi.com` freigegeben war — wer eine solche Domäne
+       registriert, legt beliebige Z-Berichte in die Datenbank. */
+    const domaene = von.split("@").pop();
+    if (erlaubt.length && !erlaubt.some(d => domaene === d || domaene.endsWith("." + d))) {
       message.setReject("Absender nicht freigegeben");
       return;
     }
@@ -653,9 +678,17 @@ export default {
     }
     ctx.waitUntil((async () => {
       try {
-        const j = await (await fassungsliste(env, text, "email:" + von)).json();
-        await notiz(env, "email", `Z-Bericht ${j.tag}: ${j.positionen} Positionen, ${j.offen} offen`
-          + (j.storno ? `, ${j.storno} storniert — keinem Artikel zuzuordnen` : ""));
+        /* Die Antwort kann auch eine Absage sein (422: kein Betriebstag).
+           Bis v22 wurde sie nicht angesehen; im Journal stand dann
+           wörtlich „Z-Bericht undefined: undefined Positionen" — eine
+           Meldung, mit der niemand etwas anfangen kann. */
+        const a = await fassungsliste(env, text, "email:" + von);
+        const j = await a.json();
+        await notiz(env, "email", a.status === 200
+          ? `Z-Bericht ${j.tag}: ${j.positionen} Positionen, ${j.offen} offen`
+            + (j.storno ? `, ${j.storno} storniert — keinem Artikel zuzuordnen` : "")
+          : `Z-Bericht abgelehnt (${a.status}): ${j.fehler || "Grund unbekannt"}`
+            + " — Betreff: " + (mail.subject || "ohne Betreff"));
       } catch (e) { await notiz(env, "email", "Fehler: " + e.message); }
     })());
   },

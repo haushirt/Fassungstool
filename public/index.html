@@ -3088,6 +3088,23 @@ function gSet(id,n,b,soll){
     d.seen[id+"_"+b]=1;save();return;}
   d.getr=d.getr||{};d.getr[id]=Math.max(0,Math.min(GSOLL[id],n));save();}
 function gFehlt(){const r=[];GIDS.forEach(id=>{const f=GSOLL[id]-gIst(id);if(f>0)r.push({id,n:f});});return r;}
+/* Was aus dem Getränkelager geholt wurde, muss IM VORGANG stehen — der
+   Server kann es nicht ausrechnen. Die Fehlmenge entsteht aus dem Soll der
+   Lade, und das Soll steht im Gerät (`hh_cfg_v9`), nicht in der Datenbank.
+   Bis v22 stand nach einem Nachfüllen deshalb keine einzige Zeile im
+   Journal: Der Worker summierte die Weinorte, und die sind beim Nachfüllen
+   leer. `gent` trägt hier dieselbe Bedeutung wie in der Sonderentnahme —
+   geholte Flaschen. Gezählt wird nur, was abgehakt ist; der Haken ist die
+   Aussage „geholt", und der Abschluss fragt ohnehin nach, was offen blieb. */
+function geholteGetraenke(d){
+  if(d.mode!=="tag" && d.mode!=="fuellen") return;
+  d.gholt=d.gholt||{}; d.gholtN=d.gholtN||{}; d.gent={};
+  gFehlt().forEach(x=>{
+    if(!d.gholt[x.id]) return;
+    const n=d.gholtN[x.id]!=null ? +d.gholtN[x.id] : x.n;
+    if(n>0) d.gent[x.id]=n;
+  });
+}
 function gFehltSum(){return gFehlt().reduce((a,x)=>a+x.n,0);}
 function gLadeFehlt(L){let f=0;const ids=new Set();
   (L.grid||[]).forEach(c=>c.forEach(id=>ids.add(id)));
@@ -3956,7 +3973,7 @@ function rDoc(m){
     fb.textContent=mode==="nach"?"Entnahme melden"
       :mode==="ware"?"Lieferung melden":"Fertig – Protokoll erstellen";
     fb.onclick=()=>{
-      if(!offen.length){d.finished=true;save();
+      if(!offen.length){geholteGetraenke(d);d.finished=true;save();
         inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
         render();window.scrollTo(0,0);return;}
       freigabe(offen);};
@@ -4042,7 +4059,7 @@ function freigabe(offen){
       inp.focus();return;}
     const d=D();
     d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
-    d.finished=true;save();
+    geholteGetraenke(d);d.finished=true;save();
     inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
     render();window.scrollTo(0,0);};

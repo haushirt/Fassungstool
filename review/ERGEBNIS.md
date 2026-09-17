@@ -78,7 +78,45 @@ Zahl mit hinaus — in die Antwort des Imports und in die Journalnotiz der
 eingegangenen Mail —, statt lautlos zu fehlen und in der ersten
 Kellerzählung als Schwund wieder aufzutauchen.
 
-**Prüfgerüst.** `npm test` (195 Prüfungen) und `node tests/durchstich.cjs`
+**Das Backoffice zeigt und ändert, was auf dem Server steht.** Bis v22
+redete die Leitungsseite mit dem Server an vier Stellen: wer bin ich, die
+Vorgänge, die Mitarbeiter. Z-Berichte, Zuordnungen, Rezepturen und
+Einstellungen lagen im Browserspeicher **eines** MacBooks. Das hatte zwei
+Folgen, die im Betrieb weh tun: Ein Bericht, der per Mail hereinkam, war im
+Backoffice unsichtbar — und die Zuordnung, die dort eine halbe Stunde
+Arbeit kostet, wirkte nicht auf den Import, weil der Worker eine
+Zuordnungstabelle las, in die niemand schrieb. Beides kommt jetzt vom
+Server; der Browserspeicher ist nur noch die Abschrift für den Fall ohne
+Netz.
+
+Dabei kam heraus, dass in `public/leitung.html` ein **zweiter Z-Bericht-
+Leser** stand — eine Abschrift von `gnparse.js` mit genau den Fehlern, die
+dort schon behoben waren. Dieselbe Datei: Worker 48 Positionen und
+602,50 €, Backoffice 106 Positionen und 5166,70 €, das Achtel als acht
+Liter. Der zweite Leser ist ersatzlos weg, es gibt einen Leser und eine
+Zahl.
+
+**Drei Eingaben schrieben falsche oder gar keine Mengen.** Der Wareneingang
+rechnete jede Kiste mit sechs Flaschen (der Worker las `kg`, die App
+schreibt `kistengr`) — beim Zwölfer kam die halbe Lieferung an, während
+der Schirm „24 Flaschen · 12er Kisten" zeigte. Eine Getränkelieferung
+wurde als Entnahme gebucht, ein Vorzeichenfehler von 48 Flaschen. Und das
+**Nachfüllen erzeugte überhaupt keine Buchung**: Der Worker summierte die
+Weinorte, die beim Nachfüllen leer sind, und die geholten Getränke standen
+in einem Feld, das er nie las. Alle drei behoben und mit Prüfungen
+festgenagelt. Dazu: „Ignoriert" räumt den Artikel jetzt auch wieder aus den
+schon eingelesenen Zeilen, die Absenderprüfung des Postfachs vergleicht die
+Domäne statt das Ende der Adresse (`post@boesegastronovi.com` kam durch),
+und ein abgelehnter Mailimport nennt den Grund statt „Z-Bericht undefined".
+
+**Zwei Fallen im Backoffice.** Eine Teilzählung — drei auffällige Weine
+nachzählen, wie es die Zählliste selbst vorschlägt — setzte die anderen
+vierundfünfzig auf „—"; die Leitung rechnet jetzt wie der Worker je Artikel
+mit der jüngsten Zählung. Und die Leitung konnte sich mit einem Klick
+selbst sperren: Bei einer einzigen Leitungsperson kam danach niemand mehr
+hinein, Rückweg nur über die D1-Konsole.
+
+**Prüfgerüst.** `npm test` (211 Prüfungen) und `node tests/durchstich.cjs`
 (35 Punkte) laufen ohne Netz und ohne Installation. Der Durchstich fasst
 App und Worker gleichzeitig an, gegen eine Datenbank, die aus
 `docs/live-schema.sql` aufgebaut ist — die Attrappe, die drei Runden lang
@@ -224,7 +262,9 @@ Vierstellige Codes nimmt das Backoffice nicht mehr an, die Taste
 
 | Prüfung | Ergebnis |
 |---|---|
-| `npm test` | 195 Prüfungen, alle grün. Ohne Netz, ohne Installation, Bordmittel von Node 22. |
+| `npm test` | 211 Prüfungen, alle grün. Ohne Netz, ohne Installation, Bordmittel von Node 22. |
+| `tests/ui-leitung-echt.cjs` | 22 Punkte: das Backoffice in Chromium (1440×900) gegen den echten Worker, die echte Datenbank und den echten Z-Bericht. Eingelesen über die Oberfläche, Zuordnung landet in `mapping`, ein zweites Gerät mit leerem Browserspeicher sieht beides, ein nur per Mail eingelieferter Bericht ist sichtbar, eine Teilzählung lässt alle 57 Weine stehen. |
+| `tests/modi.test.mjs` | 16 Prüfungen: alle fünf Modi bis ins Journal (Vorzeichen, Ort, Kistengröße), die Zuordnung in beide Richtungen, die Absenderprüfung des Postfachs. |
 | `tests/zbericht-37.test.mjs` | 24 Prüfungen am echten Bericht Nr. 37: Kopf, Blockwahl, die vier Eigenheiten mit ihren Zahlen, Rabatt und Storno, und der ganze Weg durch den Worker bis in `fassungszeile` (48 Zeilen, 145 Stück, 602,50 €, `ausschankMl` 125 für das Achtel). |
 | `node tests/durchstich.cjs` | 35 von 35 Punkten. Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. **Vor jedem Livegang laufen lassen.** |
 | `node tests/persona-tagesfassung.cjs` | Anmeldung mit sechsstelligem Code, Tagesfassung bis zum Abschluss, Abbruch, Offline, doppeltes Absenden, abgelaufene Sitzung — durchgelaufen. |

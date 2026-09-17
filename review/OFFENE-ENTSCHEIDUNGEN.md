@@ -644,3 +644,76 @@ benutzt hat. Wenn dann jemand sagt „warum muss ich noch auf ✓ tippen",
 ist Option 2 in wenigen Zeilen zu haben — und erst dann weiss man es,
 statt es vorher zu vermuten. Entschieden werden muss es vor dem nächsten
 Codewechsel, nicht vor dem Livegang.
+
+
+---
+
+## 14. Hat das Getränkelager einen Bestand — oder nur Bewegungen?
+
+**Status:** OFFEN
+**Gemeldet:** Runde 5 (software-engineer, Hauptsitzung)
+**Betrifft:** `src/index.js:281` (Kellerzählung), `public/index.html:3090` (`gFehlt`), `public/leitung.html` (Ansicht „Getränke")
+
+**Was seit Runde 5 gebucht wird:** Getränke, die beim Nachfüllen oder in
+der Tagesfassung aus dem Lager geholt werden, stehen jetzt als Entnahme im
+Journal; eine Lieferung steht als Eingang. Vorher stand beim Nachfüllen
+gar nichts und die Lieferung mit falschem Vorzeichen.
+
+**Was weiter fehlt:** eine **Zählung** des Getränkelagers. Die Kellerzählung
+erfasst die Laden der Bar (`d.getr`), aber diese Zahlen gehen nicht ins
+Journal — sie beschreiben den Ist-Stand der Lade, nicht den Lagerbestand.
+Ohne Zählung ist jede Getränkezahl im Backoffice eine Fortschreibung ohne
+Anker: Beim Wein gibt es die Kellerzählung als Basis, beim Getränk nicht.
+Ein Rechenfehler oder eine nicht erfasste Entnahme läuft unbemerkt mit.
+
+**Optionen:**
+
+1. **So lassen.** Getränke werden bewegt, nicht gezählt. Das Backoffice
+   zeigt weiter nur die Bar-Laden, kein Lager. Ehrlich, solange niemand
+   eine Getränkebestellung auf diese Zahl stützt.
+2. **Das Lager in die Kellerzählung aufnehmen** — ein eigener Schritt
+   („Getränkelager zählen"), gebucht als `zaehlung … @lager`. Dann
+   rechnet `/api/bestand` Getränke genauso wie Wein, und die Ansicht
+   „Bestellen" kann Getränke mitführen.
+3. Ein eigener Modus „Lagerzählung", seltener als die Kellerzählung.
+
+**Empfehlung:** Option 2, aber erst in Phase B und erst, wenn das Team sagt,
+wie oft das Lager wirklich gezählt wird. Bis dahin Option 1 mit dem
+ausdrücklichen Satz im Backoffice: „Getränke werden nicht gezählt."
+
+---
+
+## 15. Zählt der Betriebstag oder der Zeitstempel?
+
+**Status:** OFFEN
+**Gemeldet:** Runde 5 (software-engineer)
+**Betrifft:** `src/index.js:362` ff. (`bestand`)
+
+**Hintergrund:** Der Bestand nimmt die jüngste Zählung je Artikel und
+rechnet alles danach dazu oder ab. „Danach" heisst heute: nach dem
+**Zeitstempel** der Zählung — und `ereignis.ts` ist die Zeit des
+SCHREIBENS, nicht die der Handlung. Genau daher kommen beide Fälle unten. Zwei Fälle gehen damit schief, beide gemessen:
+
+* **Ein spätes Paket.** Ein iPhone hatte kein Netz und schickt die
+  Tagesfassung vom 14.09. erst am 16.09. nach — nachdem am 16.09. gezählt
+  wurde. Die vier Flaschen werden von der Zählung abgezogen, obwohl sie
+  beim Zählen längst weg waren. Bestand 26 statt 30.
+* **Dieselbe Millisekunde.** Zählung und Fassung mit gleichem `ts`: Die
+  Entnahme fällt unter den Tisch (`r.ts <= basis`).
+
+**Optionen:**
+
+1. **Nach Betriebstag rechnen** (`tag > Zähltag`, bei Gleichstand der
+   Zeitstempel). Fachlich richtig: Eine Zählung am Morgen des 16. sieht
+   alles, was am 14. passiert ist. Ändert Zahlen, die heute schon
+   angezeigt werden.
+2. So lassen und beim Nachtragen aufpassen. Billig, aber die Falle
+   schnappt genau dann zu, wenn der Keller offline war — also im
+   Normalfall dieses Hauses.
+3. Nach Betriebstag rechnen und zusätzlich melden, wenn ein Paket
+   eintrifft, das älter ist als die jüngste Zählung („nachgereicht, nicht
+   mehr eingerechnet").
+
+**Empfehlung:** Option 3, in Phase B. Es ist eine Rechenänderung mit
+fachlicher Folge — kein stiller Griff in eine Formel, die im Backoffice
+eine Zahl bewegt.

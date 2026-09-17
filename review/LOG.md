@@ -1881,3 +1881,85 @@ darunter der seit Runde 1 offene „`tests/fixtures/` fehlt".
 ist am echten Beispiel geprüft. Das Urteil „Z-Bericht nein" aus Runde 3
 ist damit überholt; es bleibt bei einem Bericht aus einer Nacht, deshalb
 in der ersten Woche gegenlesen statt blind verwenden.
+
+
+---
+
+### Runde 5 – Hauptsitzung, software-engineer, hospitality-pro (FUNKTION)
+
+Gefragt war: importiert alles richtig, funktionieren die Eingaben, kann die
+Leitung im Backoffice alles sehen und anpassen? Zwei Rollen haben gemessen
+statt gelesen, die Hauptsitzung hat die Funde nachgeprüft und behoben.
+
+**Kritik am Vorgänger (Runde 4, Hauptsitzung — also an mir selbst):**
+* ❗ **Der Z-Bericht war nur in einer von zwei Kopien repariert.** Runde 4
+  meldete „jetzt 48 Positionen mit 602,50 €" und meinte `src/gnparse.js`.
+  In `public/leitung.html` stand eine zweite Abschrift desselben Lesers mit
+  genau den alten Fehlern: dieselbe Datei, 106 Positionen, 5166,70 €, das
+  Achtel als acht Liter — auf dem Schirm, den die Leitung morgens zuerst
+  aufmacht. Gefunden vom hospitality-pro, von mir im Browser nachgestellt.
+  ✅ übernommen: Der zweite Leser ist ersatzlos weg.
+* ❗ **Runde 4 hat den Import geprüft, aber nie die Eingaben.** `fuellen`,
+  `keller` und `ware` fasste keine der 195 Prüfungen bis in die Datenbank
+  an — und dort standen drei falsche Zahlen. ✅ übernommen, alle drei
+  behoben und mit `tests/modi.test.mjs` festgenagelt.
+* ↩️ geändert: Die Prüfung auf gespaltene Berichte zählte ALLE Zeilen einer
+  Sektion; am echten Bericht hätte sie den Bezahlartenblock für einen
+  zweiten Positionsblock gehalten. `sektionen[].n` zählt jetzt nur
+  positionsartige Zeilen.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Das Backoffice redet mit dem Server.** Z-Berichte und Zuordnungen
+   kamen aus dem `localStorage` eines Geräts; der per Mail eingelieferte
+   Bericht war unsichtbar, und die Zuordnungsarbeit wirkte nicht auf den
+   Import. Jetzt `GET/POST /api/fassungsliste` und `/api/mapping`, der
+   zweite Parser ist gelöscht, der `localStorage` ist nur noch Abschrift.
+2. **Drei falsche Mengen in den Eingaben behoben:** Kiste immer sechs
+   (`kg` statt `kistengr`), Getränkelieferung als Entnahme gebucht,
+   Nachfüllen ohne jede Buchung. Dazu: „ignoriert" räumt den Artikel
+   zurück, die Absenderprüfung des Postfachs vergleicht die Domäne statt
+   das Ende der Adresse, und ein abgelehnter Mailimport nennt den Grund.
+3. **Zwei Fallen im Backoffice:** Eine Teilzählung setzte 54 von 57 Weinen
+   auf „—"; die Leitung konnte sich mit einem Klick selbst aussperren.
+
+**Geprüft:** `npm test` 210 grün (vorher 195; 15 neue in
+`tests/modi.test.mjs` für die fünf Modi, die Zuordnung und das Postfach).
+`node tests/durchstich.cjs` 35/35. **Neu: `node tests/ui-leitung-echt.cjs`
+22/22** — das Backoffice in Chromium gegen den echten Worker, die echte
+Datenbank und den echten Z-Bericht: eingelesen über die Oberfläche (48
+Positionen, 145 Stück, 602,50 €, Achtel 125 ml), Zuordnung landet in
+`mapping`, zweites Gerät mit leerem Browserspeicher sieht beides, ein nur
+per Mail eingelieferter Bericht ist sichtbar, Teilzählung lässt alle 57
+Weine stehen, Selbstsperre wird abgefangen. Persona-Durchlauf ohne
+JS-Fehler. `sw.js` v22 → v24.
+
+**Für die Nächsten:**
+* An den **skeptiker**: Zwei Runden hintereinander war der teuerste Fund
+  eine zweite Kopie derselben Logik (erst der Parser, dann die
+  Bestandsrechnung). Es gibt weiter zwei: `bestand()` im Backoffice und
+  `bestand()` im Worker rechnen dieselbe Regel getrennt. Lohnt ein Blick,
+  ob die Leitung nicht `/api/bestand` lesen sollte.
+* An den **controller**: Der Getränkebestand hat keinen Anker — Bewegungen
+  ja, Zählung nein (Entscheidung Nr. 14).
+* An den **qa-guardian**: Die Lücke „grün und trotzdem falsch" war zweimal
+  dieselbe: keine Prüfung fasste die ausgelieferte Oberfläche an echten
+  Daten an. `tests/ui-leitung-echt.cjs` schliesst sie für das Backoffice.
+  Für die App fehlt das Gegenstück (Wareneingang mit Zwölferkiste durch
+  die echten Felder).
+
+**Phase/Thema:** A / Funktion — Import, Eingaben, Backoffice
+
+**Backlog:** neu unter „hoch": Import nicht atomar, Teilbericht ersetzt
+vollen Bericht lautlos. Neu unter „mittel": sechs Punkte aus dem
+Backoffice-Durchgang (Getränke-Lagerbestand, Feldwechsel im Wareneingang,
+Speicher-Spalten, Zuordnungsliste, Reihenfolge der Ansichten, §8 A). Elf
+Punkte nach „Erledigt". Zwei neue Entscheidungen: Nr. 14 (hat das
+Getränkelager einen Bestand?) und Nr. 15 (Betriebstag oder Zeitstempel?).
+
+**STATUS:** VERBESSERUNGEN — die drei Fragen sind beantwortet: Der Import
+stimmt jetzt (und wurde vorher an zwei Stellen verschieden gelesen), die
+Eingaben stimmen jetzt (drei Modi schrieben falsche oder keine Mengen), und
+das Backoffice zeigt und ändert jetzt wirklich das, was auf dem Server
+steht — mit Ausnahme der Stammdaten aus §8 A, die weiter nur im Quelltext
+stehen.
