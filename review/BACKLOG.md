@@ -14,6 +14,7 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | Setup | – | Keine Sicherung der D1. Ein falsches `DELETE` in der Console löscht den Kellerbestand unwiederbringlich (Projektanleitung §8). | Dashboard |
 | Setup | – | `docs/live-schema.sql` fehlt im Repo. Ohne die Datei ist harte Regel 3 nicht erfüllbar (lokale Test-DB, Abgleich aller SQL-Stellen). | – |
 | Setup | – | `tests/fixtures/` fehlt. QA und Controller können ohne die anonymisierten Z-Berichte und Zählungen nicht rechnerisch prüfen. | – |
+| ui-designer | 1 | Im Menü (Startschirm) gibt es keinen Übertragungszustand: `#netz` liegt in `#app` und ist nur während eines Vorgangs sichtbar. Genau dort, nach dem Abschluss, stellt sich aber die Frage „ist es draußen?". Die Statuszeile gehört auch über die Kachelliste. | `public/index.html:1280`, `:1599` |
 
 ## Mittel
 
@@ -23,6 +24,10 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | software-engineer | 1 | Die Offline-Queue bleibt bei einem dauerhaften 4xx stehen: Ein Paket, das der Server immer wieder mit 400/422 ablehnt, hält alle nachfolgenden Vorgänge auf und meldet nur „Server antwortet nicht". Stilles Verwerfen verbietet Regel 6 – also Sackfach plus sichtbarer Hinweis. Entscheidung nötig. | `public/index.html:1494` |
 | software-engineer | 1 | `vorgangSchreiben` prüft nicht, ob der Pfad-Schlüssel zu `daten.mode`/`daten.tag` passt. Bei einer Abweichung stehen Spalte `tag` und Kennung auseinander – die Datumsfilter der Leitung und der Wochenbrief rechnen dann am falschen Tag. Erst nach dem Punkt darüber umsetzbar (422 würde die Queue blockieren). | `src/index.js:170` |
 | software-engineer | 1 | Kein Testgerüst im Repo (§10: Prüfserver, Mehrgeräte- und Gestaltungslauf). `node_modules` fehlt, `src/index.js` lässt sich lokal nur mit einer `postal-mime`-Attrappe importieren. | – |
+| ui-designer | 1 | `askPin`, `#pinIn`, `.input--pin`: Der Verwaltungsdialog heißt im Code weiter „PIN", in der Oberfläche „persönlicher Code". Für den Nutzer unsichtbar, für den nächsten Leser irreführend — umbenennen, wenn der Editor ohnehin nach `leitung.html` zieht. | `public/index.html:1894` |
+| ui-designer | 1 | Der Menüknopf heißt „Verwaltung", der Dialog dahinter regelt Glasweine und Soll-Mengen. Ein Wort, das nichts verspricht. Beim Umzug ins Backoffice besser „Glasweine und Soll-Mengen". | `public/index.html:1831` |
+| ui-designer | 1 | Dialoge mit Code-Feld (`.card2`, `max-height:88vh`) können mit offener Zifferntastatur länger sein als der sichtbare Bereich — der Knopf „Freigeben" landet dann hinter der Tastatur. Betrifft vor allem die Freigabe mit vielen offenen Punkten. Braucht einen Browsertest auf echtem Gerät. | `public/index.html:749` |
+| ui-designer | 1 | `.ov` ist kein Dialog im Sinne des Browsers: kein `role="dialog"`, kein `aria-modal`, keine Escape-Taste, kein Fokuskäfig. Das Hilfe-Sheet daneben hat alles davon. | `public/index.html:1289` |
 
 ## Niedrig
 
@@ -30,6 +35,8 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 |---|---|---|---|
 | software-engineer | 1 | `versuche: 0` im Ausgangseintrag wird nie hochgezählt und nie gelesen – toter Code. Entweder Zählung führen und im Netz-Chip zeigen oder Feld streichen. | `public/index.html:1470` |
 | software-engineer | 1 | Verwaltung und Freigabe hängen jetzt an `hh_bekannt_v1`. Wird der Speicher des Geräts geleert, sind beide bis zur nächsten Anmeldung mit Netz gesperrt. Im Keller ohne Netz fällt das auf. | `public/index.html:1291` |
+| ui-designer | 1 | `--danger` (#B4471F) als Textfarbe auf Cream ergibt 4,4:1 und liegt damit unter dem Schwellwert für kleine Schrift. `.pinfehler` ist umgestellt, andere Stellen (`.mi .when`, `.explesser button.del`) nicht — die sind 11–13px groß. | `public/index.html:360`, `:314` |
+| ui-designer | 1 | Der Zustand „Nicht angemeldet" ist nicht anfassbar: die Statuszeile sagt, was zu tun ist, führt aber nicht hin. Ein Knopf „Neu anmelden" wäre der kurze Weg. | `public/index.html:1599` |
 
 ## Erledigt
 
