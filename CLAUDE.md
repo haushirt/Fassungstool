@@ -2,7 +2,7 @@ Fassungstool – Projektregeln für Claude Code
 
 Kontext
 
-Keller- und Getränkemanagement für das Alpine Spa Hotel Haus Hirt, Bad Gastein. Service (iPhone/iPad) erfasst Fassungen im Keller, die Leitung (MacBook) arbeitet im Backoffice. Maßgebliche Doku: `PROJEKTANLEITUNG-Fassungstool.md` (Stand 16.09.2026) – vor jeder Arbeit lesen. Dazu, falls vorhanden: `WORKER-ANPASSUNG.md`, `ANMELDESPERRE.md`.
+Keller- und Getränkemanagement für das Alpine Spa Hotel Haus Hirt, Bad Gastein. Service (iPhone/iPad) erfasst Fassungen im Keller, die Leitung (MacBook) arbeitet im Backoffice. Maßgebliche Doku: `PROJEKTANLEITUNG-Fassungstool.md` (Stand 16.09.2026) und `UEBERGABE-TECHNISCH.md` (Stand 17.09.2026, die lange Fassung für die Werkbank) – beide vor jeder Arbeit lesen. Dazu, falls vorhanden: `WORKER-ANPASSUNG.md`, `ANMELDESPERRE.md`.
 
 Stack
 
@@ -25,8 +25,14 @@ Architektur, die bleibt
 Harte Regeln (nie brechen)
 
 1. Nur auf Branch `v2-review` arbeiten. Nie auf `main` pushen, nie mergen, nie force-pushen.
-2. Kein `wrangler deploy`, keine `wrangler d1 … --remote`-Befehle, kein Zugriff auf die Live-Datenbank. Erlaubt: lokale Tests mit `--local` bzw. `wrangler dev --local`.
-3. `schema.sql` ist veraltet und wird NIE ausgeführt. Wahrheit ist die Live-D1, dokumentiert in `docs/live-schema.sql`. Lokale Test-DB immer aus `docs/live-schema.sql` aufbauen.
+2. Kein `wrangler deploy`. Erlaubt: lokale Tests mit `--local` bzw. `wrangler dev --local`.
+   **Live-D1 seit 17.09.2026: NUR LESEN.** Lesende Abfragen (`SELECT`, `PRAGMA`, `sqlite_master`) über den
+   Cloudflare-Connector sind erlaubt und erwünscht, um Code gegen die Wirklichkeit zu prüfen.
+   JEDE schreibende Operation bleibt verboten – kein `INSERT`, `UPDATE`, `DELETE`, `CREATE`, `ALTER`,
+   `DROP`, kein `wrangler d1 … --remote`. Es gibt keine Sicherung der Datenbank und keinen Papierkorb
+   (Projektanleitung §8); ein falsches `DELETE` ist endgültig. Migrationen spiele weiterhin ICH ein.
+3. `schema.sql` ist veraltet und wird NIE ausgeführt. Wahrheit ist die Live-D1, dokumentiert in
+   `docs/live-schema.sql` (gezogen am 17.09.2026, liegt vor). Lokale Test-DB immer daraus aufbauen.
 4. Code und Schema müssen zusammenpassen (Rollen: `service`, `wirtschaft`, `leitung`). Jede Änderung, die Tabellen oder Spalten berührt, gegen das dokumentierte Live-Schema prüfen.
 5. Getränke-Automapping bleibt deaktiviert (Ähnlichkeitssuche liefert falsche Treffer).
 6. Append-only-Ereignisjournal und Offline-Queue nicht aufweichen.
@@ -37,14 +43,17 @@ Harte Regeln (nie brechen)
 11. `RUNDEN` nicht ändern. Eine Änderung macht alle Anmeldungen ungültig → nur in `review/OFFENE-ENTSCHEIDUNGEN.md`.
 12. `wrangler.jsonc` nicht selbst ändern. Was nur im Dashboard steht (D1-Bindung, ASSETS, ABSENDER, Crons) könnte beim Deploy verloren gehen. Vorschläge (z. B. observability) nur in `review/OFFENE-ENTSCHEIDUNGEN.md`.
 13. Dashboard-Einstellungen und Secrets sind für dich nicht erreichbar – nötige Schritte als Aufgabe für mich notieren.
-14. Die ungenutzten Tabellen `idem`, `zbericht` und die Spalten `schluessel`, `zaehlnr`, `geraet` auf `vorgang` weder verwenden noch löschen.
+14. Die Spalten `schluessel`, `zaehlnr`, `geraet` auf `vorgang` weder verwenden noch löschen.
+    (Die früher hier genannten Tabellen `idem` und `zbericht` EXISTIEREN in der Live-D1 nicht –
+    am 17.09.2026 nachgesehen. Sie sind aus dieser Regel gestrichen.)
 
 Schemaänderungen (v. a. Phase B)
 
 * Nur additiv: neue Tabellen/Spalten/Indizes. Kein DROP, kein Umbau bestehender Tabellen, Journal bleibt append-only.
 * Jede Änderung als eigene Datei `migrations/NNN_beschreibung.sql`, lokal gegen `docs/live-schema.sql` getestet.
 * Neue Module hinter einem Feature-Flag: Ist die Migration live noch nicht eingespielt, bleibt das Modul unsichtbar und der Rest des Tools funktioniert unverändert.
-* Erste geplante Migration: die zwei Indizes auf `ereignis` aus Abschnitt 4 der Projektanleitung.
+* ~~Erste geplante Migration: die zwei Indizes auf `ereignis`.~~ **GEGENSTANDSLOS** – beide sind live
+  bereits angelegt, breiter als dokumentiert: `(artikel, ort, ts)` und `(tag, art)`.
 * Migrationen spiele ICH ein. In `review/ERGEBNIS.md` jede Migration Zeile für Zeile zum Einfügen in die D1-Konsole, jeweils mit erwarteter Ausgabe.
 
 Testdaten

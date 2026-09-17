@@ -24,10 +24,10 @@
    leitung.html (Backoffice, Maus). Wer hier etwas ändert, ändert es an
    beiden Stellen — das ist der ganze Zweck der Datei.
 
-   Einbinden als ERSTES Stylesheet, vor dem seiteneigenen <style>:
-     <link rel="stylesheet" href="tokens.css?v=12">
-   Die Zahl bei jeder Änderung erhöhen, sonst lädt das iPhone die alte
-   Fassung aus dem Zwischenspeicher.
+   NICHT als Datei einbinden. tokens.css gab es kurz als eigene Datei;
+   ohne Bauschritt muss sie von Hand mitgeliefert werden, und fehlt sie,
+   steht die Seite nackt da. Der Block gehört deshalb in jede Seite
+   hinein — wortgleich, siehe Kasten oben.
 
    Dichte: leitung.html setzt am <html> data-dichte="maus".
    ═══════════════════════════════════════════════════════════════════ */
@@ -384,6 +384,20 @@ header{background:var(--accent);color:var(--fg-on-dark);
   min-height:var(--control-h-sm);padding:0 var(--space-3);border-radius:var(--radius-md);
   font-size:var(--text-sm);cursor:pointer;
   transition:background var(--dur-fast) var(--ease)}
+/* „Menü" und „?" sind 36px hoch — die beiden meistgedrückten Knöpfe der
+   App lagen damit unter den 44px, die für den Daumen gelten. Die Optik
+   bleibt, die Trefferfläche wächst auf --tap-min.
+   Berichtigt (Runde 2, im Browser nachgemessen): „36 + 2×4 = 44" stimmte
+   nur für „Menü". Ein absolut gesetztes ::after rechnet gegen die
+   POLSTERkante seines Bezugsrahmens — bei „?" mit 1px Rahmen kamen
+   dadurch nur 42px heraus. Jetzt steht die Größe direkt da, statt sie
+   aus Rahmenbreiten zu erschließen. Waagrecht bleibt die Fläche dabei
+   höchstens so breit wie der Knopf selbst, sonst stöße sie in den
+   Nachbarn (Abstand der beiden: 8px). */
+.home,.hilfebtn{position:relative}
+.home::after,.hilfebtn::after{content:"";position:absolute;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:max(100%,var(--tap-min));height:max(100%,var(--tap-min))}
 #dSel{background:var(--surface-on-dark);border:0;color:var(--fg-on-dark);
   min-height:var(--control-h-sm);padding:0 var(--space-2);border-radius:var(--radius-md);
   font-size:var(--text-sm)}
@@ -745,9 +759,6 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .card2 .row button{flex:1}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.offline{background:var(--surface-3);color:var(--fg-secondary);font-size:var(--text-xs);
-  padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border);display:none}
-body.off .offline{display:block}
 
 /* ═══════════════ Zeigegerät ═══════════════ */
 @media(hover:hover) and (pointer:fine){
@@ -774,8 +785,11 @@ body.off .offline{display:block}
    darin bleibt auf Satzbreite. */
 @media(min-width:720px){
   .topwrap{background:var(--accent)}
-  .topwrap>.howto,.topwrap>.tools,.offline{background:var(--bg);max-width:none}
+  .topwrap>.howto,.topwrap>.tools{background:var(--bg);max-width:none}
   header>.hd,header>.steps{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+  /* Die Statuszeile fluchtet ebenfalls mit dem Inhalt — ihre Regel steht
+     weiter unten bei .netz, sonst überschriebe die spätere Kurzschrift
+     padding: die hier gesetzten Seitenwerte. */
   .tools>#q,.howto>*{max-width:var(--maxw);margin-left:auto;margin-right:auto}
   main{max-width:var(--maxw);margin-left:auto;margin-right:auto}
   .rail{right:max(var(--space-1),calc(50% - (var(--maxw)/2) - var(--rail) - var(--space-2)))}
@@ -904,15 +918,68 @@ body.off .offline{display:block}
   transition:background var(--dur-fast) var(--ease)}
 .fotobtn:active{background:var(--surface-3)}
 
-/* ═══════════════ Mehrgerätebetrieb ═══════════════ */
-.netz{position:absolute;right:var(--space-4);bottom:var(--space-2);
-  font-size:var(--text-xs);font-weight:var(--weight-medium);
-  padding:2px var(--space-2);border-radius:var(--radius-pill);
-  background:var(--surface-on-dark);color:var(--fg-on-dark-2);
-  pointer-events:none;white-space:nowrap}
-.netz.ok{color:var(--success-on-dark)}
-.netz.wartet{background:var(--warn-bg);color:var(--warn-fg)}
-.netz.offline{background:var(--surface-on-dark);color:var(--fg-on-dark-3)}
+/* ═══════════════ Mehrgerätebetrieb ═══════════════
+   Der Übertragungszustand war eine 11px-Pille, absolut positioniert —
+   ihr Bezugsrahmen war aber nicht die Kopfzeile, sondern das ganze
+   klebende #topwrap. Sie landete je nach Schritt über der Suchzeile und
+   stand dort hell auf hell. Dazu kam eine zweite Zeile („Offline –
+   Protokoll später senden") mit einer anderen Zusage. Jetzt eine Zeile
+   in voller Breite unter dem Kopf: Form, Wort und Farbe sagen dasselbe,
+   damit auch bei Kellerlicht und Farbschwäche etwas ankommt. */
+.netz{display:flex;align-items:flex-start;gap:var(--space-2);
+  padding:var(--space-2) var(--space-4);
+  font-size:var(--text-sm);line-height:var(--leading-normal);
+  font-weight:var(--weight-medium);
+  background:var(--surface-3);color:var(--fg-secondary);
+  border-bottom:1px solid var(--border-strong)}
+/* Punkt · Quadrat · Ring · Raute — der Zustand ist auch ohne Farbe lesbar.
+   Der Satz darf zwei Zeilen brauchen (überholter Stand); das Zeichen sitzt
+   dann auf der ERSTEN Zeile, nicht in der Mitte des Blocks — deshalb
+   align-items:flex-start oben und der gerechnete Versatz hier. */
+.netz::before{content:"";width:10px;height:10px;flex:none;
+  margin-top:calc((var(--text-sm) * var(--leading-normal) - 10px) / 2);
+  border-radius:50%;background:currentColor}
+.netztext{flex:1 1 auto;min-width:0}
+/* Quittieren ist ein Knopf, keine Geste. Sichtbar 36px, greifbar --tap-min.
+   Nicht über inset:-Npx: ein absolut gesetztes ::after rechnet gegen die
+   POLSTERkante seines Bezugsrahmens, der 1px-Rahmen fällt also heraus und
+   die Fläche wäre 2px zu klein. Die Höhe steht deshalb direkt da.
+   Den Fokusring stellt :focus-visible aus der Tokenebene. */
+.netzok{position:relative;flex:none;align-self:flex-start;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:var(--control-h-sm);padding:0 var(--space-3);
+  font:var(--weight-medium) var(--text-sm)/1.2 var(--font);
+  color:inherit;background:var(--surface);
+  border:1px solid currentColor;border-radius:var(--radius-ctl);
+  white-space:nowrap}
+.netzok::after{content:"";position:absolute;left:0;right:0;
+  top:50%;transform:translateY(-50%);min-height:var(--tap-min)}
+.netzok:active{background:var(--surface-2)}
+.netzok[hidden]{display:none}
+.netz.ok{background:var(--success-bg);color:var(--success-fg);
+  border-bottom-color:var(--success-border)}
+.netz.wartet{background:var(--warn-bg);color:var(--warn-fg);
+  border-bottom-color:var(--warn-border)}
+.netz.wartet::before{border-radius:var(--radius-xs)}
+.netz.offline::before{background:none;border:2px solid currentColor}
+.netz.fehler{background:var(--danger-bg);color:var(--danger-fg);
+  border-bottom-color:var(--danger-border)}
+.netz.fehler::before{border-radius:var(--radius-xs);transform:rotate(45deg)}
+/* Im Menü gibt es keine Leiste, an die sich die Zeile hängen könnte.
+   Dort steht derselbe Zustand als Block über den Kacheln — gleiche
+   Farben, gleiche Formen, gleicher Satz. Die Randfarbe muss nach
+   .netz.ok/.wartet/.fehler stehen, sonst bliebe nur die Unterkante bunt. */
+.netz--block{border:1px solid var(--border-strong);
+  border-radius:var(--radius-md);margin-bottom:var(--space-5)}
+.netz--block.ok{border-color:var(--success-border)}
+.netz--block.wartet{border-color:var(--warn-border)}
+.netz--block.fehler{border-color:var(--danger-border)}
+/* Ab 720px geht die Fläche durch, der Text fluchtet mit dem Inhalt —
+   dieselbe linke Kante wie #main. Der Block im Menü sitzt schon im
+   Inhaltsraster und bleibt davon ausgenommen. */
+@media(min-width:720px){
+  .netz:not(.netz--block){padding-left:max(var(--space-4),calc(50% - var(--maxw)/2));
+    padding-right:max(var(--space-4),calc(50% - var(--maxw)/2))}}
 .gruss{margin-bottom:var(--space-5);font-size:var(--text-md);
   line-height:var(--leading-normal)}
 .gruss b{display:block;font-size:var(--text-lg);font-weight:var(--weight-medium);
@@ -969,8 +1036,17 @@ body.off .offline{display:block}
   border-radius:var(--radius-md);background:var(--surface);position:relative}
 .pinfeld.voll::after{content:"";position:absolute;left:50%;top:50%;
   width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent)}
+/* Die einzige Zeile, die sagt, warum es nicht weitergeht. Sie stand in
+   --danger auf Cream — 4,4:1 und damit unter dem Schwellwert für 13px.
+   --danger-fg ist derselbe Ton, nur dunkler: 7:1. Im Dialog liegt
+   .card2 p mit gleicher Spezifität darüber, deshalb der zweite Selektor.
+   Dieselbe Zeile trägt jetzt auch Verwaltung und Freigabe — eine Form
+   für „geht nicht, und zwar deshalb", nicht drei. */
 .pinfehler{min-height:20px;margin:0 0 var(--space-3);font-size:var(--text-sm);
-  color:var(--danger)}
+  line-height:var(--leading-normal);font-weight:var(--weight-medium);
+  color:var(--danger-fg)}
+.card2 .pinfehler{margin:var(--space-2) 0 0;font-size:var(--text-sm);
+  color:var(--danger-fg)}
 .block{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);
   margin-top:var(--space-4)}
 .ztaste{height:var(--control-h-lg);border:1px solid var(--border-strong);
@@ -979,6 +1055,13 @@ body.off .offline{display:block}
   font-variant-numeric:tabular-nums;cursor:pointer}
 .ztaste:active{background:var(--surface-3)}
 .ztaste--weg{font-size:var(--text-base);color:var(--fg-muted)}
+/* Bei wechselnder Codelänge kann die App nicht raten, wann der Code zu
+   Ende ist — es braucht eine Taste dafür. Sie liegt, wo bis v21 ein leeres
+   Feld war: untere Reihe, linke Ecke, in Daumenweite. Sie leuchtet erst,
+   wenn der Code lang genug ist, damit niemand gegen eine tote Taste tippt. */
+.ztaste--ok{background:var(--accent);border-color:var(--accent);color:var(--fg-on-dark)}
+.ztaste--ok:disabled{background:var(--surface-3);border-color:var(--border-strong);
+  color:var(--fg-subtle);cursor:default}
 .login h1{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
   letter-spacing:0;margin:0 0 var(--space-1)}
 .menu h1{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
@@ -1004,7 +1087,7 @@ body.off .offline{display:block}
 /* ═══════════════ Druck ═══════════════ */
 @media print{
   header,.tools,.howto,.rail,.exprow,.explesser,
-  .fotoblock,.zusatzlink{display:none!important}
+  .netz,.fotoblock,.zusatzlink{display:none!important}
   body{background:var(--surface)}
   .doc{padding:0}
   /* Rubriken starten eingeklappt — im Druck müssen sie offen sein. */
@@ -1234,11 +1317,11 @@ body.off .offline{display:block}
     <div><h1 id="mTitle">—</h1>
       <label class="datumline" id="bDatum"><span id="datumTxt"></span>
         <span class="vh">Datum ändern</span><input type="date" id="dSel"></label></div>
-    <span class="netz" id="netz" style="display:none"></span><div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
+    <div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
   </div>
   <nav class="steps" id="steps" role="tablist"></nav>
 </header>
-<div class="offline">Offline – Protokoll später senden</div>
+<div class="netz" id="netz" style="display:none"><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button></div>
 <div class="howto" id="howto"></div>
 <div class="tools" id="tools"><input id="q" type="search" placeholder="Wein suchen …" autocomplete="off"></div>
 </div>
@@ -1266,8 +1349,10 @@ const PLAN = {"soll":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":2,"w00
 const KISTE_STD=6;
 const kg=p=>+(p&&p.kistengr)||KISTE_STD;
 const MAIL="casimir.ikrath@haus-hirt.com";
-/* P8 · Zwei Codeebenen: Anmeldung (wer fasst) und Verwaltung/Freigabe (2797).
-   Klartext in einer HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
+/* P8 · Es gibt nur noch eine Codeebene: den persönlichen Zugangscode.
+   Verwaltung und Freigabe hatten bis v12 einen eigenen vierstelligen Code,
+   der als Konstante in dieser Datei stand. Klartext in einer öffentlich
+   ausgelieferten HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
 /* Die vier Codes standen bis v11 im Klartext in dieser Datei — wer die
    Seite aufrief, konnte sie lesen. Die Anmeldung läuft jetzt über den
    Server. Für den Keller ohne Netz merkt sich das Gerät, wer sich hier
@@ -1284,6 +1369,14 @@ async function codeSumme(code){
 async function merkeCode(code,name){
   const k=await codeSumme(code);
   const m=(()=>{try{return JSON.parse(localStorage.getItem(K_BEKANNT))||{};}catch(e){return {};}})();
+  /* Pro Person genau ein Code — der zuletzt beim Server bestätigte. Sonst
+     bleibt ein ersetzter Code auf jedem Gerät liegen, das ihn einmal
+     gesehen hat: Er käme ohne Netz weiter in die App und öffnete
+     Verwaltung und Freigabe. Die vier ersten Codes des Hauses sind aus der
+     Geschichte des Anhangs bekannt; sie zu ersetzen hilft nur, wenn sie
+     auf den Geräten auch verschwinden. Das geschieht bei der ersten
+     Anmeldung mit dem neuen Code. */
+  for(const s of Object.keys(m)) if(m[s]===name&&s!==k) delete m[s];
   m[k]=name; try{localStorage.setItem(K_BEKANNT,JSON.stringify(m));}catch(e){}
 }
 async function bekannterCode(code){
@@ -1308,21 +1401,30 @@ const SCHRANK={1:{t:"Schrank 1 · Rotwein kräftig",s:"Zweigelt · Blaufränkisc
  4:{t:"Schrank 4 · Weiss übrige, Rosé, Natur",s:"Grauburgunder · Roter Veltliner · Muskateller · Gem. Satz · Cuvées · Rosé · Naturwein weiss",kurz:"Schrank 4"}};
 
 const MODES={
- tag:{t:"Tagesfassung",d:"Kühlschränke prüfen, Keller holen, Liste fotografieren.",ic:"tag",
-      steps:["Bar","Restaurant","Keller","Abschluss"]},
+ /* „Kühlschränke" war falsch: Schritt 1 ist die Bar — Rotweine und die
+    sechs Laden —, die Schränke stehen im Restaurant und sind Schritt 2. */
+ /* Der Schritt hieß in der Tagesfassung „Keller" und im Nachfüllen „Holen" —
+    derselbe Gang nach unten, zwei Wörter. „Holen" ist die Tätigkeit und steht
+    ohnehin überall sonst („Noch nicht alles geholt", „Holen und einräumen");
+    „Keller" wäre dazu das dritte Wort neben Kellerzählung und Getränkelager. */
+ tag:{t:"Tagesfassung",d:"Bar und Restaurant prüfen, aus dem Keller holen, Liste fotografieren.",ic:"tag",
+      steps:["Bar","Restaurant","Holen","Abschluss"]},
  /* Nur die Getränke der Bar \u2014 ohne Rotweine, ohne Backup, ohne Lade 3. */
  fuellen:{t:"Nachfüllen",d:"Nur die Getränke an der Bar prüfen und auffüllen.",ic:"fuellen",
       steps:["Bar","Holen","Abschluss"]},
  keller:{t:"Kellerzählung",d:"Alles im Keller zählen. Reihen und einzelne Flaschen.",ic:"keller",
       steps:["Zählen","Abschluss"]},
- nach:{t:"Sonderentnahme",d:"Außer der Reihe etwas geholt? Sofort melden.",ic:"nach",
+ /* Die Sonderentnahme ist kein Notfall, sondern Alltag: Küche holt eine
+    Flasche zum Kochen, ein Personalgetränk, ein Bruch, eine Verkostung.
+    Wer die Fälle beim Namen liest, meldet sie — und der Bestand stimmt. */
+ nach:{t:"Sonderentnahme",d:"Zwischendurch geholt – Küche, Personal, Bruch, Verkostung. Gleich melden.",ic:"nach",
       steps:["Entnahme","Abschluss"]},
  ware:{t:"Wareneingang",d:"Neue Lieferung aufnehmen, Jahrgänge prüfen, einräumen.",ic:"ware",
       steps:["Kisten","Jahrgänge","Einräumen","Abschluss"]}};
 
 /* 3.8 · Schrittlisten pro Zweig */
 const STEPS={
- tag:    {wein:["Bar","Restaurant","Keller","Abschluss"]},
+ tag:    {wein:["Bar","Restaurant","Holen","Abschluss"]},
  fuellen:{wein:["Bar","Holen","Abschluss"]},
  keller:{wein:["Zählen","Abschluss"], getr:["Laden prüfen","Abschluss"]},
  nach:  {wein:["Entnahme","Abschluss"], getr:["Getränke","Abschluss"]},
@@ -1332,10 +1434,18 @@ function lastStep(){return steps().length-1;}
 
 const HOWTO={
  tag:[
-  {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
-  {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Soll: 3 Flaschen, je 2 bei Riesling, Rosé, Cuvée Weiss und Naturwein weiss.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
+  {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach. Die Tagesfassung läuft immer auf den Vortag – das Datum im Kopf stimmt so.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
+  /* Die Soll-Mengen standen hier als feste Zahlen im Fließtext. Sie stehen
+     ohnehin bei jedem Wein auf dem Schirm („Soll 3") — und sobald die
+     Leitung eines ändert, widerspricht die Hilfe dem, was danebensteht. */
+  {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Das Soll steht bei jedem Wein — du tippst herunter auf das, was noch dasteht.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
   {t:"Holen und einräumen",p:"Diese Flaschen fehlen, sortiert nach Laufweg. Holen, einräumen, abhaken – die Zeile wandert nach unten zu Bar oder Restaurant.",tip:"Weg: Rot, Rosé, Weiss, Cuvée, Natural, Bubbles. Zusätzlich Entnommenes unten eintragen."},
-  {t:"Fassungsliste fotografieren",p:"Die Liste von der Rezeption abfotografieren – sie ersetzt das Abtippen. Mehrere Seiten sind möglich.",tip:"Das Foto geht mit dem Protokoll mit."}],
+  /* Der Schritt heißt „Abschluss", die Hilfe hieß „Fassungsliste
+     fotografieren" — wer hier auf das Fragezeichen tippt, steht um
+     23 Uhr vor „Fertig – Protokoll erstellen" und will wissen, was der
+     Knopf auslöst, nicht wie man ein Foto macht. Das Foto bleibt ein
+     Satz, es ist ja noch da (Projektanleitung §8 C nimmt es heraus). */
+  {t:"Abschluss",p:"Oben steht, was noch offen ist – jede Zeile springt hin. „Fertig – Protokoll erstellen“ schließt die Fassung ab und schickt sie los; ohne Netz geht sie hinaus, sobald wieder Empfang da ist. Die Fassungsliste von der Rezeption abfotografieren, mehrere Seiten sind möglich.",tip:"Ist noch etwas offen, fragt das Tool nach. Freigeben geht mit deinem eigenen Code."}],
  fuellen:[
   {t:"Getränke an der Bar prüfen",p:"Nur die Getränkeladen – Wein bleibt außen vor.",tip:"Lade für Lade durchgehen und jede einzeln bestätigen."},
   {t:"Holen und einräumen",p:"Das Fehlende aus dem Getränkelager holen und einräumen. Abgehaktes wandert nach unten.",tip:"Oben steht, wie viele Kisten du brauchst."},
@@ -1422,7 +1532,8 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast(
    Frage an den Menschen — deshalb wird gefragt, nicht zusammengerechnet. */
 const API="/api";
 const K_AUSGANG="hh_ausgang_v1", K_GERAET="hh_geraet_v1",
-      K_ZAEHL="hh_zaehlnr_v1", K_FERN="hh_fern_v1";
+      K_ZAEHL="hh_zaehlnr_v1", K_FERN="hh_fern_v1",
+      K_UEBERHOLT="hh_ueberholt_v1";
 
 function uuid(){
   try{ if(crypto.randomUUID)return crypto.randomUUID(); }catch(e){}
@@ -1437,7 +1548,7 @@ const GERAET=geraetId();
 const jlese=(k,f)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r):f;}catch(e){return f;}};
 const jschreib=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 
-let NETZ={zustand:"unbekannt", offen:0, letzte:0, laeuft:false};
+let NETZ={zustand:"unbekannt", offen:0, ueberholt:0, letzte:0, laeuft:false};
 let FERN=jlese(K_FERN,{});          /* schluessel → Vorgang vom Server  */
 let AEND=0;                          /* Zeitstempel der letzten Änderung */
 function merkeAenderung(){ AEND=Date.now(); }
@@ -1470,6 +1581,35 @@ function inDenAusgang(rec,status){
   NETZ.offen=a.length; netzChip();
 }
 
+/* ── Sackfach für überholte Stände ─────────────────────────────────────
+   409 heißt: Auf einem anderen Gerät gibt es einen neueren Stand
+   desselben Vorgangs. Noch einmal senden hilft nicht — der Server lehnt
+   denselben Stand wieder ab, und die Reihe dahinter stünde still. Der
+   Eintrag muss also aus der Warteschlange heraus.
+   Wegwerfen darf man ihn aber nicht (Regel 6): Wer eine Stunde gezählt
+   hat, hörte sonst als einzige Antwort „Nichts offen – alles übertragen".
+   Er wandert deshalb ins Sackfach, bleibt im Gerät und bleibt sichtbar,
+   bis ihn jemand zur Kenntnis genommen hat. */
+function ueberholtAlle(){ return jlese(K_UEBERHOLT,[]); }
+function ueberholtOffen(){ return ueberholtAlle().filter(x=>!x.quittiert); }
+function insSackfach(e,fremd){
+  /* Je Vorgang der jüngste überholte Stand — ein zweiter Konflikt am
+     selben Schlüssel ersetzt den ersten. Zwanzig Einträge sind die
+     Obergrenze, damit der Gerätespeicher nicht zuläuft. */
+  const a=ueberholtAlle().filter(x=>x.schluessel!==e.schluessel);
+  a.push({schluessel:e.schluessel, id:e.id, daten:e.daten,
+          zeit:(e.daten&&e.daten.zeit)||new Date().toISOString(),
+          fremd:fremd?{name:fremd.name||"", zeit:fremd.zeit||"",
+                       zaehlnr:+fremd.zaehlnr||0}:null,
+          quittiert:0});
+  jschreib(K_UEBERHOLT,a.slice(-20));
+}
+/* Zur Kenntnis genommen. Der Stand bleibt liegen, nur die Zeile schweigt. */
+function ueberholtQuittieren(){
+  jschreib(K_UEBERHOLT,ueberholtAlle().map(x=>{x.quittiert=1;return x;}));
+  NETZ.ueberholt=0; netzChip();
+}
+
 async function schiebe(){
   if(NETZ.laeuft)return; NETZ.laeuft=true;
   try{
@@ -1490,13 +1630,19 @@ async function schiebe(){
       if(r.status===401){ NETZ.zustand="abgemeldet"; break; }
       if(r.status>=500||r.status===429){ NETZ.zustand="serverfehler"; break; }
       if(!r.ok && r.status!==409){ NETZ.zustand="serverfehler"; break; }
-      /* 409 heißt: der Server hat einen neueren Stand. Der Eintrag ist
-         damit erledigt — nicht verloren, sondern überholt. */
+      /* 409: nicht verloren, sondern überholt — der Stand geht ins
+         Sackfach, bevor er die Reihe verlässt. */
+      if(r.status===409){
+        let fremd=null;
+        try{ const j=await r.json(); fremd=(j&&j.server)||null; }catch(err){}
+        insSackfach(e,fremd);
+      }
       a=jlese(K_AUSGANG,[]).filter(x=>x.id!==e.id);
       jschreib(K_AUSGANG,a);
       NETZ.zustand="verbunden"; NETZ.letzte=Date.now();
     }
     NETZ.offen=jlese(K_AUSGANG,[]).length;
+    NETZ.ueberholt=ueberholtOffen().length;
   } finally { NETZ.laeuft=false; netzChip(); }
 }
 
@@ -1549,18 +1695,91 @@ function fernNeuer(m){
   return (v.zaehlnr||0)>eigen ? v : null;
 }
 
+/* Der Satz für einen Stand, den der Server nicht angenommen hat.
+   Gelesen wird er im Keller oder kurz danach, müde, nach einer Stunde
+   Zählen. Drei Dinge muss er leisten, mehr nicht:
+     1. Es ist NICHT draußen — und es geht auch nicht mehr von selbst
+        hinaus (sonst wäre es eine Zeile „… wartet").
+     2. Woran erkenne ich, welchen Stand es trifft? → die eigene Uhrzeit.
+     3. Muss ich noch einmal hinunter? → Nein: „hat danach gezählt".
+   Weg ist, was nur Wettlauf erzählt („war mit einem neueren Stand
+   schneller") und die erfundene Bedienung („Tippen, wenn gesehen") —
+   quittiert wird am Knopf daneben. */
+function ueberholtSatz(l){
+  /* Welcher Vorgang? „Dein Stand" allein sagt es nicht. An einem Abend
+     laufen leicht drei: Tagesfassung, eine Sonderentnahme für die Küche,
+     ein Nachfüllen an der Bar. Ob die Stunde Zählen weg ist oder eine
+     Flasche für den Koch, ist ein Unterschied — und bei mehreren Ständen
+     war „3 Stände sind nicht übernommen" gar keine Auskunft mehr.
+     Der Name steht deshalb vorn wie eine Betreffzeile. Er hängt nicht am
+     Artikel: „Deine Nachfüllen" gäbe es sonst. */
+  const name=e=>{ const m=(e.daten&&e.daten.mode)
+      ||String(e.schluessel||"").split("_")[0];
+    return (MODES[m]&&MODES[m].t)||"Vorgang"; };
+  /* Die Uhrzeit allein genügt nur am selben Tag. Ein Gerät, das über
+     Nacht ohne Netz im Spind lag, meldet sonst „von 20:40" und meint
+     gestern — und der eigene Stand ist am Datum nicht wiederzuerkennen. */
+  const wann=s=>{ const d=new Date(s||0); if(isNaN(d))return "";
+    const uhr=d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
+    const h=new Date(), tage=Math.round(
+      (new Date(h.getFullYear(),h.getMonth(),h.getDate())
+       -new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+    if(tage<=0)return uhr;
+    if(tage===1)return "gestern "+uhr;
+    return d.toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit"})+" "+uhr; };
+  if(l.length>1){
+    const n=l.map(name);
+    return n.length<=3
+      ? "Nicht übernommen: "+n.join(", ")+". Andere Geräte haben danach gezählt."
+      : l.length+" Stände sind nicht übernommen – andere Geräte "
+        +"haben danach gezählt.";
+  }
+  const e=l[0]||{}, meine=wann(e.zeit), wer=(e.fremd&&e.fremd.name)||"";
+  return name(e)+": Dein Stand"+(meine?" von "+meine:"")+" ist nicht "
+    +"übernommen – "+(wer?wer:"ein anderes Gerät")+" hat danach gezählt.";
+}
+/* Ein Satz, der beantwortet: Ist meine Arbeit draußen oder noch im Gerät?
+   Vorher stand „Offline" in zwei Zeilen mit zwei verschiedenen Zusagen.
+   „Nicht angemeldet" und „Server antwortet nicht" sind Fehler, keine
+   Ruhezustände — sie tragen jetzt auch die Form und Farbe eines Fehlers.
+   navigator.onLine wird mitgelesen: wer die App im Keller ohne Netz
+   öffnet, bekommt sonst erst beim ersten Sendeversuch eine Auskunft. */
 function netzChip(){
-  const el=$("#netz"); if(!el)return;
+  /* Zwei Orte, ein Zustand: die Leiste unter dem Kopf (im Vorgang) und
+     der Block über den Kacheln (im Menü). Nach dem Abschluss steht man
+     im Menü — dort wurde bisher gar nichts mehr angezeigt, auch der
+     überholte Stand nicht. Sichtbar ist immer nur einer von beiden; der
+     andere liegt in einem Elternteil mit display:none. */
+  const els=document.querySelectorAll(".netz"); if(!els.length)return;
   const z=NETZ.zustand, o=NETZ.offen;
-  let t="", k="";
-  if(z==="kein-server"){ el.style.display="none"; return; }
-  if(o>0){ t=o===1?"1 Vorgang wartet":o+" Vorgänge warten"; k="wartet"; }
-  else if(z==="offline"){ t="Offline – wird nachgereicht"; k="offline"; }
-  else if(z==="abgemeldet"){ t="Nicht angemeldet"; k="offline"; }
-  else if(z==="serverfehler"){ t="Server antwortet nicht"; k="offline"; }
-  else if(z==="verbunden"){ t="Übertragen"; k="ok"; }
-  else { el.style.display="none"; return; }
-  el.style.display=""; el.className="netz "+k; el.textContent=t;
+  const weg=(navigator.onLine===false)||z==="offline";
+  const viele=o===1?"1 Vorgang":o+" Vorgänge";
+  const ueb=ueberholtOffen();
+  let t="", k="", quittierbar=false;
+  /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
+     nichts hinaus. Gleich danach aber der überholte Stand — er darf nie
+     hinter „Nichts offen – alles übertragen" verschwinden. */
+  if(z==="kein-server"&&!ueb.length){ t=""; }
+  else if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
+  else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler"; quittierbar=true; }
+  else if(weg&&o>0){ t=viele+" warten – kein Netz"; k="wartet"; }
+  else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
+  else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" warten"
+                                    :"Server antwortet nicht"; k="fehler"; }
+  else if(o>0){ t=viele+" warten auf Übertragung"; k="wartet"; }
+  else if(z==="verbunden"){ t="Nichts offen – alles übertragen"; k="ok"; }
+  els.forEach(el=>{
+    if(!t){ el.style.display="none"; return; }
+    el.style.display="";
+    /* className nicht überschreiben — der Block im Menü trägt zusätzlich
+       .netz--block und verlöre sonst seinen Rahmen. */
+    el.classList.remove("ok","wartet","offline","fehler");
+    if(k)el.classList.add(k);
+    const txt=el.querySelector(".netztext");
+    if(txt)txt.textContent=t; else el.textContent=t;
+    const btn=el.querySelector(".netzok");
+    if(btn){ btn.hidden=!quittierbar; btn.onclick=ueberholtQuittieren; }
+  });
 }
 
 /* Fertige und laufende Vorgänge einsammeln, die noch nicht draußen sind. */
@@ -1637,29 +1856,53 @@ function renderLogin(){
   L.innerHTML=`<div class="loginbox">
     <h1 class="vh">Haus Hirt</h1><span class="marke"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1352 505" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="M592 501C573 499 558 495 552 490C532 475 527 444 535 373C538 339 539 321 537 298C535 280 530 247 530 251C530 252 525 305 519 368C510 467 509 484 507 486L505 488 468 489C357 492 307 488 247 471C204 459 152 438 114 416C107 412 102 409 101 410C101 410 95 415 88 420C59 442 36 450 21 443C1 433 -4 396 13 384C27 374 54 374 84 382C87 383 90 384 91 384C91 384 90 380 89 377C73 324 83 290 115 292C155 295 158 331 123 384C119 391 115 396 115 397C113 399 157 422 188 435C214 446 275 464 279 463C280 463 276 459 270 454C234 423 230 393 259 378C291 360 312 388 315 455L316 470 321 470C345 473 364 474 399 474C440 475 495 474 495 473C495 467 535 35 536 30C540 14 547 4 558 3C572 2 582 11 582 26C582 38 578 45 572 45C566 44 564 41 567 32C569 24 568 21 564 19C558 16 553 21 551 32C550 34 547 66 544 101L538 166 540 169C542 171 544 175 546 178C550 183 550 184 552 183C557 178 598 119 596 119C578 113 568 107 566 99C563 88 572 80 599 65C607 61 611 58 614 54C631 36 637 32 648 32C660 32 666 37 673 54L676 62 688 69C711 82 720 94 711 104C709 106 690 116 687 116C684 116 686 119 699 140C718 171 724 184 727 198C732 220 736 244 741 296C743 312 744 327 744 328L745 332 758 331C767 331 775 332 786 333C829 339 825 338 828 336C829 335 833 328 838 319C847 300 850 298 859 297C876 296 901 310 908 325C917 344 903 359 880 356L874 356 874 364C870 402 860 428 845 435L840 437 842 450C844 464 845 469 847 471C848 473 854 473 920 473C991 473 997 473 1026 470L1036 469 1036 463C1036 453 1038 432 1040 420C1047 380 1065 364 1090 376C1113 387 1118 407 1103 429C1098 436 1082 453 1074 460L1070 463 1079 461C1104 455 1141 443 1169 432C1190 422 1237 399 1237 397C1237 397 1233 391 1229 384C1198 338 1196 304 1223 294C1243 286 1261 293 1267 312C1272 325 1270 353 1262 377C1261 380 1260 383 1261 383C1261 383 1265 382 1271 381C1329 366 1358 383 1345 424C1343 431 1337 438 1331 441C1315 449 1291 441 1258 415L1249 408 1236 416C1204 433 1169 449 1134 461C1066 484 1005 492 913 489C892 488 867 488 858 488C843 488 839 488 838 487C834 483 829 466 827 447C826 438 826 438 823 438C821 438 820 439 820 444C819 446 818 453 816 459C815 465 814 471 814 473C814 475 813 477 809 480C803 485 802 485 801 481C798 477 799 470 802 456C804 450 805 442 805 439L806 434 801 431C798 429 795 426 794 424L792 421 779 421L767 421 765 429C761 441 761 447 768 464C775 480 775 482 769 485C764 487 761 485 756 472C754 466 751 461 751 461C751 461 750 464 749 467C747 478 736 491 724 497C714 502 706 503 690 500C677 499 676 499 652 500C630 502 600 502 592 501Z M644 485C659 484 671 484 680 485C708 486 713 486 719 483C725 479 730 473 734 466C740 453 739 398 731 344C731 338 729 320 727 303C720 230 715 199 707 184C703 175 693 159 678 136C663 112 663 109 674 105C684 101 698 95 698 94C698 93 691 87 680 82C667 74 665 72 660 61C655 49 653 47 648 47C643 47 637 51 629 60C621 70 620 71 604 80C589 88 581 94 581 95C582 97 592 102 601 104C606 105 611 106 612 107C615 107 617 113 616 115C614 122 573 182 563 192C555 201 548 202 540 195L538 193 538 195C538 196 540 213 543 232C554 311 555 321 549 372C544 419 545 454 552 467C561 484 586 489 644 485Z M300 448C297 411 288 388 276 388C269 388 257 396 255 402C252 413 265 431 290 450C295 455 300 458 300 458C300 458 300 453 300 448Z M1063 449C1086 430 1099 413 1097 403C1095 396 1083 387 1075 387C1063 387 1055 409 1051 448C1051 459 1050 459 1063 449Z M42 429C52 426 74 413 85 403L89 399 83 398C52 389 28 389 20 398C18 401 18 402 18 409C19 426 27 433 42 429Z M1325 427C1332 424 1336 406 1332 399C1329 392 1316 389 1299 391C1288 392 1263 398 1263 399C1263 401 1282 415 1293 421C1306 428 1319 431 1325 427Z M841 419C846 415 852 403 855 390C858 376 858 374 859 357C860 337 861 336 873 340C884 343 896 341 896 336C896 329 881 316 867 313C858 311 859 310 846 337C843 343 837 349 832 351C827 354 822 353 797 350C776 347 749 345 747 347C747 348 748 355 748 363C749 372 750 385 751 394C752 403 752 410 752 410C753 410 755 409 758 408C762 407 767 406 782 405C803 405 804 405 805 412C805 416 806 417 810 419C820 424 835 424 841 419Z M112 374C126 352 132 337 132 324L132 316 129 313C123 307 110 305 103 309C94 315 94 339 103 371C105 380 106 382 106 382C107 382 109 379 112 374Z M1248 373C1257 339 1257 315 1248 309C1242 304 1225 307 1220 314C1216 320 1219 335 1228 352C1233 363 1244 381 1245 381C1245 381 1247 377 1248 373Z M635 134C628 130 621 113 621 95C621 87 622 86 641 88C665 90 666 91 659 111C654 128 644 137 635 134Z M644 116C645 114 646 110 647 107L649 102 644 102C638 101 634 101 634 102C634 103 637 116 638 118C639 121 641 121 644 116Z"/></svg><span class="vh">Haus Hirt</span></span><p class="sub">Fassungstool</p>
     <p class="loginhilfe">Bestände prüfen, fassen und protokollieren.
-      Melde dich mit deinem persönlichen Code an – er steht später im Protokoll.</p>
-    <div class="pinreihe" id="pinReihe" aria-hidden="true">
-      <span class="pinfeld"></span><span class="pinfeld"></span>
-      <span class="pinfeld"></span><span class="pinfeld"></span></div>
+      Melde dich mit deinem persönlichen Code an – er steht später im Protokoll.
+      Code eintippen, dann auf \u2713.</p>
+    <div class="pinreihe" id="pinReihe" aria-hidden="true"></div>
     <input id="uCode" class="input input--pin vh" type="tel" inputmode="none"
-      maxlength="4" autocomplete="off" aria-label="Code eingeben">
+      maxlength="8" autocomplete="off" aria-label="Code eingeben">
     <p class="pinfehler" id="pinFehler" role="status"></p>
     <div class="block" id="pinBlock">
       ${[1,2,3,4,5,6,7,8,9].map(z=>`<button class="ztaste" data-z="${z}">${z}</button>`).join("")}
-      <span></span><button class="ztaste" data-z="0">0</button>
+      <button class="ztaste ztaste--ok" data-ok aria-label="Anmelden" disabled>\u2713</button>
+      <button class="ztaste" data-z="0">0</button>
       <button class="ztaste ztaste--weg" data-weg aria-label="Letzte Ziffer löschen">⌫</button>
     </div></div>`;
   const inp=$("#uCode");
+  /* Das Feld nahm bis v21 genau vier Ziffern. Die vier ersten Codes des
+     Hauses sind aus der Geschichte des Anhangs bekannt und werden durch
+     längere ersetzt — mit einem sechsstelligen Code wäre hier niemand mehr
+     hereingekommen. Vier bleiben zulässig, bis die neuen vergeben sind;
+     danach gibt es keinen vierstelligen Code mehr, der hier durchkommt. */
+  const MIN=4, MAX=8;
+  /* Angemeldet wird auf Tastendruck statt bei der vierten Ziffer: Wenn der
+     Code vier bis acht Ziffern haben kann, weiss nur der Mensch vor dem
+     Gerät, wann er zu Ende ist. Wer bis v21 einen längeren Code eintippte,
+     schickte die ersten vier los, bekam „Code stimmt nicht" und ein
+     geleertes Feld — nach zehn davon steht das Haus vor der Sperre. */
   const male=()=>{
     const v=inp.value;
-    document.querySelectorAll("#pinReihe .pinfeld").forEach((f,i)=>
-      f.classList.toggle("voll",i<v.length));};
+    /* Sechs Felder als Grundmass — soviel hat ein neuer Code. Mehr nur,
+       wenn wirklich mehr eingetippt ist; ein Feld zuwenig sähe aus wie ein
+       verschluckter Tastendruck. */
+    const n=Math.min(MAX,Math.max(6,v.length));
+    $("#pinReihe").innerHTML=Array.from({length:n},(_,i)=>
+      '<span class="pinfeld'+(i<v.length?" voll":"")+'"></span>').join("");
+    const t=$("#pinBlock [data-ok]"); if(t)t.disabled=v.length<MIN;};
   $("#pinBlock").onclick=e=>{
-    const b=e.target.closest("button");if(!b)return;
-    if(b.dataset.weg)inp.value=inp.value.slice(0,-1);
-    else if(inp.value.length<4)inp.value+=b.dataset.z;
-    $("#pinFehler").textContent="";male();pruefe();};
-  inp.oninput=()=>{male();pruefe();};
+    const b=e.target.closest("button");if(!b||b.disabled)return;
+    /* `data-weg` und `data-ok` stehen ohne Wert in der Zeile, dataset
+       liefert dafür "" — ein Wahrheitstest darauf ist immer falsch. Bis
+       v21 hängte die Löschtaste deshalb „undefined" an den Code, statt
+       die letzte Ziffer zu nehmen. Gefragt wird jetzt, ob es die Angabe
+       überhaupt gibt. */
+    if("weg" in b.dataset){inp.value=inp.value.slice(0,-1);
+      $("#pinFehler").textContent="";male();return;}
+    if("ok" in b.dataset){$("#pinFehler").textContent="";male();pruefe();return;}
+    if(inp.value.length<MAX)inp.value+=b.dataset.z;
+    $("#pinFehler").textContent="";male();};
+  inp.oninput=()=>{male();};
+  inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();pruefe();}};
   male();
   /* Erst den Server fragen — dort stehen die Personen, dort werden sie
      gepflegt, und nur dort entsteht die Sitzung, die der Server für die
@@ -1668,7 +1911,7 @@ function renderLogin(){
   let laeuftPruefung=false;
   const pruefe=async()=>{
     const code=inp.value;
-    if(code.length<4||laeuftPruefung)return;
+    if(code.length<MIN||laeuftPruefung)return;
     laeuftPruefung=true;
     $("#pinFehler").textContent="";
     let name=null, serverHat=false;
@@ -1766,16 +2009,20 @@ function renderMenu(){
     return `<button class="mi${run?" run":""}" data-m="${k}">
       <span class="ic" aria-hidden="true">${ICONS[m.ic]||ICONS[k]}</span>
       <span class="txt"><b>${m.t}</b><span>${m.d}</span>
-      ${run?`<span class="when">\u25cf Angefangen · ${deTag(d.tag)}</span>`:""}</span>
+      ${run?`<span class="when">\u25cf Angefangen · für ${deTag(d.tag)}</span>`:""}</span>
       <span class="go" aria-hidden="true">\u203a</span></button>`;
   };
+  /* Derselbe Zustand wie unter dem Kopf, nur als Block: Nach dem Abschluss
+     landet man hier, und hier stellt sich die Frage „ist es draußen?".
+     Gefüllt wird er am Ende dieser Funktion von netzChip(). */
   $("#menu").innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool</p>
     ${grussZeile()}
+    <div class="netz netz--block" style="display:none"><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button></div>
     ${fernZeile()}
     <p class="angemeldet">Angemeldet: <b>${esc(whoAmI())}</b>
       <button class="wechseln" id="bWechseln">wechseln</button></p>
     <div class="mgrp">Service</div>${card("tag")}${card("fuellen")}
-    <div class="mgrp">Notfall</div>${card("nach")}
+    <div class="mgrp">Außer der Reihe</div>${card("nach")}
     <div class="mgrp">Bestand</div>${card("keller")}${card("ware")}
     <button class="adminlink" id="bAdmin">Verwaltung</button>
     <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`;
@@ -1783,6 +2030,7 @@ function renderMenu(){
   $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
   $("#bAdmin").onclick=askPin;
   $("#bArch").onclick=openArchList;
+  netzChip();
 }
 /* 2.2 · Liste der archivierten Vorgänge */
 function shellFor(titel){
@@ -1830,17 +2078,41 @@ function openArchDoc(k){
   $("#aCsv").onclick=expCsv;$("#aJson").onclick=expJson;
   $("#aBack").onclick=()=>{ARCHREC=null;openArchList();};
 }
-const PIN="2797";
+/* Der Verwaltungscode stand bis v12 als Konstante in dieser Datei — wer
+   die Seite aufrief, las ihn im Quelltext mit. Bis der Editor nach
+   Projektanleitung §8 A ins Backoffice umzieht, gilt hier dieselbe Regel
+   wie bei der Freigabe: Es zählt der persönliche Code, und zwar einer,
+   der sich auf diesem Gerät schon einmal angemeldet hat (`bekannterCode`
+   prüft die Prüfsumme, nicht den Code). Das ist keine strengere Hürde für
+   das Team — aber eine, die nicht im Quelltext steht.
+   Wortwahl: Die Anmeldung nennt es „dein persönlicher Code". Ein zweites
+   Wort für dieselbe Sache („Zugangscode", „Freigabecode") lässt suchen,
+   ob es noch einen anderen Code gibt. Es gibt keinen. */
 function askPin(){
   $("#ovT").textContent="Verwaltung";
-  $("#ovBody").innerHTML=`<p>PIN eingeben.</p>
-    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••">`;
+  $("#ovBody").innerHTML=`<p>Zum Öffnen deinen persönlichen Code eingeben — denselben wie beim Anmelden.</p>
+    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="8"
+      placeholder="••••••" aria-label="Persönlicher Code">
+    <p class="pinfehler" id="pinMeld" role="status"></p>`;
   $("#ov").classList.add("on");
   const inp=$("#pinIn");setTimeout(()=>inp.focus(),50);
+  inp.oninput=()=>{$("#pinMeld").textContent="";};
   $("#ovOk").textContent="Öffnen";
-  $("#ovOk").onclick=()=>{
-    if(inp.value===PIN){$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();}
-    else{inp.value="";inp.placeholder="falsch";toast("PIN falsch");}
+  /* Der Fehler stand im Toast — der verschwindet nach zwei Sekunden und
+     liegt auf dem iPhone hinter der Zifferntastatur. Er steht jetzt im
+     Dialog und bleibt stehen.
+     Reihenfolge nach Häufigkeit: Wer hier steht, hat fast immer sich
+     selbst vertippt — also zuerst „Code stimmt nicht", wie auf dem
+     Anmeldeschirm, ein Haus, eine Sprache für denselben Fehler. Der
+     seltenere Fall (fremdes Gerät, gelöschter Speicher) kommt im zweiten
+     Satz. „Nimm deinen eigenen Code" stand hier und klang nach Ertappen;
+     an einem iPad, das sich vier Leute teilen, ist das der falsche Ton. */
+  $("#ovOk").onclick=async()=>{
+    if(!(await bekannterCode(inp.value))){
+      inp.value="";
+      $("#pinMeld").textContent="Code stimmt nicht. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";
+      inp.focus();return;}
+    $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();
   };
 }
 function openAdmin(){
@@ -2032,6 +2304,10 @@ function renderHowto(){
   if(b)b.style.display=HILFE_SCHRITT.p?"":"none";
 }
 const BEDIEN=[
+ /* Die tragende Annahme der ganzen Fassung stand nirgends: Wer eine Lade
+    auslässt, sagt damit „voll“. Eine neue Kraft ohne Einschulung erfährt
+    das sonst erst, wenn am nächsten Abend der Wein fehlt. Darum zuerst. */
+ ["Ungepr\u00fcft gilt als voll","Was du nicht antippst, z\u00e4hlt als vollst\u00e4ndig da und kommt nicht auf die Liste zum Holen. Eine Lade, die du \u00fcberspringst, fehlt darum am n\u00e4chsten Abend im Service."],
  ["Punkte antippen","Du tippst herunter auf das, was noch dasteht. Der oberste Punkt ist der hinterste Platz."],
  ["H\u00e4kchen \u201evoll\u201c","Alles da, nichts fehlt. Nochmal antippen l\u00f6st es wieder."],
  ["Produktfoto antippen","Markiert die Spalte als angeschaut \u2013 ohne die Menge zu \u00e4ndern."],
@@ -2063,7 +2339,13 @@ function hilfeVielleicht(){
 }
 function render(){
   const d=D();$("#dSel").value=d.tag;
-  $("#datumTxt").textContent=deTag(d.tag)+" · ändern";
+  /* Die Tagesfassung läuft auf den Vortag — das ist der Tag, dessen
+     Verbrauch nachgefüllt wird und gegen dessen Z-Bericht später
+     verglichen wird. Stand hier nur ein Datum, sah es am Dienstagabend
+     nach einem Fehler aus, und wer es „richtigstellt", legt den Vorgang
+     auf den falschen Tag: doppelter Eintrag in der Leitung, Vergleich
+     mit dem falschen Z-Bericht. „Für" beantwortet das in einem Wort. */
+  $("#datumTxt").textContent="Für "+deTag(d.tag)+" · ändern";
   const m=$("#main");m.innerHTML="";m.className="";
   if(mode!=="tag"&&branch===null){$("#tools").style.display="none";$("#howto").style.display="none";
     $("#bedien").style.display="none";
@@ -2405,7 +2687,22 @@ function rHol(m){
   const d=D(),items=holList();
   if(!items.length){
     lagerKopf(m,"Weinkeller","",0,0);
-    add(m,"box good","<b>Kein Wein zu holen.</b><br>Alle Kühlschränke sind voll.");
+    /* „Kein Wein zu holen" ist nur dann eine Auskunft, wenn vorher gezählt
+       wurde. Ungeprüft gilt in der Fassung als voll — wer Schritt 1 und 2
+       überspringt oder unterbricht, bekam hier bisher „Alle Kühlschränke
+       sind voll" und ging leer hinauf. Das ist der teuerste Irrtum im
+       ganzen Ablauf: Es fällt erst am nächsten Abend am Tisch auf.
+       (Dazu: Kühlschränke stehen weder an der Bar noch im Restaurant —
+       dort sind es Laden und Schränke.) */
+    const ungeprueft=barUnits().filter(u=>!barDone(u)).length
+      +[1,2,3,4].filter(n=>!schrankFertig(n)).length;
+    if(ungeprueft)
+      add(m,"box","<b>Nichts zu holen \u2014 aber "
+        +(ungeprueft===1?"1 Platz ist":ungeprueft+" Pl\u00e4tze sind")
+        +" noch nicht gepr\u00fcft.</b><br>Was nicht gez\u00e4hlt ist, gilt als voll. "
+        +"Vorher noch fertig pr\u00fcfen \u2013 zur\u00fcck zu Bar und Restaurant.");
+    else
+      add(m,"box good","<b>Kein Wein zu holen.</b><br>Bar und Restaurant sind voll.");
     weinLagerExtra(m);rZusatz(m);return;}
   const offen=items.filter(it=>!d.holt[it.w.id]),fertig=items.filter(it=>d.holt[it.w.id]);
   // Kisten-Info oben
@@ -2791,6 +3088,23 @@ function gSet(id,n,b,soll){
     d.seen[id+"_"+b]=1;save();return;}
   d.getr=d.getr||{};d.getr[id]=Math.max(0,Math.min(GSOLL[id],n));save();}
 function gFehlt(){const r=[];GIDS.forEach(id=>{const f=GSOLL[id]-gIst(id);if(f>0)r.push({id,n:f});});return r;}
+/* Was aus dem Getränkelager geholt wurde, muss IM VORGANG stehen — der
+   Server kann es nicht ausrechnen. Die Fehlmenge entsteht aus dem Soll der
+   Lade, und das Soll steht im Gerät (`hh_cfg_v9`), nicht in der Datenbank.
+   Bis v22 stand nach einem Nachfüllen deshalb keine einzige Zeile im
+   Journal: Der Worker summierte die Weinorte, und die sind beim Nachfüllen
+   leer. `gent` trägt hier dieselbe Bedeutung wie in der Sonderentnahme —
+   geholte Flaschen. Gezählt wird nur, was abgehakt ist; der Haken ist die
+   Aussage „geholt", und der Abschluss fragt ohnehin nach, was offen blieb. */
+function geholteGetraenke(d){
+  if(d.mode!=="tag" && d.mode!=="fuellen") return;
+  d.gholt=d.gholt||{}; d.gholtN=d.gholtN||{}; d.gent={};
+  gFehlt().forEach(x=>{
+    if(!d.gholt[x.id]) return;
+    const n=d.gholtN[x.id]!=null ? +d.gholtN[x.id] : x.n;
+    if(n>0) d.gent[x.id]=n;
+  });
+}
 function gFehltSum(){return gFehlt().reduce((a,x)=>a+x.n,0);}
 function gLadeFehlt(L){let f=0;const ids=new Set();
   (L.grid||[]).forEach(c=>c.forEach(id=>ids.add(id)));
@@ -3378,7 +3692,17 @@ function gHolBlock(m){
     info.innerHTML=`<div><b>${fl}</b> Flaschen holen</div>
       <div><b>${ki}</b> Tragekiste${ki!==1?"n":""} (à ${TRAGEKISTE} Fl.)</div>`;
     kopf.parentNode.insertBefore(info,kopf.nextSibling);}
-  if(!f.length){add(m,"box good","<b>Nichts zu holen.</b><br>Alle Laden sind voll.");}
+  if(!f.length){
+    /* Dieselbe Falle wie im Weinkeller (siehe rHol): Eine Lade, die
+       niemand bestätigt hat, gilt als voll — „Alle Laden sind voll" war
+       dann keine Zählung, sondern eine Annahme. */
+    const oL=ALLE_LADEN().filter(L=>!(d0.gdone||{})[L.id]).length;
+    if(oL)
+      add(m,"box","<b>Nichts zu holen \u2014 aber "
+        +(oL===1?"1 Lade ist":oL+" Laden sind")
+        +" noch nicht best\u00e4tigt.</b><br>Was nicht gez\u00e4hlt ist, gilt als voll. "
+        +"Vorher noch die offenen Laden an der Bar pr\u00fcfen.");
+    else add(m,"box good","<b>Nichts zu holen.</b><br>Alle Laden sind voll.");}
   else{
     /* Wie beim Wein: erledigte Zeilen wandern nach unten. */
     const offen=f.filter(x=>!d0.gholt[x.id]),fertig=f.filter(x=>d0.gholt[x.id]);
@@ -3649,7 +3973,7 @@ function rDoc(m){
     fb.textContent=mode==="nach"?"Entnahme melden"
       :mode==="ware"?"Lieferung melden":"Fertig – Protokoll erstellen";
     fb.onclick=()=>{
-      if(!offen.length){d.finished=true;save();
+      if(!offen.length){geholteGetraenke(d);d.finished=true;save();
         inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
         render();window.scrollTo(0,0);return;}
       freigabe(offen);};
@@ -3697,27 +4021,45 @@ function rDoc(m){
   $("#bReset").onclick=()=>ask("Zurücksetzen","<p>Dieser Vorgang wird gelöscht und vorher ins Archiv gelegt.</p>",
     ()=>{archive(S[mode]);S[mode]=blank(mode);save();step=0;render();window.scrollTo(0,0);toast("Archiviert und zurückgesetzt");});
 }
-/* P14/28 · Trotzdem abschliessen \u2014 nur mit dem Verwaltungscode,
-   und es bleibt im Protokoll sichtbar, wer freigegeben hat. */
+/* P14/28 · Trotzdem abschliessen \u2014 nur mit dem persönlichen Code,
+   und es bleibt im Protokoll sichtbar, wer freigegeben hat.
+   „Freigabecode" hieß das Feld, solange es dafür einen eigenen Code gab.
+   Den gibt es nicht mehr — der alte Name schickt Leute suchen, und wer
+   sucht, holt die Chefin. Deshalb steht jetzt im Dialog, dass der eigene
+   Code genügt.
+   Ton: „Freigeben darf jede und jeder" stand hier und war eine Einladung.
+   Das ist der Satz, der aus der Ausnahme die Gewohnheit macht — und eine
+   nicht geprüfte Lade heißt morgen ein fehlender Wein am Tisch. Die
+   Auskunft muss bleiben (niemand soll nachts anrufen), die Aufforderung
+   nicht. Statt zu erlauben nennt der Satz jetzt die Folge: Es steht mit
+   Namen da und die Leitung liest es morgen früh. Kein Riegel, ein Spiegel. */
 function freigabe(offen){
   $("#ovT").textContent="Trotzdem abschließen?";
   $("#ovBody").innerHTML=`<p>Diese Punkte sind offen:</p>
     <div class="box" style="margin-top:0">${offen.map(x=>"\u2022 "+esc(x)).join("<br>")}</div>
-    <label class="f"><span>Freigabecode</span>
+    <p>Dein eigener Code gen\u00fcgt, du musst niemanden anrufen. Die Freigabe
+      steht mit deinem Namen im Protokoll \u2014 die Leitung sieht sie morgen fr\u00fch.</p>
+    <label class="f"><span>Dein pers\u00f6nlicher Code</span>
       <input id="fgCode" class="input input--pin" type="tel" inputmode="numeric"
-        maxlength="4" placeholder="\u2022\u2022\u2022\u2022"></label>`;
+        maxlength="8" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022"></label>
+    <p class="pinfehler" id="fgMeld" role="status"></p>`;
   $("#ov").classList.add("on");
   const inp=$("#fgCode");setTimeout(()=>inp.focus(),60);
+  inp.oninput=()=>{$("#fgMeld").textContent="";};
   $("#ovOk").textContent="Freigeben";
   $("#ovOk").onclick=async()=>{
     /* Jeder angemeldete Mitarbeiter darf freigeben \u2014 die Freigabe steht
-       ohnehin mit Namen im Protokoll. Der Verwaltungscode geht auch. */
-    if(inp.value!==PIN&&!(await bekannterCode(inp.value))){
-      inp.value="";inp.placeholder="falsch";toast("Code unbekannt");return;}
+       ohnehin mit Namen im Protokoll. Der frühere Verwaltungscode stand als
+       Klartext in dieser Datei und fällt deshalb weg; es zählt nur noch ein
+       Code, der sich auf diesem Gerät schon einmal angemeldet hat. */
+    const wer=await bekannterCode(inp.value);
+    if(!wer){
+      inp.value="";
+      $("#fgMeld").textContent="Code stimmt nicht. Hier geht nur ein Code, der auf diesem Ger\u00e4t schon einmal angemeldet war.";
+      inp.focus();return;}
     const d=D();
-    d.uebersteuert={von:(await bekannterCode(inp.value))||whoAmI()||d.name,
-      zeit:new Date().toISOString(),offen:offen};
-    d.finished=true;save();
+    d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
+    geholteGetraenke(d);d.finished=true;save();
     inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
     render();window.scrollTo(0,0);};
@@ -3734,8 +4076,8 @@ function docUeber(){
 /* Zu welchem Schritt f\u00fchrt ein offener Punkt? Die Liste bleibt eine
    Liste von Texten \u2014 sie wandert so auch ins Protokoll. */
 function offenZiel(t){
-  if(t.indexOf("Kein Foto")===0)return null;
-  if(t==="Nicht alles geholt")return mode==="tag"?2:1;
+  if(t.indexOf("Fassungsliste noch nicht")===0)return null;
+  if(t.indexOf("Noch nicht alles geholt")===0)return mode==="tag"?2:1;
   if(t.indexOf("Schrank")===0)return 1;
   if(t.indexOf("Nicht alle Positionen")===0)return 0;
   return 0;
@@ -3751,18 +4093,26 @@ function offenZeile(t){
 }
 function offenList(){
   const d=D(),o=[];
+  /* Die Reihenfolge ist die Reihenfolge, in der ein offener Punkt im
+     Betrieb wehtut — nicht die, in der die Schritte kommen. rDoc zeigt nur
+     die ersten fünf offen an, der Rest liegt hinter „+N weitere". Was
+     morgen am Gast fehlt, muss unter den ersten fünf stehen; das Foto der
+     Fassungsliste ist Papier und hält keinen Service auf.
+     Dazu die Anzahl: Ob noch ein Wein fehlt oder acht, entscheidet um
+     23 Uhr darüber, ob jemand nochmal in den Keller geht. */
   if(mode==="tag"){
-    if(!(d.fotos||[]).length)o.push("Kein Foto der Fassungsliste");
+    const it=holList(),off=it.filter(x=>!d.holt[x.w.id]).length;
+    if(off)o.push("Noch nicht alles geholt – "+off+(off===1?" Wein":" Weine"));
     barUnits().forEach(u=>{if(!barDone(u))o.push(u.t+" nicht geprüft");});
     [1,2,3,4].forEach(n=>{if(!schrankFertig(n))o.push(SCHRANK[n].kurz+" nicht geprüft");});
-    const it=holList();
-    if(it.length&&!it.every(x=>d.holt[x.w.id]))o.push("Nicht alles geholt");
+    if(!(d.fotos||[]).length)o.push("Fassungsliste noch nicht fotografiert");
   }
   if(mode==="fuellen"){
+    const g2=gFehlt().filter(x=>!WEINLAGER.includes(x.id));
+    const goff=g2.filter(x=>!(d.gholt||{})[x.id]).length;
+    if(goff)o.push("Noch nicht alles geholt – "+goff+(goff===1?" Getränk":" Getränke"));
     barUnits().forEach(u=>{if(!barDone(u))o.push(u.t+" nicht geprüft");});
     ALLE_LADEN().forEach(L=>{if(!(d.gdone||{})[L.id])o.push(L.t+" nicht bestätigt");});
-    const g2=gFehlt().filter(x=>!WEINLAGER.includes(x.id));
-    if(g2.length&&!g2.every(x=>(d.gholt||{})[x.id]))o.push("Nicht alles geholt");
   }
   if(mode==="keller"&&branch==="getr")
     ALLE_LADEN().forEach(L=>{if(!(d.gdone||{})[L.id])o.push(L.t+" nicht bestätigt");});
@@ -4208,8 +4558,10 @@ let rsz=null;
 window.addEventListener("resize",()=>{measure();
   clearTimeout(rsz);rsz=setTimeout(()=>{if(document.querySelector(".drw"))render();},180);});
 
-/* 2.3 · Offline-Hinweis, kein Blocker */
-function netState(){document.body.classList.toggle("off",navigator.onLine===false);}
+/* 2.3 · Offline-Hinweis, kein Blocker. Die eigene Zeile ist entfallen —
+   der Zustand steht in der Statuszeile unter dem Kopf (netzChip). */
+function netState(){document.body.classList.toggle("off",navigator.onLine===false);
+  if(typeof netzChip==="function")netzChip();}
 window.addEventListener("online",netState);window.addEventListener("offline",netState);
 netState();
 if("serviceWorker" in navigator){

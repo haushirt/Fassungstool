@@ -23,7 +23,7 @@ Status: OFFEN | FREIGEGEBEN | ABGELEHNT. Freigaben bitte direkt hier eintragen, 
 | Datei | Wofür gebraucht | Folge, wenn sie fehlt |
 |---|---|---|
 | `docs/live-schema.sql` | Regel 3: einzige Wahrheit über das Live-Schema, Basis jeder lokalen Test-DB | Regel 3 und 4 sind nicht prüfbar. QA kann SQL-Stellen im Code gegen nichts abgleichen. Schemaänderungen in Phase B lassen sich nicht testen. |
-| `PROJEKTANLEITUNG-Fassungstool.md` | „vor jeder Arbeit lesen", Abschnitt 4 enthält die zwei geplanten `ereignis`-Indizes | Jede Rolle arbeitet ohne die maßgebliche Doku. Die erste geplante Migration ist nicht spezifiziert. |
+| ~~`PROJEKTANLEITUNG-Fassungstool.md`~~ | — | **ERLEDIGT** am 17.09., Stand 16.09.2026 eingecheckt. Zugangscodes dabei nach Regel 9 entfernt. |
 | `tests/fixtures/` | Referenz für QA (Parser, Randfälle) und Controller (Zeitraum durchrechnen) | Schritt 4 im Ablauf von qa-guardian und controller ist nicht ausführbar. |
 
 **Optionen:**
@@ -46,3 +46,674 @@ Status: OFFEN | FREIGEGEBEN | ABGELEHNT. Freigaben bitte direkt hier eintragen, 
 **Zu klären:** Soll bei künftigen Setup-/Regeländerungen ebenfalls direkt auf `main` gearbeitet werden, oder gehen auch die über `v2-review` und einen PR?
 
 **Empfehlung:** Regeldateien künftig ebenfalls über `v2-review`, damit es keinen zweiten Weg an Regel 1 vorbei gibt. Jeder Push auf `main` löst zudem einen Workers-Build aus.
+
+
+---
+
+## 3. Aufgaben, die nur du ausführen kannst (Regel 13)
+
+**Status:** OFFEN
+**Gemeldet:** Setup
+
+| Dringlichkeit | Aufgabe | Quelle |
+|---|---|---|
+| **sofort** | `ANLAGE_OFFEN` im Dashboard löschen. Solange sie steht, legt sich jeder mit der Adresse ein Konto mit Rolle `leitung` an. | Projektanleitung §1, §8 |
+| hoch | `docs/live-schema.sql` erzeugen: `SELECT name, sql FROM sqlite_master WHERE type='table';` in der D1-Console, Ergebnis als Datei einchecken. | Regel 3, Projektanleitung §5 |
+| hoch | `tests/fixtures/` füllen – anonymisierte Z-Berichte und Zählungen. | `CLAUDE.md`, Testdaten |
+| **sofort** | Die vier persönlichen Codes neu vergeben. Sie stehen im Klartext in der Git-Historie (`public/index.html`, Stände vor v11) und wurden bis dahin öffentlich ausgeliefert; die Historie darf niemand umschreiben (Regel 1). Nicht wieder vierstellig. | qa-guardian, Runde 1 |
+| mittel | Sicherung der D1 einrichten. D1 hat keinen Papierkorb. | Projektanleitung §8 |
+| mittel | `WORKER-ANPASSUNG.md` und `ANMELDESPERRE.md` nachreichen oder als überholt erklären. | Projektanleitung §8 |
+| mittel | `review/INPUT-TEAM.md` mit dem Team ausfüllen – hat laut `CLAUDE.md` Vorrang vor eigenen Ideen. | `CLAUDE.md` |
+
+---
+
+## 4. `RUNDEN` von 1000 auf 100000 (Regel 11)
+
+**Status:** OFFEN
+**Gemeldet:** Setup
+
+**Hintergrund:** Projektanleitung §8 Punkt 4 nennt das Heraufsetzen als geplant, die CPU-Diagnose vom 27.08. sei widerlegt. Regel 11 verbietet jede Änderung ohne deine Freigabe, weil **alle vier Personen neu angelegt werden müssen** – die Prüfsummen passen sonst nicht mehr und niemand kommt hinein.
+
+**Folge des Zeitpunkts:** Die Anleitung sagt „also vor dem Start". Passiert es mitten im Zyklus oder im laufenden Betrieb, steht der Service ohne Anmeldung da.
+
+**Empfehlung:** Erst freigeben, wenn du die vier Personen unmittelbar danach neu anlegen kannst – idealerweise vormittags, nicht vor einem Abendservice. Kein Agent fasst `RUNDEN` vorher an.
+
+---
+
+## 5. `observability` in `wrangler.jsonc` aufnehmen (Regel 12)
+
+**Status:** OFFEN
+**Gemeldet:** Setup
+
+**Hintergrund:** Observability ist im Dashboard eingeschaltet, steht aber nicht in `wrangler.jsonc`. Seit dem Auto-Deploy kann ein Deploy sie entfernen (Projektanleitung §6). Dasselbe Risiko gilt für D1-Bindung, `ASSETS`, `ABSENDER` und Crons.
+
+**Vorschlag (nicht ausgeführt, Regel 12):**
+
+```jsonc
+"observability": { "logs": { "enabled": true, "invocation_logs": true } }
+```
+
+**Empfehlung:** Du trägst es selbst ein, nachdem du `wrangler.jsonc` gegen den Dashboard-Stand abgeglichen hast. Ein Agent kann nicht sehen, was im Dashboard steht, und würde beim Schreiben womöglich genau das überbügeln, was dort nur einseitig gepflegt ist.
+
+---
+
+## 6. Wer darf Soll-Mengen und Glasweine festlegen?
+
+**Status:** OFFEN
+**Gemeldet:** hospitality-pro, Runde 1
+**Betrifft:** `public/index.html:1836` (Menüknopf „Verwaltung", `bAdmin`), `:1899` (`askPin`), `:1933` (`renderAdmin`), `:1956` (`.aSoll`), `hh_cfg_v9`
+**Zeilenangaben am 17.09. von qa-guardian nachgezogen** – die ursprünglichen stammten aus einem Stand vor den Änderungen dieser Runde.
+
+**Was sich geändert hat:** Bis Runde 1 lag hinter „Verwaltung" ein eigener
+Verwaltungscode. Der stand im Klartext in der ausgelieferten Datei und
+musste weg – richtig so. An seine Stelle ist `bekannterCode()` getreten:
+**jeder Code, der sich auf diesem Gerät schon einmal angemeldet hat.**
+Damit darf jetzt jede Servicekraft Glasweine und Soll-Mengen ändern.
+
+**Aus dem Betrieb heraus: falsch.** Nicht wegen Misstrauen – wegen der
+Sache, um die es geht.
+
+1. **Glasweine sind die Karte.** Welcher Wein offen ausgeschenkt wird,
+   entscheiden Leitung und Sommelier: Preis, Weinkarte, Einkauf,
+   Anbruchverlust hängen daran. Wer den Glaswein in der App tauscht, hat
+   ihn nicht auf der Karte getauscht. Am nächsten Abend steht ein Wein im
+   Bar-Schritt, den der Gast nicht bestellen kann – und einer fehlt, den
+   er bestellt.
+2. **Die Soll-Menge ist der Hahn zum Keller.** Soll − Ist = Fehlmenge =
+   was jeden Tag heraufgetragen wird. Ein Soll von 3 auf 5 erhöht die
+   tägliche Entnahme dauerhaft, ohne dass irgendwo ein Beschluss steht.
+   Und sie ist die Bezugsgröße, gegen die später der Z-Bericht geprüft
+   wird (Projektanleitung §8 C): Verschiebt sich das Soll still, ist der
+   Abgleich „Entnahme gegen Ausschank" wertlos.
+3. **Die Änderung ist ungezeichnet.** `renderAdmin()` schreibt bei jedem
+   Tastendruck (`oninput` → `saveCfg`) in `hh_cfg_v9`. Kein Name, keine
+   Uhrzeit, kein Eintrag im Ereignisjournal, keine Rückfrage. Am Morgen
+   danach ist nicht feststellbar, dass sich etwas geändert hat, geschweige
+   denn wer.
+4. **Das Schlimmste: sie gilt nur auf einem Gerät.** `hh_cfg_v9` liegt im
+   `localStorage`. Der Kasten im Editor sagt es sogar selbst („gilt nur
+   auf diesem Gerät, für die anderen den Code unten übertragen") – und
+   niemand überträgt um 23 Uhr einen Konfigurationscode. Ergebnis: iPad
+   an der Bar, iPhone und MacBook rechnen mit drei verschiedenen Soll-Werten.
+   Wer heute fasst, entscheidet, wie viel geholt wird.
+5. **Neue Mitarbeitende ohne Einschulung.** „Verwaltung" steht offen im
+   Menü und verspricht nichts Bestimmtes (siehe Backlog). Wer dort auf der
+   Suche nach etwas anderem landet, verschiebt mit einem Tipper auf ein
+   Zahlenfeld das Soll – ohne Warnung, ohne Bestätigung, ohne Weg zurück.
+
+**Das echte Anliegen des Service ist ein anderes.** „Der Glaswein ist aus,
+ich stelle einen anderen rein" passiert samstags um 19 Uhr und ist
+berechtigt. Dafür ist aber Projektanleitung §8 B da („Leer" ankreuzen →
+Zeile „unbedingt nachbestellen" für die Leitung), nicht das Ändern der
+Stammdaten. Service meldet den Zustand, die Leitung entscheidet den Ersatz.
+
+**Wer im Haus entscheidet was:**
+
+| Was | Wer | Wann |
+|---|---|---|
+| Welche Weine offen ausgeschenkt werden | Leitung mit Sommelier | beim Kartenwechsel, im Backoffice |
+| Soll-Menge je Platz (Bar, Schrank, Lade) | Leitung | nach Saison-/Verbrauchslage, im Backoffice |
+| „Ist gerade aus" melden | Service | im Moment, in der Fassung |
+| Mehr geholt als Soll (Fest, Gruppe) | Service | als Zusatzentnahme im laufenden Vorgang, nicht als neues Soll |
+
+**Optionen:**
+
+1. **So lassen.** Kein Aufwand. Folge: drei Geräte mit drei Soll-Ständen,
+   keine Nachvollziehbarkeit, Z-Bericht-Abgleich auf wackeligem Grund.
+   Nicht empfohlen.
+2. **Rolle beim Anmelden mitspeichern und den Editor daran hängen.**
+   `/api/anmelden` liefert `rolle` bereits mit (`src/index.js:140`), die App
+   wirft sie weg (`public/index.html:1757`) und `merkeCode` legt nur den
+   Namen ab (`:1325`). Speichert man `{name, rolle}`, funktioniert die
+   Prüfung auch offline im Keller. Der Editor bleibt für `service` sichtbar,
+   aber schreibgeschützt, mit einer Zeile: „Soll-Mengen und Glasweine legt
+   die Leitung fest." Kleiner Eingriff, wirkt sofort. **Empfohlen als
+   Sofortschritt.**
+3. **Editor ganz aus `index.html` heraus**, wie es Projektanleitung §8 A
+   schon behauptet. Ehrlich, aber bis `leitung.html` ihn hat, sind
+   Glasweine und Soll-Mengen nirgends änderbar.
+4. **Zielbild (ohnehin im Backlog, hoch):** Editor in `leitung.html`,
+   `hh_cfg_v9` nach D1 `stamm`, jede Änderung mit Name und Zeit ins
+   Ereignisjournal. Dann gilt ein Soll für alle Geräte und man sieht am
+   Morgen, wer wann was verstellt hat.
+
+**Empfehlung:** Jetzt Option 2, Ziel Option 4. Unabhängig davon, wer
+ändern darf, gilt: **Eine Soll-Änderung ist eine Stammdatenänderung und
+muss gezeichnet sein** – Name, Zeit, alter Wert, neuer Wert. Ohne das ist
+jede Zahl im Keller später unwiderlegbar und unbelegbar zugleich.
+
+---
+
+**Nachgeprüft (qa-guardian, Runde 1) — zwei Berichtigungen und ein Urteil:**
+
+*Berichtigung 1, Umfang.* Der Editor betrifft **nur die Bar**: `renderAdmin()`
+baut genau zwei Blöcke, `barrot` (Rotweine) und `bar` (Barkühlschrank), und
+schreibt nach `hh_cfg_v9`. Die Soll-Mengen des **Restaurants** stehen in
+`PLAN.soll` und sind über die App nicht änderbar; Schränke und Laden auch
+nicht. Der Satz „Soll-Menge je Platz (Bar, Schrank, Lade)" oben ist in der
+Sache richtig gemeint, trifft aber heute nur die Bar-Plätze. Alles Übrige am
+Befund ist nachgeprüft und stimmt: `oninput` → `saveCfg` bei jedem
+Tastendruck (`public/index.html:1956`), kein Name, keine Zeit, kein Journal,
+und `hh_cfg_v9` liegt im `localStorage` eines Geräts.
+
+*Berichtigung 2, Vergleichsmaßstab.* Vor Runde 1 lag hinter „Verwaltung" ein
+vierstelliger Verwaltungscode, der **im Klartext in der ausgelieferten Datei
+stand**. Zugang hatte damit nicht „die Leitung", sondern jeder, der die Seite
+aufrufen und den Quelltext lesen konnte — auch ein Gast im Haus-WLAN. Gemessen
+daran hat `bekannterCode()` den Kreis **verkleinert** (nur noch Codes, die auf
+diesem Gerät einmal angemeldet waren), nicht vergrössert. Vergrössert wurde er
+allein gegenüber der *beabsichtigten* Sperre, die es nie gab.
+
+*Urteil zur Regelfrage.* Kein Verstoss gegen eine harte Regel, also kein
+Rückbau. Regel 9 verlangte die Entfernung des Klartext-Codes — sie ist erfüllt.
+Regel 4 ist eine Schema-Regel („Code und Schema müssen zusammenpassen") und
+zählt die Rollen auf, die in der Spalte `person.rolle` stehen; der Editor rührt
+keine Tabelle und keine Spalte an, sondern den Gerätespeicher. Eine Regel, die
+verlangt, dass jede Funktion der App an eine Rolle gebunden ist, gibt es in
+`CLAUDE.md` nicht. Die beiden möglichen Rückbauten wären ausserdem beide
+schlechter: den Klartext-Code zurückholen verletzt Regel 9, den Editor
+streichen macht Glasweine nirgends änderbar (Projektanleitung §8 A ist nicht
+gebaut). **Es ist eine Betriebsentscheidung, keine Regelverletzung — und
+Betriebsentscheidungen gehören laut `CLAUDE.md` genau hierher.** Der
+hospitality-pro hat also richtig gehandelt, sie hier einzutragen statt
+zurückzudrehen; seine Sachargumente gegen den heutigen Zustand bleiben davon
+unberührt und sind die besseren.
+
+*Dazu ein eigener Befund, der unabhängig von der Entscheidung gilt:*
+`bekannterCode(code)` prüft, ob **irgendein** Code auf diesem Gerät schon
+einmal angemeldet war — nicht, ob es der Code der Person ist, die gerade
+angemeldet ist (`public/index.html:1330`). Am geteilten iPad genügt also der
+Code einer Kollegin; ins Protokoll kommt trotzdem der Name aus `whoAmI()`.
+Wer Option 2 baut, sollte beides in einem Zug erledigen: Rolle merken **und**
+gegen den eigenen Code prüfen.
+
+---
+
+## 7. Sonderentnahme ohne Grund – Bruch, Personal, Küche, Verkostung
+
+**Status:** OFFEN
+**Gemeldet:** hospitality-pro, Runde 1
+**Betrifft:** `public/index.html:1361` (Modus `nach`), `:3746` (Notiz), `blank("nach")`
+
+**Ist-Ablauf:** Die Sonderentnahme zählt Flaschen. Warum sie den Keller
+verlassen haben, steht – wenn überhaupt – im optionalen Freitextfeld
+„Notiz" am Ende, Platzhalter „z. B. Bruch, Verkostung". Optional, ganz
+zuletzt, ein Feld für alles.
+
+**Problem im Betrieb:** Der Grund ist bei einer Sonderentnahme nicht die
+Nebensache, er ist die Sache. Für die Leitung am Morgen ist „3 Flaschen
+weg" ohne Grund keine Information, sondern eine Frage. Und die vier Fälle
+werden völlig verschieden behandelt:
+
+| Fall | Was daran hängt |
+|---|---|
+| Bruch | Schwund, Versicherung, kein Umsatz – muss ausgebucht werden |
+| Personalgetränk | Personalaufwand, nicht Wareneinsatz Restaurant |
+| Küche (Kochwein, Fond) | Wareneinsatz Küche, nicht Getränke |
+| Verkostung / Gast | Marketing bzw. Kulanz, Umsatzschmälerung |
+| Zimmer / Amenity | wird dem Zimmer verrechnet oder ist Einladung |
+
+Ohne Grund landet alles im selben Topf und der Wareneinsatz Getränke wird
+zu hoch ausgewiesen. Dazu: Ein Freitextfeld am Ende wird nach dem Service
+nicht mehr ausgefüllt – und wer keinen Grund angeben muss, meldet die
+Entnahme im Zweifel gar nicht.
+
+**Soll-Ablauf (Vorschlag, nicht gebaut):**
+
+1. Kachel antippen → **zuerst** die Frage „Wofür?" mit fünf festen
+   Knöpfen: Küche · Personal · Bruch · Verkostung/Gast · Zimmer. Ein
+   Tipper, einhändig, keine Tastatur.
+2. Danach erst die Flaschen zählen wie bisher.
+3. Notiz bleibt optional – für den Sonderfall („Glas beim Ausschank
+   gebrochen, Tisch 12").
+4. Der Grund reist im Vorgang mit und steht im Protokoll ganz oben, nicht
+   in einer Fußnote.
+5. Leitung am Morgen: die Sonderentnahmen des Tages nach Grund gruppiert.
+
+**Ausdrücklich NICHT:** kein Pflichtfeld Kostenstelle, keine Zuordnung zu
+Tisch oder Zimmernummer, keine Preisrechnung in der App. Fünf Knöpfe,
+mehr nicht.
+
+**Warum das eine Entscheidung ist und keine Wortänderung:** Es ändert den
+Schritt-Ablauf des Modus `nach`, das Datenmodell des Vorgangs (`grund`)
+und das Protokoll. Reihenfolge und Wortlaut der fünf Gründe gehören mit
+dem Team abgestimmt (`review/INPUT-TEAM.md`).
+
+**Sofort umgesetzt, ohne Entscheidung:** Die Menügruppe hieß „Notfall".
+Eine Sonderentnahme ist kein Notfall, sondern Alltag; ein Wort, das
+Hemmung erzeugt, senkt die Meldequote und verdirbt den Bestand. Sie heißt
+jetzt „Außer der Reihe", und die Kachel nennt die Fälle beim Namen.
+
+---
+
+## 8. Oberflächen-Aufnahme im Prüflauf – Playwright ist da, aber nicht unser
+
+**Status:** OFFEN
+**Gemeldet:** ui-designer (Runde 2)
+
+**Hintergrund:** In Runde 1 hat jede der vier Rollen im Zug notiert, dass
+die Oberfläche von niemandem gesehen wurde – kein Browser, kein Chromium.
+Das stimmt für Runde 1 und ist in Runde 2 **nicht mehr richtig**: In der
+Arbeitsumgebung liegt ein global installiertes Playwright
+(`/opt/node22/lib/node_modules/playwright`) mit Chromium unter
+`/opt/pw-browsers`. Damit sind in dieser Runde zum ersten Mal echte
+Bildschirmaufnahmen entstanden (`review/screens/runde-2/`), und zwei
+Behauptungen aus Runde 1 haben sich am gemessenen Objekt als falsch
+erwiesen (Trefferfläche des „?"-Knopfes: 42px statt der behaupteten 44px).
+
+**Was daran zu entscheiden ist:** Regel 8 verbietet neue Abhängigkeiten
+ohne Freigabe. Playwright steht **nicht** in `package.json` und soll dort
+nach meinem Vorschlag auch nicht stehen – es ist eine Eigenheit dieser
+Arbeitsumgebung, nicht des Projekts. `tests/ui-aufnahme.cjs` ist deshalb
+so gebaut, dass es kein Teil von `npm test` ist (der Prüflauf sucht nur
+`*.test.mjs`), Playwright an drei Orten sucht und sich ohne Fund mit
+einer Zeile hinlegt, statt den Lauf rot zu machen.
+
+**Optionen:**
+
+1. So lassen: `npm test` bleibt ohne Abhängigkeit lauffähig, die Aufnahme
+   ist ein Handgriff für die Rollen, die gestalten. Kein Eintrag in
+   `package.json`. **Empfohlen.**
+2. Playwright als `devDependency` aufnehmen und einen Prüflauf
+   „Oberfläche" bauen, der Umbrüche, Trefferflächen und Kontraste
+   automatisch misst. → Stärkste Absicherung, aber eine echte neue
+   Abhängigkeit samt Browser-Download; `npm test` läuft dann nicht mehr
+   ohne Netz und ohne Installation, was heute sein größter Vorzug ist.
+3. Gar nicht aufnehmen. → Zurück zu „die Oberfläche hat niemand gesehen".
+   Nicht empfohlen.
+
+**Empfehlung:** Option 1, und in jedem Zug, der `public/` anfasst, einmal
+`node tests/ui-aufnahme.cjs` laufen lassen und die Bilder ansehen.
+
+---
+
+## 9. Fotoschritt „Fassungsliste" – was wirklich wegfällt, wenn er wegfällt
+
+**Status:** OFFEN
+**Gemeldet:** hospitality-pro (Runde 2), auf Bitte des Betreibers beurteilt
+**Betrifft:** `public/index.html:3885` (`rFotos` im Abschluss), `:4044`
+(`offenList`, Punkt „Fassungsliste noch nicht fotografiert"), `:1352`
+(Kacheltext), Projektanleitung §8 C, `UEBERGABE-TECHNISCH.md` §9.2 C
+
+**Warum das hier steht:** Der Kacheltext der Tagesfassung endet weiter mit
+„Liste fotografieren". Solange der Schritt existiert, ist der Text richtig –
+er beschreibt, was die App verlangt. Die Frage ist nicht das Wort, sondern
+der Schritt. Ich habe ihn nicht angefasst; das ist ein Umbau.
+
+**Ist-Ablauf (im Browser angesehen, `runde-2b`):** Schritt 4 „Abschluss"
+zeigt von oben nach unten: die große Zahl „0 Flaschen aus dem Keller", dann
+die Überschrift **Fassungsliste** mit dem dunklen Knopf **„Foto aufnehmen"**,
+dann die offenen Punkte, dann als heller Knopf „Fertig – Protokoll
+erstellen". Der auffälligste Knopf im letzten Schritt der Tagesfassung ist
+damit das Foto, nicht der Abschluss.
+
+**Drei Befunde aus dem Betrieb, alle belegbar:**
+
+1. **Das Foto sieht die Leitung nie.** Fotos bleiben in der IndexedDB des
+   Geräts, im Vorgang reist nur ihr Schlüssel (Projektanleitung §3, „Was
+   nicht überträgt"). Die Leitung arbeitet am MacBook und liest vom Server –
+   dort ist das Bild nicht. Ein Arbeitsschritt, dessen Ergebnis nie jemand
+   ansieht, hört im Betrieb binnen weniger Wochen von selbst auf. Er hört
+   aber nicht auf, in der Liste der offenen Punkte zu stehen.
+2. **Das Foto ist kein Beweis, obwohl es wie einer aussieht.** „Wir haben es
+   geholt, es ist nur nicht gebucht" ist der häufigste Streitfall am Morgen.
+   Das Bild dazu liegt auf genau einem Telefon und ist weg, sobald der
+   Browserspeicher geleert wird oder das Gerät wechselt. Wer sich darauf
+   verlässt, verlässt sich auf nichts.
+3. **Der schwerste Punkt: das Foto treibt die Freigabe.** Ist alles geprüft,
+   alles geholt und nur das Foto fehlt, steht im Abschluss „Ein Punkt ist
+   noch offen", und „Fertig – Protokoll erstellen" führt in den Dialog
+   „Trotzdem abschließen?" mit Code-Eingabe. Im Protokoll steht danach
+   **„Ohne Bestätigung freigegeben von …"** – auf einer tadellosen
+   Tagesfassung. Zwei Schäden auf einmal: Die Servicekraft lernt, dass die
+   Freigabe der normale Weg aus dem Abschluss ist (sie soll die Ausnahme
+   sein), und die Leitung bekommt am Morgen eine Warnung, die nichts
+   bedeutet. Nach ein paar Wochen liest sie diese Warnung nicht mehr – und
+   dann auch die echte nicht.
+
+**Meine Beurteilung:** Der Schritt gehört weg, so wie §8 C es vorsieht – und
+zwar nicht wegen des Fotos, sondern wegen Befund 3. Was die Liste leistet
+(„was stand auf dem Zettel?"), leistet der Vortagsabgleich nicht; der
+beantwortet eine andere Frage („stimmt die Entnahme von gestern mit dem
+Ausschank überein?"). Das ist kein Einwand: Die erste Frage beantwortet ein
+Bild, das niemand ansieht, auch nicht.
+
+**Was ausdrücklich NICHT gebaut werden soll:** kein Upload der Fotos auf den
+Server (Nutzlast, Speicher, Datenschutz – dafür sind sie zu wenig wert),
+keine Texterkennung, kein Abtippen der Fassungsliste von Hand.
+
+**Soll-Ablauf (Vorschlag, nicht gebaut):**
+
+1. Im Abschluss fällt der Block „Fassungsliste / Foto aufnehmen" ersatzlos
+   weg, ebenso der Punkt „Fassungsliste noch nicht fotografiert" in
+   `offenList()`. Damit ist eine vollständige Fassung wieder ohne Freigabe
+   abschließbar.
+2. An seine Stelle tritt der Vortagsabgleich: die Zeilen, bei denen die
+   Entnahme von gestern und der verkaufte Ausschank um mindestens eine
+   Flasche auseinanderliegen (`GET /api/fassungsliste?tag=…`).
+3. Der Kacheltext der Tagesfassung endet dann auf „… aus dem Keller holen,
+   Gestern gegenprüfen." – **erst dann**, nicht vorher.
+4. Bereits aufgenommene Fotos bleiben in der IndexedDB und in archivierten
+   Protokollen sichtbar; `fclean()` räumt sie ohnehin mit dem Vorgang weg.
+
+**Zwischenschritt, falls der Umbau wartet (eine Zeile, Entscheidung nötig):**
+Den Punkt „Fassungsliste noch nicht fotografiert" aus `offenList()` nehmen
+und das Foto als freiwillige Beigabe stehenlassen. Das nimmt Befund 3 sofort
+die Spitze, ohne dass jemand den Abschluss umbaut. Ich habe es nicht getan,
+weil damit ein offener Punkt verschwindet, den heute jemand bewusst
+hineingeschrieben hat – das ist eine Entscheidung des Hauses, keine
+Wortwahl.
+
+---
+
+## 10. `mapping.rezept` – die Spalte gibt es nicht (Migration liegt bereit)
+
+*software-engineer, Runde 3*
+
+**Befund.** `mappingSchreiben` (`src/index.js`) nahm ein Feld `rezept`
+entgegen und schrieb es nach `mapping.rezept`. Diese Spalte gibt es in der
+laufenden Datenbank nicht (`docs/live-schema.sql`: `fremd`, `status`,
+`artikel`, `gebinde_ml`, `wer`, `angelegt`). Jeder solche Aufruf war ein
+500 – aufgefallen ist es nie, weil kein Client diesen Endpunkt benutzt.
+
+**Was ich getan habe.** Der Worker schreibt `rezept` nicht mehr. Kommt es
+trotzdem im Körper an, antwortet er mit **422 und Klartext**
+(„Rezepturen kann die Datenbank noch nicht aufnehmen"), statt den Wert
+stillschweigend fallen zu lassen. Ein stiller Verlust wäre die schlechtere
+Hälfte: die Leitung sähe eine gespeicherte Rezeptur, die nirgends steht.
+
+**Was zu entscheiden ist.** Rezepturen liegen heute ausschließlich im
+Gerätespeicher der Leitung (`hh_rezepte_v1` in `public/leitung.html`) – auf
+einem einzigen MacBook, ungezeichnet, ohne Sicherung. Sobald der Abgleich
+Mischgetränke auflösen soll („Hugo" = 100 ml w057 + Sirup), brauchen sie
+einen Platz in der Datenbank.
+
+**Fertig, nicht eingespielt:** `migrations/001_mapping_rezept.sql` – eine
+additive, nullable Spalte. Lokal gegen `docs/live-schema.sql` durchgespielt.
+Solange sie nicht eingespielt ist, läuft alles unverändert weiter; der
+422-Weg ist das Feature-Flag. Zeile für Zeile in `review/ERGEBNIS.md`.
+
+**Meine Empfehlung:** noch nicht einspielen. Erst wenn Phase B den
+Vortagsabgleich baut und dabei feststeht, wie eine Rezeptur aussieht.
+
+---
+
+## 11. Drei Spalten der Fassungsliste bleiben leer
+
+*software-engineer, Runde 3*
+
+`fassungsliste` hat live die Spalten `kostenstelle`, `von_ts` und `bis_ts`.
+`parseZ` (`src/gnparse.js`) liefert heute keine davon: es liest den
+Betriebstag aus „Bis" und die Z-Nummer aus dem Kopf, mehr nicht. Der Worker
+schreibt sie deshalb **nicht** – sie sind nullable, das ist zulässig, aber
+es ist eine Lücke, kein Zustand.
+
+Dazu zwei Fragen, die ich nicht selbst beantworten kann:
+
+1. **Kommt je Betriebstag genau ein Z-Bericht?** Der Worker legt die Liste
+   jetzt unter `id = <Betriebstag>` ab – ein Bericht je Tag, ein zweiter
+   ersetzt den ersten. Auf `fassungsliste.tag` liegt live **kein**
+   UNIQUE-Index (nur `i_liste_tag`), ein `ON CONFLICT(tag)` gibt es also
+   nicht; der Betriebstag als Schlüssel ist der Weg ohne Schemaänderung.
+   Kommen Bar und Restaurant als **getrennte** Berichte (dafür stünde die
+   Spalte `kostenstelle`), überschreibt der zweite den ersten. Nach
+   `src/gnparse.js` und `tests/zbericht.test.mjs` enthält ein Bericht beide
+   Herkünfte – dann stimmt es. **Bitte einmal am echten Postfach ansehen.**
+2. **Was soll in `kern` stehen?** `fassungszeile.kern` ist NOT NULL und
+   musste gefüllt werden. Ich habe es als „Positionsname ohne die
+   Größenangabe" gedeutet (`kern()` in `src/gnparse.js`): aus
+   „Zweigelt 0,75 l 0,125 l" wird „Zweigelt". Das ist eine begründete
+   Auslegung, keine Vorgabe – im Repo benutzt die Spalte sonst niemand.
+   Ist etwas anderes gemeint, ist es eine Zeile Code.
+
+---
+
+### Antwort aus dem Betrieb (hospitality-pro, Runde 3)
+
+**Zu 1 – ein Z-Bericht je Betriebstag, nicht je Kostenstelle.** Der
+Tagesabschluss wird am Ende des Betriebstages für das Haus gezogen, und die
+Positionsliste darin führt Bar und Restaurant als getrennte Zeilen. Genau
+deshalb kommt derselbe Name zweimal vor – das ist Eigenheit 1 in
+`gnparse.js` und Regel 7, und sie wäre sinnlos, wenn es zwei getrennte
+Berichte gäbe. **Ein Eintrag je Tag in `fassungsliste` ist damit richtig,
+`kostenstelle` bleibt leer.**
+
+**Aber: „der zweite ersetzt den ersten" ist im Betrieb nicht immer harmlos.**
+Zwei Fälle, die vorkommen:
+
+* **Nachzügler und Storno.** Die Kasse wird abgeschlossen, danach kommt noch
+  eine Buchung oder ein Storno – es wird ein zweiter Z gezogen. Der ist der
+  richtige, Ersetzen ist hier genau das Gewünschte.
+* **Getrennter Abschluss.** Die Bar schließt um 1 Uhr, das Restaurant um
+  23 Uhr; wer aus Gewohnheit zweimal abschließt, schickt zwei **Teil**-Berichte
+  für denselben Tag. Dann wirft der zweite den ersten weg, und dem Abgleich
+  fehlt eine ganze Kostenstelle – ohne dass es irgendwo steht.
+
+Beide Fälle sehen im Worker gleich aus. **Was ich brauche, ist keine
+Schemaänderung, sondern eine Spur:** Wird ein Bericht für einen Tag ersetzt,
+soll die Notiz im Journal die alte und die neue Z-Nummer und beide
+Positionszahlen nennen („Z 41 (218 Positionen) ersetzt durch Z 42 (96
+Positionen)"). Fällt die Zahl der Positionen beim Ersetzen deutlich, war es
+ein Teilbericht, und die Leitung sieht es am Morgen. → Backlog, mittel.
+
+**Am Postfach nachzusehen (Aufgabe für den Betreiber):** ob an einem Tag
+eine oder zwei Mails von gastronovi eintreffen, und ob im Kopf des Berichts
+eine Kostenstelle steht. Solange `tests/fixtures/` leer ist, ist alles oben
+Hauspraxis, nicht gemessen.
+
+**Zu 2 – `kern` ist richtig gedeutet: der Positionsname ohne Größe.** Der
+Zweck der Spalte ist der Blick, den die Leitung und der Sommelier ohnehin
+haben: *ein* Wein, zwei Ausschankgrößen. „Grüner Veltliner Leindl" – 34
+Achtel und 6 Flaschen, eine Zeile. Die Größe darf dabei nicht verloren
+gehen, sie steckt in `ausschankMl` und wird für die Umrechnung auf Flaschen
+gebraucht; `rohbez` bleibt daneben unangetastet. Beides ist so gebaut.
+
+Zwei Dinge dazu aus der Praxis:
+
+* **`kern` darf kein Suchschlüssel werden.** Kleinschreiben, Umlaute
+  auflösen, Winzer abschneiden – das ist der Anfang der Ähnlichkeitssuche,
+  die nach Regel 5 abgeschaltet bleibt, weil sie falsche Treffer liefert
+  („Riesling Federspiel" ≠ „Riesling Smaragd", und der Preis unterscheidet
+  sich um das Doppelte). Nur abschneiden, sonst nichts – so wie jetzt.
+* **Geschnitten wird heute nur die Maßangabe.** In der Kasse heißen
+  Positionen aber auch „… Glas", „… Fl.", „… Karaffe", „… 1/8". Die
+  Bruchzahl ist abgedeckt, die Wörter nicht: „Zweigelt Glas" und „Zweigelt
+  0,75 l" bekämen zwei verschiedene `kern`. Ob das im Haus vorkommt, sagt
+  der erste echte Z-Bericht – **nicht vorab erweitern**, sondern am echten
+  Bericht ablesen und dann eine Zeile ändern. → Backlog, niedrig.
+
+---
+
+## 12. Ein Z-Bericht, zwei Blöcke — welcher gewinnt?
+
+> **BEFUND vom 17.09.2026, am echten Bericht (Hauptsitzung, Runde 4):**
+> **Bericht Nr. 37 ist NICHT gespalten.** Bar und Restaurant stehen als
+> Tagessumme in der Tabelle „Kostenstellen" (24 / 299,00 und 29 / 251,50),
+> die Artikel stehen in EINEM Block „Positionen". Getrennt gebucht sind
+> sie trotzdem — derselbe Wein erscheint zweimal in diesem einen Block,
+> und genau das ist Eigenheit 1 (wird summiert).
+> Geändert wurde deshalb nur die Blockwahl: Der Positionsblock wird jetzt
+> **beim Namen** genommen („Positionen" / „Artikel" / „Artikelumsätze"),
+> nicht mehr nach Zeilenzahl. Das war nötig, weil der echte Bericht
+> daneben zwei Warengruppen-Tabellen führt, die dieselben Artikel
+> zusammengefasst noch einmal enthalten — über die blosse Zeilenzahl
+> gewinnt der richtige Block nur, solange das Haus mehr Artikel als
+> Warengruppen führt.
+> **Offen bleibt allein Frage 2 unten**, und sie ist jetzt hypothetisch:
+> Ein Bericht ohne diesen Namen fällt auf den alten Weg zurück (grösster
+> Block gewinnt) und verlöre eine zweite Hälfte weiter lautlos. Solange
+> gastronovi für dieses Haus so ausgibt wie in Nr. 37, tritt der Fall
+> nicht ein. Nachgestellt bleibt er in `tests/zbericht.test.mjs`.
+
+
+*Gefunden vom qa-guardian, Runde 3. Das ist aus meiner Sicht die grösste
+offene Unsicherheit vor dem Livegang.*
+
+`parseZ` sucht **eine** Sektion — die mit den meisten Zeilen aus Text und
+Zahl — und liest nur diese als Positionsblock (`src/gnparse.js:114–120`).
+Das ist bewusst so: Es ist die einzige Abwehr dagegen, den
+Zahlungsartenblock für die Artikel zu halten (`tests/zbericht.test.mjs`,
+Prüfung 8), und es ist richtig, solange gastronovi alle Artikel in einem
+Block ausgibt.
+
+**Gibt die Kasse den Abschluss aber nach Kostenstellen in zwei Sektionen
+aus — „Restaurant" und „Bar" —, dann gewinnt die grössere und die kleinere
+fällt lautlos weg.** Nachgestellt und gemessen:
+
+| | eine Sektion | zwei Sektionen |
+|---|---|---|
+| gelesener Block | „Artikelumsätze" | „Restaurant" |
+| Positionen | 2 | 3 |
+| GV Leindl 1/8 | 20 | **12** (8 aus der Bar fehlen) |
+| Gin Tonic | – | **fehlt ganz** |
+| Umsatz | 170,00 € | 179,50 € statt 345,50 € |
+
+Kein Fehler, keine Meldung, kein 422. Im Backoffice steht eine plausible
+Zahl, und „Verkauf ↔ Fassung" vergleicht den halben Ausschank mit der
+ganzen Fassung — jede Nacht, in dieselbe Richtung. Wer das für Schwund
+hält, sucht im Keller nach etwas, das an der Bar verkauft wurde.
+
+**Was dagegen spricht, es jetzt einfach zu ändern:** Regel 7 sagt
+ausdrücklich, dass an `gnparse.js` nicht auf Verdacht geschraubt wird, und
+`tests/fixtures/` ist im vierten Zug leer. Ich weiss nicht, wie ein echter
+Bericht aus diesem Haus aussieht. Jede Erweiterung („nimm alle Sektionen
+mit Positionszeilen") riskiert, den Zahlungsartenblock oder die
+Trinkgeldliste mit einzulesen — und das wäre schlimmer als das heutige
+Verhalten, weil es Umsatz **erfindet** statt ihn zu verlieren.
+
+**Was ich stattdessen getan habe:** Das Verhalten ist jetzt festgehalten
+statt implizit (`tests/zbericht.test.mjs`, Block „welcher Block gewinnt",
+drei Prüfungen). Und die Fixture-Prüfung, die heute übersprungen wird,
+schlägt am Tag des ersten echten Berichts von selbst an, wenn neben dem
+gelesenen Block eine zweite Sektion mit ebenso vielen Positionszeilen
+steht. Der Text der Fehlermeldung sagt dann ausdrücklich: **nicht die
+Prüfung lockern, sondern hier entscheiden.**
+
+**Zu entscheiden ist:**
+
+1. **Ein echter (anonymisierter) Z-Bericht nach `tests/fixtures/`.** Ohne
+   ihn ist alles oben eine Möglichkeit, keine Tatsache. Das ist die
+   billigste Antwort auf die teuerste offene Frage.
+2. Falls der Bericht gespalten ist: Sollen **beide** Blöcke gelesen und
+   je Positionsname summiert werden (das wäre Eigenheit 1 aus Regel 7,
+   nur eine Ebene höher)? Oder soll je Kostenstelle eine eigene
+   `fassungsliste`-Zeile entstehen? Letzteres widerspricht der Antwort
+   des hospitality-pro zu Nr. 11 („ein Eintrag je Tag") und wäre ein
+   grösserer Eingriff.
+3. Unabhängig davon: Soll der Import melden, wie viele Positionszeilen
+   **ausserhalb** des gelesenen Blocks standen? Die Zahl liegt schon vor
+   (`parseZ(...).sektionen`), es wäre eine Zeile in der Journalnotiz. Das
+   macht den Fall sichtbar, ohne das Verhalten zu ändern.
+
+---
+
+## 13. Wie lang ist ein persönlicher Code — und darf die Anmeldung dafür eine Taste mehr haben?
+
+**Status:** OFFEN
+**Gemeldet:** Hauptsitzung, Runde 4
+**Betrifft:** `src/index.js:491` (`personSchreiben`), `public/index.html:1861` ff. (`renderLogin`), `public/leitung.html:1873` (Vorschlag)
+
+**Hintergrund:** Auflage 2 vor dem Livegang sagt „neue Codes, nicht wieder
+vierstellig". Umgesetzt ist: **sechs bis acht Ziffern.** Damit steht die
+Länge nicht mehr fest — und ein Ziffernblock, der nicht weiss, wann der
+Code zu Ende ist, kann nicht mehr von selbst abschicken. Bis v21 tat er das
+bei der vierten Ziffer. Jetzt gibt es eine Bestätigungstaste (✓) unten
+links, die leuchtet, sobald der Code lang genug ist.
+
+**Das kostet einen Tastendruck je Anmeldung**, bei nassen Händen im Keller,
+auf dem ersten Schirm, den das Werkzeug zeigt. Dafür kann jeder im Haus
+eine Länge haben, die er sich merkt, und niemand schickt aus Versehen die
+ersten Ziffern eines längeren Codes los (zehn davon, und die Anmeldung
+sperrt für eine Viertelstunde).
+
+**Optionen:**
+
+1. **Bleiben wie gebaut: sechs bis acht Ziffern, Bestätigungstaste.**
+   Grösster Spielraum, ein Tastendruck mehr. So ist es jetzt.
+2. **Genau sechs Ziffern für alle.** Dann kann die Anmeldung wieder bei der
+   letzten Ziffer von selbst abschicken, die Taste entfällt, und die sechs
+   Felder auf dem Schirm sagen genau, wie lang der Code ist. Preis: Wer
+   einen längeren will, bekommt ihn nicht, und eine spätere Verlängerung
+   heisst wieder Code ändern *und* App ändern.
+3. Mehr als acht Ziffern erlauben. Nicht empfohlen: Der Ziffernblock ist
+   für kurze Folgen gebaut, und die Sperre nach zehn Fehlversuchen trägt
+   die Sicherheit, nicht die Länge.
+
+**Empfehlung:** Option 1 lassen, bis das Team die neuen Codes eine Woche
+benutzt hat. Wenn dann jemand sagt „warum muss ich noch auf ✓ tippen",
+ist Option 2 in wenigen Zeilen zu haben — und erst dann weiss man es,
+statt es vorher zu vermuten. Entschieden werden muss es vor dem nächsten
+Codewechsel, nicht vor dem Livegang.
+
+
+---
+
+## 14. Hat das Getränkelager einen Bestand — oder nur Bewegungen?
+
+**Status:** OFFEN
+**Gemeldet:** Runde 5 (software-engineer, Hauptsitzung)
+**Betrifft:** `src/index.js:281` (Kellerzählung), `public/index.html:3090` (`gFehlt`), `public/leitung.html` (Ansicht „Getränke")
+
+**Was seit Runde 5 gebucht wird:** Getränke, die beim Nachfüllen oder in
+der Tagesfassung aus dem Lager geholt werden, stehen jetzt als Entnahme im
+Journal; eine Lieferung steht als Eingang. Vorher stand beim Nachfüllen
+gar nichts und die Lieferung mit falschem Vorzeichen.
+
+**Was weiter fehlt:** eine **Zählung** des Getränkelagers. Die Kellerzählung
+erfasst die Laden der Bar (`d.getr`), aber diese Zahlen gehen nicht ins
+Journal — sie beschreiben den Ist-Stand der Lade, nicht den Lagerbestand.
+Ohne Zählung ist jede Getränkezahl im Backoffice eine Fortschreibung ohne
+Anker: Beim Wein gibt es die Kellerzählung als Basis, beim Getränk nicht.
+Ein Rechenfehler oder eine nicht erfasste Entnahme läuft unbemerkt mit.
+
+**Optionen:**
+
+1. **So lassen.** Getränke werden bewegt, nicht gezählt. Das Backoffice
+   zeigt weiter nur die Bar-Laden, kein Lager. Ehrlich, solange niemand
+   eine Getränkebestellung auf diese Zahl stützt.
+2. **Das Lager in die Kellerzählung aufnehmen** — ein eigener Schritt
+   („Getränkelager zählen"), gebucht als `zaehlung … @lager`. Dann
+   rechnet `/api/bestand` Getränke genauso wie Wein, und die Ansicht
+   „Bestellen" kann Getränke mitführen.
+3. Ein eigener Modus „Lagerzählung", seltener als die Kellerzählung.
+
+**Empfehlung:** Option 2, aber erst in Phase B und erst, wenn das Team sagt,
+wie oft das Lager wirklich gezählt wird. Bis dahin Option 1 mit dem
+ausdrücklichen Satz im Backoffice: „Getränke werden nicht gezählt."
+
+---
+
+## 15. Zählt der Betriebstag oder der Zeitstempel?
+
+**Status:** OFFEN
+**Gemeldet:** Runde 5 (software-engineer)
+**Betrifft:** `src/index.js:362` ff. (`bestand`)
+
+**Hintergrund:** Der Bestand nimmt die jüngste Zählung je Artikel und
+rechnet alles danach dazu oder ab. „Danach" heisst heute: nach dem
+**Zeitstempel** der Zählung — und `ereignis.ts` ist die Zeit des
+SCHREIBENS, nicht die der Handlung. Genau daher kommen beide Fälle unten. Zwei Fälle gehen damit schief, beide gemessen:
+
+* **Ein spätes Paket.** Ein iPhone hatte kein Netz und schickt die
+  Tagesfassung vom 14.09. erst am 16.09. nach — nachdem am 16.09. gezählt
+  wurde. Die vier Flaschen werden von der Zählung abgezogen, obwohl sie
+  beim Zählen längst weg waren. Bestand 26 statt 30.
+* **Dieselbe Millisekunde.** Zählung und Fassung mit gleichem `ts`: Die
+  Entnahme fällt unter den Tisch (`r.ts <= basis`).
+
+**Optionen:**
+
+1. **Nach Betriebstag rechnen** (`tag > Zähltag`, bei Gleichstand der
+   Zeitstempel). Fachlich richtig: Eine Zählung am Morgen des 16. sieht
+   alles, was am 14. passiert ist. Ändert Zahlen, die heute schon
+   angezeigt werden.
+2. So lassen und beim Nachtragen aufpassen. Billig, aber die Falle
+   schnappt genau dann zu, wenn der Keller offline war — also im
+   Normalfall dieses Hauses.
+3. Nach Betriebstag rechnen und zusätzlich melden, wenn ein Paket
+   eintrifft, das älter ist als die jüngste Zählung („nachgereicht, nicht
+   mehr eingerechnet").
+
+**Empfehlung:** Option 3, in Phase B. Es ist eine Rechenänderung mit
+fachlicher Folge — kein stiller Griff in eine Formel, die im Backoffice
+eine Zahl bewegt.
