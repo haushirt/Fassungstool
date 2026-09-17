@@ -2,11 +2,13 @@
 -- Gezogen am 17.09.2026 aus der laufenden Datenbank:
 --   SELECT type, name, tbl_name, sql FROM sqlite_master;
 --
--- GEGENGEPRÜFT am 17.09.2026 nach Runde 3, Zug 1: `PRAGMA table_info` für `vorgang`,
--- `fassungsliste` und `fassungszeile` gegen die laufende D1 gelesen. Spaltennamen,
--- Typen, NOT-NULL-Marken und `zaehlnr DEFAULT 0` stimmen mit dieser Datei überein.
--- Der Vorbehalt des software-engineers ("ob diese Datei die Datenbank richtig
--- wiedergibt") ist damit erledigt.
+-- GEGENGEPRÜFT am 17.09.2026, VOLLSTÄNDIG: `PRAGMA table_info` für ALLE NEUN Tabellen
+-- gegen die laufende D1 gelesen — `person`, `anmeldeversuch`, `vorgang`, `ereignis`,
+-- `fassungsliste`, `fassungszeile`, `mapping`, `stamm` (und `_cf_KV`). Spaltennamen,
+-- Typen, NOT-NULL-Marken und `zaehlnr DEFAULT 0` stimmen durchweg mit dieser Datei
+-- überein. Damit sind beide Vorbehalte erledigt: der des software-engineers ("ob diese
+-- Datei die Datenbank richtig wiedergibt") und der des qa-guardian ("für person,
+-- ereignis, mapping, stamm steht die Gegenprobe noch aus").
 --
 -- DIES IST DIE WAHRHEIT nach Regel 3, nicht `schema.sql` im Wurzelverzeichnis.
 -- Die Datei wird NICHT ausgeführt, sie dokumentiert. Lokale Test-DBs werden
