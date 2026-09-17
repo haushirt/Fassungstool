@@ -384,6 +384,14 @@ header{background:var(--accent);color:var(--fg-on-dark);
   min-height:var(--control-h-sm);padding:0 var(--space-3);border-radius:var(--radius-md);
   font-size:var(--text-sm);cursor:pointer;
   transition:background var(--dur-fast) var(--ease)}
+/* „Menü" und „?" sind 36px hoch — die beiden meistgedrückten Knöpfe der
+   App lagen damit unter den 44px, die für den Daumen gelten. Die Optik
+   bleibt, die Trefferfläche wächst: 36 + 2×4 = 44. Dieselbe Lösung wie
+   bei den Schrittpunkten (.stpts .st::after). Der Abstand der beiden
+   Knöpfe ist 8px, die Flächen stoßen also aneinander, ohne sich zu
+   überlappen. */
+.home,.hilfebtn{position:relative}
+.home::after,.hilfebtn::after{content:"";position:absolute;inset:-4px}
 #dSel{background:var(--surface-on-dark);border:0;color:var(--fg-on-dark);
   min-height:var(--control-h-sm);padding:0 var(--space-2);border-radius:var(--radius-md);
   font-size:var(--text-sm)}
@@ -745,9 +753,6 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .card2 .row button{flex:1}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.offline{background:var(--surface-3);color:var(--fg-secondary);font-size:var(--text-xs);
-  padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border);display:none}
-body.off .offline{display:block}
 
 /* ═══════════════ Zeigegerät ═══════════════ */
 @media(hover:hover) and (pointer:fine){
@@ -774,8 +779,11 @@ body.off .offline{display:block}
    darin bleibt auf Satzbreite. */
 @media(min-width:720px){
   .topwrap{background:var(--accent)}
-  .topwrap>.howto,.topwrap>.tools,.offline{background:var(--bg);max-width:none}
+  .topwrap>.howto,.topwrap>.tools{background:var(--bg);max-width:none}
   header>.hd,header>.steps{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+  /* Die Statuszeile fluchtet ebenfalls mit dem Inhalt — ihre Regel steht
+     weiter unten bei .netz, sonst überschriebe die spätere Kurzschrift
+     padding: die hier gesetzten Seitenwerte. */
   .tools>#q,.howto>*{max-width:var(--maxw);margin-left:auto;margin-right:auto}
   main{max-width:var(--maxw);margin-left:auto;margin-right:auto}
   .rail{right:max(var(--space-1),calc(50% - (var(--maxw)/2) - var(--rail) - var(--space-2)))}
@@ -904,15 +912,37 @@ body.off .offline{display:block}
   transition:background var(--dur-fast) var(--ease)}
 .fotobtn:active{background:var(--surface-3)}
 
-/* ═══════════════ Mehrgerätebetrieb ═══════════════ */
-.netz{position:absolute;right:var(--space-4);bottom:var(--space-2);
-  font-size:var(--text-xs);font-weight:var(--weight-medium);
-  padding:2px var(--space-2);border-radius:var(--radius-pill);
-  background:var(--surface-on-dark);color:var(--fg-on-dark-2);
-  pointer-events:none;white-space:nowrap}
-.netz.ok{color:var(--success-on-dark)}
-.netz.wartet{background:var(--warn-bg);color:var(--warn-fg)}
-.netz.offline{background:var(--surface-on-dark);color:var(--fg-on-dark-3)}
+/* ═══════════════ Mehrgerätebetrieb ═══════════════
+   Der Übertragungszustand war eine 11px-Pille, absolut positioniert —
+   ihr Bezugsrahmen war aber nicht die Kopfzeile, sondern das ganze
+   klebende #topwrap. Sie landete je nach Schritt über der Suchzeile und
+   stand dort hell auf hell. Dazu kam eine zweite Zeile („Offline –
+   Protokoll später senden") mit einer anderen Zusage. Jetzt eine Zeile
+   in voller Breite unter dem Kopf: Form, Wort und Farbe sagen dasselbe,
+   damit auch bei Kellerlicht und Farbschwäche etwas ankommt. */
+.netz{display:flex;align-items:center;gap:var(--space-2);
+  padding:var(--space-1) var(--space-4);
+  font-size:var(--text-sm);line-height:var(--leading-normal);
+  font-weight:var(--weight-medium);
+  background:var(--surface-3);color:var(--fg-secondary);
+  border-bottom:1px solid var(--border-strong)}
+/* Punkt · Quadrat · Ring · Raute — der Zustand ist auch ohne Farbe lesbar. */
+.netz::before{content:"";width:10px;height:10px;flex:none;
+  border-radius:50%;background:currentColor}
+.netz.ok{background:var(--success-bg);color:var(--success-fg);
+  border-bottom-color:var(--success-border)}
+.netz.wartet{background:var(--warn-bg);color:var(--warn-fg);
+  border-bottom-color:var(--warn-border)}
+.netz.wartet::before{border-radius:var(--radius-xs)}
+.netz.offline::before{background:none;border:2px solid currentColor}
+.netz.fehler{background:var(--danger-bg);color:var(--danger-fg);
+  border-bottom-color:var(--danger-border)}
+.netz.fehler::before{border-radius:var(--radius-xs);transform:rotate(45deg)}
+/* Ab 720px geht die Fläche durch, der Text fluchtet mit dem Inhalt —
+   dieselbe linke Kante wie #main. */
+@media(min-width:720px){
+  .netz{padding-left:max(var(--space-4),calc(50% - var(--maxw)/2));
+    padding-right:max(var(--space-4),calc(50% - var(--maxw)/2))}}
 .gruss{margin-bottom:var(--space-5);font-size:var(--text-md);
   line-height:var(--leading-normal)}
 .gruss b{display:block;font-size:var(--text-lg);font-weight:var(--weight-medium);
@@ -969,8 +999,17 @@ body.off .offline{display:block}
   border-radius:var(--radius-md);background:var(--surface);position:relative}
 .pinfeld.voll::after{content:"";position:absolute;left:50%;top:50%;
   width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent)}
+/* Die einzige Zeile, die sagt, warum es nicht weitergeht. Sie stand in
+   --danger auf Cream — 4,4:1 und damit unter dem Schwellwert für 13px.
+   --danger-fg ist derselbe Ton, nur dunkler: 7:1. Im Dialog liegt
+   .card2 p mit gleicher Spezifität darüber, deshalb der zweite Selektor.
+   Dieselbe Zeile trägt jetzt auch Verwaltung und Freigabe — eine Form
+   für „geht nicht, und zwar deshalb", nicht drei. */
 .pinfehler{min-height:20px;margin:0 0 var(--space-3);font-size:var(--text-sm);
-  color:var(--danger)}
+  line-height:var(--leading-normal);font-weight:var(--weight-medium);
+  color:var(--danger-fg)}
+.card2 .pinfehler{margin:var(--space-2) 0 0;font-size:var(--text-sm);
+  color:var(--danger-fg)}
 .block{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);
   margin-top:var(--space-4)}
 .ztaste{height:var(--control-h-lg);border:1px solid var(--border-strong);
@@ -1004,7 +1043,7 @@ body.off .offline{display:block}
 /* ═══════════════ Druck ═══════════════ */
 @media print{
   header,.tools,.howto,.rail,.exprow,.explesser,
-  .fotoblock,.zusatzlink{display:none!important}
+  .netz,.fotoblock,.zusatzlink{display:none!important}
   body{background:var(--surface)}
   .doc{padding:0}
   /* Rubriken starten eingeklappt — im Druck müssen sie offen sein. */
@@ -1234,11 +1273,11 @@ body.off .offline{display:block}
     <div><h1 id="mTitle">—</h1>
       <label class="datumline" id="bDatum"><span id="datumTxt"></span>
         <span class="vh">Datum ändern</span><input type="date" id="dSel"></label></div>
-    <span class="netz" id="netz" style="display:none"></span><div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
+    <div class="hdr-r"><button class="hilfebtn" id="bHilfe" aria-label="Hilfe zu diesem Schritt">?</button><button class="home" id="bHome">Menü</button></div>
   </div>
   <nav class="steps" id="steps" role="tablist"></nav>
 </header>
-<div class="offline">Offline – Protokoll später senden</div>
+<div class="netz" id="netz" role="status" style="display:none"></div>
 <div class="howto" id="howto"></div>
 <div class="tools" id="tools"><input id="q" type="search" placeholder="Wein suchen …" autocomplete="off"></div>
 </div>
@@ -1551,16 +1590,26 @@ function fernNeuer(m){
   return (v.zaehlnr||0)>eigen ? v : null;
 }
 
+/* Ein Satz, der beantwortet: Ist meine Arbeit draußen oder noch im Gerät?
+   Vorher stand „Offline" in zwei Zeilen mit zwei verschiedenen Zusagen.
+   „Nicht angemeldet" und „Server antwortet nicht" sind Fehler, keine
+   Ruhezustände — sie tragen jetzt auch die Form und Farbe eines Fehlers.
+   navigator.onLine wird mitgelesen: wer die App im Keller ohne Netz
+   öffnet, bekommt sonst erst beim ersten Sendeversuch eine Auskunft. */
 function netzChip(){
   const el=$("#netz"); if(!el)return;
   const z=NETZ.zustand, o=NETZ.offen;
+  const weg=(navigator.onLine===false)||z==="offline";
+  const viele=o===1?"1 Vorgang":o+" Vorgänge";
   let t="", k="";
   if(z==="kein-server"){ el.style.display="none"; return; }
-  if(o>0){ t=o===1?"1 Vorgang wartet":o+" Vorgänge warten"; k="wartet"; }
-  else if(z==="offline"){ t="Offline – wird nachgereicht"; k="offline"; }
-  else if(z==="abgemeldet"){ t="Nicht angemeldet"; k="offline"; }
-  else if(z==="serverfehler"){ t="Server antwortet nicht"; k="offline"; }
-  else if(z==="verbunden"){ t="Übertragen"; k="ok"; }
+  if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
+  else if(weg&&o>0){ t=viele+" warten – kein Netz"; k="wartet"; }
+  else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
+  else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" warten"
+                                    :"Server antwortet nicht"; k="fehler"; }
+  else if(o>0){ t=viele+" warten auf Übertragung"; k="wartet"; }
+  else if(z==="verbunden"){ t="Nichts offen – alles übertragen"; k="ok"; }
   else { el.style.display="none"; return; }
   el.style.display=""; el.className="netz "+k; el.textContent=t;
 }
@@ -1835,20 +1884,32 @@ function openArchDoc(k){
 /* Der Verwaltungscode stand bis v12 als Konstante in dieser Datei — wer
    die Seite aufrief, las ihn im Quelltext mit. Bis der Editor nach
    Projektanleitung §8 A ins Backoffice umzieht, gilt hier dieselbe Regel
-   wie bei der Freigabe: Es zählt der eigene Zugangscode, und zwar einer,
+   wie bei der Freigabe: Es zählt der persönliche Code, und zwar einer,
    der sich auf diesem Gerät schon einmal angemeldet hat (`bekannterCode`
    prüft die Prüfsumme, nicht den Code). Das ist keine strengere Hürde für
-   das Team — aber eine, die nicht im Quelltext steht. */
+   das Team — aber eine, die nicht im Quelltext steht.
+   Wortwahl: Die Anmeldung nennt es „dein persönlicher Code". Ein zweites
+   Wort für dieselbe Sache („Zugangscode", „Freigabecode") lässt suchen,
+   ob es noch einen anderen Code gibt. Es gibt keinen. */
 function askPin(){
   $("#ovT").textContent="Verwaltung";
-  $("#ovBody").innerHTML=`<p>Zum Öffnen den eigenen Zugangscode eingeben.</p>
-    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••">`;
+  $("#ovBody").innerHTML=`<p>Zum Öffnen deinen persönlichen Code eingeben — denselben wie beim Anmelden.</p>
+    <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4"
+      placeholder="••••" aria-label="Persönlicher Code">
+    <p class="pinfehler" id="pinMeld" role="status"></p>`;
   $("#ov").classList.add("on");
   const inp=$("#pinIn");setTimeout(()=>inp.focus(),50);
+  inp.oninput=()=>{$("#pinMeld").textContent="";};
   $("#ovOk").textContent="Öffnen";
+  /* Der Fehler stand im Toast — der verschwindet nach zwei Sekunden und
+     liegt auf dem iPhone hinter der Zifferntastatur. Er steht jetzt im
+     Dialog, bleibt stehen und nennt den Grund: „unbekannt" heißt hier
+     nicht „falscher Code", sondern „auf diesem Gerät nie angemeldet". */
   $("#ovOk").onclick=async()=>{
     if(!(await bekannterCode(inp.value))){
-      inp.value="";inp.placeholder="falsch";toast("Code unbekannt");return;}
+      inp.value="";
+      $("#pinMeld").textContent="Dieser Code war auf diesem Gerät noch nie angemeldet. Nimm deinen eigenen Code.";
+      inp.focus();return;}
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();
   };
 }
@@ -3706,17 +3767,24 @@ function rDoc(m){
   $("#bReset").onclick=()=>ask("Zurücksetzen","<p>Dieser Vorgang wird gelöscht und vorher ins Archiv gelegt.</p>",
     ()=>{archive(S[mode]);S[mode]=blank(mode);save();step=0;render();window.scrollTo(0,0);toast("Archiviert und zurückgesetzt");});
 }
-/* P14/28 · Trotzdem abschliessen \u2014 nur mit einem Zugangscode, und
-   es bleibt im Protokoll sichtbar, wer freigegeben hat. */
+/* P14/28 · Trotzdem abschliessen \u2014 nur mit dem persönlichen Code,
+   und es bleibt im Protokoll sichtbar, wer freigegeben hat.
+   „Freigabecode" hieß das Feld, solange es dafür einen eigenen Code gab.
+   Den gibt es nicht mehr — der alte Name schickt Leute suchen, und wer
+   sucht, holt die Chefin. Deshalb steht jetzt im Dialog, dass der eigene
+   Code genügt. */
 function freigabe(offen){
   $("#ovT").textContent="Trotzdem abschließen?";
   $("#ovBody").innerHTML=`<p>Diese Punkte sind offen:</p>
     <div class="box" style="margin-top:0">${offen.map(x=>"\u2022 "+esc(x)).join("<br>")}</div>
-    <label class="f"><span>Freigabecode</span>
+    <p>Freigeben darf jede und jeder \u2014 mit dem eigenen Code. Die Freigabe steht mit Namen im Protokoll.</p>
+    <label class="f"><span>Dein pers\u00f6nlicher Code</span>
       <input id="fgCode" class="input input--pin" type="tel" inputmode="numeric"
-        maxlength="4" placeholder="\u2022\u2022\u2022\u2022"></label>`;
+        maxlength="4" placeholder="\u2022\u2022\u2022\u2022"></label>
+    <p class="pinfehler" id="fgMeld" role="status"></p>`;
   $("#ov").classList.add("on");
   const inp=$("#fgCode");setTimeout(()=>inp.focus(),60);
+  inp.oninput=()=>{$("#fgMeld").textContent="";};
   $("#ovOk").textContent="Freigeben";
   $("#ovOk").onclick=async()=>{
     /* Jeder angemeldete Mitarbeiter darf freigeben \u2014 die Freigabe steht
@@ -3725,7 +3793,9 @@ function freigabe(offen){
        Code, der sich auf diesem Gerät schon einmal angemeldet hat. */
     const wer=await bekannterCode(inp.value);
     if(!wer){
-      inp.value="";inp.placeholder="falsch";toast("Code unbekannt");return;}
+      inp.value="";
+      $("#fgMeld").textContent="Dieser Code war auf diesem Ger\u00e4t noch nie angemeldet. Nimm deinen eigenen Code.";
+      inp.focus();return;}
     const d=D();
     d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
     d.finished=true;save();
@@ -4219,8 +4289,10 @@ let rsz=null;
 window.addEventListener("resize",()=>{measure();
   clearTimeout(rsz);rsz=setTimeout(()=>{if(document.querySelector(".drw"))render();},180);});
 
-/* 2.3 · Offline-Hinweis, kein Blocker */
-function netState(){document.body.classList.toggle("off",navigator.onLine===false);}
+/* 2.3 · Offline-Hinweis, kein Blocker. Die eigene Zeile ist entfallen —
+   der Zustand steht in der Statuszeile unter dem Kopf (netzChip). */
+function netState(){document.body.classList.toggle("off",navigator.onLine===false);
+  if(typeof netzChip==="function")netzChip();}
 window.addEventListener("online",netState);window.addEventListener("offline",netState);
 netState();
 if("serviceWorker" in navigator){
