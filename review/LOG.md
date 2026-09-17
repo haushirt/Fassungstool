@@ -1963,3 +1963,73 @@ Eingaben stimmen jetzt (drei Modi schrieben falsche oder keine Mengen), und
 das Backoffice zeigt und ändert jetzt wirklich das, was auf dem Server
 steht — mit Ausnahme der Stammdaten aus §8 A, die weiter nur im Quelltext
 stehen.
+
+---
+
+### Runde 6 – software-engineer (Nachtzyklus P0: Mengen, die heute falsch sind)
+
+**Kritik am Vorgänger:** Runde 5 hat den zweiten Z-Bericht-Leser aus
+`public/leitung.html` entfernt und dabei die Rechnung daneben stehen lassen,
+die aus demselben Bericht eine Menge macht.
+* ✅ übernommen: `flaschen()` (`public/leitung.html:973` im Stand v24) hatte
+  drei stille Annahmen — jeder Wein 750 ml (`GEBINDE`, `:604`), eine Position
+  ohne Größe im Namen eine ganze Flasche (`aus||750`), und alles Übrige „eine
+  Einheit = eine Flasche" (`return p.anzahl`). Am echten Bericht Nr. 37
+  gemessen: „Amaro Averna Siciliano 2 cl" × 3 wurde zu **3 Flaschen** statt
+  0,086; „Sanbitter Spritz 1 Glas" zu einer Flasche. Beides ging ungefragt in
+  die Differenz und sah dort aus wie Schwund.
+* ✅ übernommen: `mapping.gebinde_ml` existiert live, der Worker nimmt es
+  entgegen und liefert es aus (`src/index.js:490`, `:615`) — das Backoffice
+  hat es nie gelesen. Der einzige Wert, den je ein Mensch bestätigt hat, lag
+  ungenutzt in der Datenbank.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Eine Quelle für Gebindegrößen** (`gebindeGroesse`, `public/leitung.html:658`)
+   mit vier Stufen und klarer Auskunft, woher der Wert kommt: bestätigt für
+   diese Kassenposition → bestätigt für diesen Artikel → Vorschlag aus dem
+   Artikelnamen → Vorschlag „Standard Weinflasche 750 ml". Für Spirituosen und
+   Wasser wird **kein** Standard erfunden (`GEBINDE_STANDARD = { wein: 750 }`);
+   widersprechen sich zwei Bestätigungen desselben Artikels, gilt keine.
+2. **Der dritte Zustand.** `flaschen()` gibt `{ok:false, fehlt:"ausschank"|"gebinde"}`
+   zurück statt einer erfundenen Zahl. `abgleich()` führt `ohneGroesse` neben
+   `offen`; diese Positionen gehen weder in `verk` noch in die Differenz.
+3. **Sichtbar ausgewiesen** in „Verkauf ↔ Fassung" und im Mittagsblick:
+   „Größe fehlt" mit Menge, Grund, Vorschlag und einem Knopf „Übernehmen",
+   der `POST /api/mapping` mit `gebinde_ml` schickt. Bewusst nicht rot: hier
+   fehlt eine Angabe, keine Flasche.
+
+**Geprüft:** `npm test` 234 grün (vorher 211; neu `tests/gebinde.test.mjs`,
+das den ausgelieferten Ausschnitt aus `leitung.html` in einer eigenen Umgebung
+gegen die echten Zahlen aus `tests/fixtures/zbericht-37-extended.csv` rechnet,
+dazu `tests/ping.test.mjs`). `node tests/ui-leitung-echt.cjs` **30/30** — der
+ganze Weg durch die echte Oberfläche: „Größe fehlt" steht da, keine Zeile
+rechnet mit, Klick auf „Übernehmen", `mapping.gebinde_ml = 750` in der
+Datenbank, danach 4 × 125 ml aus 750 ml = 0,67 Flaschen.
+`LAUF=runde-6 node tests/ui-mass.cjs`: Überlauf 0 in 390/768/1280, keine
+JS-Fehler, Gestaltungsschicht wortgleich — unverändert gegenüber der
+Basislinie `review/screens/basis-live/`. `sw.js` v24 → v25.
+
+**Für die Nächsten:**
+* An die **Moderation** (dringend, mit Live-Beleg): In der Live-D1 haben
+  **alle 13** Zuordnungen `gebinde_ml = NULL` (am 18.09. lesend nachgesehen).
+  Ohne einen Sammelknopf „alle Vorschläge übernehmen" zeigt der Abgleich am
+  Morgen nichts als Lücken — das Werkzeug wäre dann ehrlicher, aber stiller.
+* An den **Jäger**: `kistenGr()` (`public/leitung.html:678`) liest `p.kg`; die
+  App legt `kistengr` ab (`public/index.html:2910`). Der Worker liest seit
+  Runde 5 beides, das Backoffice nur das Feld, das es nie gab — dieselbe
+  Lieferung ergibt im Journal 40 und auf dem Schirm 12 Flaschen.
+* An den **controller**: Der Befund B2 (zwei Vorgänge desselben Modus am
+  selben Tag teilen den Schlüssel) ist nachgelesen und bestätigt —
+  `public/index.html:2230` legt `blank(m)` mit demselben `tag` an,
+  `ereignisseAbleiten` (`src/index.js:262`) nimmt den ersten per Gegenbuchung
+  zurück. Live existiert bereits `ware_2026-09-16`.
+
+**Phase/Thema:** A / P0 — Mengen, die heute falsch sind
+
+**Backlog:** neu unter „hoch": Sammelbestätigung der Gebindegrößen fehlt;
+`kistenGr()` im Backoffice liest ein Feld, das es nie gab; zwei Vorgänge
+desselben Modus am selben Tag löschen einander.
+
+**STATUS:** VERBESSERUNGEN — keine Position wird mehr still geraten, aber
+ohne Sammelbestätigung ist der Abgleich am Morgen leer.

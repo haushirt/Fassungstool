@@ -256,6 +256,45 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      /nicht mehr herein|einzige freigegebene/.test(zustand.meldung), zustand.meldung);
   ok("die Person ist weiter freigegeben", zustand.aktiv === 1);
 
+  /* ── 7 · „Größe fehlt" statt einer erfundenen Menge ─────────────────── */
+  console.log("\n7 · Verkauf ↔ Fassung: unbestätigte Gebindegrößen");
+  await ctx.close();
+  ({ ctx, p } = await sitzung());
+  await offen(p, "abgleich");
+  const lage = await p.evaluate(() => {
+    vAbgleich.tag = "2026-09-16"; SPANNE = 1; zeichne();
+    const a = abgleich("2026-09-16", 1);
+    return { ohne: a.ohneGroesse.length, verk: Object.keys(a.verk).length,
+             gv: (a.ohneGroesse.find(o => /GV Leindl/.test(o.name)) || {}),
+             text: document.querySelector("main").textContent };
+  });
+  ok("die Ansicht weist „Größe fehlt“ aus", /Größe fehlt/.test(lage.text));
+  ok("die Achtel-Position steht dort mit ihrer echten Menge",
+     lage.gv.anzahl === 4 && lage.gv.fehlt === "gebinde", JSON.stringify(lage.gv.anzahl));
+  ok("solange nichts bestätigt ist, rechnet keine Zeile mit",
+     lage.verk === 0, lage.verk + " Artikel in der Mengenrechnung");
+  ok("der Vorschlag steht sichtbar daneben", /Vorschlag: 750 ml/.test(lage.text));
+
+  /* Der Klick, der aus dem Vorschlag eine Bestätigung macht. */
+  const geklickt = await p.evaluate(async () => {
+    const b = [...document.querySelectorAll("button[data-geb]")]
+      .find(x => /GV Leindl/.test(x.dataset.geb));
+    if (!b) return null;
+    const d = { name: b.dataset.geb, art: b.dataset.art, ml: b.dataset.ml };
+    b.click(); await new Promise(r => setTimeout(r, 800));
+    const a = abgleich("2026-09-16", 1);
+    return Object.assign(d, { verkauf: a.verk.w001,
+      nochOffen: a.ohneGroesse.some(o => /GV Leindl/.test(o.name)) });
+  });
+  ok("es gibt einen Knopf „Übernehmen“ an der Zeile", !!geklickt, geklickt && geklickt.name);
+  const zeileDb = DB.zeilen("mapping").find(r => /GV Leindl/.test(r.fremd)) || {};
+  ok("die bestätigte Größe steht in der Datenbank `mapping`",
+     zeileDb.gebinde_ml === 750, JSON.stringify(zeileDb));
+  ok("der Artikel geht dabei nicht verloren", zeileDb.artikel === "w001", zeileDb.artikel);
+  ok("danach ist die Position gerechnet: 4 × 125 ml aus 750 ml = 0,67 Flaschen",
+     geklickt && Math.abs(geklickt.verkauf - 4 * 125 / 750) < 0.001 && !geklickt.nochOffen,
+     geklickt && String(geklickt.verkauf));
+
   /* ── Ergebnis ───────────────────────────────────────────────────────── */
   await browser.close(); srv.close();
   console.log("\n══ Ergebnis ══");

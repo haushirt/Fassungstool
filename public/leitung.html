@@ -549,6 +549,7 @@ function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
 const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
 /* Eigene Schlüssel der Leitung */
 const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
+const K_GEB="hh_gebinde_v1";        /* Abschrift von mapping.gebinde_ml */
 const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
 
 const lese = k => {try{const r=localStorage.getItem(k); return r?JSON.parse(r):null;}catch(e){return null;}};
@@ -556,6 +557,10 @@ const schreib = (k,v) => {try{localStorage.setItem(k,JSON.stringify(v));}catch(e
 
 let EINST = Object.assign({reichweite:14, tage:28}, lese(K_EINST)||{});
 let MAP   = lese(K_MAP) || {};      /* Kassenname → Artikel-Id oder "__ignoriert" */
+/* Kassenname → BESTÄTIGTE Gebindegröße in ml. Kommt aus mapping.gebinde_ml
+   und ist der einzige Wert, den ein Mensch je bestätigt hat — geraten wird
+   hier nichts (siehe `gebindeGroesse`). */
+let GEB_BEST = lese(K_GEB) || {};
 let ZBER  = lese(K_ZBER) || {};     /* Betriebstag → geparster Z-Bericht */
 let REZ   = lese(K_REZ) || {};      /* Kassenname → [{id, ml}] für Mischgetränke */
 const ROLLNAME={service:"Service", wirtschaft:"Wirtschaft", leitung:"Leitung"};
@@ -582,8 +587,10 @@ const GSOLL = (()=>{ const s={};
 const GIDS = Object.keys(GSOLL);
 const GN = id => (GETR.name||{})[id] || id;
 
-/* Gebindegröße in Millilitern. Steht im Namen — sonst 750 für Wein,
-   und für Getränke ohne Angabe zählt ein Verkauf als eine Flasche. */
+/* Millilitermenge aus einem Text. In einem KASSENNAMEN ist das die
+   Ausschankmenge je verkaufter Einheit („… 1/8 l"), in einem ARTIKELNAMEN
+   die Gebindegröße („Gasteiner 1 l"). Zwei verschiedene Dinge — diese
+   Funktion liest nur die Zahl und entscheidet nichts darüber. */
 function mlAusText(t){
   if(!t) return null;
   const s = String(t).toLowerCase();
@@ -600,10 +607,65 @@ function mlAusText(t){
   const v=parseFloat(letzte[3].replace(",","."));
   return letzte[4]==="ml"?v : letzte[4]==="cl"?v*10 : v*1000;
 }
-const GEBINDE = (()=>{ const g={};
-  WINES.forEach(w=>g[w.id]=750);
-  GIDS.forEach(id=>g[id]= mlAusText(GN(id)) || null);
-  return g; })();
+/* ════════════ 1b · Gebindegrößen: EINE Quelle, drei Zustände ════════════
+   Jede Mengenrechnung (Verkauf in Flaschen) braucht zwei Zahlen: die
+   Ausschankmenge aus dem Kassennamen und die Gebindegröße des Artikels.
+   Bis v24 stand die Gebindegröße an drei Stellen und war zweimal geraten:
+   jeder Wein fix 750 ml (Magnum und 0,375 rechneten falsch), und ein
+   Getränk ohne Größe im Namen zählte je verkaufter Einheit als ganze
+   Flasche — ein 2-cl-Stamperl wurde so zur Flasche.
+
+   Rangfolge, ab hier an genau einer Stelle:
+     1  BESTÄTIGT   `mapping.gebinde_ml` vom Server, zum Kassennamen
+     2  BESTÄTIGT   derselbe Artikel, an einem anderen Kassennamen bestätigt
+                    (widersprechen sich zwei, gilt der Artikel als offen)
+     3  VORSCHLAG   Größe im Artikelnamen („Gasteiner 1 l")
+     4  VORSCHLAG   Standard der Warenart, siehe GEBINDE_STANDARD
+     5  UNBEKANNT   nichts davon — dann wird NICHT gerechnet
+   Rückgabe immer {ml, quelle, woher}; quelle ist
+   "bestaetigt" | "vorschlag" | null.                                     */
+
+/* Standard-Gebindegrößen je Warenart, in Millilitern. NUR ein Vorschlag:
+   solange niemand bestätigt hat, rechnet damit keine Zeile.
+
+   Warum hier nur „wein" steht: eine Warenart ist aus den Stammdaten sonst
+   nicht ableitbar. `WINES` ist durchweg Flaschenwein (0,75 l ist die
+   Regel, Magnum und 0,375 die Ausnahme — deshalb Vorschlag, nicht
+   Wahrheit). `GETR` dagegen kennt keine Warenart, sondern nur die
+   Ladengeometrie: In Lade 6 liegen 0,33-l- und 0,5-l-Flaschen
+   nebeneinander (`st03` neben `hell`), die Lade sagt also nichts über die
+   Größe. Spirituosen kommen in den Stammdaten überhaupt nicht vor — für
+   „Amaro 2 cl" gibt es keinen Artikel und damit auch keinen Standard.
+   Ein Standard „Spirituose 700" wäre hier geraten; er fehlt mit Absicht. */
+const GEBINDE_STANDARD = { wein: 750 };
+
+const artName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein : GN(id); };
+
+/* Bestätigte Größen je Artikel, abgeleitet aus GEB_BEST über MAP.
+   Klein genug, um bei jedem Aufruf neu gerechnet zu werden (< 100 Namen);
+   ein Zwischenspeicher wäre eine zweite Wahrheit, die veralten kann. */
+function gebArtikelBestaetigt(){
+  const t={};
+  Object.keys(GEB_BEST).forEach(nm=>{
+    const id=MAP[nm], ml=+GEB_BEST[nm]||0;
+    if(!id || id==="__ignoriert" || !ml) return;
+    if(t[id]===undefined) t[id]=ml;
+    else if(t[id]!==ml) t[id]=null;        /* Widerspruch → lieber keine Zahl */
+  });
+  return t;
+}
+
+function gebindeGroesse(artId, kassenname){
+  if(!artId) return {ml:null, quelle:null, woher:"kein Artikel zugeordnet"};
+  const direkt = kassenname ? +GEB_BEST[kassenname]||0 : 0;
+  if(direkt>0) return {ml:direkt, quelle:"bestaetigt", woher:"bestätigt für diese Kassenposition"};
+  const ueberArtikel = gebArtikelBestaetigt()[artId];
+  if(ueberArtikel) return {ml:ueberArtikel, quelle:"bestaetigt", woher:"bestätigt für diesen Artikel"};
+  const imNamen = mlAusText(artName(artId));
+  if(imNamen) return {ml:imNamen, quelle:"vorschlag", woher:"Größe steht im Artikelnamen"};
+  if(byId(artId)) return {ml:GEBINDE_STANDARD.wein, quelle:"vorschlag", woher:"Standard Weinflasche"};
+  return {ml:null, quelle:null, woher:"für diesen Artikel ist keine Gebindegröße hinterlegt"};
+}
 
 /* ════════════ 2 · Vorgänge einlesen und vereinheitlichen ════════════
    Aus dem v11-Blob wird je Vorgang ein flaches Ergebnis:
@@ -760,21 +822,32 @@ async function ladeZuordnung(){
   try{
     const r=await fetch("/api/mapping",{headers:{Accept:"application/json"}});
     if(!r.ok) return false;
-    const j=await r.json(), neu={};
+    const j=await r.json(), neu={}, gb={};
     (j.mapping||[]).forEach(m=>{
       if(m.ignoriert) neu[m.kassenname]="__ignoriert";
       else if(m.artikel) neu[m.kassenname]=m.artikel;
+      /* Die bestätigte Gebindegröße liefert der Server seit je mit; bis v24
+         hat diese Seite sie weggeworfen und statt dessen geraten. */
+      if(+m.gebinde_ml>0) gb[m.kassenname]=+m.gebinde_ml;
     });
-    MAP=neu; schreib(K_MAP,MAP); return true;
+    MAP=neu; GEB_BEST=gb; schreib(K_MAP,MAP); schreib(K_GEB,GEB_BEST); return true;
   }catch(e){ return false; }
 }
 
 /* Eine Zuordnung geht sofort hinaus. Der Worker zieht die schon
-   eingelesenen Zeilen nach, die Zuordnung gilt also auch rückwirkend. */
-async function sendeZuordnung(name, wert){
+   eingelesenen Zeilen nach, die Zuordnung gilt also auch rückwirkend.
+
+   ACHTUNG: `POST /api/mapping` schreibt die Zeile als GANZES
+   (`ON CONFLICT … SET artikel=excluded.artikel, gebinde_ml=excluded.…`,
+   src/index.js). Wer nur ein Feld schickt, löscht die anderen. Artikel und
+   Gebindegröße gehen deshalb immer gemeinsam hinaus; `gebindeMl` ist
+   optional und heisst „unverändert lassen". */
+async function sendeZuordnung(name, wert, gebindeMl){
+  const ml = gebindeMl!==undefined ? gebindeMl : (+GEB_BEST[name]||null);
   const koerper={ kassenname:name,
     artikel: wert && wert!=="__ignoriert" ? wert : null,
-    ignoriert: wert==="__ignoriert" ? 1 : 0 };
+    ignoriert: wert==="__ignoriert" ? 1 : 0,
+    gebinde_ml: ml || null };
   try{
     const r=await fetch("/api/mapping",{method:"POST",
       headers:{"content-type":"application/json"}, body:JSON.stringify(koerper)});
@@ -782,6 +855,21 @@ async function sendeZuordnung(name, wert){
     toast(r.status===403 ? "Nur die Leitung darf zuordnen" : "Nicht gespeichert");
   }catch(e){ toast("Keine Verbindung — die Zuordnung ist nur auf diesem Gerät"); }
   return false;
+}
+
+/* Einen Vorschlag zur Gebindegröße annehmen. Nur von Hand, nur je Position:
+   der Vorschlag ist aus dem Namen gelesen, bestätigen kann ihn nur jemand,
+   der die Flasche kennt. Der Artikel geht mit hinaus (siehe oben) — damit
+   wird ein automatischer Weinvorschlag mit demselben Klick festgeschrieben,
+   deshalb steht er in der Zeile daneben. */
+async function bestaetigeGebinde(name, artId, ml){
+  ml=+ml||0; if(!name || !artId || !ml) return;
+  GEB_BEST[name]=ml; if(MAP[name]!==artId){ MAP[name]=artId; schreib(K_MAP,MAP); }
+  schreib(K_GEB,GEB_BEST);
+  const ok=await sendeZuordnung(name, artId, ml);
+  zeichne();
+  toast(ok ? "Gebinde bestätigt: "+ml+" ml"
+           : "Nur auf diesem Gerät gemerkt — der Server hat es nicht angenommen");
 }
 
 function dateiLaden(){
@@ -970,13 +1058,16 @@ function autoWein(name){
   return null;
 }
 
-/* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml */
+/* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml.
+   Fehlt eine der beiden Zahlen, wird KEINE erfunden — die Position bleibt
+   aus der Rechnung heraus und wird als „Größe fehlt" ausgewiesen.
+   Rückgabe: {ok:true, fl} oder {ok:false, fehlt:"ausschank"|"gebinde"}. */
 function flaschen(p, artId){
-  const aus = mlAusText(p.name);
-  const geb = artId ? GEBINDE[artId] : null;
-  if(aus && geb) return p.anzahl*aus/geb;
-  if(artId && byId(artId)) return p.anzahl*(aus||750)/750;
-  return p.anzahl;                                   /* eine Einheit = eine Flasche */
+  const aus = mlAusText(p.name);          /* Ausschank je verkaufter Einheit */
+  const geb = gebindeGroesse(artId, p.name);
+  if(!aus)                    return {ok:false, fehlt:"ausschank", aus:null, geb};
+  if(geb.quelle!=="bestaetigt") return {ok:false, fehlt:"gebinde", aus, geb};
+  return {ok:true, fl:(+p.anzahl||0)*aus/geb.ml, aus, geb};
 }
 
 function zuordnung(pos){
@@ -996,22 +1087,41 @@ function abgleich(tag, spanne){
     d.setDate(d.getDate()-(spanne-1)); return d.toISOString().slice(0,10); })();
   const imFenster = t => t>=von && t<=bis;
 
-  const verk={}, offen=[], berichte=[];
+  const verk={}, offen=[], ohneGroesse=[], berichte=[];
+  /* Dritter Zustand neben „zugeordnet" und „offen": zugeordnet, aber die
+     Größe ist nicht bestätigt. Solche Positionen gehen weder in `verk`
+     noch in die Differenz ein — sonst sähe eine fehlende Zahl aus wie
+     Schwund. Mehrere Kassenzeilen desselben Namens (Bar/Restaurant,
+     Regel 7) werden hier zusammengezählt. */
+  const merkeOhneGroesse=(p, artId, r)=>{
+    const da=ohneGroesse.find(o=>o.name===p.name);
+    if(da){ da.anzahl+=(+p.anzahl||0); return; }
+    ohneGroesse.push({name:p.name, anzahl:(+p.anzahl||0), id:artId,
+      fehlt:r.fehlt, aus:r.aus, geb:r.geb});
+  };
   Object.keys(ZBER).filter(imFenster).sort().forEach(t=>{
     const z=ZBER[t]; berichte.push(z);
     z.positionen.forEach(p=>{
       const r=REZ[p.name];
       if(r && r.length){                       /* zerlegtes Mischgetränk */
-        r.forEach(t=>{
-          const geb=GEBINDE[t.id]||null;
-          verk[t.id]=(verk[t.id]||0)+(geb ? p.anzahl*t.ml/geb : p.anzahl);
-        });
+        /* Auch hier gilt: ohne bestätigtes Gebinde keine Flaschenzahl.
+           Fehlt sie bei einem Bestandteil, bleibt die ganze Position
+           draußen — ein halb gerechnetes Rezept wäre die schlimmere Zahl. */
+        const gebs=r.map(x=>gebindeGroesse(x.id, null));
+        const luecke=gebs.findIndex(g=>g.quelle!=="bestaetigt");
+        if(luecke>=0){
+          merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]});
+          return;
+        }
+        r.forEach((x,i)=>verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml);
         return;
       }
       const zu=zuordnung(p);
       if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
       if(zu.status==="ignoriert") return;
-      verk[zu.id]=(verk[zu.id]||0)+flaschen(p, zu.id);
+      const f=flaschen(p, zu.id);
+      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); return; }
+      verk[zu.id]=(verk[zu.id]||0)+f.fl;
     });
   });
   const z=berichte.length?berichte[berichte.length-1]:null;
@@ -1031,7 +1141,8 @@ function abgleich(tag, spanne){
             verkauf:v, entnahme:e, diff:e-v};
   }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
-  return {z, zeilen, offen, verk, ent, von, bis, spanne, berichte:berichte.length};
+  return {z, zeilen, offen, ohneGroesse, verk, ent, von, bis, spanne,
+          berichte:berichte.length};
 }
 
 /* ════════════ 7 · Ansichten ════════════ */
@@ -1149,6 +1260,11 @@ function vHeute(m){
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
   if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
+  /* „Größe fehlt" ist kein Befund, sondern eine offene Angabe. Deshalb
+     steht die Zahl hier und nicht bei den Abweichungen. */
+  if(a.ohneGroesse.length) fehlt.push("Größe fehlt: "+a.ohneGroesse.length
+    +" zugeordnete Kassenpositionen ("+num(a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0))
+    +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else if(minus.length) fehlt.push(minus.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
   if(fehlt.length){
@@ -1247,6 +1363,34 @@ function vAbgleich(m){
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
   }
+  /* Der dritte Zustand: zugeordnet, aber die Größe ist nicht bestätigt.
+     Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
+     Angabe, es fehlt keine Flasche. */
+  if(a.ohneGroesse.length){
+    const stk=a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0);
+    const s=document.createElement("section");
+    s.innerHTML=`<div class="hinweis">Größe fehlt: ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}
+      mit ${num(stk)} verkauften Einheiten sind zugeordnet, aber ihre Größe ist nicht bestätigt.
+      Sie bleiben aus der Mengenrechnung heraus — das ist keine Abweichung und kein Schwund.</div>
+      <div class="tabhuelle"><table><thead><tr>
+        <th>Kassenname</th><th class="r">Menge</th><th>Artikel</th><th>Was fehlt</th><th>Vorschlag</th>
+      </tr></thead><tbody>${a.ohneGroesse.map(o=>`<tr>
+        <td>${esc(o.name)}</td><td class="r">${num(o.anzahl)}</td>
+        <td>${esc(artName(o.id))}</td>
+        <td>${o.fehlt==="ausschank"
+          ? "Die Ausschankmenge steht nicht im Kassennamen"
+          : "Die Gebindegröße des Artikels ist nicht bestätigt"}</td>
+        <td>${o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
+          : o.geb.ml
+            ? `Vorschlag: ${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span>
+               <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
+                 data-ml="${o.geb.ml}" style="margin-left:8px">Übernehmen</button>`
+            : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
+      </tr>`).join("")}</tbody></table></div>`;
+    m.appendChild(s);
+    s.querySelectorAll("button[data-geb]").forEach(b=>b.onclick=()=>
+      bestaetigeGebinde(b.dataset.geb, b.dataset.art, +b.dataset.ml));
+  }
 
   const s=document.createElement("section");
   const wein=a.zeilen.filter(r=>r.art==="Wein"), getr=a.zeilen.filter(r=>r.art!=="Wein");
@@ -1276,6 +1420,13 @@ function csvAbgleich(tag,a){
   a.zeilen.forEach(r=>L.push([r.name,r.art,num(r.verkauf),num(r.entnahme),num(r.diff)].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
+  /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
+     des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
+  if(a.ohneGroesse.length){ L.push("",["Größe nicht bestätigt — nicht gerechnet"].map(e).join(";"),
+    ["Kassenname","Anzahl","Artikel","Was fehlt","Vorschlag ml"].map(e).join(";"));
+    a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,artName(o.id),
+      o.fehlt==="ausschank"?"Ausschankmenge im Kassennamen":"Gebindegröße des Artikels",
+      o.geb.ml||""].map(e).join(";"))); }
   hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
 }
 function hol(name, inhalt, typ){
@@ -1340,7 +1491,8 @@ function vImport(m){
           :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${zu.status==="auto"?"p-neu":"p-ok"}">${zu.status==="auto"?"automatisch":"bestätigt"}</span>`;
         return `<tr><td>${esc(p.name)}</td>
           <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
-          <td>${nm}</td><td class="r">${zu.id?num(flaschen(p,zu.id)):"—"}</td></tr>`;
+          <td>${nm}</td><td class="r">${(f=>!zu.id?"—":f.ok?num(f.fl)
+            :`<span class="dim">Größe fehlt</span>`)(zu.id?flaschen(p,zu.id):null)}</td></tr>`;
       }).join("")}</tbody></table></div>`;
   }
   roh.oninput=pruefe;
@@ -1520,7 +1672,8 @@ function vGetraenke(m){
         <td class="r">${r.ist==null?'<span class="dim">—</span>':r.ist}</td>
         <td class="r">${r.fehlt?`<b>${r.fehlt}</b>`:'<span class="dim">—</span>'}</td>
         <td class="r">${r.pt?num(r.pt):'<span class="dim">—</span>'}</td>
-        <td class="r mini">${GEBINDE[r.id]?GEBINDE[r.id]+" ml":"—"}</td></tr>`).join("")}
+        <td class="r mini">${(g=>g.ml?g.ml+" ml"+(g.quelle==="vorschlag"?" (Vorschlag)":"")
+          :"nicht hinterlegt")(gebindeGroesse(r.id, null))}</td></tr>`).join("")}
     </tbody></table></div>`;
   m.appendChild(s);
 }
