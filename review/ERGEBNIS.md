@@ -225,13 +225,16 @@ Vierstellige Codes nimmt das Backoffice nicht mehr an, die Taste
 
 ### Weiterhin offen, unabhängig vom Livegang
 
-* **`tests/fixtures/`** ist leer — ein echter, anonymisierter Z-Bericht
-  fehlt. Das ist die grösste Unsicherheit des Projekts, siehe unten.
+* **Ein zweiter echter Z-Bericht.** `tests/fixtures/` hat seit dem 17.09.
+  einen — aus einer Nacht. Einer aus einer anderen Woche, am besten mit
+  Fassbier und ohne Frühstück, wäre die billigste weitere Sicherheit.
 * **`review/INPUT-TEAM.md`** ist leer. Anliegen des Teams haben laut
-  `CLAUDE.md` Vorrang vor allem, was die Rollen sich ausdenken.
-* **`review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 4 bis 12** warten auf dich. Die
+  `CLAUDE.md` Vorrang vor allem, was die Rollen sich ausdenken. Besonders
+  die Zeile „Leitung: Was will ich morgens auf einen Blick sehen?".
+* **`review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 4 bis 15** warten auf dich. Die
   teuersten: Nr. 7 (Sonderentnahme ohne Grund), Nr. 6 (wer Soll-Mengen und
-  Glasweine festlegen darf), Nr. 12 (gespaltener Z-Bericht).
+  Glasweine festlegen darf), Nr. 15 (Betriebstag oder Zeitstempel — greift
+  genau dann, wenn die Geräte am ersten Tag alles auf einmal nachschicken).
 
 ## Was ausdrücklich NICHT gebaut wurde
 
