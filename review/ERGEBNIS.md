@@ -179,49 +179,95 @@ falsch.
 
 <!-- Dashboard-Einstellungen, Secrets, alles nach Regel 13. -->
 
-Die sieben Auflagen des qa-guardian aus Runde 3, in der Reihenfolge, in der
-sie zu tun sind. **Die Reihenfolge ist nicht beliebig:** Auflage 2 braucht
-diesen Stand live, sonst nimmt das Anmeldefeld den neuen Code nicht an.
+Die Auflagen des qa-guardian aus Runde 3, in der Reihenfolge, in der sie zu
+tun sind. **Die Reihenfolge ist nicht beliebig:** Der Codewechsel braucht
+diesen Stand live UND die neue App auf dem Gerät, sonst nimmt das
+Anmeldefeld den neuen Code nicht an.
+
+**`ANLAGE_OFFEN` ist seit 17.09. gelöscht** (`/api/ping` meldet
+`anlage: false`) — die frühere Auflage dazu ist erledigt. Für den
+Codewechsel wird sie **nicht** gebraucht: Die Benutzerverwaltung im
+Backoffice läuft über die Anmeldung, nicht über die offene Tür. Der einzige
+Fall, in dem sie noch einmal nötig wäre, steht unten unter „Notweg".
 
 | # | Wann | Was |
 |---|---|---|
+| 0 | **vor** dem Merge | **Prüfen, ob du eine Leitung bist.** Im Fassungstool anmelden, dann `leitung.html` öffnen und auf **Team** gehen. Siehst du die Personenliste, ist alles beisammen. Steht dort „Nur die Leitung darf Mitarbeiter verwalten", fehlt deinem Konto die Rolle `leitung` — dann gilt der Notweg unten, und zwar **bevor** du mergst. |
 | 1 | **vor** dem Merge | **Die Geräte nicht aufräumen.** Kein Cache leeren, keine Seite „neu installieren". In der Reihe der Geräte (`hh_ausgang_v1`) liegen alle Fassungen, die nie angekommen sind. |
 | 2 | **vor** dem Merge | **Sicherung der D1 anlegen.** Heute ist sie fast leer, ab dem ersten Abend stehen dort Daten, die es nur dort gibt, und D1 hat keinen Papierkorb. |
 | 3 | beim Merge | **`migrations/001_mapping_rezept.sql` NICHT einspielen.** Dieser Stand braucht sie nicht (siehe oben, Abschnitt Migrationen). |
-| 4 | direkt nach dem Livegang | **Die vier persönlichen Codes neu vergeben.** Ablauf unten. |
-| 5 | direkt danach | **`ANLAGE_OFFEN` im Dashboard löschen.** Solange die Variable steht, legt sich jeder mit der Adresse ein Konto mit Rolle `leitung` an. Offen seit 01.09. |
+| 4 | direkt nach dem Merge | **Auf jedem Gerät die neue App holen** — mit Netz öffnen und neu laden. Erkennbar am Anmeldeschirm: **sechs** Kästchen, eine **✓**-Taste unten links im Ziffernblock und der Satz „Code eintippen, dann auf ✓." Stehen dort noch vier Kästchen ohne ✓, läuft die alte App — dann nimmt das Feld nur vier Ziffern. |
+| 5 | danach | **Die vier persönlichen Codes neu vergeben.** Ablauf unten. |
 | 6 | erster Abend | **Jemanden neben die Servicekraft stellen**, die die erste Fassung macht — bei Schritt 3 „Holen". Und beim ersten Kontakt der Geräte zusehen: Die Reihe schickt die liegengebliebenen Fassungen auf einmal nach. Das sieht aus wie ein Fehler und ist richtig so. |
-| 7 | erste Woche | **Zahlen aus „Verkauf ↔ Fassung" in der ersten Woche gegenlesen**, bevor eine Bestellung oder Abrechnung darauf steht. Der erste echte Bericht liegt jetzt vor und wird richtig gelesen — aber es ist ein Bericht aus einer Nacht. Die Gegenprobe steht im Bericht selbst: Die Stückzahl und die Summe des Werkzeugs müssen mit „Warengruppen" und „Hauptwarengruppen" übereinstimmen (bei Nr. 37: 145 Stück, 602,50 €). |
+| 7 | erste Woche | **Zahlen aus „Verkauf ↔ Fassung" gegenlesen**, bevor eine Bestellung oder Abrechnung darauf steht. Der erste echte Bericht liegt jetzt vor und wird richtig gelesen — aber es ist ein Bericht aus einer Nacht. Die Gegenprobe steht im Bericht selbst: Die Stückzahl und die Summe des Werkzeugs müssen mit „Warengruppen" und „Hauptwarengruppen" übereinstimmen (bei Nr. 37: 145 Stück, 602,50 €). |
 
-### Auflage 4 Schritt für Schritt — die vier Codes
+### Die vier Codes Schritt für Schritt — ohne `ANLAGE_OFFEN`
 
 Die vier ersten Codes stehen im Klartext in der Geschichte des Anhangs
 (Commits `3e8d7e2` und `f6ab7e1`) und wurden bis v11 öffentlich
 ausgeliefert. Sie sind als bekannt zu behandeln. Umschreiben der Geschichte
 verbietet Regel 1.
 
-1. **Erst wenn dieser Stand live ist.** Mit dem alten Code anmelden — die
-   alten Codes gelten weiter, sonst käme niemand mehr hinein, um sie zu
-   ersetzen.
-2. Im Backoffice **Team** öffnen. Zeigt die Ansicht „Nur die Leitung darf
-   Mitarbeiter verwalten", fehlt dir die Rolle `leitung` — dann hier
-   aufhören und `ANLAGE_OFFEN` **noch nicht** löschen.
+**Die Benutzerverwaltung braucht `ANLAGE_OFFEN` nicht.** Sie liegt im
+Backoffice unter **Team** und läuft über `GET/POST /api/personen`; der
+Worker verlangt dort nur eines — eine gültige Anmeldung mit der Rolle
+`leitung`. `ANLAGE_OFFEN` betrifft ausschliesslich `/api/anlage` und
+`/api/hash`, also die Selbstanlage OHNE Anmeldung. Beides ist seit dem
+17.09. geschlossen und bleibt es. Die Ansicht gibt es übrigens nicht erst
+mit diesem Stand: Sie steht schon live; dieser Stand macht sie nur sicherer
+(sechsstellige Vorschläge, keine Selbstsperre, richtige Meldung bei
+abgelaufener Sitzung).
+
+**Der alte vierstellige Code funktioniert weiter.** Die Anmeldung prüft
+keine Länge, sie rechnet nur die Prüfsumme — begrenzt ist allein das
+VERGEBEN neuer Codes (sechs bis acht Ziffern). Genau deshalb kommst du nach
+dem Merge mit deinem alten Code herein, um die neuen zu setzen.
+
+1. **Zuerst die neue App holen** (Auflage 4 oben): Gerät mit Netz, Seite neu
+   laden, bis am Anmeldeschirm sechs Kästchen und die ✓-Taste stehen. Das
+   ist die Voraussetzung dafür, dass ein sechsstelliger Code überhaupt
+   eingetippt werden kann.
+2. **Mit dem alten Code anmelden**, dann `leitung.html` öffnen und auf
+   **Team** gehen.
 3. Je Person: **Name genau so schreiben, wie er in der Liste steht** (die
    Zeile wird über den Namen gefunden; eine andere Schreibweise legt die
    Person ein zweites Mal an), Rolle wie gehabt, **Code: „Vorschlagen"**
    oder sechs bis acht eigene Ziffern. Speichern. Der Code erscheint danach
    nirgends mehr — jetzt notieren.
-4. **Eine Person zuerst, dann prüfen:** auf einem zweiten Gerät mit dem
-   neuen Code anmelden. Erst wenn das geht, die übrigen drei ändern.
-5. Deinen eigenen Code zuletzt. Die offene Sitzung bleibt gültig (sie hängt
-   am Keks, nicht am Code), du fliegst also nicht heraus.
-6. **Danach `ANLAGE_OFFEN` löschen** (Auflage 5) und jedes Gerät im Haus
-   einmal mit dem neuen Code anmelden. Erst diese Anmeldung räumt den alten
-   Code aus dem Gerät; ein Gerät, das nie wieder angemeldet wird, kennt ihn
-   ohne Netz weiter.
+4. **Eine Person zuerst, dann prüfen:** auf einem zweiten Gerät (mit neuer
+   App, siehe 1.) mit dem neuen Code anmelden. Erst wenn das geht, die
+   übrigen drei ändern.
+5. **Deinen eigenen Code zuletzt.** Die offene Sitzung bleibt gültig — sie
+   hängt am Keks, nicht am Code —, du fliegst also nicht heraus. Melde dich
+   erst ab, wenn du den neuen Code auf einem zweiten Gerät ausprobiert hast.
+6. **Zum Schluss jedes Gerät im Haus einmal mit dem neuen Code anmelden.**
+   Erst diese Anmeldung räumt den alten Code aus dem Gerät; ein Gerät, das
+   nie wieder angemeldet wird, kennt ihn ohne Netz weiter.
 
 Vierstellige Codes nimmt das Backoffice nicht mehr an, die Taste
-„Vorschlagen" schlägt sechsstellige vor.
+„Vorschlagen" schlägt sechsstellige vor. Aussperren kannst du dich dabei
+nicht: Die eigene Person und die letzte freigegebene Leitung lassen sich
+nicht mehr sperren.
+
+### Notweg — nur, wenn du KEINE Leitung bist
+
+Er gilt für genau einen Fall: Schritt 0 oben zeigt „Nur die Leitung darf
+Mitarbeiter verwalten". Dann gibt es im Haus kein Konto mit der Rolle
+`leitung`, und ohne ein solches kommt niemand an die Benutzerverwaltung.
+
+1. `ANLAGE_OFFEN` im Dashboard **wieder setzen** (irgendein Wert).
+2. Sofort eine Leitung anlegen: `POST /api/anlage` mit
+   `{"name":"…","rolle":"leitung","code":"…"}`, Code sechs bis acht Ziffern.
+   Kontrolle: `/api/ping` — `personen` muss um eins gestiegen sein.
+3. **`ANLAGE_OFFEN` im selben Arbeitsgang wieder löschen** — nicht „später",
+   nicht „nach dem Service". Zwischen Setzen und Löschen liegen Minuten, und
+   in dieser Zeit legt sich jeder, der die Adresse kennt, ein Konto mit
+   Rolle `leitung` an. Kontrolle: `/api/ping` meldet wieder
+   `anlage: false`.
+4. Dann weiter bei Schritt 2 des Ablaufs darüber.
+
+Solange Schritt 0 die Personenliste zeigt, wird nichts davon gebraucht.
+
 
 ### Weiterhin offen, unabhängig vom Livegang
 
