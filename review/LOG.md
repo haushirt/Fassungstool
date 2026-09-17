@@ -964,3 +964,177 @@ andere in meinem Backlog ist Verbesserung, nicht Sperre.
 alle drei haben gemessen statt behauptet, und die Zahlen halten der
 Nachprüfung stand; was Phase A jetzt noch aufhält, ist keine Codezeile,
 sondern eine fehlende Datei aus der D1-Konsole.
+
+---
+
+### Runde 3 – software-engineer
+
+**Der Befund vorweg, weil er den ganzen Zug trägt:** Das Tool hat nie
+funktioniert. `vorgang` 0 Zeilen, `ereignis` 0, `fassungsliste` 0, `stamm`
+0, `mapping` 0. Der Worker schrieb gegen `vorgang.art`, `vorgang.person`
+und `vorgang.ts` — drei Spalten, die es in der laufenden Datenbank nicht
+gibt — und liess `modus`, `begonnen` und `status` weg, die alle drei NOT
+NULL sind. Jede Fassung war ein 500. Dieselbe Abweichung in
+`fassungsliste`, `fassungszeile`, `mapping`, `stamm` und in `notiz()`.
+Das ist Falle 10 aus `UEBERGABE-TECHNISCH.md` §8, wörtlich: „Es waren
+Schema-Abweichungen."
+
+**Kritik am Vorgänger:**
+
+* qa-guardian, Runde 2, „was Phase A aufhält, ist keine Codezeile, sondern
+  eine fehlende Datei" ✅ **das war richtig, und es war untertrieben.** Die
+  Datei lag am Zug danach vor, und in ihr standen nicht ein, sondern
+  **acht** Spaltenfehler. Seine Prüfung `tests/schema.test.mjs:103` („jede
+  benannte Spalte gibt es in ihrer Tabelle") hat sie ohne Zutun gefunden —
+  sie war genau für diesen Tag gebaut und hat geliefert.
+* qa-guardian, Runde 2, „die D1-Attrappe ist ein Nachbau und sagt das in
+  ihrem Kopf selbst" ↩️ **zugestimmt und gehandelt.** Die Attrappe war
+  nicht nur unvollständig, sie war **schädlich**: sie kannte die falschen
+  Spaltennamen und hat sie bestätigt. 123 grüne Prüfungen über einem
+  Worker, der live keine einzige Zeile schreiben konnte. `d1-attrappe.mjs`
+  ist gelöscht; an ihrer Stelle steht `tests/hilfe/d1-echt.mjs` — echtes
+  SQLite (`node:sqlite`, Bordmittel von Node 22, Regel 8 unberührt),
+  aufgebaut aus `docs/live-schema.sql`. **Alle** Prüfungen laufen jetzt
+  dagegen, nicht nur die neuen.
+* qa-guardian, Runde 2, „`vorgangSchreiben` schreibt die Vorgangszeile vor
+  dem Journal, zwei `run()` sind keine Transaktion" ✅ **übernommen,
+  behoben, belegt.** Beides geht jetzt in ein `batch` (`src/index.js:204`
+  und `:293`). Die Prüfung erzwingt den Fehler im Journal und weist nach,
+  dass danach auch der Vorgang nicht dasteht — mit der alten Reihenfolge
+  fällt sie.
+* software-engineer, Runde 2, `quelle='vorgang-korrektur'` ✅ **geprüft,
+  hält.** `ereignis.quelle` hat live **keine** CHECK-Bedingung, `ereignis.art`
+  schon (`zaehlung|entnahme|eingang|korrektur`). Die Gegenbuchung ist
+  zulässig. `ereignisseAbleiten` hält sich daran; `notiz()` auch — sie
+  schreibt `korrektur`. Sie scheiterte an etwas anderem (siehe unten).
+* ❌ **Abgelehnt:** nichts inhaltlich. Eine Einschränkung an mir selbst:
+  Den Cloudflare-Connector (`d1_database_query`) gibt es in meiner
+  Werkzeugliste nicht, und im Arbeitsverzeichnis liegen keine Zugangsdaten
+  — ich konnte die Live-D1 **nicht** selbst lesen. Gearbeitet habe ich
+  gegen `docs/live-schema.sql`, das nach Regel 3 die Wahrheit ist. Die
+  sieben `PRAGMA`-Zeilen zum Gegenlesen stehen in `review/ERGEBNIS.md`.
+
+**Umgesetzt:**
+1. **Aller Worker-SQL an `docs/live-schema.sql` angepasst** — `vorgang`
+   (`modus`/`wer`/`begonnen`/`geaendert`/`status`), `fassungsliste`
+   (`z`/`wer`/`importiert`, kein `ON CONFLICT(tag)` mehr: dort liegt kein
+   eindeutiger Schlüssel), `fassungszeile` (`liste`/`rohbez`/`kern`/
+   `betrag`/`ausschankMl`), `mapping` (`fremd`/`status`), `stamm` (`wert`),
+   Wochenbrief (`modus = 'tag'`). Regel 14 eingehalten: `schluessel`,
+   `zaehlnr`, `geraet` werden nicht angefasst, `branch` auch nicht.
+2. **`notiz()` schrieb sechs Spalten, fünf Pflichtspalten fehlten**
+   (`vorgang`, `artikel`, `ort`, `menge`, `wer`). Damit scheiterte **jede**
+   eingegangene Mail und **jeder** Wochenbrief — still, weil beide im
+   `waitUntil` laufen. Die fünf stehen jetzt mit ihrem leeren Wert da; der
+   leere `artikel` ist die Marke, an der `bestand()` und
+   `ereignisseAbleiten` die Notizen wieder aussortieren (`artikel IS NOT
+   NULL` war bei NOT NULL immer wahr und damit wirkungslos).
+3. **Das Prüfgerüst prüft ab jetzt das Schema mit.** `d1-attrappe.mjs`
+   gelöscht, `d1-echt.mjs` an ihrer Stelle; dazu
+   `tests/live-schema-durchlauf.test.mjs` (24 Prüfungen durch den ganzen
+   Worker) und zwei neue statische Wächter in `tests/schema.test.mjs`:
+   „jede Einfügung bringt die Pflichtspalten mit" und „jedes ON CONFLICT
+   trifft einen Schlüssel, den es gibt".
+
+**Geprüft:**
+* `npm test`: **153 grün, 0 rot, 0 übersprungen** (vorher 126 grün, 1 rot).
+  Der Schema-Abgleich ist grün, ohne dass eine Prüfung gelockert wurde.
+* **Gegenprobe in einem Wegwerf-Arbeitsbaum, jede Behauptung einzeln:**
+  Mit dem alten `src/index.js` sind **47 der 153** Prüfungen rot, darunter
+  **20 der 24** im neuen Durchlauf. Nehme ich die Pflichtspalten wieder aus
+  dem `INSERT INTO vorgang` und setze `ON CONFLICT(tag)` zurück, fallen
+  genau die zwei neuen Wächter in `schema.test.mjs`. Zerlege ich das eine
+  `batch` in zwei, fällt genau die Rücknahme-Prüfung. Keiner der drei
+  Wächter ist eine leere Hülle.
+* **Ein vollständiger Vorgang, geschrieben und flach wieder gelesen:**
+  `PUT /api/vorgang/tag_2026-09-16` → eine Zeile mit `modus='tag'`,
+  `status='offen'`, `begonnen`/`geaendert` gesetzt, `abgeschlossen` leer,
+  `schluessel`/`geraet` NULL und `zaehlnr` auf 0. Nach dem Abschluss
+  `status='abgeschlossen'` mit Zeitstempel. `GET /api/vorgaenge` liefert
+  **flach** `id, tag, mode, name, finished, archiviert` über den
+  gespeicherten `daten` — kein verschachteltes `daten`, genau so, wie
+  `public/index.html` und `public/leitung.html` es lesen.
+* **`vorgang_schluessel`** ist ein UNIQUE-Index auf einer Spalte, die NULL
+  bleibt. In SQLite zählt NULL nicht als Dublette — belegt mit drei
+  Vorgängen hintereinander, statt darauf zu vertrauen.
+* **Der ganze Rest des Workers gegen die echten Tabellen:** Anmeldung und
+  Sperre, Rollen-CHECK (`rolle='chef'` wird von der Datenbank abgelehnt),
+  Bestand, Z-Bericht-Import mit allen vier Eigenheiten aus Regel 7,
+  doppelter Import, Zuordnung von Hand mit Nachziehen der Zeilen,
+  Mailnotiz, Wochenbrief.
+* **`migrations/001_mapping_rezept.sql`** lokal gegen `docs/live-schema.sql`
+  durchgespielt (bestehende Zeile bleibt, `rezept = NULL`). **Sie ist für
+  diesen Stand nicht nötig** und soll nicht eingespielt werden.
+* `node --check` sauber für `src/index.js`, `src/gnparse.js`, alle
+  `tests/*.mjs`, beide `.cjs` und `public/sw.js`. **An `public/` habe ich
+  nichts geändert — `sw.js` bleibt deshalb auf v19.**
+
+**Die drei Fragen, die du gestellt hast:**
+
+* **Kommt ein Vorgang jetzt an?** Ja — so weit das ohne Zugriff auf die
+  Live-D1 sagbar ist. Jede Abfrage des Workers läuft gegen SQLite mit
+  genau dem Schema aus `docs/live-schema.sql` und besteht dort NOT NULL,
+  CHECK, PRIMARY KEY und UNIQUE. Was bleibt, ist die Frage, ob die Datei
+  die Datenbank richtig wiedergibt; dafür stehen sieben `PRAGMA`-Zeilen in
+  `review/ERGEBNIS.md`. **Nebenwirkung, auf die jemand vorbereitet sein
+  sollte:** Die Geräte haben nichts verworfen. Geht dieser Stand live,
+  schiebt `schiebe()` die liegengebliebenen Pakete von selbst nach — ein
+  Schwall alter Vorgänge, jeder unter seinem `<modus>_<tag>`. Das ist
+  richtig so (Regel 6), aber die Geräte bitte vorher **nicht** aufräumen.
+* **Kommt der gastronovi-Z-Bericht per Mail an?** Der Weg ist jetzt
+  vollständig: `email()` → `fassungsliste()` → `fassungsliste`/
+  `fassungszeile`, und die Notiz darüber steht im Journal. Beide Stellen
+  waren vorher tot (falsche Spalten bzw. fehlende Pflichtspalten). Was ich
+  **nicht** prüfen kann: ob `ABSENDER` im Dashboard richtig gesetzt ist, ob
+  Email Routing auf den Worker zeigt und ob ein **echter** Bericht durch
+  `parseZ` geht — `tests/fixtures/` ist zum dritten Mal leer. Der Parser
+  steht seit Runde 1 unverändert; geprüft ist er nur an nachgebauten
+  Berichten.
+* **Was fehlt noch vor dem Livegang?** Vier Dinge, keines davon Code:
+  (1) die sieben `PRAGMA`-Zeilen gegenlesen; (2) `ANLAGE_OFFEN` im
+  Dashboard schliessen — solange es offen steht, legt jeder ein Konto mit
+  beliebiger Rolle an; (3) die vier persönlichen Codes neu vergeben, sie
+  stehen in der Git-Historie; (4) eine Sicherung der D1, bevor zum ersten
+  Mal Daten darin stehen, die es nur dort gibt. Dazu ein echter Z-Bericht
+  in `tests/fixtures/`.
+
+**Für die Nächsten:**
+* *An den Betreiber:* `migrations/001_mapping_rezept.sql` bitte **nicht**
+  einspielen, bevor Entscheidung Nr. 10 gefallen ist. Der Stand läuft ohne
+  sie. Und: `PRAGMA table_info(...)` ist eine reine Lesefrage, `ALTER TABLE`
+  nicht — die beiden stehen in `ERGEBNIS.md` bewusst in getrennten
+  Abschnitten.
+* *qa-guardian:* Die Attrappe ist weg; deine Grenzbemerkung „beweist
+  nichts über das Schema" gilt für die Prüfungen nicht mehr. Was sie
+  weiterhin nicht beweisen: dass `docs/live-schema.sql` die Datenbank
+  richtig wiedergibt, und irgendetwas über Safari auf einem Telefon. Zwei
+  Stellen für dich zum Nachmessen: die 47 roten Prüfungen gegen den alten
+  Worker und die Rücknahme des `batch`.
+* *hospitality-pro:* Zwei Fragen aus dem Schema, die du besser beantworten
+  kannst als ich (Entscheidung Nr. 11): Kommt je Betriebstag **ein**
+  Z-Bericht oder je Kostenstelle einer? Der Worker legt jetzt einen je Tag
+  ab. Und: Was soll in `fassungszeile.kern` stehen? Ich habe es als
+  „Positionsname ohne Grössenangabe" gedeutet.
+* *ui-designer:* An `public/` habe ich nichts angefasst, `sw.js` steht
+  weiter auf v19 — deine Runde beginnt auf unverändertem Grund.
+
+**Phase/Thema:** A / Schema und Code in Übereinstimmung
+
+**Backlog:** neu – **hoch:** die liegengebliebenen Pakete der Geräte
+kommen beim Livegang alle auf einmal. **mittel:** `wer` nimmt
+`daten.name` vor `p.name` (der Client bestimmt, welcher Name im Journal
+steht) · `werkzeug/abgleich.js` ist toter Code und läuft nicht — es führt
+vier Funktionen ein, die es nirgends gibt · `vorgang.branch` wird nirgends
+geschrieben und nirgends gelesen. **Erledigt:** fünf Punkte, darunter die
+Schema-Abweichung selbst, die ungeprüfte Gegenbuchung, die fehlende
+Transaktion und die Attrappe.
+
+**STATUS:** VERBESSERUNGEN
+
+**Warum nicht FERTIG:** Aus meiner Rolle ist der Kern erledigt — Code und
+Schema passen zusammen, und das hält sich jetzt von selbst. Zwei Punkte
+unter „hoch" bleiben aber offen, die mir gehören: der Umzug von
+`hh_cfg_v9` nach `stamm` (seit heute nicht mehr blockiert, aber es gibt
+noch gar keinen Schreibweg — `POST /api/stamm` fehlt) und die gemerkte
+Rolle in der App. Und ich habe die Datenbank, um die es hier ging, nicht
+mit eigenen Augen gesehen.
