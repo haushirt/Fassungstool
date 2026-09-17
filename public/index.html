@@ -1349,14 +1349,19 @@ const SCHRANK={1:{t:"Schrank 1 · Rotwein kräftig",s:"Zweigelt · Blaufränkisc
  4:{t:"Schrank 4 · Weiss übrige, Rosé, Natur",s:"Grauburgunder · Roter Veltliner · Muskateller · Gem. Satz · Cuvées · Rosé · Naturwein weiss",kurz:"Schrank 4"}};
 
 const MODES={
- tag:{t:"Tagesfassung",d:"Kühlschränke prüfen, Keller holen, Liste fotografieren.",ic:"tag",
+ /* „Kühlschränke" war falsch: Schritt 1 ist die Bar — Rotweine und die
+    sechs Laden —, die Schränke stehen im Restaurant und sind Schritt 2. */
+ tag:{t:"Tagesfassung",d:"Bar und Restaurant prüfen, aus dem Keller holen, Liste fotografieren.",ic:"tag",
       steps:["Bar","Restaurant","Keller","Abschluss"]},
  /* Nur die Getränke der Bar \u2014 ohne Rotweine, ohne Backup, ohne Lade 3. */
  fuellen:{t:"Nachfüllen",d:"Nur die Getränke an der Bar prüfen und auffüllen.",ic:"fuellen",
       steps:["Bar","Holen","Abschluss"]},
  keller:{t:"Kellerzählung",d:"Alles im Keller zählen. Reihen und einzelne Flaschen.",ic:"keller",
       steps:["Zählen","Abschluss"]},
- nach:{t:"Sonderentnahme",d:"Außer der Reihe etwas geholt? Sofort melden.",ic:"nach",
+ /* Die Sonderentnahme ist kein Notfall, sondern Alltag: Küche holt eine
+    Flasche zum Kochen, ein Personalgetränk, ein Bruch, eine Verkostung.
+    Wer die Fälle beim Namen liest, meldet sie — und der Bestand stimmt. */
+ nach:{t:"Sonderentnahme",d:"Zwischendurch geholt – Küche, Personal, Bruch, Verkostung. Gleich melden.",ic:"nach",
       steps:["Entnahme","Abschluss"]},
  ware:{t:"Wareneingang",d:"Neue Lieferung aufnehmen, Jahrgänge prüfen, einräumen.",ic:"ware",
       steps:["Kisten","Jahrgänge","Einräumen","Abschluss"]}};
@@ -1373,7 +1378,7 @@ function lastStep(){return steps().length-1;}
 
 const HOWTO={
  tag:[
-  {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
+  {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach. Die Tagesfassung läuft immer auf den Vortag – das Datum im Kopf stimmt so.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
   {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Soll: 3 Flaschen, je 2 bei Riesling, Rosé, Cuvée Weiss und Naturwein weiss.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
   {t:"Holen und einräumen",p:"Diese Flaschen fehlen, sortiert nach Laufweg. Holen, einräumen, abhaken – die Zeile wandert nach unten zu Bar oder Restaurant.",tip:"Weg: Rot, Rosé, Weiss, Cuvée, Natural, Bubbles. Zusätzlich Entnommenes unten eintragen."},
   {t:"Fassungsliste fotografieren",p:"Die Liste von der Rezeption abfotografieren – sie ersetzt das Abtippen. Mehrere Seiten sind möglich.",tip:"Das Foto geht mit dem Protokoll mit."}],
@@ -1817,7 +1822,7 @@ function renderMenu(){
     return `<button class="mi${run?" run":""}" data-m="${k}">
       <span class="ic" aria-hidden="true">${ICONS[m.ic]||ICONS[k]}</span>
       <span class="txt"><b>${m.t}</b><span>${m.d}</span>
-      ${run?`<span class="when">\u25cf Angefangen · ${deTag(d.tag)}</span>`:""}</span>
+      ${run?`<span class="when">\u25cf Angefangen · für ${deTag(d.tag)}</span>`:""}</span>
       <span class="go" aria-hidden="true">\u203a</span></button>`;
   };
   $("#menu").innerHTML=`<h1>Haus Hirt</h1><p class="sub">Fassungstool</p>
@@ -1826,7 +1831,7 @@ function renderMenu(){
     <p class="angemeldet">Angemeldet: <b>${esc(whoAmI())}</b>
       <button class="wechseln" id="bWechseln">wechseln</button></p>
     <div class="mgrp">Service</div>${card("tag")}${card("fuellen")}
-    <div class="mgrp">Notfall</div>${card("nach")}
+    <div class="mgrp">Außer der Reihe</div>${card("nach")}
     <div class="mgrp">Bestand</div>${card("keller")}${card("ware")}
     <button class="adminlink" id="bAdmin">Verwaltung</button>
     <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`;
@@ -1903,12 +1908,17 @@ function askPin(){
   $("#ovOk").textContent="Öffnen";
   /* Der Fehler stand im Toast — der verschwindet nach zwei Sekunden und
      liegt auf dem iPhone hinter der Zifferntastatur. Er steht jetzt im
-     Dialog, bleibt stehen und nennt den Grund: „unbekannt" heißt hier
-     nicht „falscher Code", sondern „auf diesem Gerät nie angemeldet". */
+     Dialog und bleibt stehen.
+     Reihenfolge nach Häufigkeit: Wer hier steht, hat fast immer sich
+     selbst vertippt — also zuerst „Code stimmt nicht", wie auf dem
+     Anmeldeschirm, ein Haus, eine Sprache für denselben Fehler. Der
+     seltenere Fall (fremdes Gerät, gelöschter Speicher) kommt im zweiten
+     Satz. „Nimm deinen eigenen Code" stand hier und klang nach Ertappen;
+     an einem iPad, das sich vier Leute teilen, ist das der falsche Ton. */
   $("#ovOk").onclick=async()=>{
     if(!(await bekannterCode(inp.value))){
       inp.value="";
-      $("#pinMeld").textContent="Dieser Code war auf diesem Gerät noch nie angemeldet. Nimm deinen eigenen Code.";
+      $("#pinMeld").textContent="Code stimmt nicht. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";
       inp.focus();return;}
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();
   };
@@ -2133,7 +2143,13 @@ function hilfeVielleicht(){
 }
 function render(){
   const d=D();$("#dSel").value=d.tag;
-  $("#datumTxt").textContent=deTag(d.tag)+" · ändern";
+  /* Die Tagesfassung läuft auf den Vortag — das ist der Tag, dessen
+     Verbrauch nachgefüllt wird und gegen dessen Z-Bericht später
+     verglichen wird. Stand hier nur ein Datum, sah es am Dienstagabend
+     nach einem Fehler aus, und wer es „richtigstellt", legt den Vorgang
+     auf den falschen Tag: doppelter Eintrag in der Leitung, Vergleich
+     mit dem falschen Z-Bericht. „Für" beantwortet das in einem Wort. */
+  $("#datumTxt").textContent="Für "+deTag(d.tag)+" · ändern";
   const m=$("#main");m.innerHTML="";m.className="";
   if(mode!=="tag"&&branch===null){$("#tools").style.display="none";$("#howto").style.display="none";
     $("#bedien").style.display="none";
@@ -3772,12 +3788,19 @@ function rDoc(m){
    „Freigabecode" hieß das Feld, solange es dafür einen eigenen Code gab.
    Den gibt es nicht mehr — der alte Name schickt Leute suchen, und wer
    sucht, holt die Chefin. Deshalb steht jetzt im Dialog, dass der eigene
-   Code genügt. */
+   Code genügt.
+   Ton: „Freigeben darf jede und jeder" stand hier und war eine Einladung.
+   Das ist der Satz, der aus der Ausnahme die Gewohnheit macht — und eine
+   nicht geprüfte Lade heißt morgen ein fehlender Wein am Tisch. Die
+   Auskunft muss bleiben (niemand soll nachts anrufen), die Aufforderung
+   nicht. Statt zu erlauben nennt der Satz jetzt die Folge: Es steht mit
+   Namen da und die Leitung liest es morgen früh. Kein Riegel, ein Spiegel. */
 function freigabe(offen){
   $("#ovT").textContent="Trotzdem abschließen?";
   $("#ovBody").innerHTML=`<p>Diese Punkte sind offen:</p>
     <div class="box" style="margin-top:0">${offen.map(x=>"\u2022 "+esc(x)).join("<br>")}</div>
-    <p>Freigeben darf jede und jeder \u2014 mit dem eigenen Code. Die Freigabe steht mit Namen im Protokoll.</p>
+    <p>Dein eigener Code gen\u00fcgt, du musst niemanden anrufen. Die Freigabe
+      steht mit deinem Namen im Protokoll \u2014 die Leitung sieht sie morgen fr\u00fch.</p>
     <label class="f"><span>Dein pers\u00f6nlicher Code</span>
       <input id="fgCode" class="input input--pin" type="tel" inputmode="numeric"
         maxlength="4" placeholder="\u2022\u2022\u2022\u2022"></label>
@@ -3794,7 +3817,7 @@ function freigabe(offen){
     const wer=await bekannterCode(inp.value);
     if(!wer){
       inp.value="";
-      $("#fgMeld").textContent="Dieser Code war auf diesem Ger\u00e4t noch nie angemeldet. Nimm deinen eigenen Code.";
+      $("#fgMeld").textContent="Code stimmt nicht. Hier geht nur ein Code, der auf diesem Ger\u00e4t schon einmal angemeldet war.";
       inp.focus();return;}
     const d=D();
     d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
@@ -3815,8 +3838,8 @@ function docUeber(){
 /* Zu welchem Schritt f\u00fchrt ein offener Punkt? Die Liste bleibt eine
    Liste von Texten \u2014 sie wandert so auch ins Protokoll. */
 function offenZiel(t){
-  if(t.indexOf("Kein Foto")===0)return null;
-  if(t==="Nicht alles geholt")return mode==="tag"?2:1;
+  if(t.indexOf("Fassungsliste noch nicht")===0)return null;
+  if(t.indexOf("Noch nicht alles geholt")===0)return mode==="tag"?2:1;
   if(t.indexOf("Schrank")===0)return 1;
   if(t.indexOf("Nicht alle Positionen")===0)return 0;
   return 0;
@@ -3832,18 +3855,26 @@ function offenZeile(t){
 }
 function offenList(){
   const d=D(),o=[];
+  /* Die Reihenfolge ist die Reihenfolge, in der ein offener Punkt im
+     Betrieb wehtut — nicht die, in der die Schritte kommen. rDoc zeigt nur
+     die ersten fünf offen an, der Rest liegt hinter „+N weitere". Was
+     morgen am Gast fehlt, muss unter den ersten fünf stehen; das Foto der
+     Fassungsliste ist Papier und hält keinen Service auf.
+     Dazu die Anzahl: Ob noch ein Wein fehlt oder acht, entscheidet um
+     23 Uhr darüber, ob jemand nochmal in den Keller geht. */
   if(mode==="tag"){
-    if(!(d.fotos||[]).length)o.push("Kein Foto der Fassungsliste");
+    const it=holList(),off=it.filter(x=>!d.holt[x.w.id]).length;
+    if(off)o.push("Noch nicht alles geholt – "+off+(off===1?" Wein":" Weine"));
     barUnits().forEach(u=>{if(!barDone(u))o.push(u.t+" nicht geprüft");});
     [1,2,3,4].forEach(n=>{if(!schrankFertig(n))o.push(SCHRANK[n].kurz+" nicht geprüft");});
-    const it=holList();
-    if(it.length&&!it.every(x=>d.holt[x.w.id]))o.push("Nicht alles geholt");
+    if(!(d.fotos||[]).length)o.push("Fassungsliste noch nicht fotografiert");
   }
   if(mode==="fuellen"){
+    const g2=gFehlt().filter(x=>!WEINLAGER.includes(x.id));
+    const goff=g2.filter(x=>!(d.gholt||{})[x.id]).length;
+    if(goff)o.push("Noch nicht alles geholt – "+goff+(goff===1?" Getränk":" Getränke"));
     barUnits().forEach(u=>{if(!barDone(u))o.push(u.t+" nicht geprüft");});
     ALLE_LADEN().forEach(L=>{if(!(d.gdone||{})[L.id])o.push(L.t+" nicht bestätigt");});
-    const g2=gFehlt().filter(x=>!WEINLAGER.includes(x.id));
-    if(g2.length&&!g2.every(x=>(d.gholt||{})[x.id]))o.push("Nicht alles geholt");
   }
   if(mode==="keller"&&branch==="getr")
     ALLE_LADEN().forEach(L=>{if(!(d.gdone||{})[L.id])o.push(L.t+" nicht bestätigt");});
