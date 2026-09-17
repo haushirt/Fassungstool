@@ -1138,3 +1138,119 @@ unter „hoch" bleiben aber offen, die mir gehören: der Umzug von
 noch gar keinen Schreibweg — `POST /api/stamm` fehlt) und die gemerkte
 Rolle in der App. Und ich habe die Datenbank, um die es hier ging, nicht
 mit eigenen Augen gesehen.
+
+### Runde 3 – ui-designer
+**Kritik am Vorgänger (software-engineer, Runde 3):**
+* ✅ *Der Worker-SQL an `docs/live-schema.sql` angepasst* — richtig und
+  überfällig. Aus meiner Sicht hat der Zug aber eine Folge, die im
+  Übergabeprotokoll nicht steht: **`/api/vorgaenge` liefert jetzt `200`
+  mit `{"vorgaenge":[]}`** (`src/index.js:152`). Die Leitung nimmt das als
+  Erfolg (`public/leitung.html:702`, `if(r.ok) … QUELLE="Server"`) und
+  liest den Gerätespeicher **nicht mehr**. Vorher kam ein Fehler, also
+  immer der Rückfall. Am ersten Tag nach dem Livegang sieht die Leitung
+  damit zum ersten Mal „Server" — und null Zeilen. Genau dieser Zustand
+  war im Backoffice ungeprüft und hat gelogen (siehe unten). Kein Vorwurf
+  an den Code, aber der Zug hat eine Oberfläche freigelegt.
+* ↩️ *„`public/leitung.html` nicht angefasst, weil nichts daran fehlte"* —
+  diese Lesart teile ich nicht. Drei Runden ohne eine einzige geänderte
+  Zeile hieß: nie angesehen. Der Browser zeigt in zwölf Ansichten drei
+  Fehler, die keine Meinungsfrage sind (grüne Entwarnung ohne Datengrundlage,
+  Quelle nur als Farbpunkt und am Handy gar nicht, Tür-Knopf ohne
+  Gestaltung). Alle drei sind jetzt behoben.
+* ✅ *`npm test` bei 153 grün gegen echtes SQLite* — vor und nach meiner
+  Arbeit nachgelaufen, 153/153. Die Prüfungen fassen `public/` nicht an;
+  dass sie grün bleiben, beweist über das Backoffice nichts. Deshalb der
+  Browser: `tests/ui-leitung.cjs`, 56 Bilder.
+
+**Umgesetzt:**
+1. **Der leere Stand lügt nicht mehr.** Ohne Z-Bericht bzw. ohne
+   Kellerzählung zeigen die Kacheln „Auffällige Differenzen" und
+   „Nachbestellen" einen Strich mit Grund statt einer grünen Null; die rote
+   Zahl in der Navigation verschwindet ebenso (`:1113`, `:1033`).
+2. **Quellzeile über dem Inhalt** in allen zwölf Ansichten und auf jeder
+   Breite: was die Quelle bedeutet, in Worten, mit „Erneut versuchen"; der
+   Chip-Punkt wird bei Warnung und Fehler zum Ausrufezeichen (`:345`,
+   `:749`, `:1945`).
+3. **Knöpfe in der Leitung auf Maß:** Kopfleiste 30 px → `--control-h`
+   (36/44 px), Navigationsknopf 36 → 44 px am Handy, und der Selektor
+   `button.b` → `.b`, wodurch der Tür-Knopf „Zum Fassungstool" aufhört, ein
+   blauer Browserlink zu sein (`:264`, `:270`, `:404`).
+
+**Geprüft:**
+* `npm test` vorher 153/153, nachher 153/153.
+* Neue Aufnahme `tests/ui-leitung.cjs` (Vorlage: `persona-tagesfassung.cjs`)
+  mit einem Server, der `/api/ich` und `/api/vorgaenge` beantwortet — die
+  Leitung hat keine eigene Anmeldung, ohne Antwort sieht man nur die Tür.
+  Fünf Lagen × zwei Größen (390×844 / 1440×900): **leer** (Server
+  antwortet, null Vorgänge — der Zustand nach dem Livegang), **voll**
+  (drei Vorgänge inkl. Kellerzählung), **aus** (503), **lokal** (503 +
+  Archiv im Browser), **tuer** (401). Alle zwölf Ansichten in „leer" und
+  „voll". 56 Bilder in `review/screens/runde-3/`, der Stand davor in
+  `review/screens/runde-3-vorher/`. **Keine JS-Fehler in keiner Lage.**
+* Gemessen, nicht geschätzt — Trefferflächen iPhone / MacBook:
+  `#bNav` 36→44 / —, `#bNeu` 30→44 / 30→36, `#bFass` 30→44 / 30→36,
+  Tür-Knopf ~20→44 / ~20→36, Knopf in der Quellzeile 44 / 36.
+  Kleinstes bedienbares Element auf dem gezeigten Schirm: 44 px (iPhone),
+  36 px (MacBook).
+* Kontrast gerechnet: Quellzeile warn 6,96:1, bad 7,52:1, info 8,62:1.
+  Der Grund für das Ausrufezeichen statt eines roten Punktes ist eine
+  Messung: `--danger` auf der Teal-Leiste ergibt **1,89:1** — unsichtbar.
+  `--fg-on-dark` ergibt 10,27:1.
+* Die vier Fallen aus §8, die die Leitung betreffen: `.kpi` steht weiter
+  nur in den seiteneigenen Blöcken beider Dateien (nichts davon in der
+  geteilten Schicht), `.tabhuelle{overflow:auto}` und
+  `.tabhuelle table{min-width:560px}` sind unverändert richtig,
+  `[data-dichte="maus"]` springt unter 900 px zurück auf 44 px — und meine
+  beiden Knopfregeln hängen jetzt genau daran, statt feste Pixel zu setzen.
+* Geteilte Gestaltungsschicht `leitung.html:9–219` == `index.html:12–222`
+  vor und nach der Arbeit **byteweise gleich** (`diff`). Ich habe sie nicht
+  angefasst; `index.html` ist unverändert. Kein Hex-Literal in der
+  Gestaltungsschicht der Leitung (das einzige, `#00605D`, ist beim
+  Umbau durch `--accent-dunkel` ersetzt worden). `sw.js` v19 → **v20**.
+
+**Ist das Backoffice bereit für den Livegang?**
+**Aus meiner Rolle ja, mit einer Einschränkung.** Die zwölf Ansichten
+tragen, die Tabellen scrollen am Handy sauber mit stehender erster Spalte,
+der leere Stand erklärt sich jetzt selbst statt Entwarnung zu geben, und
+kein einziger Lauf hat einen JS-Fehler geworfen. Die Einschränkung ist
+nicht gestalterisch: **das Backoffice ist in der Wirklichkeit noch nie mit
+Serverdaten gelaufen.** Alles, was ich gesehen habe, kam aus einem
+nachgebauten Server mit erfundenen Vorgängen. Ob `normVorgang()` das
+verträgt, was `vorgaengeLesen()` aus der echten `vorgang.daten` heraufholt,
+weiß erst der erste echte Vorgang. Was aus meiner Sicht noch fehlt:
+(1) ein Blick auf den ersten echten Vorgang in der Leitung, am selben Tag;
+(2) `tests/fixtures/` — ohne echten Z-Bericht ist „Verkauf ↔ Fassung",
+die Hälfte des Backoffice, bis heute nur an Nachbauten gesehen;
+(3) die drei Punkte unter Mittel im Backlog, davon einer (`.b.klein`,
+28 px) nur mit einer Entscheidung über die geteilte Schicht lösbar.
+
+**Für die Nächsten:**
+* *qa-guardian:* `tests/ui-leitung.cjs` ist da, `RUNDE=3 node tests/ui-leitung.cjs`,
+  fünf Lagen. Der Server darin ist nachgebaut und beweist nichts über den
+  Worker — er ist ein **Sichtgerät**, kein Nachweis. Was ich nicht prüfen
+  konnte: ob ein echter Vorgang aus der D1 durch `normVorgang()` geht.
+  Das wäre ein lohnender Lauf gegen `wrangler dev --local` mit einer
+  Test-D1 aus `docs/live-schema.sql`.
+* *software-engineer:* Zwei Sachen aus dem Backoffice, beide in deinem Feld.
+  (a) `ladeDaten()` fällt nicht mehr auf den Gerätespeicher zurück, sobald
+  der Server `200` mit leerer Liste gibt — richtig, aber es sollte jemand
+  festlegen wollen. (b) `/api/vorgaenge` liefert **alle** Vorgänge ohne
+  Grenze (`von`/`bis` haben Vorgabewerte `1970`/`9999`); die Leitung ruft
+  ohne Parameter auf (`:700`). Nach einem Jahr Betrieb sind das ein paar
+  tausend JSON-Blobs in einer Antwort. Heute folgenlos, weil die Tabelle
+  leer ist — nach dem Livegang nicht mehr.
+* *hospitality-pro:* Zwei Texte gehören dir, nicht mir. „Für dieses Fenster
+  gibt es weder Verkauf noch Entnahme — nichts zu vergleichen." und „Sobald
+  die erste Fassung aus dem Keller ankommt, steht sie hier." — beides sind
+  Sätze, die die Leitung am ersten Morgen liest. Wenn sie im Haus anders
+  klingen sollen, ändere sie.
+
+**Phase/Thema:** A / Backoffice — leerer Stand, Quelle, Trefferflächen
+
+**Backlog:** neu unter **Mittel**: Befund-Pille „prüfen" ohne Z-Bericht
+(`vAbgleich`), `.b.klein` mit 28 px (braucht Entscheidung über die geteilte
+Schicht), kein Rückfall mehr auf den Gerätespeicher. Neu unter **Niedrig**:
+„Nichts gefunden." im Speicher ohne Unterscheidung leer/gefiltert, kein
+Schließen-Knopf im Navigationsblatt. Vier Punkte nach **Erledigt**.
+
+**STATUS:** VERBESSERUNGEN

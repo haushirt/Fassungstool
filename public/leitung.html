@@ -249,12 +249,26 @@ table{border-collapse:collapse;width:100%}
   border:1px solid var(--border-on-dark);font-size:var(--text-xs);color:var(--fg-on-dark)}
 .chip .pkt{width:7px;height:7px;border-radius:50%;background:var(--success-on-dark)}
 .chip.aus .pkt{background:var(--fg-on-dark-3)}
-.kopf button.k{height:30px;padding:0 12px;border-radius:var(--radius-ctl);
+/* Die Quelle stand mit gruenem Punkt da, solange sie nicht „Keine Daten"
+   war — „Lokal" und „Nicht angemeldet" sahen aus wie in Ordnung.
+   Kein Farbwechsel, sondern ein Formwechsel: aus dem Punkt wird ein
+   Ausrufezeichen. Gemessen: --danger auf der Teal-Leiste ergibt 1,89:1 und
+   waere praktisch unsichtbar, --fg-on-dark ergibt 10,27:1. Die Bedeutung
+   traegt ohnehin die Quellzeile ueber dem Inhalt. */
+.chip.warn .pkt,.chip.bad .pkt{width:auto;height:auto;border-radius:0;
+  background:none;color:var(--fg-on-dark);
+  font:var(--weight-bold) var(--text-sm)/1 var(--font)}
+.chip.warn .pkt::before,.chip.bad .pkt::before{content:"!"}
+/* 30px war unter jeder Schwelle. Es gelten 36px (data-dichte="maus") und
+   44px unter 900px — beides steht im Token --control-h. Nachgemessen. */
+.kopf button.k{min-height:var(--control-h);padding:0 12px;border-radius:var(--radius-ctl);
   background:var(--surface-on-dark);border:1px solid var(--border-on-dark);
   font-size:var(--text-sm);color:var(--fg-on-dark)}
 .kopf button.k:hover{background:rgba(255,255,255,.20)}
-/* Nur auf schmalen Schirmen sichtbar — oeffnet die Navigation. */
-.navknopf{display:none;width:36px;height:36px;border-radius:var(--radius-ctl);
+/* Nur auf schmalen Schirmen sichtbar — oeffnet die Navigation.
+   Dort gilt der Finger: --control-h steht unter 900px auf 44px. */
+.navknopf{display:none;width:var(--control-h);height:var(--control-h);
+  border-radius:var(--radius-ctl);
   background:var(--surface-on-dark);border:1px solid var(--border-on-dark);
   color:var(--fg-on-dark);place-items:center;flex-shrink:0}
 
@@ -321,6 +335,25 @@ section{margin-bottom:var(--space-8)}
 .kpi.ok{background:var(--success-bg);border-color:var(--success-border)}
 .kpi.ok b,.kpi.ok small{color:var(--success-fg)}
 
+/* ═══════════════ Quellzeile ═══════════════
+   Woher die Zahlen kommen, gehoert nicht allein in einen Chip in der Ecke:
+   unter 900px ist der Chip ausgeblendet (.kopf .chip{display:none}) — am
+   Handy war gar nicht zu sehen, ob gerade der Server oder ein alter Stand
+   aus dem Browser gelesen wird. Steht die Quelle nicht auf „Server", sagt
+   es jetzt eine Leiste ueber dem Inhalt: Grund, Folge, und ein Knopf, der
+   etwas tut. Der Satz traegt die Bedeutung, die Farbe nur die Dringlichkeit. */
+.quellzeile{display:flex;align-items:flex-start;gap:var(--space-3);
+  flex-wrap:wrap;margin-bottom:var(--space-6);
+  border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);
+  font-size:var(--text-sm);line-height:var(--leading-normal);
+  background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-fg)}
+.quellzeile.bad{background:var(--danger-bg);border-color:var(--danger-border);
+  color:var(--danger-fg)}
+.quellzeile.info{background:var(--info-bg);border-color:var(--info-border);color:var(--info)}
+.quellzeile .txt{flex:1;min-width:220px}
+.quellzeile b{display:block;font-weight:var(--weight-bold)}
+.quellzeile .b{flex-shrink:0;text-decoration:none}
+
 /* Ohne Sitzung und ohne lokale Daten: eine klare Tür statt einer
    leeren Tabelle. */
 .tuer{max-width:420px;margin:18vh auto;text-align:center;padding:0 var(--space-4)}
@@ -363,18 +396,23 @@ tbody tr:hover{background:var(--surface-2)}
 .p-grau{background:var(--surface-4);color:var(--fg-muted)}
 
 /* ═══════════════ Knöpfe und Felder ═══════════════
-   Namen bleiben, damit das JS unveraendert laeuft. Form kommt aus tokens.css. */
-button.b{min-height:var(--control-h);padding:0 14px;border-radius:var(--radius-ctl);
+   Namen bleiben, damit das JS unveraendert laeuft. Form kommt aus tokens.css.
+   Der Selektor hiess `button.b` — ein Typselektor. Die Tuer („Zum
+   Fassungstool") ist aber ein <a class="b stark">, und der einzige Ausweg
+   aus der abgelaufenen Sitzung stand deshalb als blauer Browserlink da,
+   rund 20px hoch. Jetzt greift die Klasse, egal an welchem Element. */
+.b{min-height:var(--control-h);padding:0 14px;border-radius:var(--radius-ctl);
   border:1px solid var(--border-strong);background:var(--surface);
   font-size:var(--text-sm);font-weight:var(--weight-medium);color:var(--fg);
-  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2)}
-button.b:hover{background:var(--surface-2)}
-button.b.stark{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
-button.b.stark:hover{background:#00605D;border-color:#00605D}
-button.b.klein{min-height:var(--control-h-sm);padding:0 10px;font-weight:var(--weight-regular)}
-button.b.leise{background:none;border-color:transparent;color:var(--fg-muted);
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+  text-decoration:none}
+.b:hover{background:var(--surface-2)}
+.b.stark{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
+.b.stark:hover{background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
+.b.klein{min-height:var(--control-h-sm);padding:0 10px;font-weight:var(--weight-regular)}
+.b.leise{background:none;border-color:transparent;color:var(--fg-muted);
   font-weight:var(--weight-regular)}
-button.b.leise:hover{background:var(--surface-3);color:var(--fg)}
+.b.leise:hover{background:var(--surface-3);color:var(--fg)}
 .reihe{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
 .rechts{margin-left:auto}
 select,input[type=text],input[type=number],input[type=date]{
@@ -701,6 +739,62 @@ function dateiLaden(){
   i.click();
 }
 
+/* ── Was die Quelle für die Zahlen bedeutet ──────────────────────────────
+   Bis Runde 3 hat der Server nie einen Vorgang geliefert (er schrieb gegen
+   Spalten, die es in der Live-D1 nicht gibt) — die Leitung lief IMMER im
+   Rückfall und der Chip stand auf „Lokal", mit grünem Punkt. Jetzt kommen
+   echte Serverdaten, und der Unterschied muss lesbar sein: ein leerer
+   Server ist etwas anderes als ein stummer Server.
+   Vier Felder: Dringlichkeit · Überschrift · Erklärung · Knopf.           */
+const QUELLLAGE={
+  "Server":      null,
+  "Lokal":       ["warn","Der Server antwortet nicht.",
+    "Gezeigt wird der Stand aus dem Speicher dieses Browsers. Er kann alt sein, "+
+    "und was auf anderen Geräten seither gefasst wurde, fehlt darin.","neu"],
+  "Keine Daten": ["bad","Der Server antwortet nicht, und dieser Browser hat keinen Stand.",
+    "Jede Zahl auf dieser Seite ist leer. Das ist kein Befund über den Keller — "+
+    "es ist gar keine Auskunft.","neu"],
+  "Nicht angemeldet":["bad","Die Sitzung ist abgelaufen.",
+    "Ohne Anmeldung gibt der Server nichts heraus. Im Fassungstool neu anmelden, "+
+    "dann hierher zurück.","tuer"],
+  "Datei":       ["info","Gezeigt wird eine eingelesene Datei.",
+    "Das ist ein Auszug von einem Gerät, nicht der laufende Betrieb. "+
+    "„Aktualisieren“ holt wieder den Server.","neu"],
+  "Leer":        ["info","Der Server antwortet — er hat nur noch keinen Vorgang.",
+    "Sobald die erste Fassung aus dem Keller ankommt, steht sie hier. "+
+    "Bis dahin ist jede Null auf dieser Seite eine Leerstelle, kein Ergebnis.","neu"]
+};
+function quellSchluessel(){
+  if(String(QUELLE).startsWith("Datei")) return "Datei";
+  if(QUELLE==="Server" && !VORGAENGE.length) return "Leer";
+  return QUELLE;
+}
+/* Ein Satz statt eines Wortes — „Stand aus Keine Daten" stand wirklich so da. */
+function quelleSatz(){
+  const k=quellSchluessel();
+  if(k==="Server") return "Stand vom Server";
+  if(k==="Leer") return "Server ohne Vorgänge";
+  if(k==="Lokal") return "Stand aus dem Browserspeicher";
+  if(k==="Datei") return "Stand aus "+QUELLE.replace(/^Datei · /,"Datei ");
+  if(k==="Nicht angemeldet") return "nicht angemeldet";
+  return "kein Stand";
+}
+function quellBanner(m){
+  const l=QUELLLAGE[quellSchluessel()]; if(!l) return;
+  const [stufe,titel,text,knopf]=l;
+  const d=document.createElement("div");
+  d.className="quellzeile "+(stufe==="warn"?"":stufe);
+  d.setAttribute("role","status");
+  d.innerHTML=`<div class="txt"><b>${esc(titel)}</b>${esc(text)}</div>`+
+    (knopf==="tuer"
+      ? `<a class="b stark" href="index.html">Zum Fassungstool</a>`
+      : `<button class="b" data-quellneu>Erneut versuchen</button>`);
+  const k=d.querySelector("[data-quellneu]");
+  if(k) k.onclick=async()=>{ await ladeDaten(); zeichne(); };
+  const erste=m.querySelector("section");
+  if(erste) erste.insertAdjacentElement("afterend", d); else m.prepend(d);
+}
+
 /* ════════════ 4 · Bestand fortschreiben ════════════
    Bestand = jüngste Zählung + alles danach Eingegangene − alles danach Entnommene.
    Ohne Zählung gibt es keinen Bestand, nur Bewegung — das wird auch so gesagt. */
@@ -943,6 +1037,10 @@ function zaehler(id){
   if(id==="zaehlliste"){ return zaehlliste().length||null; }
   if(id==="speicher"){ return VORGAENGE.length||null; }
   if(id==="abgleich"){ const a=abgleich(t, SPANNE);
+    /* Ohne Z-Bericht im Fenster ist jede „Differenz" die reine Entnahme.
+       Eine rote Zahl in der Navigation behauptete dann einen Befund, den
+       die Ansicht daneben selbst als „noch kein Abgleich" bezeichnet. */
+    if(!a.berichte) return null;
     return a.zeilen.filter(r=>Math.abs(r.diff)>=1).length||null; }
   return null;
 }
@@ -989,7 +1087,7 @@ function vHeute(m){
 
   m.innerHTML=`<section>
     <h2>Mittagsblick</h2>
-    <div class="unter">Betriebstag ${esc(deTag(tag))} · Abgleich über ${SPANNE} Tage · Stand aus ${esc(QUELLE)}</div></section>`;
+    <div class="unter">Betriebstag ${esc(deTag(tag))} · Abgleich über ${SPANNE} Tage · ${esc(quelleSatz())}</div></section>`;
 
   const k=document.createElement("section");
   k.className="gitter g4";
@@ -1006,12 +1104,22 @@ function vHeute(m){
     kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE+" Tagen":"fehlen",
       a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
       a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true)+
-    kachel("Auffällige Differenzen", grob.length,
-      grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich",
-      grob.length>4?"bad":grob.length?"warn":"ok")+
-    kachel("Nachbestellen", best.length,
-      best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle",
-      best.length?"warn":"ok");
+    /* Eine grüne Null heißt „geprüft, alles in Ordnung". Ohne Z-Bericht im
+       Fenster ist aber nichts geprüft, und ohne Kellerzählung ist kein
+       Bestand berechenbar (§4.3: ohne Zählung kein Bestand, nur Bewegung) —
+       die Bestellliste KANN dann nichts finden. Am ersten Tag nach dem
+       Livegang stand hier zweimal Grün über einer leeren Datenbank.
+       Fehlt die Grundlage, steht ein Strich da, kein Haken. */
+    kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
+      a.berichte
+        ?(grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich")
+        :"kein Z-Bericht im Fenster — nicht vergleichbar",
+      a.berichte?(grob.length>4?"bad":grob.length?"warn":"ok"):"")+
+    kachel("Nachbestellen", B.hat?best.length:"—",
+      B.hat
+        ?(best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle")
+        :"keine Kellerzählung — Bestand nicht berechenbar",
+      B.hat?(best.length?"warn":"ok"):"");
   m.appendChild(k);
 
   /* Was heute noch fehlt */
@@ -1032,6 +1140,13 @@ function vHeute(m){
   const s2=document.createElement("section");
   const top=a.zeilen.filter(r=>Math.abs(r.diff)>=1).slice(0,10);
   s2.innerHTML=`<h3>Größte Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
+    /* Ohne Z-Bericht ist die Spalte „Verkauf" durchgehend 0 — jede Entnahme
+       erscheint dann als Schwund. Dieselbe Warnung steht in „Verkauf ↔
+       Fassung"; hier fehlte sie, und der Mittagsblick ist der Schirm, den
+       die Leitung morgens zuerst sieht. */
+    (a.berichte||!top.length?"":`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
+      Kein Z-Bericht im Fenster. „Verkauf“ bleibt darum 0 und die Differenz ist
+      die reine Entnahme — das ist noch kein Abgleich.</div>`)+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
       </tr></thead><tbody>${top.map(r=>`<tr>
@@ -1040,7 +1155,9 @@ function vHeute(m){
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
         <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
       </tr>`).join("")}</tbody></table></div>`
-    : `<div class="karte leer">Keine Abweichung über einer Flasche.</div>`);
+    : `<div class="karte leer">${a.zeilen.length
+        ?"Keine Abweichung über einer Flasche."
+        :"Für dieses Fenster gibt es weder Verkauf noch Entnahme — nichts zu vergleichen."}</div>`);
   /* Der Bestellvorschlag darunter hat „Alle ansehen" — gleiche Stelle,
      also auch hier ein Weg in die volle Ansicht. */
   if(top.length)s2.insertAdjacentHTML("beforeend",
@@ -1829,9 +1946,14 @@ function zeichne(){
   zeichneNav();
   const m=$("#inhalt"); m.innerHTML="";
   (ANSICHT[SEITE]||vHeute)(m);
+  quellBanner(m);
   kuerzeUnter();
-  $("#tQuelle").textContent=QUELLE;
-  $("#cQuelle").classList.toggle("aus", QUELLE==="Keine Daten");
+  const qk=quellSchluessel(), ql=QUELLLAGE[qk];
+  $("#tQuelle").textContent=qk==="Leer"?"Server · leer":QUELLE;
+  /* Der Punkt sagt nur die Richtung. Was er bedeutet, steht in der
+     Quellzeile über dem Inhalt — sie ist auch am Handy da, der Chip nicht. */
+  $("#cQuelle").className="chip"+(!ql?"":ql[0]==="warn"?" warn":ql[0]==="bad"?" bad":" aus");
+  $("#cQuelle").title=ql?ql[1]:"Die Zahlen kommen vom Server.";
   const t=letzterTag();
   $("#tStand").textContent=deTag(t);
   $("#cStand").classList.toggle("aus", !VORGAENGE.some(v=>v.tag===t));

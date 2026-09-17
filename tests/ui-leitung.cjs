@@ -22,7 +22,7 @@
      aus    Server antwortet nicht (503) → Rückfall auf den Gerätespeicher.
      tuer   401 → die Seite zeigt die Tür zum Fassungstool.
 
-   Ergebnis: review/screens/runde-<N>-leitung/                            */
+   Ergebnis: review/screens/runde-<N>/                            */
 
 const RUNDE = process.env.RUNDE || "3";
 
@@ -41,7 +41,7 @@ if (!pw) {
 
 const http = require("http"), fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, "..", "public");
-const OUT = path.join(__dirname, "..", "review", "screens", "runde-" + RUNDE + "-leitung");
+const OUT = path.join(__dirname, "..", "review", "screens", "runde-" + RUNDE);
 fs.mkdirSync(OUT, { recursive: true });
 
 const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
@@ -112,6 +112,7 @@ async function messe(p) {
       quelleSichtbar: !!(document.querySelector("#cQuelle") || {}).getClientRects
         && document.querySelector("#cQuelle").getClientRects().length > 0,
       bNav: mass("#bNav"), bNeu: mass("#bNeu"), bFass: mass("#bFass"),
+      tuerKnopf: mass(".tuer .b"), quellKnopf: mass(".quellzeile .b"),
       navKnopf: navB ? Math.round(navB.getBoundingClientRect().height) : null,
       kleinsteKnopfhoehe: Math.min(...[...document.querySelectorAll("button, select, input")]
         .filter(e => e.getClientRects().length)
@@ -125,11 +126,17 @@ async function messe(p) {
 (async () => {
   const b = await pw.chromium.launch();
   let fehler = 0;
-  for (const lage of ["leer", "voll", "aus", "tuer"]) {
-    const srv = bau(lage);
+  for (const lage of ["leer", "voll", "aus", "lokal", "tuer"]) {
+    const srv = bau(lage === "lokal" ? "aus" : lage);
     await new Promise(r => srv.listen(8933, r));
     for (const [g, cfg] of Object.entries(GERAETE)) {
       const ctx = await b.newContext(cfg);
+      /* „Lokal": Server stumm, aber dieser Browser hat noch ein Archiv der
+         Fassungsseite. Genau der Zustand, in dem die Leitung drei Runden
+         lang lief, ohne dass es jemand gemerkt hat. */
+      if (lage === "lokal") await ctx.addInitScript(
+        `try{localStorage.setItem("hh_archiv", ${JSON.stringify(JSON.stringify(
+          Object.fromEntries(VOLL.map(v => [v.mode + "_" + v.tag, v]))))});}catch(e){}`);
       const p = await ctx.newPage();
       p.on("pageerror", e => { fehler++; console.log("!! JS-FEHLER", lage, g, e.message); });
       await p.goto("http://127.0.0.1:8933/leitung.html", { waitUntil: "load" });
