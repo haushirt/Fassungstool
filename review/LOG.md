@@ -1738,3 +1738,74 @@ Dahinter, in dieser Reihenfolge:
 **Wenn ich einen Satz mitgeben darf:** Am Montag geht der Keller in
 Betrieb, und das darf er. Der Wareneinsatz geht an dem Tag in Betrieb, an
 dem der erste echte Z-Bericht in `tests/fixtures/` liegt — nicht früher.
+
+
+---
+
+### Runde 4 – Hauptsitzung (Auflagen vor dem Livegang)
+
+**Kritik am Vorgänger:** Die sieben Auflagen des qa-guardian (Runde 3,
+„Rundenfazit") sagen an keiner Stelle, in welcher Reihenfolge sie zu tun
+sind — und in dieser Form sperren sie das Haus aus.
+* ✅ übernommen: Auflage 1 (Geräte nicht aufräumen), 3 (Sicherung), 4
+  (Migration nicht einspielen), 5 (keine Zahl aus „Verkauf ↔ Fassung"), 7
+  (jemanden danebenstellen) — unverändert in `review/ERGEBNIS.md`
+  übernommen, nur sortiert.
+* ↩️ geändert: Auflage 2 („die vier Codes neu vergeben, nicht wieder
+  vierstellig", `review/LOG.md:1678`). Sie war als reine Dashboard-Aufgabe
+  geführt („sechs ohne eine Codezeile"). Sie ist keine: Jedes Codefeld in
+  `public/index.html` hatte `maxlength="4"` und die Anmeldung schickte bei
+  der vierten Ziffer selbst ab. Ein sechsstelliger Code hätte niemanden
+  mehr hereingelassen, und nach zehn Versuchen greift die Sperre. Auflage 2
+  steht jetzt hinter dem Livegang dieses Standes, mit Ablauf.
+* ↩️ geändert: „`ANLAGE_OFFEN` schliessen" stand mit dem Codewechsel in
+  einer Zeile. Sie gehören auseinander und in diese Reihenfolge: erst
+  prüfen, dass eine Anmeldung mit Rolle `leitung` ins Backoffice kommt,
+  dann die Codes, dann `ANLAGE_OFFEN` löschen. Wer zuerst schliesst und
+  sich dann aussperrt, hat keinen Weg zurück.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. Anmeldung, Verwaltung und Freigabe nehmen sechs bis acht Ziffern;
+   abgeschickt wird auf eine Bestätigungstaste (✓) statt bei der vierten
+   Ziffer. Der Worker vergibt nur noch sechs bis acht, bestehende Codes
+   gelten weiter, bis sie ersetzt sind.
+2. Zwei Fehler in derselben Ecke: Die Löschtaste hängte „undefined" an den
+   Code (`data-weg` ohne Wert ist `""`), und ein ersetzter Code blieb auf
+   dem Gerät gültig — jetzt merkt sich ein Gerät je Person genau einen Code.
+3. `review/ERGEBNIS.md` gefüllt: die sieben Auflagen in ausführbarer
+   Reihenfolge, der Codewechsel Schritt für Schritt, Migrationen,
+   Geprüftes, ausdrücklich Weggelassenes. Das ist die PR-Beschreibung.
+
+**Geprüft:** `npm test` 170 grün (vorher 156; vier neue zur Codevergabe im
+Worker, sechs zu Codelänge und Tastenfeld in `tests/projektregeln.test.mjs`,
+vier im neuen `tests/geraetecodes.test.mjs`). `node tests/durchstich.cjs`
+35/35 (vorher 33/33; neu: Löschtaste und „ohne Bestätigung geht nichts
+hinaus"), mit sechsstelligem Code durch die echte Oberfläche.
+`node tests/persona-tagesfassung.cjs` durchgelaufen. Anmeldeschirm im
+iPhone-Maß angesehen: sechs Felder, ✓ dunkel bis zur vierten Ziffer, danach
+hell, acht Ziffern sind die Grenze. `sw.js` v21 → v22. Die geteilte
+Gestaltungsschicht ist unberührt (die Taste liegt im App-eigenen Teil) —
+`tests/projektregeln.test.mjs` prüft es.
+
+**Für die Nächsten:**
+* An den **skeptiker**: Die Bestätigungstaste ist ein Eingriff in den
+  ersten Schirm, den das Werkzeug zeigt, und sie kostet einen Tastendruck
+  mehr je Anmeldung. Der Grund ist die wechselnde Länge — bei festen sechs
+  Ziffern ginge es auch ohne. Zweitmeinung erwünscht, bevor das Haus sich
+  daran gewöhnt.
+* An den **qa-guardian**: `bekannterCode()` ist weiterhin die Rückfallebene
+  ohne Netz und kennt keine Rolle (Backlog, hoch). Der Codewechsel wirkt
+  auf einem Gerät erst, wenn es sich einmal neu anmeldet.
+* An den **hospitality-pro**: Der Satz auf dem Anmeldeschirm heisst jetzt
+  „Code eintippen, dann auf ✓." — ein Satz mehr auf dem ersten Schirm.
+
+**Phase/Thema:** A / Auflagen vor dem Livegang
+
+**Backlog:** neu unter „hoch": Der ersetzte Code verschwindet auf einem
+Gerät erst mit der nächsten Anmeldung (Hauptsitzung, Runde 4). Vier Punkte
+nach „Erledigt" verschoben.
+
+**STATUS:** VERBESSERUNGEN — die Codeseite der Auflagen ist fertig und
+geprüft; die sieben Auflagen selbst liegen beim Betreiber und sind in
+`review/ERGEBNIS.md` als Ablauf hinterlegt.

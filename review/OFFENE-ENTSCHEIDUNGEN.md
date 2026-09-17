@@ -584,3 +584,43 @@ Prüfung lockern, sondern hier entscheiden.**
    **ausserhalb** des gelesenen Blocks standen? Die Zahl liegt schon vor
    (`parseZ(...).sektionen`), es wäre eine Zeile in der Journalnotiz. Das
    macht den Fall sichtbar, ohne das Verhalten zu ändern.
+
+---
+
+## 13. Wie lang ist ein persönlicher Code — und darf die Anmeldung dafür eine Taste mehr haben?
+
+**Status:** OFFEN
+**Gemeldet:** Hauptsitzung, Runde 4
+**Betrifft:** `src/index.js:491` (`personSchreiben`), `public/index.html:1861` ff. (`renderLogin`), `public/leitung.html:1873` (Vorschlag)
+
+**Hintergrund:** Auflage 2 vor dem Livegang sagt „neue Codes, nicht wieder
+vierstellig". Umgesetzt ist: **sechs bis acht Ziffern.** Damit steht die
+Länge nicht mehr fest — und ein Ziffernblock, der nicht weiss, wann der
+Code zu Ende ist, kann nicht mehr von selbst abschicken. Bis v21 tat er das
+bei der vierten Ziffer. Jetzt gibt es eine Bestätigungstaste (✓) unten
+links, die leuchtet, sobald der Code lang genug ist.
+
+**Das kostet einen Tastendruck je Anmeldung**, bei nassen Händen im Keller,
+auf dem ersten Schirm, den das Werkzeug zeigt. Dafür kann jeder im Haus
+eine Länge haben, die er sich merkt, und niemand schickt aus Versehen die
+ersten Ziffern eines längeren Codes los (zehn davon, und die Anmeldung
+sperrt für eine Viertelstunde).
+
+**Optionen:**
+
+1. **Bleiben wie gebaut: sechs bis acht Ziffern, Bestätigungstaste.**
+   Grösster Spielraum, ein Tastendruck mehr. So ist es jetzt.
+2. **Genau sechs Ziffern für alle.** Dann kann die Anmeldung wieder bei der
+   letzten Ziffer von selbst abschicken, die Taste entfällt, und die sechs
+   Felder auf dem Schirm sagen genau, wie lang der Code ist. Preis: Wer
+   einen längeren will, bekommt ihn nicht, und eine spätere Verlängerung
+   heisst wieder Code ändern *und* App ändern.
+3. Mehr als acht Ziffern erlauben. Nicht empfohlen: Der Ziffernblock ist
+   für kurze Folgen gebaut, und die Sperre nach zehn Fehlversuchen trägt
+   die Sicherheit, nicht die Länge.
+
+**Empfehlung:** Option 1 lassen, bis das Team die neuen Codes eine Woche
+benutzt hat. Wenn dann jemand sagt „warum muss ich noch auf ✓ tippen",
+ist Option 2 in wenigen Zeilen zu haben — und erst dann weiss man es,
+statt es vorher zu vermuten. Entschieden werden muss es vor dem nächsten
+Codewechsel, nicht vor dem Livegang.
