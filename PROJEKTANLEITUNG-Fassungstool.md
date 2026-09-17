@@ -205,14 +205,14 @@ Fritsch (w043). Die Lade hat jetzt Fritsch.
 **Vier Änderungen im Worker**, ausformuliert in `WORKER-ANPASSUNG.md`
 und `ANMELDESPERRE.md`:
 
-1. 409-Guard in `vorgangSchreiben`. Ohne ihn überschreibt ein Gerät, das
-   im Flugmodus lag, beim Aufwachen den neueren Stand — ohne Fehler,
-   ohne Meldung.
-2. Anmeldesperre: 10 Versuche statt 5, `uebrig` und `wartenBis` in der
-   Antwort, Fehlversuche bei erfolgreicher Anmeldung löschen. Die Sperre
-   zählt pro **IP**, und im Haus teilen sich alle Geräte eine — fünf
-   Fehlversuche waren nicht fünf pro Person, sondern fünf für alle.
-   Die App ist bereits darauf eingestellt.
+1. ~~409-Guard in `vorgangSchreiben`.~~ **ERLEDIGT** — der Guard war
+   schon im Code, als diese Zeile geschrieben wurde. Nachgeprüft am
+   17.09.2026 gegen `src/index.js`.
+2. ~~Anmeldesperre: 10 Versuche statt 5, `uebrig` und `wartenBis` in der
+   Antwort, Fehlversuche bei erfolgreicher Anmeldung löschen.~~
+   **ERLEDIGT in Runde 1** (17.09.2026). Die Sperre zählt pro **IP**, und
+   im Haus teilen sich alle Geräte eine — fünf Fehlversuche waren nicht
+   fünf pro Person, sondern fünf für alle.
 3. Die zwei Indizes auf `ereignis` (Abschnitt 4).
 4. `RUNDEN` von 1000 auf 100000. Die CPU-Diagnose vom 27.08. war
    widerlegt. Heraufsetzen heißt: **alle vier Personen neu anlegen**,

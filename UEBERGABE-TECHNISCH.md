@@ -243,7 +243,12 @@ es jemand merkt. Deshalb wird gefragt.
 
 Der Client behandelt `409` bereits korrekt: Eintrag verwerfen (er ist
 nicht verloren, sondern überholt), beim nächsten Öffnen fragen.
-**Der Worker sendet noch kein 409** — siehe §9.
+
+> **Korrektur 17.09.2026 (Runde 1, software-engineer):** Der Satz „Der
+> Worker sendet noch kein 409" stimmt nicht mehr. `vorgangSchreiben` liest
+> vor dem Upsert die gespeicherte `zaehlnr` und antwortet bei höherem Wert
+> mit `409 {konflikt:true, server}` — `src/index.js`. Der Guard war schon
+> vor Runde 1 im Code.
 
 ## 3.3 · Anmeldung
 
@@ -261,8 +266,7 @@ in einer öffentlich ausgelieferten Datei.
 
 Die App zeigt ab vier verbleibenden Versuchen eine Warnung und im
 Sperrfall die Uhrzeit. `uebrig` und `wartenBis` liefert der Worker
-**noch nicht** — siehe §9. Ohne sie fällt die App auf die allgemeine
-Meldung zurück.
+**seit Runde 1** (17.09.2026) mit — siehe §9.1 C.
 
 ## 3.4 · Begrüßung
 
@@ -524,11 +528,11 @@ Ausformuliert in `WORKER-ANPASSUNG.md` und `ANMELDESPERRE.md`.
 jedem, der die Adresse kennt, ein Konto mit beliebiger Rolle. Steht seit
 01.09. offen.
 
-**B · 409-Guard in `vorgangSchreiben`.** Der Upsert überschreibt
-bedingungslos. Ein Gerät, das zwei Stunden im Flugmodus lag, schickt beim
-Aufwachen seinen alten Stand und überschreibt den neueren — ohne Fehler,
-ohne Meldung. Vor dem Insert die gespeicherte `daten.zaehlnr` lesen und
-bei höherem Wert `409 {konflikt:true, server}` zurückgeben.
+**B · 409-Guard in `vorgangSchreiben`.** ~~Der Upsert überschreibt
+bedingungslos.~~ **ERLEDIGT, war schon vor Runde 1 im Code.** Der Guard
+liest vor dem Upsert die gespeicherte `zaehlnr` und gibt bei höherem Wert
+`409 {konflikt:true, server}` zurück. Nachgeprüft am 17.09.2026 gegen
+`src/index.js`.
 
 **C · Anmeldesperre.** `SPERRE.versuche` auf 10, `uebrig` bei 401 und
 `wartenBis` bei 429 mitgeben, und bei erfolgreicher Anmeldung
