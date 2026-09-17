@@ -1254,3 +1254,214 @@ Schicht), kein Rückfall mehr auf den Gerätespeicher. Neu unter **Niedrig**:
 Schließen-Knopf im Navigationsblatt. Vier Punkte nach **Erledigt**.
 
 **STATUS:** VERBESSERUNGEN
+
+### Runde 3 – hospitality-pro
+
+**Kritik am Vorgänger (ui-designer, Runde 3):**
+
+* ✅ *„Drei Runden ohne eine einzige geänderte Zeile hieß: nie angesehen"* —
+  richtig, und die drei Funde tragen. Der wichtigste ist der leere Stand:
+  Eine grüne Null über einer leeren Datenbank ist im Betrieb schlimmer als
+  gar keine Zahl, weil sie am Morgen wie ein Prüfergebnis aussieht. Der
+  Strich mit Grund ist die richtige Lösung.
+* ↩️ *`QUELLLAGE["Leer"]` (`public/leitung.html:763`) „Der Server antwortet
+  — er hat nur noch keinen Vorgang. / Sobald die erste Fassung aus dem
+  Keller ankommt, steht sie hier. / Bis dahin ist jede Null … eine
+  Leerstelle, kein Ergebnis."* **geändert.** In der Lage „leer" angesehen,
+  nicht nur im Quelltext (`review/screens/runde-3-hospitality/leitung-macbook-leer-heute.png`).
+  Der Satz klingt nicht nach Störung — das ist gut und war die halbe Miete.
+  Er beantwortet aber die Frage nicht, die die Leitung am ersten Morgen
+  wirklich hat: **„Ist das normal, oder hat jemand etwas falsch gemacht?"**
+  Gegen sechs andere Felder auf demselben Schirm, die gelb, rot und
+  „fehlt/fehlen" sagen, braucht dieser eine Kasten das Wort *normal* — sonst
+  gewinnt die Farbe. Und er muss sagen, **woran man merkt, dass doch etwas
+  hängt**: Ein Vorgang, der auf dem iPhone im Keller in der Warteschlange
+  steht, ist im Backoffice von einem, den es nie gab, nicht zu unterscheiden.
+  Jetzt drei Sätze: was ist der Fall · wann ändert es sich · woran sehe ich,
+  dass etwas klemmt.
+* ↩️ *„Für dieses Fenster gibt es weder Verkauf noch Entnahme — nichts zu
+  vergleichen." (`:1160`)* **geändert** → „Weder Verkauf noch Entnahme in
+  diesem Zeitraum — es gibt noch nichts zu vergleichen." Zwei Gründe.
+  **„Fenster"** ist kein Wort aus dem Haus; es steht sechsmal sichtbar in
+  `leitung.html`, und in „Verkauf ↔ Fassung" heißt die Auswahl, die es
+  einstellt, zwei Zentimeter daneben **„Zeitraum"** (`:1201`). Zwei Wörter
+  für denselben Regler. Alle sechs Stellen sagen jetzt „Zeitraum".
+  **Das „noch"** ist der eigentliche Punkt: „nichts zu vergleichen" ist ein
+  Befund, „noch nichts zu vergleichen" ist ein Zustand. Am ersten Morgen ist
+  es ein Zustand.
+* ↩️ *Der Knopf in der Quellzeile heißt in allen vier Lagen „Erneut
+  versuchen" (`:791`)* **geändert.** Bei „Leer" ist nichts fehlgeschlagen —
+  „erneut versuchen" unterstellt einen Fehler, den es nicht gibt. Bei
+  „Datei" stand es sogar im Widerspruch zum eigenen Text daneben („„Aktualisieren"
+  holt wieder den Server" — der Knopf hieß aber anders). Die Beschriftung
+  ist jetzt ein fünftes Feld in `QUELLLAGE`: „Nochmal nachsehen" bei Leer,
+  „Aktualisieren" bei Datei, sonst unverändert „Erneut versuchen".
+* ✅ *„Das Backoffice ist in der Wirklichkeit noch nie mit Serverdaten
+  gelaufen"* — stehengelassen und im Urteil unten aufgenommen. Das ist der
+  Satz, der am Montag zählt, nicht die Gestaltung.
+
+**Umgesetzt:**
+1. **Der leere Stand der Leitung sagt jetzt, was zu tun ist** (`leitung.html:763`,
+   `:770`, `:784`, `:793`): Lage „Leer" mit *normal · wann · woran man es
+   merkt*, Knopfbeschriftung je Lage, „Fenster" → „Zeitraum" an allen sechs
+   sichtbaren Stellen (`:1116`, `:1129`, `:1148`, `:1160`, `:1203`, `:1213`).
+2. **„Ungeprüft gilt als voll" steht endlich irgendwo** (`index.html:2268`,
+   `BEDIEN`, als erster Eintrag): „Was du nicht antippst, zählt als
+   vollständig da und kommt nicht auf die Liste zum Holen. Eine Lade, die du
+   überspringst, fehlt darum am nächsten Abend im Service." Die tragende
+   Annahme der ganzen Fassung stand bisher nur in zwei Leermeldungen im
+   Keller — wer sie nie zu Gesicht bekommt, lernt sie erst am fehlenden Wein.
+3. **Ein Wort für den Gang nach unten** (`index.html:1392`, `:1412`): Der
+   dritte Schritt der Tagesfassung heißt „Holen" statt „Keller" — gleich dem
+   Nachfüllen, gleich der Hilfe („Holen und einräumen") und gleich dem
+   Abschluss („Noch nicht alles geholt"). „Keller" wäre dazu das dritte Wort
+   neben Kellerzählung und Getränkelager gewesen.
+
+**Geprüft:**
+* `npm test` vorher **153 grün**, nachher **153 grün**, 0 rot, 0 übersprungen.
+* **Ein vollständiger Arbeitsablauf im Browser, Schritt für Schritt**
+  (Chromium, iPhone 390×844, eigenes Skript, Server nachgebaut): Anmeldung
+  vorhanden → Menü → `start("tag")` → Schlüssel `tag_2026-09-16` (Vortag,
+  richtig) → Schritt 1 Bar → Schritt 2 Restaurant → **Schritt 3 „Holen"** →
+  Schritt 4 Abschluss → „Fertig – Protokoll erstellen" →
+  **`PUT /api/vorgang/tag_2026-09-16` kommt beim Server an**, die
+  Warteschlange bleibt leer. **Keine JS-Fehler.** Dazwischen `offenList()`
+  viermal abgefragt: 12 offene Punkte am Anfang → 1 (nur das Foto) nach Bar
+  und Restaurant → 0 mit Foto. Die Schrittleiste zeigt „Schritt 3 von 4 ·
+  Holen", die Sprungziele stimmen weiter (die Umbenennung ist reine Anzeige;
+  `steps()` wird nur in `buildSteps` gelesen, `stepComplete`/`go` rechnen mit
+  Indizes — nachgesehen, nicht angenommen).
+* **Backoffice in allen fünf Lagen neu aufgenommen** (`tests/ui-leitung.cjs`,
+  leer/voll/aus/lokal/tuer × iPhone/MacBook): **keine JS-Fehler**,
+  Trefferflächen unverändert 44 px (iPhone) / 36 px (MacBook), kleinster
+  bedienbarer Knopf 44 bzw. 36 px. Die neue dreizeilige Meldung bricht am
+  iPhone sauber um, der Knopf rutscht darunter und bleibt 44 px hoch
+  (`leitung-iphone-leer-heute.png`).
+* **Gegenprobe zu einem Backlog-Punkt aus meiner eigenen Runde 2**
+  („Foto aufnehmen ist der Hauptknopf"): im Browser **gemessen**. Ohne Foto
+  ist `.fotobtn.leer` `rgb(0,73,71)` mit weißer Schrift bei y=296,
+  `.finishbtn.blocked` weiß bei y=487, beide 52 px. Mit Foto drehen sie sich
+  um. Die Ursache ist also **nicht** eine verrutschte Rangfolge, sondern die
+  Klasse `.blocked` — der Abschlussknopf hält sich absichtlich zurück,
+  solange ein Punkt offen ist. Der Backlog-Eintrag ist entsprechend
+  berichtigt; der Punkt bleibt, hängt aber ganz an Entscheidung Nr. 9.
+* Geteilte Gestaltungsschicht `index.html:12–222` == `leitung.html:9–219`
+  vor und nach der Arbeit **byteweise gleich** (`diff`, 211 Zeilen) — nicht
+  angefasst. Beide Inline-Skripte mit `new Function()` geprüft: sauber.
+  `public/sw.js` VERSION **v20 → v21**. Weiter genau vier Dateien in `public/`.
+* Nicht geprüft: echtes iPhone, echtes Safari, echte D1. Alles oben lief
+  gegen Chromium und einen nachgebauten Server.
+
+**Die zwei Fragen des software-engineers (Entscheidung Nr. 11), beantwortet:**
+
+* **Ein Z-Bericht je Betriebstag, nicht je Kostenstelle.** Der Tagesabschluss
+  wird für das Haus gezogen; Bar und Restaurant stehen als getrennte **Zeilen**
+  darin — genau deshalb kommt derselbe Positionsname zweimal vor (Eigenheit 1
+  in `gnparse.js`, Regel 7). Ein Eintrag je Tag in `fassungsliste` ist damit
+  richtig, `kostenstelle` bleibt leer. **Aber „der zweite ersetzt den ersten"
+  ist nicht immer harmlos:** Ein zweiter Z nach Nachbuchung oder Storno ist
+  der richtige (ersetzen ist gewollt), ein getrennter Abschluss von Bar und
+  Restaurant schickt dagegen zwei **Teil**-Berichte, und dann verschwindet
+  eine ganze Kostenstelle lautlos. Beide sehen im Worker gleich aus. Nötig ist
+  keine Schemaänderung, sondern eine Spur: die Notiz im Journal soll beim
+  Ersetzen alte und neue Z-Nummer **und beide Positionszahlen** nennen. Fällt
+  die Zahl deutlich, war es ein Teilbericht. → Backlog, mittel.
+* **`kern` ist richtig gedeutet: Positionsname ohne Größe.** Der Zweck ist der
+  Blick, den Leitung und Sommelier ohnehin haben — *ein* Wein, zwei
+  Ausschankgrößen, eine Zeile („Grüner Veltliner Leindl: 34 Achtel und
+  6 Flaschen"). Die Größe geht nicht verloren, sie steckt in `ausschankMl`.
+  Zwei Zusätze: (a) **`kern` darf kein Suchschlüssel werden** — kleinschreiben,
+  Umlaute auflösen, Winzer abschneiden ist der Anfang der Ähnlichkeitssuche,
+  die Regel 5 abgeschaltet hält („Riesling Federspiel" ≠ „Riesling Smaragd",
+  doppelter Preis). Nur abschneiden, so wie jetzt. (b) Geschnitten wird heute
+  nur die Maßangabe; Positionen heißen in der Kasse aber auch „… Glas",
+  „… Fl.", „… Karaffe". Nicht auf Verdacht erweitern — am ersten echten
+  Z-Bericht ablesen. → Backlog, niedrig.
+  Beides ausführlich in `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11.
+
+**Kann das Tool am Montag in den Dienst gehen?**
+
+**Ja — für die Tagesfassung, das Nachfüllen und die Kellerzählung. Mit drei
+Auflagen, von denen keine eine Codezeile ist.**
+
+Was heute trägt: Der Ablauf im Keller läuft von der Anmeldung bis zum Protokoll
+durch, der Vorgang kommt beim Server an (heute zum ersten Mal überhaupt), und
+wenn kein Netz da ist, geht er hinaus, sobald wieder Empfang ist. Nichts geht
+verloren. Das Backoffice lügt nicht mehr, wenn nichts da ist.
+
+**Die drei Auflagen für Montag:**
+1. **Die Geräte vorher NICHT aufräumen** und beim ersten Livegang jemanden
+   zusehen lassen. In den Warteschlangen der iPhones und iPads liegen alle
+   Fassungen, die seit dem Start nie angekommen sind. Sie gehen beim ersten
+   Kontakt von selbst hinaus — ein Schwall alter Vorgänge, jeder mit seinem
+   eigenen Tag. Das ist richtig so, sieht in der Leitung am Morgen aber aus
+   wie ein Fehler. Wer es nicht erwartet, drückt irgendwo „löschen".
+2. **Die vier persönlichen Codes vor Montag neu vergeben** und `ANLAGE_OFFEN`
+   im Dashboard schließen. Beides steht seit Runde 1 bzw. dem Setup offen und
+   ist nur vom Betreiber lösbar.
+3. **Eine Sicherung der D1 anlegen, bevor zum ersten Mal Daten darin stehen,
+   die es nur dort gibt.** Ab Montag ist das der Fall.
+
+**Was am ersten Tag schiefgehen wird — meine drei Kandidaten, in dieser
+Reihenfolge:**
+* **Nicht gemeldete Sonderentnahmen.** Die Küche holt eine Flasche zum Kochen,
+  jemand nimmt ein Personalgetränk, eine geht beim Abservieren zu Bruch. Der
+  Modus fragt bis heute **nicht, warum** — der Grund steht im optionalen
+  Freitextfeld ganz am Ende, und das füllt nach dem Service niemand mehr aus.
+  Folge: alles landet im Wareneinsatz Getränke, und in der ersten
+  Kellerzählung steht unerklärter Schwund. Das ist aus meiner Rolle der
+  teuerste offene Punkt und **ausdrücklich nicht gebaut** — es ändert den
+  Schrittablauf und das Datenmodell und braucht eine Entscheidung
+  (`OFFENE-ENTSCHEIDUNGEN.md` Nr. 7) sowie eine Runde mit Asad, Ian und
+  Marinus über die fünf Gründe.
+* **Ein Soll, das auf drei Geräten drei Werte hat.** Glasweine und Soll-Mengen
+  kann jede Servicekraft ändern, ungezeichnet, nur auf ihrem Gerät
+  (Entscheidung Nr. 6). Solange das offen ist, hängt die Fehlmenge davon ab,
+  wer fasst.
+* **Eine Fassung auf dem falschen Tag.** Das Datum im Kopf lässt sich ohne
+  Rückfrage auf jeden Tag stellen, auch in die Zukunft. Ein Tipper erzeugt
+  einen zweiten Vorgangsschlüssel, der gegen den falschen Z-Bericht verglichen
+  wird — und in der Leitung sieht es am Morgen nach zwei Fassungen aus.
+  Backlog, mittel.
+
+**Für die Nächsten:**
+* *qa-guardian:* Der Ablauf, den ich gegangen bin, liegt als Skript im
+  Scratchpad, nicht im Repo — also **keine Prüfung**, sondern ein Blick. Was
+  daraus ins Repo gehörte, ist der Durchgang „Tagesfassung von der Anmeldung
+  bis zum PUT", er ist in 40 Zeilen zu haben und wäre die erste Prüfung, die
+  die App und den Worker gemeinsam anfasst. Zweitens: Bitte nachmessen, dass
+  die Umbenennung „Keller" → „Holen" wirklich nur Anzeige ist (`steps()` hat
+  genau drei Fundstellen).
+* *ui-designer:* Die Lage „Leer" hat jetzt drei Zeilen statt zwei. Am iPhone
+  bricht das sauber um (nachgesehen), am MacBook steht es einzeilig neben dem
+  Knopf. Wenn dir der Kasten zu lang ist: Der dritte Satz ist der, der bleiben
+  muss — er ist der einzige Weg von „hier steht nichts" zu „schau auf dem
+  Gerät nach".
+* *software-engineer:* `fassungsliste` bleibt bei einem Eintrag je Tag,
+  `kostenstelle` bleibt leer, `kern` bleibt wie gebaut — Begründung oben und
+  in Nr. 11. Der eine Punkt, den ich mir wünsche, ist die Notiz beim Ersetzen
+  eines Z-Berichts mit beiden Positionszahlen.
+* *An den Betreiber:* `review/INPUT-TEAM.md` ist im vierten Zug immer noch
+  leer. Alles, was ich über Laufweg, Kistengrößen und die fünf Gründe der
+  Sonderentnahme angesetzt habe, ist Hauspraxis aus meiner Erfahrung — nicht
+  gegengelesen. Vor dem Bau von fünf Knöpfen bitte einmal mit dem Team reden.
+  Und: Ein Zwischenstands-Commit hat 9,2 MB Aufnahmen (`review/screens/runde-3c/`)
+  in die Geschichte gelegt, die ich danach wieder entfernt habe — der Baum ist
+  sauber, die Blobs bleiben (Regel 1, kein Umschreiben).
+
+**Phase/Thema:** A / Leerer Stand der Leitung, Bedienungshilfe, Wortwahl
+
+**Backlog:** neu — **mittel:** zweiter Z-Bericht für denselben Tag ersetzt den
+ersten still (Teilbericht vs. Storno nicht unterscheidbar) · Quellzeilen-Knopf
+und Kopfleisten-Knopf tun dasselbe unter zwei Namen. **niedrig:** `kern()`
+schneidet „Glas"/„Fl."/„Karaffe" nicht ab. **Berichtigt:** der Foto-/Fertig-Punkt
+aus Runde 2 (gemessen: `.finishbtn.blocked`, nicht Rangfolge). **Erledigt:**
+„Ungeprüft gilt als voll" und „Keller" vs. „Holen".
+
+**STATUS:** VERBESSERUNGEN
+
+**Warum nicht FERTIG:** Zwei Punkte unter „hoch" gehören mir und sind offen,
+beide absichtlich nicht gebaut, weil sie Entscheidungen sind und keine
+Wortänderungen: die Sonderentnahme ohne Grund (Nr. 7) und das gerätelokale,
+ungezeichnete Soll (Nr. 6). Beide kosten am ersten echten Tag Geld, nicht
+Bequemlichkeit.
