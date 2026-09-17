@@ -211,6 +211,62 @@ describe("Ausgang: offline und wieder online", () => {
     assert.equal(u.gesendet.length, 2, "beide wurden versucht");
   });
 
+  /* Ein 409 kommt nicht immer vom Worker. Steht eine Zwischenstelle davor
+     (Cloudflare-Fehlerseite, Sperrseite im Hotel-WLAN), ist der Körper
+     HTML. `r.json()` wirft dann — und wenn der Wurf den Zweig verlässt,
+     bleibt der Stand in der Reihe stehen und die Reihe steht still. */
+  test("409 ohne lesbaren Körper: der Stand kommt trotzdem ins Sackfach", async () => {
+    const u = umgebung(() => new Response("<html>409</html>",
+      { status: 409, headers: { "content-type": "text/html" } }));
+    u.k.inDenAusgang(fassung({ barrot: { w001: 4 } }), "fertig");
+    await u.k.schiebe();
+    const s = JSON.parse(u.speicher.get("hh_ueberholt_v1") || "[]");
+    assert.equal(u.ausgang().length, 0, "die Reihe läuft weiter");
+    assert.equal(s.length, 1, "der Stand ist nicht verloren");
+    assert.equal(s[0].daten.barrot.w001, 4);
+    assert.equal(s[0].fremd, null, "ohne Namen, aber vollständig");
+  });
+
+  /* ── Bekannte Lücke (Backlog, hoch) ────────────────────────────────
+     Seit Runde 2 läuft `ereignisseAbleiten` bei JEDEM Abschluss, auch
+     beim zweiten Senden desselben Pakets. Wirft die Datenbank dort
+     (z. B. weil `quelle='vorgang-korrektur'` gegen eine CHECK-Bedingung
+     läuft — ungeprüft, `docs/live-schema.sql` fehlt), antwortet der
+     Worker mit 500. Dann gilt das hier:
+       · Nichts geht verloren. Das ist richtig und Regel 6.
+       · Der Eintrag steht vorne und hält alles dahinter auf — für immer,
+         alle 45 Sekunden ein neuer Versuch.
+       · `versuche` wird beim Anlegen auf 0 gesetzt und NIE erhöht. Es
+         gibt also weder eine Zahl, die jemand ansehen könnte, noch einen
+         wachsenden Abstand zwischen den Versuchen.
+     Wer das behebt, schreibt diese Prüfung um, statt sie zu löschen. */
+  test("dauerhafter 500: nichts geht verloren, aber der Zähler steht (bekannt)", async () => {
+    const u = umgebung(() => antwort(500, { fehler: "CHECK constraint failed: ereignis" }));
+    u.k.inDenAusgang(fassung(), "fertig");
+    u.k.inDenAusgang({ mode: "nach", tag: "2026-09-17", ent: { w002: 1 } }, "fertig");
+    for (let i = 0; i < 5; i++) await u.k.schiebe();
+    assert.equal(u.ausgang().length, 2, "beide Stände sind noch da (Regel 6)");
+    assert.equal(u.gesendet.length, 5, "immer nur das vorderste wird versucht");
+    assert.equal(u.netz().zustand, "serverfehler");
+    assert.deepEqual(u.ausgang().map(x => x.versuche), [0, 0],
+      "bekannt: `versuche` wird angelegt, aber nie hochgezählt");
+  });
+
+  /* `insSackfach` schneidet auf 20 Einträge. Das ist gewollt (der
+     Gerätespeicher darf nicht zulaufen), aber es ist stilles Verwerfen —
+     es gehört hier festgehalten, nicht nur im Quelltext. */
+  test("das Sackfach fasst 20 Stände; der einundzwanzigste verdrängt den ältesten", async () => {
+    const u = umgebung(() => antwort(409, { konflikt: true, server: { zaehlnr: 99 } }));
+    for (let i = 0; i < 21; i++) {
+      u.k.inDenAusgang({ mode: "tag", tag: "2026-08-" + String(i + 1).padStart(2, "0") }, "fertig");
+      await u.k.schiebe();
+    }
+    const s = JSON.parse(u.speicher.get("hh_ueberholt_v1") || "[]");
+    assert.equal(s.length, 20);
+    assert.equal(s[0].schluessel, "tag_2026-08-02", "der erste ist still weg");
+    assert.equal(s[19].schluessel, "tag_2026-08-21");
+  });
+
   test("quittieren löscht den Stand nicht, nur die Meldung", async () => {
     const u = umgebung(() => antwort(409, { konflikt: true, server: { zaehlnr: 9 } }));
     u.k.inDenAusgang(fassung(), "fertig");

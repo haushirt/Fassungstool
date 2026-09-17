@@ -753,3 +753,214 @@ Leermeldung im Keller, der 409-Satz ohne Vorgangsnamen, die Soll-Zahlen in
 der Restaurant-Hilfe, die Foto-Anleitung im Abschluss-Schritt.
 
 **STATUS:** VERBESSERUNGEN
+
+
+### Runde 2 – qa-guardian
+
+**Zuerst, weil es den ganzen Zug trägt: Der Persona-Test war diesmal
+möglich.** In Runde 1 stand in meiner Übergabe, meine Rolle sehe einen
+Persona-Test am Phasenende vor und er gehe hier nicht. Das war falsch, und
+der ui-designer hat es aufgedeckt. Ich habe ihn nachgeholt — aber nicht mit
+`tests/ui-aufnahme.cjs`: die Aufnahme legt den Zustand in den
+Gerätespeicher und fotografiert. Eine neue Servicekraft legt nichts in den
+Gerätespeicher. Dafür steht jetzt `tests/persona-tagesfassung.cjs` im Repo:
+mit einem kleinen Server, der `/api` wirklich beantwortet, damit Anmeldung,
+Warteschlange, Idempotenz und abgelaufene Sitzung überhaupt sichtbar
+werden. 23 Bilder in `review/screens/runde-2-qa/`.
+
+**Kritik am Vorgänger:**
+
+*Ich habe alle drei nachgemessen, nicht nachgelesen. Diesmal hielt jede
+geprüfte Zahl — mit einer Rundungsstelle Abweichung.*
+
+* software-engineer: „jede der 22 neuen Prüfungen war gegen den alten
+  Stand rot" ✅ **stimmt, auf die Zahl.** In einem eigenen Arbeitsbaum das
+  alte `src/index.js` eingespielt: **10 rot** (4 der 5 in „Korrektur nach
+  dem Abschluss" plus alle 6 in `worker-fehler`) — genau seine Aufteilung.
+  Mit dem alten `public/index.html`: **3 rot**, exakt die drei genannten
+  409-Prüfungen. Nichts beschönigt.
+* software-engineer, Regel 6 (Gegenbuchung bucht nach statt zu ersetzen)
+  ✅ **hält.** `ereignisseAbleiten` kennt nur `INSERT`; im ganzen Worker
+  gibt es kein `UPDATE ereignis` und kein `DELETE FROM ereignis`, und
+  `tests/schema.test.mjs` hält das fest. Die Zählung, die im neuen Stand
+  gar nicht mehr vorkommt, wird bewusst **nicht** zurückgenommen — das ist
+  die richtige Lesart von „gezählt wurde sie trotzdem".
+* software-engineer, seine Frage an mich — negative Mengen ↩️ **geprüft,
+  und eine Lücke gefunden, die er nicht sehen konnte.** `bestand()`
+  (`src/index.js:330`) rechnet vorzeichenbehaftet, `public/leitung.html`
+  liest `menge` **nirgends** (es gibt genau drei `FROM ereignis` im Repo,
+  alle in `src/index.js`). Der Wochenbrief rechnet richtig — aber
+  `scheduled` ist in **keiner** der 100 Prüfungen je gelaufen, weil die
+  D1-Attrappe seine beiden Abfragen nicht kannte. Die einzige Stelle, die
+  `menge` **aufsummiert**, war unbelegt. Attrappe ergänzt, acht Prüfungen
+  in `tests/wochenbrief.test.mjs`. Und ich habe sie gegengeprüft wie seine:
+  mit `Math.abs` in der Summe fallen 3 der 8 — sie prüfen also wirklich
+  das Vorzeichen, nicht bloß, dass etwas dasteht.
+* ui-designer: „nicht Teil von `npm test`, nicht in `package.json`, legt
+  sich ohne Playwright hin" ✅ **nachgesehen, stimmt dreifach.** `npm test`
+  sammelt `tests/**/*.test.mjs`; die Zahl stieg von 100 auf 123 und keine
+  davon kommt aus einer `.cjs`. In `package.json` steht nichts davon.
+  `require.resolve` scheitert für `"playwright"` (es gibt kein
+  `node_modules`) und trifft `/opt/node22/lib/node_modules/playwright` —
+  ohne den Fund wäre es `console.log` + `exit(0)`. **Regel 8 unberührt.**
+* ui-designer, die gemessenen Zahlen ✅ **selbst nachgerechnet und
+  nachgemessen.** Kontraste mit eigener WCAG-Rechnung: #7A3A12 auf
+  #FBEDE6 = **7,52** (behauptet 7,52), auf #FFFFFF = **8,60** (8,60),
+  #004947 auf #FBEDE6 = **8,98** (behauptet 8,99 — Rundung). Die drei
+  Farben stehen so in `index.html:81` und `:116`. Trefferflächen mit
+  eigenem `elementFromPoint`-Abtasten Pixel für Pixel: „Gesehen" 36px
+  sichtbar, 4 darüber, 4 darunter = **44**; „?" und „Menü" ebenfalls
+  **44/44**. Die 42px-Korrektur hält.
+* hospitality-pro ✅ **alle drei Messwerte nachgestellt.** Keller ohne jede
+  Prüfung: wörtlich „Nichts zu holen — aber 11 Plätze sind noch nicht
+  geprüft." Der 409-Satz mit „gestern": **89 Zeichen** (89), `--topH`
+  **193px** und `#topwrap` gleich hoch (193). Und seine Vorlage für den
+  ui-designer stimmt bis in die Farbe: im Abschluss ist „Foto aufnehmen"
+  `rgb(0,73,71)`, „Fertig – Protokoll erstellen" `rgb(255,255,255)` mit
+  Klasse `finishbtn blocked` — der Hauptknopf ist der Nebenschritt.
+* ❌ **Abgelehnt habe ich nichts.** Es gab in dieser Runde nichts
+  zurückzunehmen; das ist das erste Mal.
+
+**REGELPRÜFUNG (alle 14, gegen `feb7ba2..b5ed1ca`): kein Verstoß — mit
+einer Stelle, die sich hier nicht prüfen lässt.**
+Regel 1 nur `v2-review` ✓ · 2 kein Deploy/`--remote` ✓ (`npm run deploy`
+steht weiter im Backlog, hoch — das ist deine Entscheidung, nicht meine;
+neu ist eine Prüfung, die einen Rückfall fängt) · **3/4: nicht prüfbar** —
+`docs/live-schema.sql` gibt es im Repo nicht, `docs/` existiert gar nicht.
+Der software-engineer hat mit `quelle='vorgang-korrektur'` einen neuen
+**Wert** in eine bestehende Spalte gebracht und selbst gesagt, das sei aus
+`notiz()` **erschlossen**. Ich sage es deutlicher: In `ereignis.quelle`
+stehen heute drei feste Literale — und drei feste Literale sehen genauso
+aus wie eine Aufzählung in einer CHECK-Bedingung. Ich habe das **nicht**
+aus `schema.sql` beantwortet (Regel 3 verbietet es) und **nicht**
+übersprungen, sondern eine Prüfung gebaut, die genau das findet, sobald die
+Datei da ist. Mit einem erfundenen Schema **im Wegwerf-Arbeitsbaum**
+gegengeprüft: mit CHECK rot, ohne CHECK grün. Im Repo liegt kein
+erfundenes Schema. · 5 ✓ (neu belegt) · 6 append-only ✓ und Offline-Reihe
+nicht aufgeweicht ✓ · 7 ✓ · 8 kein Framework, keine Abhängigkeit, alles
+Bordmittel ✓ · 9 ✓ · 11 `RUNDEN = 1000` unverändert ✓ · 12
+`wrangler.jsonc` unberührt ✓ · 14 ✓. Genau vier Dateien in `public/`,
+Gestaltungsschicht 211 Zeilen zeilenweise identisch, `leitung.html` null
+geänderte Zeilen, `sw.js` v19. Ich habe an `public/` und `src/` **nichts**
+angefasst — deshalb bleibt v19 richtig.
+
+**Umgesetzt:**
+1. **Der Wochenbrief ist zum ersten Mal gelaufen** (`tests/wochenbrief.test.mjs`,
+   Attrappe `tests/hilfe/d1-attrappe.mjs`): 8 Prüfungen, davon 3 echt am
+   Vorzeichen. Gegenbuchung wird abgezogen (5 − 3 = **2**, nicht 8), die
+   Reihenfolge folgt den Summen und nicht den Beträgen.
+2. **Zwei ungeprüfte harte Regeln haben jetzt Prüfungen:** Regel 5
+   (`tests/mapping.test.mjs`, 10 Prüfungen — die drei echten Fehltreffer
+   aus dem Kopf von `gnmap.js` wörtlich) und Regel 2/3 (kein Skript mit
+   `--remote`, `d1 execute` oder `schema.sql`; im Arbeitsbaum als rot
+   belegt).
+3. **Persona-Durchlauf und drei neue Reihen-Prüfungen**
+   (`tests/persona-tagesfassung.cjs`, `tests/ausgang.test.mjs`): 409 ohne
+   lesbaren Körper (Cloudflare-Fehlerseite), dauerhafter 500, und das
+   stille Abschneiden des Sackfachs bei 20.
+
+**Geprüft:**
+* `npm test`: **123 grün, 0 rot** (vorher 100). Beide bekannten Lücken
+  melden sich weiter laut als SKIP — `docs/live-schema.sql` und
+  `tests/fixtures/`. `node --check` sauber für `src/index.js`,
+  `gnparse.js`, `gnmap.js`, `sw.js` und beide `.cjs`; die Inline-Blöcke
+  beider HTML-Dateien werden übersetzt.
+* **Persona, iPhone 390×844, „neue Servicekraft, erster Tag, nach dem
+  Abendservice", vom leeren Anmeldefeld bis „Fertig – Protokoll
+  erstellen":** falscher Code → „Dieser Code ist nicht hinterlegt.";
+  richtiger Code → Menü mit „Hallo Lena. Die Tagesfassung ist heute noch
+  offen."; Schritt 1 Bar (Rotweine + 6 Laden), Schritt 2 Restaurant
+  (4 Schränke), Schritt 3 Keller, Schritt 4 Abschluss. **Kein JS-Fehler
+  in keinem Aufruf.** Sie ist an keiner Stelle stecken geblieben. Drei
+  Stellen, an denen sie zögern würde, unten.
+* **Idempotenz / Abbruch / Netz / Rolle / Sitzung — am laufenden Werkzeug,
+  nicht am Papier:** Abbruch mitten in der Eingabe (Neuladen) → Zählstand
+  Zeichen für Zeichen derselbe, noch angemeldet, steht wieder im Schritt.
+  Offline → „1 Vorgang warten – kein Netz", nichts verloren. Wieder online
+  → geht von selbst hinaus, Reihe leer. Dasselbe Paket zweimal
+  nachgelegt → **ein** Vorgang beim Server, Zustand unverändert.
+  Abgelaufene Sitzung → „Nicht angemeldet – bitte neu anmelden", der Stand
+  **bleibt** in der Reihe (Regel 6). Falsche Rolle: der Worker antwortet
+  auf `/api/personen`, `/api/mapping` POST und `/api/fassungsliste` POST
+  nur mit `leitung` (`darf(p,…)`, in `projektregeln` gegen die drei Rollen
+  gehalten).
+* **Z-Bericht, Regel 7:** alle vier Eigenheiten stehen als eigene
+  Prüfungen und laufen grün — doppelte Positionsnamen (12+5=17, beide
+  Herkünfte zählbar), 0-€-Zeile als Verbrauch, doppeltes Größensuffix
+  (letztes gilt: 125 ml), keine Warengruppe je Zeile.
+* **Rechnerischer Abgleich mit `tests/fixtures/`: ÜBERSPRUNGEN.** Der
+  Ordner ist leer, also gibt es hier nichts zu berichten. Zum zweiten Mal.
+* **Nicht geprüft:** nichts auf einem echten iPhone, nichts gegen eine
+  echte D1, kein `wrangler dev`. Der nachgebaute Server in
+  `persona-tagesfassung.cjs` zeigt, wie die **App** auf Antworten
+  reagiert — er beweist nichts über den Worker.
+
+**Für die Nächsten:**
+* *An den Betreiber — die eine Sache, die Phase A aufhält:*
+  `docs/live-schema.sql`. Eine Zeile in der D1-Konsole:
+  `SELECT name, sql FROM sqlite_master WHERE type='table';` Damit wird aus
+  drei erschlossenen Aussagen eine geprüfte, ohne dass jemand daran denken
+  muss — die Prüfungen liegen und warten. Unverändert dringend daneben:
+  die vier Codes neu vergeben, `ANLAGE_OFFEN` schließen, `tests/fixtures/`.
+* *hospitality-pro:* Drei Beobachtungen aus dem Durchlauf, keine davon
+  ein Fehler, alle drei deine Wahl. (a) Die Persona kommt in **11 Tipps**
+  auf den dunklen Hauptknopf durch die ganze Tagesfassung („Rest ist da –
+  weiter" ×11) — und der Keller zeigt danach den **grünen** Kasten „Kein
+  Wein zu holen. Bar und Restaurant sind voll." Der schnellste Weg durch
+  das Werkzeug ist vom echten Zählen nicht zu unterscheiden. Deine Leer-
+  meldung fängt den Fall „gar nicht angefasst" sauber ab; dieser Fall hier
+  ist der andere. (b) „Überspringen" unten steht in Schritt 1 und 2 sieben
+  bzw. vier Karten lang gleich da, während „Schritt 1 von 4" sich nicht
+  rührt — richtig gebaut, aber beim ersten Mal nicht offensichtlich.
+  (c) Dein Befund zum Abschluss ist bestätigt, Farbe für Farbe.
+* *ui-designer:* Das Hilfe-Sheet beim ersten Besuch ist im Durchlauf
+  sofort aufgefallen — es war die **erste** Handlung der Persona im ersten
+  Schritt, vor allem anderen. Dein Backlog-Punkt (mittel) trifft; aus
+  meiner Sicht darf er hoch, sobald daneben eine Fehlermeldung steht.
+* *software-engineer:* Zwei Punkte für dich im Backlog. Der wichtigere:
+  `vorgangSchreiben` schreibt die `vorgang`-Zeile **vor** dem Journal.
+  Wirft `ereignisseAbleiten`, ist genau der Zustand da, den du behoben hast
+  — Vorgang gespeichert, Journal nicht —, nur eine Stelle weiter hinten.
+  Zwei `prepare().run()` sind in D1 keine Transaktion; **ein** `batch` wäre
+  eine.
+* *Skeptiker (Blind-Review Phasenende):* Drei Stellen, an denen ich
+  **nichts** beweisen kann und die niemand für bewiesen halten sollte:
+  (1) alles, was mit dem Schema zu tun hat — die D1-Attrappe ist ein
+  Nachbau und sagt das in ihrem Kopf selbst; (2) alles Visuelle ist
+  Chromium in iPhone-Maßen, kein Safari auf einem Telefon; (3) der
+  rechnerische Abgleich fehlt vollständig, weil es keine Testdaten gibt.
+  Wo du Behauptungen suchst: dort.
+
+**Phase/Thema:** A / Regelprüfung, Persona-Durchlauf, Wochenbrief, Regel 5
+
+**Backlog:** neu – **hoch:** `quelle='vorgang-korrektur'` gegen das
+Live-Schema ungeprüft (und mit einer CHECK-Bedingung wäre es ein 500 bei
+jeder Korrektur) · die Offline-Reihe hat keinen Fehlversuchszähler
+(`versuche` wird angelegt und nie erhöht; ein 500 blockiert die Reihe
+lautlos für immer). **mittel:** `vorgangSchreiben` schreibt Vorgang und
+Journal ohne Transaktion · „bitte neu anmelden" ohne Weg zum Anmelden im
+laufenden Schritt · das Sackfach verwirft ab 20 still. Der Punkt des
+software-engineers „negative Mengen sind ab jetzt möglich" ist zur Hälfte
+beantwortet: der Bestand ist geprüft (Beleg in der Zeile ergänzt), der
+vorausschauende Teil — jede künftige Auswertung in Phase B/C — bleibt
+offen und steht weiter unter Mittel. Ganz nach Erledigt gehört er nicht;
+das wäre bequem und falsch.
+
+**STATUS:** VERBESSERUNGEN
+
+**Kann Phase A abgeschlossen werden?** Aus meiner Rolle: **noch nicht — es
+fehlt genau eine Datei.** Die Arbeit selbst ist so weit: kein Regelverstoß
+in dieser Runde, 123 grüne Prüfungen, die Persona kommt ohne Vorwissen
+durch, und zum ersten Mal hat jede Rolle das geprüft, was sie behauptet.
+Was zwingend fehlt, ist `docs/live-schema.sql`. Regel 4 verlangt, jede
+Änderung an Tabellen oder Spalten gegen das dokumentierte Live-Schema zu
+prüfen; Runde 2 hat einen neuen Wert in eine bestehende Spalte
+geschrieben, und niemand kann sagen, ob die Datenbank ihn annimmt. Eine
+Phase A mit einer ungeprüften Schreiboperation abzuschließen hieße, den
+einen Befund zu überspringen, der live etwas kaputtmachen kann. Alles
+andere in meinem Backlog ist Verbesserung, nicht Sperre.
+
+**Rundenfazit:** Erste Runde ohne einen einzigen zurückgenommenen Punkt —
+alle drei haben gemessen statt behauptet, und die Zahlen halten der
+Nachprüfung stand; was Phase A jetzt noch aufhält, ist keine Codezeile,
+sondern eine fehlende Datei aus der D1-Konsole.

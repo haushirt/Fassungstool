@@ -124,6 +124,46 @@ describe("Abgleich mit docs/live-schema.sql", { skip: DA ? false :
     assert.deepEqual(klagen, [], "Spalten, die es im Live-Schema nicht gibt");
   });
 
+  /* Der Anlass: In Runde 2 kam mit `quelle='vorgang-korrektur'` ein NEUER
+     WERT in eine bestehende Spalte. Dass `quelle` freien Text nimmt, war
+     aus `notiz()` erschlossen — dort stehen `'email'` und `'wochenbrief'`.
+     Drei feste Literale sehen aber genauso aus wie eine Aufzählung in
+     einer CHECK-Bedingung. Steht dort eine, wirft die Live-D1 bei jedem
+     Abschluss mit Korrektur, und zwar in `vorgangSchreiben` NACH dem
+     Schreiben des Vorgangs: der Vorgang ist gespeichert, das Journal
+     nicht, der Client bekommt 500 und schickt ewig weiter.
+     Sobald `docs/live-schema.sql` im Repo liegt, fällt genau das hier
+     auf — ohne dass jemand daran denken muss. */
+  test("jeder feste Wert, den der Worker schreibt, ist vom Schema erlaubt", () => {
+    /* CHECK (spalte IN ('a','b')) je Tabelle einsammeln. */
+    const erlaubt = {};
+    for (const m of schema.matchAll(
+      /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`[]?([a-z_][a-z0-9_]*)["'`\]]?\s*\(([\s\S]*?)\);/gi))
+      for (const c of m[2].matchAll(
+        /CHECK\s*\(\s*["'`[]?([a-z_][a-z0-9_]*)["'`\]]?\s+IN\s*\(([^)]*)\)/gi))
+        erlaubt[m[1].toLowerCase() + "." + c[1].toLowerCase()] =
+          c[2].split(",").map(x => x.trim().replace(/^['"]|['"]$/g, ""));
+
+    if (!Object.keys(erlaubt).length) return;   /* keine CHECK-Bedingung, nichts zu prüfen */
+
+    const klagen = [];
+    for (const s of SQL) {
+      const ins = /^INSERT INTO (\w+)\s*\(([^)]*)\)\s*VALUES\s*\(([^)]*)\)/i.exec(s);
+      if (!ins) continue;
+      const tab = ins[1].toLowerCase();
+      const spalten = ins[2].split(",").map(x => x.trim().toLowerCase());
+      const werte = ins[3].split(",").map(x => x.trim());
+      spalten.forEach((sp, i) => {
+        const lit = /^'(.*)'$/.exec(werte[i] || "");
+        if (!lit) return;                       /* Platzhalter: hier nicht prüfbar */
+        const liste = erlaubt[tab + "." + sp];
+        if (liste && !liste.includes(lit[1]))
+          klagen.push(`${tab}.${sp} = '${lit[1]}' — erlaubt ist nur ${liste.join(", ")}`);
+      });
+    }
+    assert.deepEqual(klagen, [], "Werte, die das Live-Schema nicht zulässt");
+  });
+
   test("die Rollen im Schema und im Code sind dieselben drei", () => {
     /* Steht im Schema eine CHECK-Bedingung auf person.rolle, muss sie zu
        service/wirtschaft/leitung passen. */

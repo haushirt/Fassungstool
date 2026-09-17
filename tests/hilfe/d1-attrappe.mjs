@@ -154,6 +154,28 @@ export function d1Attrappe(start = {}) {
         .map(e => ({ artikel: e.artikel, ort: e.ort ?? null, art: e.art,
                      menge: e.menge, ts: e.ts })) };
 
+    /* Der Wochenbrief. Auch diese Abfrage fehlte hier — `scheduled` ist
+       in keiner Prüfung je gelaufen, obwohl es die einzige Stelle im
+       Worker ist, die `menge` AUFSUMMIERT statt Zeile für Zeile zu lesen.
+       Seit es Gegenbuchungen gibt, können in der Summe negative Mengen
+       stehen; ob der Brief dann noch stimmt, war unbeantwortet.
+       SUM() ist vorzeichenbehaftet — genau so wird es hier nachgebildet,
+       nicht als Betrag. */
+    if (/^SELECT artikel, SUM\(menge\) AS fl FROM ereignis WHERE art = 'entnahme' AND tag BETWEEN \?1 AND \?2 GROUP BY artikel ORDER BY fl DESC LIMIT 15$/.test(s)) {
+      const summe = new Map();
+      t.ereignis.filter(e => e.art === "entnahme" && e.tag >= b[0] && e.tag <= b[1])
+        .forEach(e => summe.set(e.artikel, (summe.get(e.artikel) || 0) + (+e.menge || 0)));
+      return { rows: [...summe].map(([artikel, fl]) => ({ artikel, fl }))
+        .sort((x, y) => y.fl - x.fl).slice(0, 15) };
+    }
+    if (/^SELECT DISTINCT tag FROM vorgang WHERE tag BETWEEN \?1 AND \?2 AND art = 'tag' AND tag NOT IN \(SELECT tag FROM fassungsliste\)$/.test(s)) {
+      const hat = new Set(t.fassungsliste.map(f => f.tag));
+      const tage = new Set(t.vorgang
+        .filter(v => v.tag >= b[0] && v.tag <= b[1] && v.art === "tag" && !hat.has(v.tag))
+        .map(v => v.tag));
+      return { rows: [...tage].map(tag => ({ tag })) };
+    }
+
     if (/^INSERT INTO ereignis /.test(s)) return { rows: einfuegen(t.ereignis, s, b) };
 
     /* ── stamm / mapping ──────────────────────────────────────────── */

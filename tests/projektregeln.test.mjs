@@ -71,6 +71,27 @@ describe("Service Worker", () => {
   });
 });
 
+describe("Regeln 2 und 3: nichts läuft gegen die Live-Datenbank", () => {
+  const skripte = JSON.parse(lies("package.json")).scripts || {};
+
+  test("kein Skript fasst die Live-D1 an", () => {
+    /* In Runde 1 stand hier `wrangler d1 execute fassung --remote
+       --file=./schema.sql` — beide verbotenen Dinge in einer Zeile.
+       Ein `npm run` ist schnell getippt; die Prüfung fängt den Rückfall.
+       `npm run deploy` steht weiter im Backlog (hoch) und ist bewusst
+       eine Entscheidung des Betreibers, nicht meine. */
+    for (const [name, b] of Object.entries(skripte))
+      assert.equal(/--remote|d1\s+execute/.test(b), false,
+        `Skript "${name}" geht an die Live-Datenbank: ${b}`);
+  });
+
+  test("schema.sql wird von keinem Skript und keiner Prüfung ausgeführt", () => {
+    for (const [name, b] of Object.entries(skripte))
+      assert.equal(/schema\.sql/.test(b), false,
+        `Regel 3: Skript "${name}" führt schema.sql aus: ${b}`);
+  });
+});
+
 describe("Regel 9: kein Code im Quelltext", () => {
   const verdaechtig = /\b(PIN|CODE|PASS|PASSWORT|GEHEIM|SECRET)\w*\s*[:=]\s*["'`]\d{3,8}["'`]/i;
 
