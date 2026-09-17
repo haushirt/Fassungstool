@@ -100,9 +100,31 @@ const MESSE = `(() => {
     /* Die Klasse "vh" hält Text, der NUR dem Screenreader gilt
        (clip:rect(0 0 0 0)). Er ist absichtlich nicht zu sehen — ihn an
        Schriftgröße oder Kontrast zu messen, ergäbe jede Runde dieselben
-       Geisterfunde. */
-    if (e.classList && e.classList.contains("vh")) return false;
-    if (s.clip === "rect(0px, 0px, 0px, 0px)") return false;
+       Geisterfunde.
+       WICHTIG (Berichtigung Runde 9): Das galt bis dahin nur für das
+       Element selbst. Ein geclippter Behälter versteckt aber auch seine
+       Kinder — getBoundingClientRect() eines Kindes meldet trotzdem
+       seine volle Größe. So wurden die nie sichtbaren Knöpfe
+       „Zurück"/„Weiter" aus dem vh-Behälter in index.html als 65 × 29 px
+       grosse Trefferflächen gezählt. Deshalb wird jetzt die ganze
+       Elternkette geprüft: vh, clip:rect(0 0 0 0) und jeder Behälter,
+       der beschneidet und dabei keine Ausdehnung hat. */
+    let p = e;
+    while (p && p.nodeType === 1) {
+      const ps = (p === e) ? s : getComputedStyle(p);
+      if (p.classList && p.classList.contains("vh")) return false;
+      if (ps.clip === "rect(0px, 0px, 0px, 0px)") return false;
+      if (p !== e) {
+        if (ps.visibility === "hidden" || ps.display === "none") return false;
+        const beschneidet = ps.overflow === "hidden" || ps.overflowX === "hidden" ||
+                            ps.overflowY === "hidden" || ps.overflow === "clip";
+        if (beschneidet && (p.clientWidth < 2 || p.clientHeight < 2)) return false;
+      }
+      /* Fixiert/absolut gesetzte Elemente entkommen dem Beschnitt des
+         Textflusses, nicht aber einem overflow:hidden-Vorfahren mit
+         eigener Position — die Elternkette wird darum ganz gegangen. */
+      p = p.parentElement;
+    }
     return true;
   };
   /* Überlauf: die Seite selbst und jedes sichtbare Element, das über den
