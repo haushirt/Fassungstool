@@ -1,0 +1,22 @@
+-- 001 · Rezepturen in der Zuordnung
+--
+-- NICHT einspielen, solange kein Modul sie braucht. Die Datei liegt fertig
+-- da, damit die Entscheidung (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 10) nicht
+-- an der SQL hängenbleibt.
+--
+-- Anlass: `mappingSchreiben` in src/index.js nahm bis Runde 3 ein Feld
+-- `rezept` entgegen und schrieb es in eine Spalte `mapping.rezept`, die es
+-- in der laufenden Datenbank nicht gibt (docs/live-schema.sql). Jeder
+-- solche Aufruf war ein 500. Der Worker lehnt Rezepturen seitdem mit einem
+-- lesbaren 422 ab, statt sie stillschweigend zu verlieren.
+--
+-- Wer sie braucht: ein Mischgetränk verbraucht mehrere Artikel
+-- ("Hugo" = 100 ml w057 + Sirup). Die Leitung pflegt das heute nur im
+-- Gerätespeicher (`hh_rezepte_v1` in public/leitung.html) — auf einem
+-- einzigen MacBook, ungezeichnet, nicht gesichert.
+--
+-- Additiv nach den Projektregeln: eine neue Spalte, kein DROP, kein Umbau.
+-- Die Spalte ist nullable; alles, was heute läuft, läuft unverändert
+-- weiter, auch wenn die Migration NICHT eingespielt ist.
+
+ALTER TABLE mapping ADD COLUMN rezept TEXT;

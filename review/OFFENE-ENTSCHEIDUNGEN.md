@@ -403,3 +403,65 @@ die Spitze, ohne dass jemand den Abschluss umbaut. Ich habe es nicht getan,
 weil damit ein offener Punkt verschwindet, den heute jemand bewusst
 hineingeschrieben hat – das ist eine Entscheidung des Hauses, keine
 Wortwahl.
+
+---
+
+## 10. `mapping.rezept` – die Spalte gibt es nicht (Migration liegt bereit)
+
+*software-engineer, Runde 3*
+
+**Befund.** `mappingSchreiben` (`src/index.js`) nahm ein Feld `rezept`
+entgegen und schrieb es nach `mapping.rezept`. Diese Spalte gibt es in der
+laufenden Datenbank nicht (`docs/live-schema.sql`: `fremd`, `status`,
+`artikel`, `gebinde_ml`, `wer`, `angelegt`). Jeder solche Aufruf war ein
+500 – aufgefallen ist es nie, weil kein Client diesen Endpunkt benutzt.
+
+**Was ich getan habe.** Der Worker schreibt `rezept` nicht mehr. Kommt es
+trotzdem im Körper an, antwortet er mit **422 und Klartext**
+(„Rezepturen kann die Datenbank noch nicht aufnehmen"), statt den Wert
+stillschweigend fallen zu lassen. Ein stiller Verlust wäre die schlechtere
+Hälfte: die Leitung sähe eine gespeicherte Rezeptur, die nirgends steht.
+
+**Was zu entscheiden ist.** Rezepturen liegen heute ausschließlich im
+Gerätespeicher der Leitung (`hh_rezepte_v1` in `public/leitung.html`) – auf
+einem einzigen MacBook, ungezeichnet, ohne Sicherung. Sobald der Abgleich
+Mischgetränke auflösen soll („Hugo" = 100 ml w057 + Sirup), brauchen sie
+einen Platz in der Datenbank.
+
+**Fertig, nicht eingespielt:** `migrations/001_mapping_rezept.sql` – eine
+additive, nullable Spalte. Lokal gegen `docs/live-schema.sql` durchgespielt.
+Solange sie nicht eingespielt ist, läuft alles unverändert weiter; der
+422-Weg ist das Feature-Flag. Zeile für Zeile in `review/ERGEBNIS.md`.
+
+**Meine Empfehlung:** noch nicht einspielen. Erst wenn Phase B den
+Vortagsabgleich baut und dabei feststeht, wie eine Rezeptur aussieht.
+
+---
+
+## 11. Drei Spalten der Fassungsliste bleiben leer
+
+*software-engineer, Runde 3*
+
+`fassungsliste` hat live die Spalten `kostenstelle`, `von_ts` und `bis_ts`.
+`parseZ` (`src/gnparse.js`) liefert heute keine davon: es liest den
+Betriebstag aus „Bis" und die Z-Nummer aus dem Kopf, mehr nicht. Der Worker
+schreibt sie deshalb **nicht** – sie sind nullable, das ist zulässig, aber
+es ist eine Lücke, kein Zustand.
+
+Dazu zwei Fragen, die ich nicht selbst beantworten kann:
+
+1. **Kommt je Betriebstag genau ein Z-Bericht?** Der Worker legt die Liste
+   jetzt unter `id = <Betriebstag>` ab – ein Bericht je Tag, ein zweiter
+   ersetzt den ersten. Auf `fassungsliste.tag` liegt live **kein**
+   UNIQUE-Index (nur `i_liste_tag`), ein `ON CONFLICT(tag)` gibt es also
+   nicht; der Betriebstag als Schlüssel ist der Weg ohne Schemaänderung.
+   Kommen Bar und Restaurant als **getrennte** Berichte (dafür stünde die
+   Spalte `kostenstelle`), überschreibt der zweite den ersten. Nach
+   `src/gnparse.js` und `tests/zbericht.test.mjs` enthält ein Bericht beide
+   Herkünfte – dann stimmt es. **Bitte einmal am echten Postfach ansehen.**
+2. **Was soll in `kern` stehen?** `fassungszeile.kern` ist NOT NULL und
+   musste gefüllt werden. Ich habe es als „Positionsname ohne die
+   Größenangabe" gedeutet (`kern()` in `src/gnparse.js`): aus
+   „Zweigelt 0,75 l 0,125 l" wird „Zweigelt". Das ist eine begründete
+   Auslegung, keine Vorgabe – im Repo benutzt die Spalte sonst niemand.
+   Ist etwas anderes gemeint, ist es eine Zeile Code.

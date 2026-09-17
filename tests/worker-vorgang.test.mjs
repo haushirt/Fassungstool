@@ -5,14 +5,14 @@
 import { test, describe, before } from "node:test";
 import assert from "node:assert/strict";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
-import { d1Attrappe } from "./hilfe/d1-attrappe.mjs";
+import { d1Echt } from "./hilfe/d1-echt.mjs";
 
 const CODE = "551907";               /* nur in dieser Prüfung */
 let worker;
 before(async () => { worker = await ladeWorker(); });
 
 async function haus() {
-  const env = { DB: d1Attrappe(), TOKEN_SECRET: "pruefgeheimnis", ANLAGE_OFFEN: "1" };
+  const env = { DB: d1Echt(), TOKEN_SECRET: "pruefgeheimnis", ANLAGE_OFFEN: "1" };
   await worker.fetch(anfrage("/api/anlage",
     { method: "POST", body: { name: "Asad", rolle: "service", code: CODE } }), env);
   const a = await worker.fetch(anfrage("/api/anmelden",
@@ -149,7 +149,7 @@ describe("Korrektur nach dem Abschluss", () => {
     await worker.fetch(anfrage("/api/vorgang/keller_2026-09-16", { method: "PUT", keks,
       body: { mode: "keller", tag: "2026-09-16", zaehlnr: 1, finished: true,
               zdone: { w001: 1 }, reihen: { w001: reihen }, einzel: { w001: 0 } } }), env);
-    env.DB.tabellen.ereignis.forEach(e => { e.ts -= 60000; });
+    env.DB.sql("UPDATE ereignis SET ts = ts - 60000");
   }
 
   test("die Gegenbuchung kommt als neue Zeile, der Bestand zieht nach", async () => {

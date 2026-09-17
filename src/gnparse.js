@@ -50,6 +50,35 @@ export function ml(text) {
   return null;
 }
 
+/* Kernbezeichnung: der Positionsname ohne die Grössenangabe am Ende.
+
+   `fassungszeile.kern` ist live NOT NULL und steht neben `rohbez`. Der
+   Rohname trägt die Grösse mit („GV Leindl, Langenlois 1/8", „… 0,75l"),
+   und derselbe Wein kommt in zwei Grössen als zwei Positionen. Der Kern
+   ist das, was beide gemeinsam haben — die Stelle, an der später Glas
+   und Flasche zusammenfinden, ohne dass jemand `rohbez` zerlegen muss.
+
+   Bewusst nur ABSCHNEIDEN, nicht normalisieren: kein Kleinschreiben,
+   keine Umlautauflösung. `rohbez` bleibt daneben unverändert stehen
+   (Regel 7: doppelte Grössensuffixe, zwei Herkünfte). Ist nach dem
+   Schnitt nichts mehr übrig, gilt der Rohname — die Spalte darf nie
+   leer sein. */
+export function kern(name) {
+  const s = String(name || "").trim();
+  let t = s, vorher;
+  /* Schleife, weil die Grösse doppelt dastehen kann („Zweigelt 0,75 l
+     0,125 l", Eigenheit 3). Ein einzelner Schnitt liesse die erste
+     Angabe stehen. */
+  do {
+    vorher = t;
+    t = t.replace(/[\s,;·|]*\b\d+(?:[.,]\d+)?\s*(?:ml|cl|l)\b\.?\s*$/i, "")
+         .replace(/[\s,;·|]*\b\d\s*\/\s*\d\b\s*$/, "")
+         .replace(/[\s,;·|]+$/, "")
+         .trim();
+  } while (t !== vorher);
+  return t || s;
+}
+
 export function parseZ(text) {
   const alle = String(text).split(/\r?\n/);
 

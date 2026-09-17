@@ -15,7 +15,7 @@
 import { test, describe, before, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
-import { d1Attrappe } from "./hilfe/d1-attrappe.mjs";
+import { d1Echt } from "./hilfe/d1-echt.mjs";
 
 let worker;
 before(async () => { worker = await ladeWorker(); });
@@ -23,7 +23,7 @@ before(async () => { worker = await ladeWorker(); });
 /* Eine Datenbank, die bei einer bestimmten Abfrage zusammenbricht — so
    wie D1 es tut, wenn eine Spalte fehlt oder die Bindung nicht passt. */
 function bruch(muster, meldung = "D1_ERROR: no such column: menge") {
-  const db = d1Attrappe();
+  const db = d1Echt();
   const echt = db.prepare.bind(db);
   db.prepare = sql => {
     if (!muster.test(sql.replace(/\s+/g, " "))) return echt(sql);
@@ -53,14 +53,14 @@ afterEach(() => { console.error = alt; });
 
 describe("Datenbankfehler im Router", () => {
   test("/api/bestand: 500 mit Klartext statt geplatzter Antwort", async () => {
-    const { env, keks } = await haus(bruch(/FROM ereignis WHERE artikel IS NOT NULL/));
+    const { env, keks } = await haus(bruch(/FROM ereignis WHERE artikel <> ''/));
     const r = await worker.fetch(anfrage("/api/bestand", { keks }), env);
     assert.equal(r.status, 500);
     assert.match((await r.json()).fehler, /no such column/);
   });
 
   test("und die Zeile steht in den Logs: Methode, Pfad, Meldung", async () => {
-    const { env, keks } = await haus(bruch(/FROM ereignis WHERE artikel IS NOT NULL/));
+    const { env, keks } = await haus(bruch(/FROM ereignis WHERE artikel <> ''/));
     await worker.fetch(anfrage("/api/bestand", { keks }), env);
     const z = logs.join("\n");
     assert.match(z, /api-fehler/);

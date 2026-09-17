@@ -1,11 +1,11 @@
 /* Anmeldung, Sperre, Sitzung und Rechte des Workers.
    Was hier geprüft wird, ist der Ablauf — nicht das Schema (Regel 3,
-   siehe tests/hilfe/d1-attrappe.mjs). */
+   siehe tests/hilfe/d1-echt.mjs). */
 
 import { test, describe, before } from "node:test";
 import assert from "node:assert/strict";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
-import { d1Attrappe } from "./hilfe/d1-attrappe.mjs";
+import { d1Echt } from "./hilfe/d1-echt.mjs";
 
 const CODE_LEITUNG = "824613";      /* nur in dieser Prüfung, nie im Haus */
 const CODE_SERVICE = "137902";
@@ -17,7 +17,7 @@ before(async () => { worker = await ladeWorker(); });
    ANLAGE_OFFEN), damit die Prüfsummen mit denen der Anmeldung
    zusammenpassen und nirgends ein Code im Klartext gespeichert wird. */
 async function haus() {
-  const DB = d1Attrappe();
+  const DB = d1Echt();
   const env = { DB, TOKEN_SECRET: "pruefgeheimnis", ANLAGE_OFFEN: "1" };
   for (const [name, rolle, code] of [["Casimir", "leitung", CODE_LEITUNG],
                                      ["Asad", "service", CODE_SERVICE]]) {
@@ -139,7 +139,7 @@ describe("Sitzung und Rechte", () => {
   test("abgemeldete Person (aktiv = 0) kommt mit altem Keks nicht mehr hinein", async () => {
     const env = await haus();
     const keks = keksAus(await anmelden(env, CODE_SERVICE));
-    env.DB.tabellen.person.find(p => p.name === "Asad").aktiv = 0;
+    env.DB.sql("UPDATE person SET aktiv = 0 WHERE name = ?", "Asad");
     assert.equal((await worker.fetch(anfrage("/api/ich", { keks }), env)).status, 401);
   });
 

@@ -9,7 +9,7 @@
    Der software-engineer hat das in seiner Übergabe als offenen Punkt an
    die QA weitergegeben; diese Datei ist die Antwort darauf.
 
-   Grenze, die dazugehört: Die D1-Attrappe bildet `SUM(menge)` als
+   Grenze, die dazugehört: Die Prüfdatenbank aus dem Live-Schema bildet `SUM(menge)` als
    vorzeichenbehaftete Summe nach, weil SQLite das so tut. Ein Beweis über
    die laufende Datenbank ist das nicht (Regel 3, `docs/live-schema.sql`
    fehlt) — geprüft wird der Worker, nicht D1. */
@@ -17,7 +17,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { ladeWorker } from "./hilfe/worker.mjs";
-import { d1Attrappe } from "./hilfe/d1-attrappe.mjs";
+import { d1Echt } from "./hilfe/d1-echt.mjs";
 
 const worker = await ladeWorker();
 
@@ -38,7 +38,7 @@ const zeile = (artikel, menge, art = "entnahme", tag = heute) =>
 
 describe("Wochenbrief", () => {
   test("er läuft überhaupt und schreibt genau eine Notiz", async () => {
-    const DB = d1Attrappe({ ereignis: [zeile("w001", 4)] });
+    const DB = d1Echt({ ereignis: [zeile("w001", 4)] });
     const briefe = await briefeSchreiben(DB);
     assert.equal(briefe.length, 1, "der Wochenbrief hat nichts geschrieben");
     assert.match(briefe[0], /^Wochenbrief \d{4}-\d{2}-\d{2} bis \d{4}-\d{2}-\d{2}/);
@@ -49,7 +49,7 @@ describe("Wochenbrief", () => {
        fehlen 2 Flaschen — nicht 8. Läse hier jemand den Betrag, stünde
        „8" im Brief und die Leitung suchte sechs Flaschen, die es nie
        gab. */
-    const DB = d1Attrappe({ ereignis: [
+    const DB = d1Echt({ ereignis: [
       zeile("w001", 5),
       Object.assign(zeile("w001", -3), { quelle: "vorgang-korrektur" })
     ] });
@@ -60,7 +60,7 @@ describe("Wochenbrief", () => {
   });
 
   test("eine vollständig zurückgenommene Entnahme steht mit 0 im Brief, nicht doppelt", async () => {
-    const DB = d1Attrappe({ ereignis: [
+    const DB = d1Echt({ ereignis: [
       zeile("w002", 1),
       Object.assign(zeile("w002", -1), { quelle: "vorgang-korrektur" })
     ] });
@@ -73,7 +73,7 @@ describe("Wochenbrief", () => {
     /* w010 hat viel Bewegung, aber fast alles wurde zurückgenommen; w011
        hat wenig Bewegung, die bleibt. Wer Beträge summiert, setzt w010
        nach oben — und die Leitung sieht den falschen Wein zuoberst. */
-    const DB = d1Attrappe({ ereignis: [
+    const DB = d1Echt({ ereignis: [
       zeile("w010", 20),
       Object.assign(zeile("w010", -19), { quelle: "vorgang-korrektur" }),
       zeile("w011", 6)
@@ -85,7 +85,7 @@ describe("Wochenbrief", () => {
   });
 
   test("Zählungen und Eingänge gehören nicht in die Verbrauchsliste", async () => {
-    const DB = d1Attrappe({ ereignis: [
+    const DB = d1Echt({ ereignis: [
       zeile("w003", 12, "zaehlung"),
       zeile("w003", 6, "eingang"),
       zeile("w003", 2)
@@ -97,10 +97,11 @@ describe("Wochenbrief", () => {
   });
 
   test("ein Betriebstag ohne Z-Bericht wird gemeldet", async () => {
-    const DB = d1Attrappe({
+    const DB = d1Echt({
       ereignis: [],
-      vorgang: [{ id: "tag_" + heute, tag: heute, art: "tag", wer: "Asad",
-                  daten: "{}", abgeschlossen: 1, ts: Date.now() }],
+      vorgang: [{ id: "tag_" + heute, tag: heute, modus: "tag", wer: "Asad",
+                  daten: "{}", status: "abgeschlossen", abgeschlossen: Date.now(),
+                  begonnen: Date.now(), geaendert: Date.now() }],
       fassungsliste: []
     });
     const [brief] = await briefeSchreiben(DB);
@@ -108,18 +109,19 @@ describe("Wochenbrief", () => {
   });
 
   test("liegt der Z-Bericht vor, meldet der Brief keine Lücke", async () => {
-    const DB = d1Attrappe({
+    const DB = d1Echt({
       ereignis: [],
-      vorgang: [{ id: "tag_" + heute, tag: heute, art: "tag", wer: "Asad",
-                  daten: "{}", abgeschlossen: 1, ts: Date.now() }],
-      fassungsliste: [{ tag: heute, nr: "Z 1", quelle: "email", roh: "", ts: 1 }]
+      vorgang: [{ id: "tag_" + heute, tag: heute, modus: "tag", wer: "Asad",
+                  daten: "{}", status: "abgeschlossen", abgeschlossen: Date.now(),
+                  begonnen: Date.now(), geaendert: Date.now() }],
+      fassungsliste: [{ id: heute, tag: heute, z: "Z 1", wer: "email", roh: "", importiert: 1 }]
     });
     const [brief] = await briefeSchreiben(DB);
     assert.match(brief, /Alle Betriebstage haben einen Z-Bericht\./);
   });
 
   test("ohne jede Bewegung wirft der Brief nicht", async () => {
-    const [brief] = await briefeSchreiben(d1Attrappe());
+    const [brief] = await briefeSchreiben(d1Echt());
     assert.ok(brief.length > 0);
   });
 });

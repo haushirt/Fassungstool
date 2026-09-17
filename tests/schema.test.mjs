@@ -124,6 +124,72 @@ describe("Abgleich mit docs/live-schema.sql", { skip: DA ? false :
     assert.deepEqual(klagen, [], "Spalten, die es im Live-Schema nicht gibt");
   });
 
+  /* Der Befund aus Runde 3, die andere Hälfte: Nicht nur falsche Namen
+     lassen eine Einfügung scheitern, sondern auch FEHLENDE. `vorgang`
+     verlangt `modus`, `begonnen` und `status`; der Worker schrieb sie
+     nicht, und D1 antwortete auf jede Fassung mit „NOT NULL constraint
+     failed". Sichtbar war davon nur ein 500 in der Warteschlange.
+
+     Geprüft wird jede Spalte, die NOT NULL ist und keinen DEFAULT hat —
+     nur die muss der Aufrufer selbst mitbringen. */
+  test("jede Einfügung bringt die Pflichtspalten ihrer Tabelle mit", () => {
+    const pflicht = {};
+    for (const m of schema.matchAll(
+      /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`[]?([a-z_][a-z0-9_]*)["'`\]]?\s*\(([\s\S]*?)\);/gi)) {
+      pflicht[m[1].toLowerCase()] = m[2].split(/,(?![^(]*\))/)
+        .map(z => z.trim())
+        .filter(z => !/^(PRIMARY|FOREIGN|UNIQUE|CHECK|CONSTRAINT)\b/i.test(z))
+        .filter(z => /\bNOT\s+NULL\b/i.test(z) && !/\bDEFAULT\b/i.test(z))
+        .map(z => (z.match(/^["'`[]?([a-z_][a-z0-9_]*)/i) || [])[1])
+        .filter(Boolean).map(s => s.toLowerCase());
+    }
+
+    const klagen = [];
+    for (const s of SQL) {
+      const ins = /^INSERT INTO (\w+)\s*\(([^)]*)\)/i.exec(s);
+      if (!ins || !pflicht[ins[1].toLowerCase()]) continue;
+      const hat = new Set(ins[2].split(",").map(x => x.trim().toLowerCase()));
+      for (const sp of pflicht[ins[1].toLowerCase()])
+        if (!hat.has(sp)) klagen.push(`${ins[1]}.${sp} fehlt in: ${s}`);
+    }
+    assert.deepEqual(klagen, [], "NOT-NULL-Spalten ohne Vorgabewert, die nicht geschrieben werden");
+  });
+
+  /* `ON CONFLICT(spalte)` braucht auf genau dieser Spalte einen PRIMARY
+     KEY oder UNIQUE-Index, sonst antwortet SQLite mit „ON CONFLICT clause
+     does not match any PRIMARY KEY or UNIQUE constraint". Der Worker hat
+     bis Runde 3 auf `fassungsliste.tag` aufgesetzt — dort liegt live nur
+     ein gewöhnlicher Index. */
+  test("jedes ON CONFLICT trifft einen Schlüssel, den es gibt", () => {
+    const eindeutig = {};                       /* tabelle → Set(spalten) */
+    for (const m of schema.matchAll(
+      /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`[]?([a-z_][a-z0-9_]*)["'`\]]?\s*\(([\s\S]*?)\);/gi)) {
+      const t = m[1].toLowerCase();
+      eindeutig[t] = new Set();
+      for (const z of m[2].split(/,(?![^(]*\))/).map(x => x.trim())) {
+        const inline = /^["'`[]?([a-z_][a-z0-9_]*)["'`\]]?\s.*\b(PRIMARY\s+KEY|UNIQUE)\b/i.exec(z);
+        if (inline) eindeutig[t].add(inline[1].toLowerCase());
+        const tab = /^(?:PRIMARY\s+KEY|UNIQUE)\s*\(([^)]*)\)/i.exec(z);
+        if (tab) eindeutig[t].add(tab[1].split(",").map(x => x.trim().toLowerCase()).join(","));
+      }
+    }
+    for (const m of schema.matchAll(
+      /CREATE\s+UNIQUE\s+INDEX\s+\w+\s+ON\s+([a-z_][a-z0-9_]*)\s*\(([^)]*)\)/gi))
+      (eindeutig[m[1].toLowerCase()] ||= new Set())
+        .add(m[2].split(",").map(x => x.trim().toLowerCase()).join(","));
+
+    const klagen = [];
+    for (const s of SQL) {
+      const m = /^INSERT INTO (\w+)[\s\S]*?ON CONFLICT\s*\(([^)]*)\)/i.exec(s);
+      if (!m) continue;
+      const t = m[1].toLowerCase();
+      const k = m[2].split(",").map(x => x.trim().toLowerCase()).join(",");
+      if (!eindeutig[t] || !eindeutig[t].has(k))
+        klagen.push(`${t}: ON CONFLICT(${k}) — dort liegt kein eindeutiger Schlüssel`);
+    }
+    assert.deepEqual(klagen, [], "ON CONFLICT ohne passenden Schlüssel");
+  });
+
   /* Der Anlass: In Runde 2 kam mit `quelle='vorgang-korrektur'` ein NEUER
      WERT in eine bestehende Spalte. Dass `quelle` freien Text nimmt, war
      aus `notiz()` erschlossen — dort stehen `'email'` und `'wochenbrief'`.
