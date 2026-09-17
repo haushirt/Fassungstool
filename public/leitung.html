@@ -1748,9 +1748,13 @@ function vZuordnung(m){
     const nm=sel.dataset.name, z=zuordnung({name:nm});
     sel.value = MAP[nm] ? MAP[nm] : (z.status==="auto" ? z.id : "");
     sel.onchange=async()=>{
-      const wert=sel.value;
+      const wert=sel.value, vorher=MAP[nm];
       if(wert) MAP[nm]=wert; else delete MAP[nm];
       schreib(K_MAP,MAP);
+      /* Die bestätigte Gebindegröße gehörte zum bisherigen Artikel. Nach
+         einem Wechsel ist sie nicht mehr bestätigt — sonst rechnet die
+         neue Zuordnung mit der Flasche der alten. */
+      if(GEB_BEST[nm]!=null && wert!==vorher){ delete GEB_BEST[nm]; schreib(K_GEB,GEB_BEST); }
       const ok=await sendeZuordnung(nm, wert);
       zeichne();
       if(ok) toast("Zuordnung gespeichert");
