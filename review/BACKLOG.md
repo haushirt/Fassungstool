@@ -8,6 +8,7 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 
 | Rolle | Runde | Punkt | Datei:Zeile |
 |---|---|---|---|
+| software-engineer | 7 | **Der Fremdgerät-Dialog lässt sich nicht ablehnen.** Im Dialog „Auf einem anderen Gerät weiter?" setzt der Abbrechen-Zweig `start._uebernommen=false; start(m);`; `fernNeuer(m)` liefert danach denselben fremden Stand und der Dialog öffnet sich sofort wieder. Die Berichtigung ist ein Wort. In Runde 8 in Arbeit. | `public/index.html:2238` |
 | software-engineer | 6 | **Getränke ohne Größe im Artikelnamen haben keinen Weg, ihre Gebindegröße zu bekommen.** Seit Runde 6 rechnet nur mit, was bestätigt ist — für Sanbitter, Cola, Almdudler und Gasteiner still gibt es aber keinen Vorschlag und damit keinen Knopf. Sie bleiben dauerhaft aus der Rechnung. Es fehlt ein Zahlenfeld „Gebindegröße ml" neben „Übernehmen"; der Endpunkt nimmt die Zahl bereits an, keine Migration nötig. | `public/leitung.html` (`vAbgleich`, Block „Größe fehlt"), `src/index.js:483` |
 | software-engineer | 6 | **In den Stammdaten gibt es keine Spirituosen.** „Amaro Averna 2 cl", „Amaretto Sour", „Pisco Sour", „Gin Basil Smash", „Monkey Sour" — im echten Bericht 20 Stück und 244,50 € — können keinem Artikel zugeordnet werden und bleiben ewig „offen". Gehört zu §8 A und Entscheidung Nr. 6. | `public/leitung.html` (`STAMM`) |
 | Moderation | 6 | **`kistenGr()` im Backoffice liest ein Feld, das es nie gab.** `p.kg` statt `p.kistengr` (die App legt `kistengr` ab); der Worker liest seit Runde 5 beide. Dieselbe Lieferung steht im Journal mit 40 und auf dem Schirm mit 12 Flaschen. In Runde 7 in Arbeit. | `public/leitung.html:678`, `public/index.html:2910`, `src/index.js` |
@@ -39,6 +40,10 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 
 | Rolle | Runde | Punkt | Datei:Zeile |
 |---|---|---|---|
+| software-engineer | 7 | **„Trotzdem neu beginnen" ist angesagt, aber nicht abgesichert:** es nimmt die erste Lieferung im Journal per Gegenbuchung zurück. Prüfen, ob es stattdessen eine Korrekturbedienung im fortgeführten Vorgang braucht. | `public/index.html` (`start()`) |
+| software-engineer | 7 | **Rezepturen für „1 Glas"-Positionen fehlen.** Ohne sie bleibt der Verkauf von Aperol Spritz, Pisco Sour und den übrigen Mischgetränken dauerhaft außerhalb der Rechnung — im echten Bericht 20 Stück und 244,50 €. `REZ` liegt nur im Browser der Leitung, die Spalte `mapping.rezept` gibt es nicht (Migration 001 steht aus). | `public/leitung.html` (`vRezepte`), `migrations/001_mapping_rezept.sql` |
+| Jäger | 6 | **Widersprechen sich zwei Bestätigungen desselben Artikels, fällt `gebindeGroesse` still auf den 750-Vorschlag zurück** statt auf „unbekannt": `gebArtikelBestaetigt()` setzt `t[id]=null`, `if(ueberArtikel)` ist damit falsch und der Weg läuft bis Rang 4 durch. Folge heute nur: der Knopf bietet 750 ml an, wo nichts bekannt ist. | `public/leitung.html:647`, `:663` |
+| Jäger | 6 | **Eine Zählung auf 0 erzeugt keine Journalzeile** (`if (menge)`): der leergezählte Wein behält im Journal seinen alten Stand. Heute ohne sichtbare Folge, weil `/api/bestand` keinen Verbraucher hat — mit Phase B sofort relevant. | `src/index.js:269` |
 | software-engineer | 6 | **`offen` zählt je Kassenname nur die erste Zeile.** Derselbe Name kommt im Bericht mehrfach vor (Regel 7, Bar und Restaurant getrennt gebucht: „Aperol Spritz 1 Glas" 4 + 2). `ohneGroesse` summiert richtig, `offen` nicht — die Zahl in der Navigation und in der CSV ist zu niedrig. | `public/leitung.html:1118` |
 | software-engineer | 6 | **`mapping.gebinde_ml` hängt am Kassennamen, nicht am Artikel.** Die Regel „bestätigt für diesen Artikel" (`gebArtikelBestaetigt`) ist eine Krücke der Oberfläche. Ob die Gebindegröße nicht in die Stammdaten des Artikels gehört, ist eine Frage für Phase B — additiv lösbar. | `docs/live-schema.sql:102` |
 | software-engineer | 6 | **Es gibt keine Warenart in den Stammdaten** (`GETR` kennt nur die Ladengeometrie; in Lade 6 liegen 0,33 l und 0,5 l nebeneinander). Solange das so ist, kann kein Standard je Warenart greifen — deshalb steht in `GEBINDE_STANDARD` nur der Wein. | `public/leitung.html` (`STAMM.GETR`) |
@@ -87,6 +92,14 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | qa-guardian | 3 | **Im Schritt „Holen" führt „Weiter" weiter, ohne dass etwas abgehakt ist.** Im Persona-Durchlauf drückt die neue Servicekraft unten „Weiter", kommt in den Abschluss und liest dort zum ersten Mal „Noch nicht alles geholt – 3 Weine". Im Schritt selbst steht kein Wort darüber, dass jede Zeile einzeln anzutippen ist; einen Sammelknopf wie `.fullbtn` in Bar und Restaurant gibt es hier nicht. Sie muss zurück und den Schritt neu verstehen. | `public/index.html:2668` (`rHolen`), `:2690` (`holRow`), `:4048` (`offenList`) |
 
 ## Niedrig
+
+| Rolle | Runde | Punkt | Datei:Zeile |
+|---|---|---|---|
+| Jäger | 6 | Das Messgerät zählt Kinder eines `.vh`-Behälters als sichtbare Trefferflächen — „Zurück"/„Weiter" 65 × 29 auf drei Seiten sind Geisterfunde, die gemeldete Zahl 96 ist zu hoch. `sicht()` prüft die Klasse nur am Element selbst. | `tests/ui-mass.cjs:99` |
+| Jäger | 6 | `.vh` steht zweimal in `index.html` (einmal in der Gestaltungsschicht, einmal darunter) — zwei identische Regeln. | `public/index.html:221`, `:761` |
+| Jäger | 6 | `parseZ` liefert `p.ml` bereits mit; `flaschen()` rechnet dieselbe Regel über `mlAusText(p.name)` ein drittes Mal. Heute deckungsgleich (15 Proben, 0 Abweichungen), aber ein drittes Vorkommen derselben Regel. | `src/gnparse.js`, `public/leitung.html:1066` |
+| software-engineer | 7 | `PLAN.kiste` wird nur noch in der Bestellliste benutzt; klären, ob die Kistengröße je Artikel überhaupt Stammdaten sein soll. | `public/leitung.html` (Bestellen) |
+
 
 | Rolle | Runde | Punkt | Datei:Zeile |
 |---|---|---|---|
