@@ -15,7 +15,6 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | Setup | – | Keine Sicherung der D1. Ein falsches `DELETE` in der Console löscht den Kellerbestand unwiederbringlich (Projektanleitung §8). | Dashboard |
 | Setup | – | `docs/live-schema.sql` fehlt im Repo. Ohne die Datei ist harte Regel 3 nicht erfüllbar (lokale Test-DB, Abgleich aller SQL-Stellen). | – |
 | Setup | – | `tests/fixtures/` fehlt. QA und Controller können ohne die anonymisierten Z-Berichte und Zählungen nicht rechnerisch prüfen. | – |
-| Setup | – | `WORKER-ANPASSUNG.md` und `ANMELDESPERRE.md` fehlen, obwohl Projektanleitung §8 die vier Worker-Änderungen als „dort ausformuliert" bezeichnet. | – |
 
 ## Mittel
 

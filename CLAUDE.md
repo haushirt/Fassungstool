@@ -2,7 +2,7 @@ Fassungstool – Projektregeln für Claude Code
 
 Kontext
 
-Keller- und Getränkemanagement für das Alpine Spa Hotel Haus Hirt, Bad Gastein. Service (iPhone/iPad) erfasst Fassungen im Keller, die Leitung (MacBook) arbeitet im Backoffice. Maßgebliche Doku: `PROJEKTANLEITUNG-Fassungstool.md` (Stand 16.09.2026) – vor jeder Arbeit lesen. Dazu, falls vorhanden: `WORKER-ANPASSUNG.md`, `ANMELDESPERRE.md`.
+Keller- und Getränkemanagement für das Alpine Spa Hotel Haus Hirt, Bad Gastein. Service (iPhone/iPad) erfasst Fassungen im Keller, die Leitung (MacBook) arbeitet im Backoffice. Maßgebliche Doku: `PROJEKTANLEITUNG-Fassungstool.md` (Stand 16.09.2026) und `UEBERGABE-TECHNISCH.md` (Stand 17.09.2026, die lange Fassung für die Werkbank) – beide vor jeder Arbeit lesen. Dazu, falls vorhanden: `WORKER-ANPASSUNG.md`, `ANMELDESPERRE.md`.
 
 Stack
 
