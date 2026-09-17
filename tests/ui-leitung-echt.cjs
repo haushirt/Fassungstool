@@ -306,13 +306,22 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
   await p.evaluate(async () => {
     MAP["Sanbitter Spritz 1 Glas"] = "sanbitter"; schreib(K_MAP, MAP);
     await sendeZuordnung("Sanbitter Spritz 1 Glas", "sanbitter");
+    /* Und eine Rezeptzeile: hier ist die Id, die in der Liste steht, ein
+       BESTANDTEIL. Würde der Sammelknopf sie anfassen, stünde danach
+       „dieses Mischgetränk = dieser Wein" in `mapping` — rückwirkend für
+       jede gespeicherte Berichtszeile. */
+    REZ["Amaro Averna Siciliano 2 cl"] = [{ id: "w020", ml: 20 }];
+    schreib(K_REZ, REZ);
     zeichne();
   });
   await p.waitForTimeout(500);
 
   const vorher = await p.evaluate(() => {
     const a = abgleich("2026-09-16", 1);
-    const mit = a.ohneGroesse.filter(o => o.fehlt === "gebinde" && o.id && o.geb && o.geb.ml);
+    /* Dieselbe Bedingung wie im Sammelknopf: Rezeptzeilen gehören NICHT
+       dazu (ihre Id ist ein Bestandteil, siehe unten). */
+    const mit = a.ohneGroesse.filter(o =>
+      o.fehlt === "gebinde" && !o.rezept && o.id && o.geb && o.geb.ml);
     const b = document.getElementById("bGebAlle");
     return { offen: a.ohneGroesse.length, mitVorschlag: mit.length,
              ohneVorschlag: a.ohneGroesse.length - mit.length,
@@ -329,7 +338,8 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
     await new Promise(r => setTimeout(r, 1500));
     const a = abgleich("2026-09-16", 1);
     return { offen: a.ohneGroesse.length,
-             mitVorschlag: a.ohneGroesse.filter(o => o.fehlt === "gebinde" && o.geb && o.geb.ml).length,
+             mitVorschlag: a.ohneGroesse.filter(o =>
+               o.fehlt === "gebinde" && !o.rezept && o.geb && o.geb.ml).length,
              gerechnet: Object.keys(a.verk).length,
              meldung: (document.getElementById("toast") || {}).textContent || "" };
   });
@@ -345,6 +355,27 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      nachher.offen === vorher.ohneVorschlag, nachher.offen + " bleiben");
   ok("jetzt rechnen die Positionen mit", nachher.gerechnet > 0,
      nachher.gerechnet + " Artikel in der Mengenrechnung");
+
+  /* Der Fund A-6: eine Rezeptzeile trägt den Bestandteil als Id. Weder der
+     Sammelknopf noch der Knopf an der Zeile darf daraus eine Zuordnung
+     machen — es gibt keinen Papierkorb. */
+  const rezeptZeile = await p.evaluate(async () => {
+    const a = abgleich("2026-09-16", 1);
+    const o = a.ohneGroesse.find(x => x.name === "Amaro Averna Siciliano 2 cl") || {};
+    const knopf = [...document.querySelectorAll("button[data-geb]")]
+      .some(b => b.dataset.geb === "Amaro Averna Siciliano 2 cl");
+    /* Und der Weg von Hand, falls ihn doch jemand aufruft: */
+    await bestaetigeGebinde("Amaro Averna Siciliano 2 cl", "w020", 750);
+    await new Promise(r => setTimeout(r, 400));
+    return { rezept: !!o.rezept, id: o.id, knopf, map: MAP["Amaro Averna Siciliano 2 cl"] };
+  });
+  ok("die Rezeptzeile steht als Mischgetränk da, mit dem Bestandteil benannt",
+     rezeptZeile.rezept && rezeptZeile.id === "w020", JSON.stringify(rezeptZeile));
+  ok("an einer Rezeptzeile gibt es keinen Übernehmen-Knopf", !rezeptZeile.knopf);
+  ok("auch der Sammelklick hat sie nicht angefasst",
+     rezeptZeile.map === undefined &&
+     !DB.zeilen("mapping").some(r => r.fremd === "Amaro Averna Siciliano 2 cl"),
+     "mapping-Zeilen: " + DB.zeilen("mapping").length);
 
   /* ── Ergebnis ───────────────────────────────────────────────────────── */
   await browser.close(); srv.close();

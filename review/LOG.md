@@ -2033,3 +2033,77 @@ desselben Modus am selben Tag löschen einander.
 
 **STATUS:** VERBESSERUNGEN — keine Position wird mehr still geraten, aber
 ohne Sammelbestätigung ist der Abgleich am Morgen leer.
+
+---
+
+### Runde 7 – software-engineer (Nachtzyklus: die drei A-Funde aus Runde 6)
+
+**Kritik am Vorgänger (Runde 6):**
+* ✅ übernommen: `kistenGr()` (`public/leitung.html:678`, Stand v25) las `p.kg`
+  — ein Feld, das die App nie geschrieben hat — und fiel dann auf `PLAN.kiste`
+  zurück. Damit gab es DREI Fassungen derselben Zahl: App `+p.kistengr||6`,
+  Worker `+x.kistengr||+x.kg||6`, Backoffice `+p.kg||PLAN.kiste||6`. Zwei
+  Kisten à 20 Flaschen standen im Journal mit 40 und auf dem Schirm mit 12.
+* ✅ übernommen: Runde 6 hat richtig aufgehört zu raten, aber keinen Weg
+  gelassen, die 13 unbestätigten Größen in vertretbarer Zeit zu bestätigen.
+  Ohne Sammelweg wäre der Abgleich am Morgen leer gewesen.
+* ↩️ geändert (Fund A-6 der Jagd, während der Runde hereingereicht): Der Knopf
+  „Übernehmen" stand auch an **Rezeptzeilen**, wo `id` der BESTANDTEIL ist.
+  Ein Klick hätte `MAP[<Mischgetränk>] = <Bestandteil>` geschrieben, und der
+  Worker hätte das rückwirkend in alle gespeicherten Berichtszeilen getragen
+  (`UPDATE fassungszeile SET artikel …`) — ohne Papierkorb. Jetzt: kein Knopf
+  an solchen Zeilen, der Sammelknopf lässt sie aus, und beide Wege verweigern
+  sie zusätzlich von sich aus.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Sammelbestätigung der Gebindegrößen.** Erst die Liste (Kassenname ·
+   Menge · Artikel · was fehlt · Vorschlag samt Herkunft), dann ein Klick.
+   Jede Zeile geht einzeln über `POST /api/mapping`; gemerkt wird nur, was der
+   Server angenommen hat; beim ersten Fehlschlag Abbruch mit „n von m
+   bestätigt — der Rest steht noch da". Positionen ohne Vorschlag und
+   Rezeptzeilen bleiben unberührt.
+2. **`kistenGr()` auf die Rangfolge des Workers gebracht**
+   (`+p.kistengr || +p.kg || 6`). Dieselbe Lieferung ergibt jetzt überall
+   dieselbe Zahl.
+3. **Zweiter Vorgang desselben Modus am selben Tag wird gefragt, nicht
+   ersetzt** (`start()`, `public/index.html`): „Ergänzen" (Vorgabe) führt den
+   abgeschlossenen Vorgang fort, der Server bucht nur den Zuwachs;
+   „Trotzdem neu beginnen" bleibt möglich und sagt vorher, dass die erste
+   Lieferung zurückgenommen wird; „Abbrechen" führt ins Menü. Der Schlüssel
+   `<modus>_<tag>` bleibt unangetastet, keine Schemaänderung.
+
+**Geprüft:** `npm test` **252 grün** (vorher 234; neu `tests/kisten.test.mjs` 6,
+`tests/vorgang-zweimal.test.mjs` 6, `gebinde.test.mjs` von 15 auf 21).
+`node tests/durchstich.cjs` 35/35. `node tests/ui-leitung-echt.cjs` **40/40**
+(Abschnitt 8 neu: Sammelknopf am echten Bericht durch den echten Worker, drei
+Zeilen einzeln in `mapping`, Rezeptzeile ohne Knopf und vom Sammelklick nicht
+angefasst). `node tests/ui-zweiter-vorgang.cjs` **15/15** (neu, Chromium ohne
+Netz): die App fragt, nennt „1 Position · 40 Flaschen", Ergänzen schickt EIN
+Paket mit 64 Flaschen, ein anderer Tag wird weiter still archiviert.
+`tests/vorgang-zweimal.test.mjs` stellt den Schaden am echten Worker nach:
+ohne die Frage steht `eingang w003 −40` als Gegenbuchung im Journal.
+`LAUF=runde-7 node tests/ui-mass.cjs`: Überlauf 0, JS-Fehler 0,
+Gestaltungsschicht wortgleich, Messwerte Zeichen für Zeichen wie die
+Basislinie. `sw.js` v25 → v26.
+**Ungeprüft:** echtes iPhone/Safari, der Wechsel des Service Workers auf v26,
+und der Weg „Trotzdem neu beginnen" end-to-end gegen den Worker.
+
+**Für die Nächsten:**
+* An die **nächste Runde**, mit Beleg: `public/index.html:2238` — im Dialog
+  „Auf einem anderen Gerät weiter?" setzt der Abbrechen-Zweig
+  `start._uebernommen=false; start(m);`. `fernNeuer(m)` liefert danach denselben
+  fremden Stand, der Dialog öffnet sich sofort wieder: **ablehnen ist
+  unmöglich**. Die Berichtigung ist ein Wort.
+* An den **controller**: „Ergänzen" löst den Fall ohne Schemaänderung, aber es
+  gibt keine ausdrückliche Bedienung „diese Position war falsch" — korrigiert
+  wird durch Ändern im fortgeführten Vorgang.
+
+**Phase/Thema:** A / P0 — Abschluss Gebindegrößen, Kistengrößen, zweiter Vorgang
+
+**Backlog:** neu unter „hoch": Fremdgerät-Dialog, Abbrechen öffnet sich endlos
+neu. Neu unter „mittel": „Trotzdem neu beginnen" nimmt die erste Lieferung
+zurück; Rezepturen für „1 Glas"-Positionen fehlen.
+
+**STATUS:** VERBESSERUNGEN — die drei A-Funde sind behoben und belegt; der
+Fremdgerät-Dialog ist neu aufgetaucht und offen.

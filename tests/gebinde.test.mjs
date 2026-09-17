@@ -52,10 +52,11 @@ function umgebung(antwortet = () => new Response("{}", { status: 200 })) {
        Ausschnitts; die Bestaetigungswege rufen es am Ende auf. */
     globalThis.zeichne = () => { globalThis.__neugezeichnet = (globalThis.__neugezeichnet||0)+1; };
     globalThis.__f = { flaschen, gebindeGroesse, abgleich, artName, GEBINDE_STANDARD,
-      ladeZuordnung, sendeZuordnung, bestaetigeAlleGebinde, zeichne:()=>{},
+      ladeZuordnung, sendeZuordnung, bestaetigeAlleGebinde, bestaetigeGebinde,
+      zeichne:()=>{},
       stand:()=>({map:MAP, geb:GEB_BEST}),
-      setzte:(map,geb,zber,vorg)=>{ MAP=map||{}; GEB_BEST=geb||{};
-        ZBER=zber||{}; VORGAENGE=vorg||[]; REZ={}; } };`,
+      setzte:(map,geb,zber,vorg,rez)=>{ MAP=map||{}; GEB_BEST=geb||{};
+        ZBER=zber||{}; VORGAENGE=vorg||[]; REZ=rez||{}; } };`,
     s, { filename: "leitung.html#gebinde" });
   return { f: s.__f, gesendet, s };
 }
@@ -325,11 +326,37 @@ describe("Sammelbestätigung: ein Knopf für alle Vorschläge", () => {
     assert.equal(gesendet.length, 0);
   });
 
+  test("eine Rezeptzeile wird NIE bestätigt — auch nicht im Sammelweg", async () => {
+    /* Bei einem zerlegten Mischgetränk ist `id` der BESTANDTEIL, nicht der
+       Artikel der Kassenposition. `MAP[name]=id` hiesse „Aperol Spritz ist
+       Prosecco"; der Worker schreibt das rückwirkend in jede gespeicherte
+       Berichtszeile (`UPDATE fassungszeile SET artikel …`), und einen
+       Papierkorb gibt es nicht. */
+    const REZEPT = { "Sanbitter Spritz 1 Glas": [{ id: "w001", ml: 100 }] };
+    const { f, gesendet } = umgebung();
+    f.setzte({}, {}, zber(), [], REZEPT);
+
+    const a = f.abgleich(BERICHT.tag, 1);
+    const zeile = a.ohneGroesse.find(o => o.name === "Sanbitter Spritz 1 Glas");
+    assert.ok(zeile, "die Zeile steht als „Größe fehlt“ da");
+    assert.equal(zeile.rezept, true, "und ist als Rezeptzeile gekennzeichnet");
+    assert.equal(zeile.id, "w001", "die Id ist der Bestandteil, nicht die Position");
+
+    await f.bestaetigeAlleGebinde([{ name: zeile.name, id: zeile.id, ml: 750 }]);
+    await f.bestaetigeGebinde(zeile.name, zeile.id, 750);
+    assert.equal(gesendet.length, 0, "keine einzige Anfrage für eine Rezeptzeile");
+    assert.equal(f.stand().map["Sanbitter Spritz 1 Glas"], undefined,
+      "und keine Zuordnung im Gerät");
+  });
+
   test("der Sammelknopf nimmt nur Positionen mit Vorschlag auf", () => {
     /* Die Liste entsteht in `vAbgleich`; sie darf die Positionen, bei
        denen die AUSSCHANKMENGE im Kassennamen fehlt, nicht mitnehmen —
        für die gibt es keinen Vorschlag, nur eine Entscheidung. */
     const quelle = lies("public", "leitung.html");
-    assert.match(quelle, /\.filter\(o=>o\.fehlt==="gebinde" && o\.id && o\.geb && \+o\.geb\.ml>0\)/);
+    assert.match(quelle, /\.filter\(o=>o\.fehlt==="gebinde" && !o\.rezept && o\.id && o\.geb && \+o\.geb\.ml>0\)/);
+    /* Und der Knopf an der einzelnen Zeile entsteht nur im Zweig ohne
+       Rezept — `o.rezept` wird vorher abgefangen. */
+    assert.match(quelle, /o\.rezept \? '<span class="dim">kein Knopf an dieser Zeile/);
   });
 });
