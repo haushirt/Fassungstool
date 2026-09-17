@@ -17,11 +17,15 @@ import { mappe } from "./gnmap.js";
    schafft rechnerisch aber nur wenige tausend (10 ms CPU, vier
    Personen je Anmeldung). 1000 reicht hier: die Codes sind
    Identifikation mit Rechten, kein Schutz vor Angreifern — dafür
-   sorgt die Sperre nach fünf Fehlversuchen. Zieht das Tool auf einen
+   sorgt die Sperre nach zehn Fehlversuchen. Zieht das Tool auf einen
    eigenen Server, gehört diese Zahl wieder auf 100000. */
 const RUNDEN = 1000;
 const SITZUNG = 12 * 60 * 60 * 1000;
-const SPERRE = { versuche: 5, fenster: 15 * 60 * 1000 };
+/* Die Sperre zählt pro IP, und im Haus teilen sich alle Geräte eine. Fünf
+   Versuche waren deshalb nicht fünf pro Person, sondern fünf für das ganze
+   Team — ein Vertipper an der Bar sperrte den Keller mit aus. Zehn ist der
+   Kompromiss: immer noch eine Sperre, aber keine, die im Betrieb zuschnappt. */
+const SPERRE = { versuche: 10, fenster: 15 * 60 * 1000 };
 
 const json = (o, s = 200, h = {}) =>
   new Response(JSON.stringify(o), {
@@ -91,9 +95,17 @@ async function anmelden(request, env) {
   const seit = Date.now() - SPERRE.fenster;
 
   const { results: letzte } = await env.DB.prepare(
-    `SELECT ok FROM anmeldeversuch WHERE ip = ?1 AND ts > ?2`).bind(ip, seit).all();
-  if (letzte.filter(r => !r.ok).length >= SPERRE.versuche)
-    return json({ fehler: "zu viele Versuche" }, 429);
+    `SELECT ok, ts FROM anmeldeversuch WHERE ip = ?1 AND ts > ?2`).bind(ip, seit).all();
+  const fehl = letzte.filter(r => !r.ok).map(r => +r.ts).sort((a, b) => a - b);
+
+  if (fehl.length >= SPERRE.versuche) {
+    /* Die Sperre endet nicht pauschal in 15 Minuten, sondern sobald der
+       älteste noch mitzählende Fehlversuch aus dem Fenster fällt. Genau
+       diese Uhrzeit zeigt die App an — sonst steht jemand davor und weiss
+       nicht, wie lange noch. */
+    const wartenBis = fehl[fehl.length - SPERRE.versuche] + SPERRE.fenster;
+    return json({ fehler: "zu viele Versuche", wartenBis }, 429);
+  }
 
   let code = "";
   try { code = (await request.json()).code || ""; } catch {}
@@ -112,7 +124,17 @@ async function anmelden(request, env) {
     `INSERT INTO anmeldeversuch (ip, ts, ok) VALUES (?1, ?2, ?3)`
   ).bind(ip, Date.now(), treffer ? 1 : 0).run();
 
-  if (!treffer) return json({ fehler: "unbekannt" }, 401);
+  /* Wieviele Versuche bleiben? Die Antwort verrät nichts über den Code —
+     nur über die Sperre. Ohne diese Zahl merkt niemand, dass er auf sie
+     zuläuft, und steht dann ohne Erklärung vor der verschlossenen Tür. */
+  if (!treffer) return json(
+    { fehler: "unbekannt", uebrig: Math.max(0, SPERRE.versuche - (fehl.length + 1)) }, 401);
+
+  /* Eine geglückte Anmeldung räumt die Fehlversuche dieser IP weg. Sonst
+     bleibt das Haus an einer geteilten IP hängen: Wer sich richtig
+     anmeldet, beweist, dass hier kein Fremder probiert. */
+  await env.DB.prepare(
+    `DELETE FROM anmeldeversuch WHERE ip = ?1 AND ok = 0`).bind(ip).run();
 
   return json({ name: treffer.name, rolle: treffer.rolle }, 200,
     { "set-cookie": keks(await tokenBauen(env, treffer)) });
@@ -324,6 +346,16 @@ async function personSchreiben(env, body) {
 }
 
 /* ── Router ──────────────────────────────────────────────────────────── */
+
+/* Ein leerer oder kaputter Körper ist ein Fehler des Aufrufers, kein
+   Serverfehler. Ohne diese Unterscheidung kam „Unexpected token … in JSON"
+   als 500 zurück — und die App meldete daraufhin „Server antwortet nicht"
+   und hielt ihren Ausgang an, obwohl der Server sehr wohl geantwortet hat. */
+async function koerper(request) {
+  try { return await request.json(); } catch { return null; }
+}
+const keinJson = () => json({ fehler: "Körper ist kein gültiges JSON" }, 400);
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -347,7 +379,8 @@ export default {
       }
       if (pfad === "/api/anlage" && m === "POST") {
         if (!env.ANLAGE_OFFEN) return json({ fehler: "geschlossen" }, 403);
-        return personSchreiben(env, await request.json());
+        const b = await koerper(request);
+        return b ? personSchreiben(env, b) : keinJson();
       }
 
       if (pfad === "/api/anmelden" && m === "POST") return anmelden(request, env);
@@ -366,8 +399,11 @@ export default {
       if (pfad === "/api/vorgaenge") return vorgaengeLesen(env, url);
 
       if (pfad.startsWith("/api/vorgang/") && m === "PUT") {
-        const id = decodeURIComponent(pfad.slice(13));
-        return vorgangSchreiben(env, p, id, await request.json());
+        let id;
+        try { id = decodeURIComponent(pfad.slice(13)); }
+        catch { return json({ fehler: "unlesbarer Vorgangsschlüssel" }, 400); }
+        const b = await koerper(request);
+        return b ? vorgangSchreiben(env, p, id, b) : keinJson();
       }
 
       if (pfad === "/api/fassungsliste") {
@@ -386,7 +422,8 @@ export default {
         }
         if (m === "POST") {
           if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
-          return mappingSchreiben(env, p, await request.json());
+          const b = await koerper(request);
+          return b ? mappingSchreiben(env, p, b) : keinJson();
         }
       }
 
@@ -397,11 +434,19 @@ export default {
             `SELECT id, name, rolle, aktiv FROM person ORDER BY name`).all();
           return json({ personen: results });
         }
-        if (m === "POST") return personSchreiben(env, await request.json());
+        if (m === "POST") {
+          const b = await koerper(request);
+          return b ? personSchreiben(env, b) : keinJson();
+        }
       }
 
       return json({ fehler: "unbekannter Endpunkt" }, 404);
     } catch (e) {
+      /* Falle 10: „Error 1101" ist keine Diagnose. Was hier ankommt, ist
+         fast immer eine D1-Meldung im Klartext („no such column …").
+         Ohne diese Zeile in den Logs beginnt die Fehlersuche wieder mit
+         einer Hypothese statt mit dem Satz, der dasteht. */
+      console.error("api-fehler", m, pfad, (e && e.stack) || String(e));
       return json({ fehler: e.message }, 500);
     }
   },

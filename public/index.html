@@ -1266,8 +1266,10 @@ const PLAN = {"soll":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":2,"w00
 const KISTE_STD=6;
 const kg=p=>+(p&&p.kistengr)||KISTE_STD;
 const MAIL="casimir.ikrath@haus-hirt.com";
-/* P8 · Zwei Codeebenen: Anmeldung (wer fasst) und Verwaltung/Freigabe (2797).
-   Klartext in einer HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
+/* P8 · Es gibt nur noch eine Codeebene: den persönlichen Zugangscode.
+   Verwaltung und Freigabe hatten bis v12 einen eigenen vierstelligen Code,
+   der als Konstante in dieser Datei stand. Klartext in einer öffentlich
+   ausgelieferten HTML-Datei ist keine Sperre, sondern eine Unterschrift. */
 /* Die vier Codes standen bis v11 im Klartext in dieser Datei — wer die
    Seite aufrief, konnte sie lesen. Die Anmeldung läuft jetzt über den
    Server. Für den Keller ohne Netz merkt sich das Gerät, wer sich hier
@@ -1830,17 +1832,24 @@ function openArchDoc(k){
   $("#aCsv").onclick=expCsv;$("#aJson").onclick=expJson;
   $("#aBack").onclick=()=>{ARCHREC=null;openArchList();};
 }
-const PIN="2797";
+/* Der Verwaltungscode stand bis v12 als Konstante in dieser Datei — wer
+   die Seite aufrief, las ihn im Quelltext mit. Bis der Editor nach
+   Projektanleitung §8 A ins Backoffice umzieht, gilt hier dieselbe Regel
+   wie bei der Freigabe: Es zählt der eigene Zugangscode, und zwar einer,
+   der sich auf diesem Gerät schon einmal angemeldet hat (`bekannterCode`
+   prüft die Prüfsumme, nicht den Code). Das ist keine strengere Hürde für
+   das Team — aber eine, die nicht im Quelltext steht. */
 function askPin(){
   $("#ovT").textContent="Verwaltung";
-  $("#ovBody").innerHTML=`<p>PIN eingeben.</p>
+  $("#ovBody").innerHTML=`<p>Zum Öffnen den eigenen Zugangscode eingeben.</p>
     <input id="pinIn" class="input input--pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••">`;
   $("#ov").classList.add("on");
   const inp=$("#pinIn");setTimeout(()=>inp.focus(),50);
   $("#ovOk").textContent="Öffnen";
-  $("#ovOk").onclick=()=>{
-    if(inp.value===PIN){$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();}
-    else{inp.value="";inp.placeholder="falsch";toast("PIN falsch");}
+  $("#ovOk").onclick=async()=>{
+    if(!(await bekannterCode(inp.value))){
+      inp.value="";inp.placeholder="falsch";toast("Code unbekannt");return;}
+    $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();
   };
 }
 function openAdmin(){
@@ -3697,8 +3706,8 @@ function rDoc(m){
   $("#bReset").onclick=()=>ask("Zurücksetzen","<p>Dieser Vorgang wird gelöscht und vorher ins Archiv gelegt.</p>",
     ()=>{archive(S[mode]);S[mode]=blank(mode);save();step=0;render();window.scrollTo(0,0);toast("Archiviert und zurückgesetzt");});
 }
-/* P14/28 · Trotzdem abschliessen \u2014 nur mit dem Verwaltungscode,
-   und es bleibt im Protokoll sichtbar, wer freigegeben hat. */
+/* P14/28 · Trotzdem abschliessen \u2014 nur mit einem Zugangscode, und
+   es bleibt im Protokoll sichtbar, wer freigegeben hat. */
 function freigabe(offen){
   $("#ovT").textContent="Trotzdem abschließen?";
   $("#ovBody").innerHTML=`<p>Diese Punkte sind offen:</p>
@@ -3711,12 +3720,14 @@ function freigabe(offen){
   $("#ovOk").textContent="Freigeben";
   $("#ovOk").onclick=async()=>{
     /* Jeder angemeldete Mitarbeiter darf freigeben \u2014 die Freigabe steht
-       ohnehin mit Namen im Protokoll. Der Verwaltungscode geht auch. */
-    if(inp.value!==PIN&&!(await bekannterCode(inp.value))){
+       ohnehin mit Namen im Protokoll. Der frühere Verwaltungscode stand als
+       Klartext in dieser Datei und fällt deshalb weg; es zählt nur noch ein
+       Code, der sich auf diesem Gerät schon einmal angemeldet hat. */
+    const wer=await bekannterCode(inp.value);
+    if(!wer){
       inp.value="";inp.placeholder="falsch";toast("Code unbekannt");return;}
     const d=D();
-    d.uebersteuert={von:(await bekannterCode(inp.value))||whoAmI()||d.name,
-      zeit:new Date().toISOString(),offen:offen};
+    d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
     d.finished=true;save();
     inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
