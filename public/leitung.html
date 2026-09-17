@@ -739,18 +739,53 @@ function normVorgang(v){
     });
   }
 
-  /* gent (Getränke zusätzlich entnommen) taucht in mehreren Modi auf */
-  Object.keys(v.gent||{}).forEach(id=>zu(o.getr,id,v.gent[id]));
+  /* `gent` heisst je nach Modus etwas ANDERES — dieselbe Unterscheidung
+     trifft der Worker in `ereignisseAbleiten` (src/index.js, `if (d.mode
+     === "ware") … else …`): im Wareneingang ist es die GELIEFERTE Anzahl
+     Flaschen („Was wurde geliefert — pro Position die gelieferte Anzahl
+     Flaschen", public/index.html), in jedem anderen Modus die zusätzlich
+     entnommene.
+     Bis v26 lief beides in `o.getr`. 24 gelieferte Cola standen damit in
+     „Verkauf ↔ Fassung" als Entnahme 24, Differenz +24, Deutung „Vorrat
+     aufgebaut oder Schwund", und in der Vorgangsliste unter „Getränke
+     Fl." — genau der Vorzeichenfehler, den der Worker in v22 abgestellt
+     hat, nur auf dem Schirm statt im Journal.
+     `tests/lieferung-getraenke.test.mjs` schickt dieselbe Lieferung durch
+     den Worker UND durch `normVorgang` und wird rot, sobald die beiden
+     Fassungen wieder auseinanderlaufen. */
+  const gentZiel = v.mode==="ware" ? o.eingang : o.getr;
+  Object.keys(v.gent||{}).forEach(id=>zu(gentZiel,id,v.gent[id]));
+  /* `gzusatz` ist in JEDEM Modus eine Entnahme — im Worker steht es
+     ausserhalb des `ware`-Zweigs. */
   Object.keys(v.gzusatz||{}).forEach(id=>zu(o.getr,id,v.gzusatz[id]));
 
   o.flWein=summe(o.wein); o.flGetr=summe(o.getr);
   return o;
 }
 
-/* Reihenfolge: Betriebstag, danach die natürliche Abfolge innerhalb eines Tages */
-const MODUSRANG={ware:0, keller:1, tag:2, fuellen:3, nach:4};
+/* Reihenfolge: erst der Betriebstag, bei Gleichstand der Zeitstempel.
+   Das ist die Regel aus `review/ENTSCHIEDEN-NACHTS.md`, Punkt 5 (Offene
+   Entscheidung Nr. 15): der Betriebstag entscheidet, der Zeitstempel nur
+   noch innerhalb desselben Tages.
+
+   Bis v26 stand hier eine gedachte Tagesordnung
+   (`MODUSRANG={ware:0, keller:1, …}`) — der Wareneingang lag damit IMMER
+   vor der Kellerzählung desselben Tages. Der übliche Ablauf ist aber
+   umgekehrt: vormittags zählen, mittags die Lieferung erfassen. Zählung
+   10 Flaschen + Lieferung 24 Flaschen ergaben im Backoffice 10 („Seither
+   0 Flaschen eingegangen"), im Worker 34 — und die Bestellliste rechnet
+   auf derselben Zahl.
+
+   `ts` ist `archiviert`: beim Server der Zeitpunkt der letzten Änderung
+   (`vorgaengeLesen` in src/index.js gibt `geaendert` als ISO-Text
+   heraus), lokal der Zeitpunkt des Archivierens. Ein Stand, der noch
+   läuft, hat keinen — er ist das Jüngste, was es gibt, und sortiert
+   deshalb ans Ende seines Tages. MAX_SAFE_INTEGER statt Infinity, damit
+   die Subtraktion im Vergleich nicht NaN wird. */
+const tsZahl = v => { const t=Date.parse((v&&v.ts)||"");
+  return Number.isFinite(t) ? t : Number.MAX_SAFE_INTEGER; };
 function nachZeit(a,b){
-  return (a.tag||"").localeCompare(b.tag||"") || ((MODUSRANG[a.mode]??9)-(MODUSRANG[b.mode]??9));
+  return (a.tag||"").localeCompare(b.tag||"") || (tsZahl(a)-tsZahl(b));
 }
 
 /* ════════════ 3 · Quelle ════════════ */
@@ -1023,19 +1058,30 @@ function bestand(){
      eingegangen". Der Worker rechnet es seit jeher richtig
      (`bestand()` in src/index.js führt `letzteZaehlung` je Artikel);
      die Leitung sah den falschen der beiden Wege. */
-  const zuletzt={};                 /* Artikel → Index des letzten Zählvorgangs */
+  const zuletzt={};                 /* Artikel → der Vorgang, dessen Zählung gilt */
   let basis=null;
-  VORGAENGE.forEach((v,i)=>{
+  VORGAENGE.forEach(v=>{
     if(!v.zaehlung) return;
     basis=v;                        /* die jüngste Zählung trägt die Zeile im Banner */
-    Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=i; });
+    Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=v; });
   });
   const b={}, seit={ein:{}, raus:{}};
-  VORGAENGE.forEach((v,i)=>{
+  VORGAENGE.forEach(v=>{
     if(v.zaehlung) Object.keys(v.zaehlung).forEach(id=>{
-      if(v.zaehlung[id]!=null && zuletzt[id]===i) b[id]=v.zaehlung[id];
+      if(v.zaehlung[id]!=null && zuletzt[id]===v) b[id]=v.zaehlung[id];
     });
-    const nach=id=>zuletzt[id]!=null && i>zuletzt[id];
+    /* „Danach" heisst: `tag > Zähltag` ODER (`tag = Zähltag` UND
+       `ts > Zähl-ts`). `tag > Zähltag` allein wäre falsch — am Morgen
+       gezählt, am Abend desselben Tages gefasst: diese Entnahme fiele
+       sonst unter den Tisch. Gleichstand zählt NICHT als danach, genau
+       wie im Worker (`if (basis != null && r.ts <= basis) return;`).
+       Verglichen wird ausdrücklich statt über den Feldindex: zwei
+       Vorgänge mit demselben Zeitstempel stehen in der sortierten Liste
+       in beliebiger, aber fester Reihenfolge — der Index würde einen von
+       beiden stillschweigend zum „danach" machen. */
+    const nach=id=>{ const z=zuletzt[id]; if(!z) return false;
+      return (v.tag||"")>(z.tag||"") ||
+             ((v.tag||"")===(z.tag||"") && tsZahl(v)>tsZahl(z)); };
     Object.keys(v.eingang).forEach(id=>{ if(!nach(id)) return;
       b[id]=(b[id]||0)+v.eingang[id]; seit.ein[id]=(seit.ein[id]||0)+v.eingang[id]; });
     Object.keys(v.wein).forEach(id=>{ if(!nach(id)) return;
@@ -1135,6 +1181,15 @@ function zuordnung(pos){
 }
 
 /* ════════════ 6 · Abgleich Verkauf ↔ Fassung ════════════ */
+/* Warum eine Zeile keinen Befund bekommt — an einer Stelle, damit
+   Tabelle, Mittagsblick und CSV denselben Satz sagen. */
+const UNKLAR_GRUND={
+  groesse:     "Größe fehlt",
+  offen:       "Kassenpositionen sind nicht zugeordnet",
+  keinbericht: "kein Z-Bericht im Zeitraum"
+};
+const unklarSatz = g => "kein Abgleich möglich — " + (UNKLAR_GRUND[g] || "Verkauf nicht bestimmbar");
+
 function abgleich(tag, spanne){
   spanne = spanne || 1;
   const bis=tag, von=(()=>{ const d=new Date(tag+"T12:00");
@@ -1142,6 +1197,20 @@ function abgleich(tag, spanne){
   const imFenster = t => t>=von && t<=bis;
 
   const verk={}, offen=[], ohneGroesse=[], berichte=[];
+  /* Artikel, deren VERKAUF in diesem Zeitraum nicht bestimmbar ist.
+     Für sie gibt es keine Differenz und keine Deutung — die Entnahme
+     steht da, weil sie bekannt ist, aber ohne Urteil.
+     Bis v26 fehlte diese Karte, und das war der teuerste Fehler des
+     Schirms: `ids` entsteht aus `keys(verk) ∪ keys(ent)`. Eine Position
+     ohne bestätigte Größe fällt aus `verk` heraus, steht aber über die
+     Tagesfassung in `ent` — sie wurde damit zur VOLLEN Abweichung mit
+     der Deutung „mehr geholt als verkauft — Vorrat aufgebaut oder
+     Schwund", während der Hinweis darüber wörtlich sagte, sie zähle
+     „weder als Verkauf noch als Abweichung". Mit dem Mapping, wie es in
+     der Live-D1 steht (keine einzige bestätigte Gebindegröße), war `verk`
+     leer und JEDE Zeile stand als „prüfen" da. */
+  const unklar={};
+  const nichtRechenbar=(id,grund)=>{ if(id && !unklar[id]) unklar[id]=grund; };
   /* Dritter Zustand neben „zugeordnet" und „offen": zugeordnet, aber die
      Größe ist nicht bestätigt. Solche Positionen gehen weder in `verk`
      noch in die Differenz ein — sonst sähe eine fehlende Zahl aus wie
@@ -1172,6 +1241,9 @@ function abgleich(tag, spanne){
         const luecke=gebs.findIndex(g=>g.quelle!=="bestaetigt");
         if(luecke>=0){
           merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]}, true);
+          /* Die ganze Position bleibt draußen — also fehlt der Verkauf
+             JEDES Bestandteils, nicht nur der des einen mit der Lücke. */
+          r.forEach(x=>nichtRechenbar(x.id,"groesse"));
           return;
         }
         r.forEach((x,i)=>verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml);
@@ -1181,7 +1253,7 @@ function abgleich(tag, spanne){
       if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
       if(zu.status==="ignoriert") return;
       const f=flaschen(p, zu.id);
-      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); return; }
+      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); nichtRechenbar(zu.id,"groesse"); return; }
       verk[zu.id]=(verk[zu.id]||0)+f.fl;
     });
   });
@@ -1194,15 +1266,36 @@ function abgleich(tag, spanne){
     Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
   });
 
+  /* Zwei weitere Gründe, aus denen der Verkauf nicht bestimmbar ist.
+     Beide betreffen nur Artikel, für die in diesem Zeitraum ÜBERHAUPT
+     kein Verkauf gerechnet wurde — wer eine gerechnete Zahl hat, behält
+     seine Differenz. */
+  Object.keys(ent).forEach(id=>{
+    if(verk[id]>0) return;
+    /* Ohne Z-Bericht ist die Verkaufsseite nicht leer, sondern unbekannt. */
+    if(!berichte.length) return nichtRechenbar(id,"keinbericht");
+    /* Nicht zugeordnete Kassenpositionen: welchem Artikel sie gehören,
+       weiß niemand (Regel 5 — geraten wird nicht). Solange welche offen
+       sind, kann die Entnahme eines Artikels ohne gerechneten Verkauf
+       genau daher stammen. „Schwund" wäre eine Behauptung ohne Grundlage. */
+    if(offen.length) nichtRechenbar(id,"offen");
+  });
+
   const ids=Array.from(new Set([...Object.keys(verk), ...Object.keys(ent)]));
   const zeilen=ids.map(id=>{
     const w=byId(id);
-    const v=verk[id]||0, e=ent[id]||0;
+    const v=verk[id]||0, e=ent[id]||0, u=unklar[id]||null;
+    /* `diff` ist bei einer unklaren Zeile ausdrücklich `null`, nicht 0:
+       eine 0 hieße „stimmt". Alle Leser filtern über `Math.abs(r.diff)`,
+       und `Math.abs(null)` ist 0 — die Zeile fällt damit aus jeder
+       Auffälligkeitsliste heraus, auch wenn eine Stelle die Prüfung auf
+       `r.unklar` vergessen sollte. */
     return {id, name: w ? (w.winzer+" · "+w.wein) : GN(id), art: w?"Wein":"Getränk",
-            verkauf:v, entnahme:e, diff:e-v};
-  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
+            verkauf:v, entnahme:e, diff: u?null:e-v, unklar:u};
+  }).sort((a,b)=>(a.unklar?1:0)-(b.unklar?1:0)
+                 || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
-  return {z, zeilen, offen, ohneGroesse, verk, ent, von, bis, spanne,
+  return {z, zeilen, offen, ohneGroesse, unklar, verk, ent, von, bis, spanne,
           berichte:berichte.length};
 }
 
@@ -1234,7 +1327,10 @@ function zaehler(id){
        Eine rote Zahl in der Navigation behauptete dann einen Befund, den
        die Ansicht daneben selbst als „noch kein Abgleich" bezeichnet. */
     if(!a.berichte) return null;
-    return a.zeilen.filter(r=>Math.abs(r.diff)>=1).length||null; }
+    /* Eine Zeile ohne bestimmbaren Verkauf ist kein Befund. Sie zählt
+       deshalb nicht in die rote Zahl — sonst stünde dort die Menge der
+       fehlenden ANGABEN und läse sich wie die Menge fehlender Flaschen. */
+    return a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1).length||null; }
   return null;
 }
 
@@ -1275,7 +1371,8 @@ function vHeute(m){
   const heutigeVorg=VORGAENGE.filter(v=>v.tag===tag);
   const fassung=heutigeVorg.find(v=>v.mode==="tag");
   const best=bestellliste();
-  const grob=a.zeilen.filter(r=>Math.abs(r.diff)>=2);
+  const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
+  const ohneUrteil=a.zeilen.filter(r=>r.unklar).length;
   const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
 
   m.innerHTML=`<section>
@@ -1303,11 +1400,18 @@ function vHeute(m){
        die Bestellliste KANN dann nichts finden. Am ersten Tag nach dem
        Livegang stand hier zweimal Grün über einer leeren Datenbank.
        Fehlt die Grundlage, steht ein Strich da, kein Haken. */
+    /* Eine grüne Null darf nur dastehen, wenn auch wirklich verglichen
+       wurde. Sind alle Zeilen ohne bestimmbaren Verkauf, ist nichts
+       geprüft — das steht dann da, statt „decken sich". */
     kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
       a.berichte
-        ?(grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich")
+        ?(grob.length
+          ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
+          :ohneUrteil
+            ?(ohneUrteil+" Positionen ohne Abgleich — Größe fehlt oder Position nicht zugeordnet")
+            :"Verkauf und Entnahme decken sich")
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
-      a.berichte?(grob.length>4?"bad":grob.length?"warn":"ok"):"")+
+      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
     kachel("Nachbestellen", B.hat?best.length:"—",
       B.hat
         ?(best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle")
@@ -1337,15 +1441,21 @@ function vHeute(m){
 
   /* Die größten Ausreißer */
   const s2=document.createElement("section");
-  const top=a.zeilen.filter(r=>Math.abs(r.diff)>=1).slice(0,10);
+  const top=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1).slice(0,10);
   s2.innerHTML=`<h3>Größte Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
-    /* Ohne Z-Bericht ist die Spalte „Verkauf" durchgehend 0 — jede Entnahme
-       erscheint dann als Schwund. Dieselbe Warnung steht in „Verkauf ↔
-       Fassung"; hier fehlte sie, und der Mittagsblick ist der Schirm, den
-       die Leitung morgens zuerst sieht. */
-    (a.berichte||!top.length?"":`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
-      Kein Z-Bericht im Zeitraum. „Verkauf“ bleibt darum 0 und die Differenz ist
-      die reine Entnahme — das ist noch kein Abgleich.</div>`)+
+    /* Ohne Z-Bericht ist der Verkauf nicht 0, sondern unbekannt. Dieselbe
+       Warnung steht in „Verkauf ↔ Fassung"; hier fehlte sie, und der
+       Mittagsblick ist der Schirm, den die Leitung morgens zuerst sieht.
+       Sie hing bis v26 an `top.length` — seit die Zeilen ohne bestimmbaren
+       Verkauf aus `top` herausfallen, wäre sie genau dann verschwunden,
+       wenn sie gebraucht wird. */
+    (!a.berichte&&a.zeilen.length?`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
+      Kein Z-Bericht im Zeitraum. Der Verkauf ist damit unbekannt — die Entnahme steht
+      unter „Verkauf ↔ Fassung“ ohne Urteil. Das ist noch kein Abgleich.</div>`:"")+
+    (a.berichte&&ohneUrteil?`<div class="hinweis" style="margin-bottom:var(--space-4)">
+      ${ohneUrteil} Position${ohneUrteil===1?"":"en"} stehen hier nicht: für sie ist der Verkauf
+      nicht bestimmbar (Größe fehlt oder Kassenposition nicht zugeordnet). Ihre Entnahme ist
+      weder Abweichung noch Schwund — nachzulesen unter „Verkauf ↔ Fassung“.</div>`:"")+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
       </tr></thead><tbody>${top.map(r=>`<tr>
@@ -1354,16 +1464,23 @@ function vHeute(m){
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
         <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
       </tr>`).join("")}</tbody></table></div>`
-    : `<div class="karte leer">${a.zeilen.length
+    /* Drei verschiedene Lagen, die bis v26 alle „Keine Abweichung über
+       einer Flasche" sagten — auch dann, wenn gar nichts vergleichbar war. */
+    : `<div class="karte leer">${!a.zeilen.length
+        ?"Weder Verkauf noch Entnahme in diesem Zeitraum — es gibt noch nichts zu vergleichen."
+        :a.zeilen.some(r=>!r.unklar)
         ?"Keine Abweichung über einer Flasche."
-        :"Weder Verkauf noch Entnahme in diesem Zeitraum — es gibt noch nichts zu vergleichen."}</div>`);
+        :"Für keine Position ist der Verkauf bestimmbar — es gibt noch nichts zu vergleichen."}</div>`);
   /* Der Bestellvorschlag darunter hat „Alle ansehen" — gleiche Stelle,
-     also auch hier ein Weg in die volle Ansicht. */
-  if(top.length)s2.insertAdjacentHTML("beforeend",
+     also auch hier ein Weg in die volle Ansicht. Der Weg muss auch dann
+     dastehen, wenn KEINE Abweichung übrig ist, aber Zeilen ohne Urteil:
+     drüben stehen sie samt Grund und samt Sammelbestätigung. */
+  const wegDorthin = top.length || ohneUrteil;
+  if(wegDorthin)s2.insertAdjacentHTML("beforeend",
     `<div class="reihe" style="margin-top:12px">
        <button class="b leise" id="bAlleAbw">Zum vollständigen Abgleich</button></div>`);
   m.appendChild(s2);
-  if(top.length)$("#bAlleAbw").onclick=()=>{ SEITE="abgleich"; zeichne(); window.scrollTo(0,0); };
+  if(wegDorthin)$("#bAlleAbw").onclick=()=>{ SEITE="abgleich"; zeichne(); window.scrollTo(0,0); };
 
   /* Bestellvorschlag kompakt */
   if(best.length){
@@ -1482,12 +1599,20 @@ function vAbgleich(m){
 
   const s=document.createElement("section");
   const wein=a.zeilen.filter(r=>r.art==="Wein"), getr=a.zeilen.filter(r=>r.art!=="Wein");
+  /* Eine Zeile ohne bestimmbaren Verkauf bekommt KEINE Differenz und
+     keine Deutung. Die Entnahme bleibt stehen — sie ist bekannt —, in der
+     Differenzspalte steht ein Strich, und der Befund sagt, woran es
+     liegt. Grau statt Plakette: hier fehlt eine Angabe, keine Flasche —
+     und eine graue Plakette blieb mit 4,43:1 unter dem Kontrastmaß des
+     Hauses (`tests/ui-mass.cjs`), der gewöhnliche gedämpfte Text nicht. */
   const zeile=r=>`<tr>
     <td>${esc(r.name)}</td>
-    <td class="r">${num(r.verkauf)}</td>
+    <td class="r">${r.unklar?"—":num(r.verkauf)}</td>
     <td class="r">${num(r.entnahme)}</td>
-    <td class="r ${Math.abs(r.diff)<0.5?"dim":(r.diff>0?"diff-plus":"diff-minus")}">${r.diff>0?"+":""}${num(r.diff)}</td>
-    <td>${Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
+    <td class="r ${r.unklar||Math.abs(r.diff)<0.5?"dim":(r.diff>0?"diff-plus":"diff-minus")}">${
+      r.unklar?"—":(r.diff>0?"+":"")+num(r.diff)}</td>
+    <td>${r.unklar?'<span class="dim">'+esc(unklarSatz(r.unklar))+'</span>'
+        :Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
         :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
         :'<span class="pill p-bad">prüfen</span>'}</td></tr>`;
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
@@ -1504,8 +1629,15 @@ function csvAbgleich(tag,a){
   const e=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
   const L=[["Abgleich Verkauf gegen Fassung"].map(e).join(";"),
            ["Betriebstag",tag].map(e).join(";"),"",
-           ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz"].map(e).join(";")];
-  a.zeilen.forEach(r=>L.push([r.name,r.art,num(r.verkauf),num(r.entnahme),num(r.diff)].map(e).join(";")));
+           ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
+  /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
+     Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
+     7 entnommen" ist genau die Behauptung, die hier niemand belegen kann. */
+  a.zeilen.forEach(r=>L.push([r.name,r.art,
+    r.unklar?"":num(r.verkauf), num(r.entnahme), r.unklar?"":num(r.diff),
+    r.unklar?unklarSatz(r.unklar)
+      :Math.abs(r.diff)<0.5?"stimmt":Math.abs(r.diff)<2?"kleine Abweichung":"prüfen"
+    ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
   /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil

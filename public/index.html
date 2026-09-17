@@ -2234,8 +2234,15 @@ function start(m){
       const z=jlese(K_ZAEHL,{}); z[m+"_"+S[m].tag]=fremd.zaehlnr||0; jschreib(K_ZAEHL,z);
       save();$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
       start._uebernommen=false;start(m);};
+    /* Ablehnen heisst ablehnen. Bis v26 stand hier `=false`: `start(m)`
+       fragte `fernNeuer(m)` erneut, bekam denselben fremden Stand und
+       öffnete den Dialog sofort wieder — der Weg „Abbrechen" war eine
+       Schleife, aus der nur „Übernehmen" herausführte. Mit `=true` läuft
+       `start(m)` an der Frage vorbei; die Zeile darunter setzt die Marke
+       wieder zurück, damit beim nächsten bewussten Öffnen des Vorgangs
+       erneut gefragt wird. */
     $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
-      $("#ovOk").textContent="Ja";start._uebernommen=false;start(m); };
+      $("#ovOk").textContent="Ja";start._uebernommen=true;start(m); };
     return;
   }
   start._uebernommen=false;

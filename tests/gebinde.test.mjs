@@ -201,7 +201,13 @@ describe("abgleich(): unbestätigte Größen sind keine Abweichung", () => {
     assert.equal(Object.keys(a.verk).length, 0);
     const w001 = a.zeilen.find(r => r.id === "w001");
     assert.equal(w001.verkauf, 0);
-    assert.equal(w001.diff, 1, "die Entnahme steht da, aber sie ist kein Befund über den Verkauf");
+    /* Bis v26 stand hier `diff === 1` — die Zeile behauptete also eine
+       Abweichung von einer ganzen Flasche, obwohl der Verkauf gar nicht
+       gerechnet werden konnte (Fund A-5 der Jagd). Der Kommentar daneben
+       sagte schon damals das Richtige; geprüft wurde das Gegenteil.
+       Seit v27: keine Differenz, keine Deutung, ein Grund. */
+    assert.equal(w001.diff, null, "ohne bestimmbaren Verkauf gibt es keine Differenz");
+    assert.equal(w001.unklar, "groesse", "die Entnahme steht da, aber ohne Urteil");
     assert.equal(a.offen.some(o => o.name === "GV Leindl Langenlois 1/8 l"), false,
       "„zugeordnet, Größe fehlt“ ist NICHT dasselbe wie „nicht zugeordnet“");
   });

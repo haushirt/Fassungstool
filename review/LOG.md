@@ -2107,3 +2107,76 @@ zurück; Rezepturen für „1 Glas"-Positionen fehlen.
 
 **STATUS:** VERBESSERUNGEN — die drei A-Funde sind behoben und belegt; der
 Fremdgerät-Dialog ist neu aufgetaucht und offen.
+
+---
+
+### Runde 8 – software-engineer (die drei A-Funde der Jagd)
+
+**Kritik am Vorgänger (Runde 6/7):**
+* ↩️ geändert: `tests/gebinde.test.mjs:204` prüfte `w001.diff === 1` — und
+  daneben stand der Kommentar „die Entnahme steht da, aber sie ist kein
+  Befund über den Verkauf". Der Kommentar sagte das Richtige, die Zusicherung
+  das Gegenteil: sie hat Fund A-5 festgeschrieben. Jetzt `diff === null` und
+  `unklar === "groesse"`.
+* ↩️ geändert: Der Hinweis „Kein Z-Bericht im Zeitraum" hing an `top.length` —
+  er wäre genau dann verschwunden, wenn die unklaren Zeilen aus `top` fallen,
+  also wenn er gebraucht wird. Hängt jetzt an `!a.berichte && a.zeilen.length`.
+* ✅ übernommen: `kistenGr()` aus Runde 7 ist wortgleich mit dem Worker,
+  `tests/kisten.test.mjs` hält es fest — nichts daran geändert.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **A-5 · „Größe fehlt" wirkt jetzt auch auf der Entnahmeseite.** Artikel,
+   deren Verkauf nicht bestimmbar ist, bekommen `diff: null` und ein
+   `unklar`-Feld mit Grund (`groesse` · `offen` · `keinbericht`). Sie zählen
+   nicht in die rote Zahl der Navigation und nicht in „Auffällige
+   Differenzen"; in der Tabelle stehen sie mit Entnahme, Strich statt
+   Differenz und dem Satz „kein Abgleich möglich — …"; in der CSV bleiben
+   Verkauf und Differenz leer (neue Spalte „Befund"). Bewusst vorsichtig:
+   unklar wird ein Artikel nur, wenn für ihn ÜBERHAUPT kein Verkauf
+   gerechnet wurde — echter Schwund bleibt ein Befund.
+2. **A-3 · Gelieferte Getränke sind Eingang, nicht Entnahme.** `gent` geht im
+   Modus `ware` nach `o.eingang`, sonst nach `o.getr` — dieselbe
+   Unterscheidung wie im Worker. Vorher standen 24 gelieferte Cola im
+   Abgleich als „Entnahme 24, Diff +24, Vorrat aufgebaut oder Schwund".
+3. **A-4 · Eine Reihenfolge.** `MODUSRANG` ist weg; sortiert wird nach
+   Betriebstag, bei Gleichstand nach Zeitstempel (Entscheidung Nr. 15 der
+   Nacht). „Danach" heißt `tag > Zähltag` ODER (`tag = Zähltag` UND
+   `ts > Zähl-ts`). Vorher: Backoffice 10, Worker 34 Flaschen.
+4. **Einzeiler:** Der Fremdgerät-Dialog ließ sich nicht ablehnen
+   (`start._uebernommen=false` statt `true`); er öffnete sich sofort wieder.
+
+**Geprüft:** Jede Zahl zuerst nachgestellt, dann berichtigt, dann erneut
+gemessen. `npm test` **270 grün** (vorher 252; neu `abgleich-unklar` 8,
+`reihenfolge` 6, `lieferung-getraenke` 4). `node tests/durchstich.cjs` 35/35 ·
+`node tests/ui-leitung-echt.cjs` 40/40 · `node tests/ui-zweiter-vorgang.cjs`
+15/15 · `node tests/ui-fremdgeraet.cjs` **10/10** (Gegenprobe mit
+zurückgedrehtem Wort: 3 von 10 rot). `tests/reihenfolge.test.mjs` rechnet
+jeden Fall doppelt — echter Worker über `/api/bestand` gegen `bestand()` aus
+der ausgelieferten Datei. `LAUF=runde-8 node tests/ui-mass.cjs`: Überlauf 0,
+JS-Fehler 0, Gestaltungsschicht wortgleich, Messwerte identisch mit der
+Basislinie. `sw.js` v26 → v27.
+**Ungeprüft:** echtes iPhone/Safari, der Wechsel des Service Workers auf v27,
+der Weg „Übernehmen" nach dem Ablehnen mit echtem Serverstand, und die CSV in
+einem Tabellenprogramm.
+
+**Für die Nächsten:**
+* An die **Worker-Seite**, mit Beleg: Entscheidung Nr. 15 ist jetzt im
+  Backoffice umgesetzt, im Worker NICHT. `src/index.js`, `bestand()`:
+  `if (basis != null && r.ts <= basis) return;` — reine Ankunftszeit,
+  `ereignis.tag` wird nicht gelesen. Solange Betriebstag und Ankunft
+  zusammenpassen (der Normalfall), liefern beide dieselbe Zahl; ein
+  nachgereichtes Paket lässt sie wieder auseinanderlaufen.
+* An den **Gestalter**: „kein Abgleich möglich — Größe fehlt" steht als
+  gedämpfter Text, nicht als Plakette. `p-grau` misst 4,43:1 und fällt durch
+  das eigene Maß in `tests/ui-mass.cjs`.
+
+**Phase/Thema:** A / Abgleich, Bestand, Offline-Dialoge
+
+**Backlog:** neu unter „hoch": Worker `bestand()` rechnet nach Ankunftszeit,
+das Backoffice nach Betriebstag. Neu unter „mittel": gleicher Zeitstempel in
+derselben Millisekunde; kein Feld für die Gebindegröße von Hand. Neu unter
+„niedrig": sechste CSV-Spalte „Befund"; `p-grau` mit 4,43:1.
+
+**STATUS:** VERBESSERUNGEN — die vier beauftragten Funde sind zu; offen bleibt
+Entscheidung Nr. 15 im Worker.

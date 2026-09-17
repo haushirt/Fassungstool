@@ -1,0 +1,4640 @@
+{
+ "lauf": "runde-8",
+ "zeit": "2026-09-17T23:41:44.335Z",
+ "seiten": {
+  "leitung/heute@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "B.",
+     "B.",
+     "DIV.hinweis",
+     "DIV.hinweis"
+    ],
+    "16": [
+     "DIV.haus",
+     "H3.",
+     "H3.",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ],
+    "26": [
+     "B.",
+     "B."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/abgleich@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 70,
+     "h": 36,
+     "text": "Als CSV"
+    }
+   ],
+   "kleinN": 2,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "DIV.hinweis"
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/import@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/bestand@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "DIV.hinweis",
+     "DIV.hinweis"
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/bestellen@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/getraenke@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/zaehlliste@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    }
+   ],
+   "kleinN": 1,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/speicher@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 101,
+     "h": 36,
+     "text": "Alles als CSV"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 73,
+     "h": 36,
+     "text": "Ansehen"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 73,
+     "h": 36,
+     "text": "Ansehen"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 73,
+     "h": 36,
+     "text": "Ansehen"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/zuordnung@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    }
+   ],
+   "kleinN": 1,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/rezepte@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    }
+   ],
+   "kleinN": 1,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3.",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/team@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 94,
+     "h": 36,
+     "text": "Vorschlagen"
+    }
+   ],
+   "kleinN": 2,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL.",
+     "LABEL.",
+     "LABEL."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/einst@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL.",
+     "LABEL."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/heute@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "B.",
+     "B.",
+     "DIV.hinweis",
+     "DIV.hinweis"
+    ],
+    "16": [
+     "DIV.haus",
+     "H3.",
+     "H3.",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ],
+    "26": [
+     "B.",
+     "B."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/abgleich@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 70,
+     "h": 36,
+     "text": "Als CSV"
+    }
+   ],
+   "kleinN": 2,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "DIV.hinweis"
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/import@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/bestand@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "DIV.hinweis",
+     "DIV.hinweis"
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/bestellen@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/getraenke@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/zaehlliste@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    }
+   ],
+   "kleinN": 1,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/speicher@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 101,
+     "h": 36,
+     "text": "Alles als CSV"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 73,
+     "h": 36,
+     "text": "Ansehen"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 73,
+     "h": 36,
+     "text": "Ansehen"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 73,
+     "h": 36,
+     "text": "Ansehen"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/zuordnung@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    }
+   ],
+   "kleinN": 1,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "DIV.haus"
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/rezepte@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    }
+   ],
+   "kleinN": 1,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3.",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/team@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 94,
+     "h": 36,
+     "text": "Vorschlagen"
+    }
+   ],
+   "kleinN": 2,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL.",
+     "LABEL.",
+     "LABEL."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/einst@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "DIV.grp",
+     "DIV.grp"
+    ],
+    "13": [
+     "SPAN.",
+     "SPAN.",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL.",
+     "LABEL."
+    ],
+    "16": [
+     "DIV.haus",
+     "H3."
+    ],
+    "24": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/heute@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 16,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "B.",
+     "B.",
+     "DIV.hinweis",
+     "DIV.hinweis"
+    ],
+    "16": [
+     "H3.",
+     "H3.",
+     "H3."
+    ],
+    "19": [
+     "H1."
+    ],
+    "26": [
+     "B.",
+     "B."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/abgleich@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 18,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "DIV.hinweis"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/import@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 15,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "16": [
+     "H3."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/bestand@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 14,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "DIV.hinweis",
+     "DIV.hinweis"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/bestellen@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 16,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/getraenke@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 14,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/zaehlliste@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 17,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/speicher@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 21,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/zuordnung@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 15,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/rezepte@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.on",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 18,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL."
+    ],
+    "16": [
+     "H3.",
+     "H3."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/team@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 20,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL.",
+     "LABEL.",
+     "LABEL."
+    ],
+    "16": [
+     "H3."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "leitung/einst@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.k",
+     "b": 100,
+     "h": 36,
+     "text": "Aktualisieren"
+    },
+    {
+     "was": "BUTTON.k",
+     "b": 111,
+     "h": 36,
+     "text": "Fassungstool ›"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Mittagsblick"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Verkauf ↔ Fassung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Z-Bericht"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Kellerbestand"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Nachbestellen4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Getränke"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zählliste4"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Speicher3"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Zuordnung"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 187,
+     "h": 36,
+     "text": "Rezepturen"
+    }
+   ],
+   "kleinN": 19,
+   "schrift": {
+    "11": [
+     "DIV.haus",
+     "SPAN.",
+     "SPAN.",
+     "DIV.grp"
+    ],
+    "13": [
+     "BUTTON.k",
+     "BUTTON.k",
+     "SPAN.",
+     "SPAN."
+    ],
+    "15": [
+     "LABEL.",
+     "LABEL."
+    ],
+    "16": [
+     "H3."
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "H2."
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "4"
+    },
+    {
+     "was": "SPAN.zahl",
+     "v": 4.43,
+     "grenze": 4.5,
+     "px": 11,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(229,226,217)",
+     "text": "3"
+    }
+   ],
+   "schwachN": 3,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/menu@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "DIV.mgrp",
+     "DIV.mgrp",
+     "DIV.mgrp"
+    ],
+    "13": [
+     "P.sub",
+     "SPAN.netztext",
+     "P.angemeldet",
+     "B."
+    ],
+    "15": [
+     "SPAN."
+    ],
+    "16": [
+     "B.",
+     "B.",
+     "B.",
+     "B."
+    ],
+    "19": [
+     "B."
+    ],
+    "28": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/tag@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    }
+   ],
+   "kleinN": 15,
+   "schrift": {
+    "11": [
+     "SPAN.",
+     "I.",
+     "B.",
+     "SPAN.chk-lbl"
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext",
+     "BUTTON.statb"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "SPAN.pl",
+     "BUTTON.b"
+    ],
+    "16": [
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "schrift": {
+    "11": [
+     "SPAN.",
+     "I.",
+     "B.",
+     "I."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext",
+     "BUTTON.statb"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "BUTTON.weiter",
+     "BUTTON.b"
+    ],
+    "16": [
+     "B."
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/menu@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "DIV.mgrp",
+     "DIV.mgrp",
+     "DIV.mgrp"
+    ],
+    "13": [
+     "P.sub",
+     "SPAN.netztext",
+     "P.angemeldet",
+     "B."
+    ],
+    "15": [
+     "SPAN."
+    ],
+    "16": [
+     "B.",
+     "B.",
+     "B.",
+     "B."
+    ],
+    "19": [
+     "B."
+    ],
+    "28": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/tag@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    }
+   ],
+   "kleinN": 15,
+   "schrift": {
+    "11": [
+     "SPAN.",
+     "I.",
+     "B.",
+     "SPAN.chk-lbl"
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext",
+     "BUTTON.statb"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "SPAN.pl",
+     "BUTTON.b"
+    ],
+    "16": [
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "schrift": {
+    "11": [
+     "SPAN.",
+     "I.",
+     "B.",
+     "I."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext",
+     "BUTTON.statb"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "BUTTON.weiter",
+     "BUTTON.b"
+    ],
+    "16": [
+     "B."
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/menu@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [],
+   "kleinN": 0,
+   "schrift": {
+    "11": [
+     "DIV.mgrp",
+     "DIV.mgrp",
+     "DIV.mgrp"
+    ],
+    "13": [
+     "P.sub",
+     "SPAN.netztext",
+     "P.angemeldet",
+     "B."
+    ],
+    "15": [
+     "SPAN."
+    ],
+    "16": [
+     "B.",
+     "B.",
+     "B.",
+     "B."
+    ],
+    "19": [
+     "B."
+    ],
+    "28": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/tag@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    }
+   ],
+   "kleinN": 15,
+   "schrift": {
+    "11": [
+     "SPAN.",
+     "I.",
+     "B.",
+     "SPAN.chk-lbl"
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext",
+     "BUTTON.statb"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "SPAN.pl",
+     "BUTTON.b"
+    ],
+    "16": [
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "schrift": {
+    "11": [
+     "SPAN.",
+     "I.",
+     "B.",
+     "I."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext",
+     "BUTTON.statb"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "BUTTON.weiter",
+     "BUTTON.b"
+    ],
+    "16": [
+     "B."
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 57,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 65,
+     "h": 29,
+     "text": "Zurück"
+    },
+    {
+     "was": "BUTTON.b",
+     "b": 62,
+     "h": 29,
+     "text": "Weiter"
+    }
+   ],
+   "kleinN": 4,
+   "schrift": {
+    "11": [
+     "SPAN."
+    ],
+    "13": [
+     "BUTTON.home",
+     "SPAN.netztext",
+     "P.gs",
+     "SPAN.s"
+    ],
+    "15": [
+     "BUTTON.hilfebtn",
+     "B."
+    ],
+    "16": [
+     "B.",
+     "BUTTON.b",
+     "BUTTON.b"
+    ],
+    "19": [
+     "H1.",
+     "H2.",
+     "SPAN.go2",
+     "SPAN.go2"
+    ]
+   },
+   "schwach": [
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    },
+    {
+     "was": "SPAN.go2",
+     "v": 1,
+     "grenze": 4.5,
+     "px": 19,
+     "vg": "rgb(95, 104, 102)",
+     "hg": "rgb(95,104,102)",
+     "text": "›"
+    }
+   ],
+   "schwachN": 2,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  }
+ },
+ "gestaltung": {
+  "gefunden": true,
+  "gleich": true,
+  "zeichen": 10025
+ },
+ "summe": {
+  "ueberGes": 0,
+  "kleinGes": 321,
+  "kleinSvc": 96,
+  "schwachGes": 117,
+  "winzig": 36,
+  "fehlerGes": 0
+ }
+}
