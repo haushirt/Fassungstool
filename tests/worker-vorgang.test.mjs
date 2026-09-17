@@ -113,20 +113,109 @@ describe("Vorgang schreiben", () => {
       "Kennung und Spalte tag zeigen auf verschiedene Tage");
   });
 
-  /* ── Zweite bekannte Lücke: Korrektur nach dem Abschluss ───────────
-     ereignisseAbleiten steigt aus, sobald der Vorgang schon Ereignisse
-     hat. Ein korrigierter, erneut abgeschlossener Vorgang ändert dann
-     die Anzeige, aber nicht den Bestand. Das Journal ist append-only —
-     die Korrektur müsste als neue Zeile dazukommen, nicht entfallen. */
-  test("Korrektur nach dem Abschluss erreicht den Bestand nicht (bekannt)", async () => {
+  /* War bis Runde 2 eine bekannte Lücke: `ereignisseAbleiten` stieg aus,
+     sobald es zum Vorgang schon Ereignisse gab — die Korrektur erreichte
+     den Bestand nie. Seit Runde 2 wird die Differenz gebucht; der Fall
+     steht ausführlich unten in „Korrektur nach dem Abschluss". */
+  test("eine Korrektur ändert den Vorgang UND das Journal", async () => {
     const { env, keks } = await haus();
     await put(env, keks, fassung(1, { finished: true, barrot: { w001: 2 } }));
-    const vorher = env.DB.tabellen.ereignis.map(e => [e.artikel, e.menge]);
+    const vorher = env.DB.tabellen.ereignis.length;
     await put(env, keks, fassung(2, { finished: true, barrot: { w001: 20 } }));
-    const nachher = env.DB.tabellen.ereignis.map(e => [e.artikel, e.menge]);
-    assert.deepEqual(nachher, vorher, "Journal unverändert");
+    assert.ok(env.DB.tabellen.ereignis.length > vorher, "das Journal wächst mit");
     assert.equal(JSON.parse(env.DB.tabellen.vorgang[0].daten).barrot.w001, 20,
-      "der Vorgang zeigt aber die neue Zahl");
+      "und der Vorgang zeigt die neue Zahl");
+  });
+});
+
+/* ── Korrektur nach dem Abschluss ─────────────────────────────────────
+   Die schwierige Stelle: Doppeltes Senden darf nichts verdoppeln, eine
+   Korrektur muss aber ankommen. Unterschieden wird am INHALT, nicht an
+   der Zählnummer — deshalb prüft der zweite Fall ausdrücklich, dass eine
+   höhere Zählnummer bei gleichem Inhalt nichts bucht. Gerechnet wird
+   gegen `/api/bestand`, nicht gegen die Journalzeilen allein: dort läuft
+   der Schaden auf, um den es geht. */
+async function bestandVon(env, keks, id) {
+  const r = await worker.fetch(anfrage("/api/bestand", { keks }), env);
+  assert.equal(r.status, 200, "Bestand abfragen");
+  return (await r.json()).bestand[id];
+}
+
+describe("Korrektur nach dem Abschluss", () => {
+  /* Ohne Zählung kein Bestand (so rechnet `bestand()`), und alles vor der
+     jüngsten Zählung zählt nicht mit. Die Zählung wird deshalb um eine
+     Minute zurückdatiert, statt auf die Uhr zu hoffen. */
+  async function gezaehlt(env, keks, reihen = 2) {
+    await worker.fetch(anfrage("/api/vorgang/keller_2026-09-16", { method: "PUT", keks,
+      body: { mode: "keller", tag: "2026-09-16", zaehlnr: 1, finished: true,
+              zdone: { w001: 1 }, reihen: { w001: reihen }, einzel: { w001: 0 } } }), env);
+    env.DB.tabellen.ereignis.forEach(e => { e.ts -= 60000; });
+  }
+
+  test("die Gegenbuchung kommt als neue Zeile, der Bestand zieht nach", async () => {
+    const { env, keks } = await haus();
+    await gezaehlt(env, keks);                       /* 2 Reihen = 12 Flaschen */
+
+    await put(env, keks, fassung(1, { finished: true, barrot: { w001: 2 }, rest: {} }));
+    assert.equal(await bestandVon(env, keks, "w001"), 10, "12 minus 2");
+
+    await put(env, keks, fassung(2, { finished: true, barrot: { w001: 5 }, rest: {} }));
+    assert.equal(await bestandVon(env, keks, "w001"), 7, "es waren doch fünf");
+
+    const z = env.DB.tabellen.ereignis.filter(e => e.vorgang === SCHLUESSEL);
+    assert.deepEqual(z.map(e => e.menge), [2, 3],
+      "die erste Zeile bleibt stehen, die Differenz kommt dazu");
+    assert.deepEqual(z.map(e => e.quelle), ["vorgang", "vorgang-korrektur"],
+      "die Herkunft ist im Journal ablesbar");
+  });
+
+  test("derselbe Inhalt nochmal — auch mit neuer Zählnummer — bucht nichts", async () => {
+    const { env, keks } = await haus();
+    const d = fassung(3, { finished: true, barrot: { w001: 2 } });
+    await put(env, keks, d);
+    const n = env.DB.tabellen.ereignis.length;
+    assert.ok(n > 0, "der erste Abschluss hat gebucht");
+    await put(env, keks, d);
+    await put(env, keks, { ...d, zaehlnr: 4 });
+    await put(env, keks, { ...d, zaehlnr: 5, zeit: "2026-09-17T01:00:00.000Z" });
+    assert.equal(env.DB.tabellen.ereignis.length, n,
+      "Zählnummer und Uhrzeit allein sind keine Korrektur");
+  });
+
+  test("ein Wein, der aus der Fassung verschwindet, wird zurückgebucht", async () => {
+    const { env, keks } = await haus();
+    await put(env, keks, fassung(1, { finished: true, barrot: { w001: 2 }, rest: { w002: 1 } }));
+    await put(env, keks, fassung(2, { finished: true, barrot: { w001: 2 }, rest: {} }));
+    const w2 = env.DB.tabellen.ereignis.filter(e => e.artikel === "w002");
+    assert.deepEqual(w2.map(e => e.menge), [1, -1], "Buchung und Gegenbuchung");
+    assert.equal(w2.reduce((a, x) => a + x.menge, 0), 0, "unterm Strich nicht entnommen");
+    assert.equal(env.DB.tabellen.ereignis.filter(e => e.artikel === "w001").length, 1,
+      "was gleich blieb, wird nicht noch einmal gebucht");
+  });
+
+  test("eine berichtigte Zählung ist ein neuer Stand, keine Differenz", async () => {
+    const { env, keks } = await haus();
+    const zaehl = (nr, reihen) => worker.fetch(anfrage("/api/vorgang/keller_2026-09-16",
+      { method: "PUT", keks, body: { mode: "keller", tag: "2026-09-16", zaehlnr: nr,
+        finished: true, zdone: { w001: 1 }, reihen: { w001: reihen }, einzel: { w001: 0 } } }), env);
+
+    await zaehl(1, 2);                                /* 12 */
+    await zaehl(2, 3);                                /* doch 18 */
+    const e = env.DB.tabellen.ereignis;
+    assert.deepEqual(e.map(x => x.menge), [12, 18],
+      "die 12 bleibt stehen, die 18 kommt dazu — nicht 6 als Differenz");
+    assert.ok(e[1].ts > e[0].ts,
+      "die jüngere Zählung trägt auch den jüngeren Zeitstempel, sonst entscheidet der Zufall");
+    assert.equal(await bestandVon(env, keks, "w001"), 18);
+  });
+
+  test("das Journal wird nie gekürzt: jede Zeile von vorher steht noch da", async () => {
+    const { env, keks } = await haus();
+    await put(env, keks, fassung(1, { finished: true, barrot: { w001: 2 } }));
+    const vorher = env.DB.tabellen.ereignis.map(e => e.id);
+    await put(env, keks, fassung(2, { finished: true, barrot: { w001: 9 }, rest: {} }));
+    const nachher = env.DB.tabellen.ereignis.map(e => e.id);
+    assert.deepEqual(nachher.slice(0, vorher.length), vorher, "append-only (Regel 6)");
   });
 });
 

@@ -74,7 +74,16 @@ describe("Service Worker", () => {
 describe("Regel 9: kein Code im Quelltext", () => {
   const verdaechtig = /\b(PIN|CODE|PASS|PASSWORT|GEHEIM|SECRET)\w*\s*[:=]\s*["'`]\d{3,8}["'`]/i;
 
-  for (const d of [...HTML, "public/sw.js", "src/index.js", "src/gnparse.js", "src/gnmap.js"]) {
+  /* Nicht nur der ausgelieferte Quelltext: Ein Code rutscht am ehesten in
+     eine Übergabe, eine Notiz oder eine Commit-Nachricht. Die Prüfungen
+     unter `tests/` sind ausgenommen — sie brauchen erfundene Codes, um
+     den echten Weg durch `/api/anlage` zu gehen, und werden nicht
+     ausgeliefert. */
+  const MD = [...listet(".").filter(n => n.endsWith(".md")),
+              ...listet("review").filter(n => n.endsWith(".md")).map(n => "review/" + n)];
+
+  for (const d of [...HTML, "public/sw.js", "src/index.js", "src/gnparse.js",
+                   "src/gnmap.js", ...MD]) {
     test(d, () => {
       const m = verdaechtig.exec(lies(d));
       assert.equal(m, null, m ? "sieht aus wie ein Code im Klartext: " + m[0] : "");
@@ -114,6 +123,10 @@ describe("Rollen (Regel 4)", () => {
     const w = lies("src", "index.js");
     const rollen = new Set([...w.matchAll(/darf\(p,\s*([^)]*)\)/g)]
       .flatMap(m => m[1].split(",").map(s => s.trim().replace(/^["']|["']$/g, ""))));
+    /* Ohne diese Zeile ist die Prüfung grün, sobald `darf(` verschwindet
+       oder anders geschrieben wird — sie liefe dann über eine leere
+       Menge und bestätigte sich selbst. */
+    assert.ok(rollen.size > 0, "keine einzige Rechteprüfung im Worker gefunden");
     for (const r of rollen)
       assert.ok(["service", "wirtschaft", "leitung"].includes(r),
         "unbekannte Rolle im Worker: " + r);

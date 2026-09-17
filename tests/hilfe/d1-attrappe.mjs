@@ -11,10 +11,60 @@
    (Rechte, Sperre, Idempotenz, Fehlerantworten), nicht das Schema.
 
    Kommt eine Abfrage an, die hier nicht steht, wirft die Attrappe. Das
-   ist Absicht: Eine neue SQL-Stelle im Worker soll auffallen.
+   ist Absicht: Eine neue SQL-Stelle im Worker soll auffallen. Wer eine
+   Abfrage hinzufügt, prüft aber nichts, wenn er die Antwort passend zur
+   Erwartung baut — die Attrappe darf nur nachbilden, was SQLite tut.
+
+   Wo sie sich bekanntermassen ANDERS verhält als D1:
+     · `batch` läuft hier ohne Transaktion. Scheitert eine Anweisung,
+       bleiben die vorherigen stehen; D1 nimmt alles zurück.
+     · Bei gleichem `ts` hält `ORDER BY ts ASC` hier die Einfügereihenfolge
+       ein. SQLite gibt darauf keine Zusage — Code, der sich auf die
+       Reihenfolge verlässt, muss für verschiedene Zeitstempel sorgen.
+     · Keine Typumwandlung: 1 ist nicht true, "1" ist nicht 1. Wer eine
+       Zeile von Hand einsetzt, setzt sie so, wie der Worker sie bindet.
    ═══════════════════════════════════════════════════════════════════════ */
 
 const norm = s => s.replace(/\s+/g, " ").trim();
+
+/* Die Spalten des Journals. Steht in einer Einfügung etwas anderes, ist
+   entweder das Schema gewachsen (dann gehört es hierher UND in
+   docs/live-schema.sql) oder es ist ein Tippfehler, der live „no such
+   column" heisst. */
+const EREIGNIS_SPALTEN = ["id", "ts", "tag", "art", "quelle", "vorgang",
+                          "artikel", "ort", "menge", "wer", "notiz"];
+
+/* Eine Einfügung wird gelesen, nicht geraten: Spaltenliste und
+   VALUES-Liste werden Feld für Feld zusammengeführt. Literale (`'vorgang'`)
+   stehen direkt im SQL, Platzhalter (`?3`) holen ihren Wert aus der
+   Bindung — und zwar über ihre NUMMER, wie SQLite das tut.
+
+   Vorher stand hier eine Zuordnung nach Position mit fest verdrahtetem
+   `quelle: "vorgang"`. Ändert jemand im Worker die Reihenfolge oder macht
+   aus einem Literal einen Platzhalter, landen die Werte dann in den
+   falschen Spalten — und die Prüfungen bestätigen sich selbst, statt zu
+   prüfen. */
+function einfuegen(tabelle, s, b) {
+  const m = /^INSERT INTO (\w+) \(([^)]*)\) VALUES \(([^)]*)\)/i.exec(s);
+  if (!m) throw new Error("Attrappe versteht diese Einfügung nicht: " + s);
+  const spalten = m[2].split(",").map(x => x.trim());
+  const werte = m[3].split(",").map(x => x.trim());
+  if (spalten.length !== werte.length)
+    throw new Error("Spalten und Werte verschieden lang: " + s);
+  if (m[1].toLowerCase() === "ereignis")
+    for (const sp of spalten)
+      if (!EREIGNIS_SPALTEN.includes(sp))
+        throw new Error("Unbekannte Spalte in ereignis: " + sp + " — " + s);
+
+  const zeile = {};
+  spalten.forEach((sp, i) => {
+    const w = werte[i];
+    const ph = /^\?(\d+)$/.exec(w);
+    zeile[sp] = ph ? b[+ph[1] - 1] : w.replace(/^'(.*)'$/, "$1");
+  });
+  tabelle.push(zeile);
+  return [];
+}
 
 export function d1Attrappe(start = {}) {
   const t = {
@@ -87,21 +137,24 @@ export function d1Attrappe(start = {}) {
     if (/^SELECT COUNT\(\*\) AS n FROM ereignis WHERE vorgang = \?1$/.test(s))
       return { rows: [{ n: t.ereignis.filter(e => e.vorgang === b[0]).length }] };
 
-    /* Zwei Einfügungen, zwei Spaltenlisten — `quelle` steht als Literal
-       im SQL, nicht als Platzhalter. Wer das übersieht, prüft an der
-       falschen Spalte. */
-    if (/^INSERT INTO ereignis \(id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer\)/.test(s)) {
-      t.ereignis.push({ id: b[0], ts: b[1], tag: b[2], art: b[3], quelle: "vorgang",
-                        vorgang: b[4], artikel: b[5], ort: b[6], menge: b[7], wer: b[8] });
-      return { rows: [] };
-    }
-    if (/^INSERT INTO ereignis \(id, ts, tag, art, quelle, notiz\)/.test(s)) {
-      t.ereignis.push({ id: b[0], ts: b[1], tag: b[2], art: "korrektur",
-                        quelle: b[3], notiz: b[4] });
-      return { rows: [] };
-    }
-    if (/^INSERT INTO ereignis /.test(s))
-      throw new Error("Neue Spaltenliste in ereignis — Attrappe nachziehen: " + s);
+    if (/^SELECT art, artikel, ort, menge, ts FROM ereignis WHERE vorgang = \?1 AND artikel IS NOT NULL ORDER BY ts ASC$/.test(s))
+      return { rows: t.ereignis
+        .filter(e => e.vorgang === b[0] && e.artikel != null)
+        .slice().sort((x, y) => x.ts - y.ts)
+        .map(e => ({ art: e.art, artikel: e.artikel, ort: e.ort ?? null,
+                     menge: e.menge, ts: e.ts })) };
+
+    /* Der Bestand — die Abfrage, um die sich alles dreht. Sie fehlte hier,
+       weshalb /api/bestand von keiner einzigen Prüfung durchlaufen wurde:
+       jeder Aufruf lief in den Wurf ganz unten. */
+    if (/^SELECT artikel, ort, art, menge, ts FROM ereignis WHERE artikel IS NOT NULL ORDER BY ts ASC$/.test(s))
+      return { rows: t.ereignis
+        .filter(e => e.artikel != null)
+        .slice().sort((x, y) => x.ts - y.ts)
+        .map(e => ({ artikel: e.artikel, ort: e.ort ?? null, art: e.art,
+                     menge: e.menge, ts: e.ts })) };
+
+    if (/^INSERT INTO ereignis /.test(s)) return { rows: einfuegen(t.ereignis, s, b) };
 
     /* ── stamm / mapping ──────────────────────────────────────────── */
     if (/^SELECT schluessel, daten FROM stamm$/.test(s)) return { rows: t.stamm };

@@ -192,11 +192,40 @@ async function vorgangSchreiben(env, p, id, daten) {
   return json({ id, gespeichert: true });
 }
 
-async function ereignisseAbleiten(env, vid, d, p) {
-  const vorhanden = await env.DB.prepare(
-    `SELECT COUNT(*) AS n FROM ereignis WHERE vorgang = ?1`).bind(vid).first();
-  if (vorhanden && vorhanden.n > 0) return;          // schon abgeleitet
+/* Dieselben Spalten, zwei Herkünfte. `quelle` sagt später, ob eine Zeile
+   aus dem ersten Abschluss stammt oder aus einer Korrektur danach — ohne
+   sie sähe im Journal beides gleich aus. Zwei ausgeschriebene Abfragen
+   statt einer zusammengesetzten: SQL wird hier nie gebaut, immer
+   gebunden. */
+const SQL_EREIGNIS =
+  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
+   VALUES (?1,?2,?3,?4,'vorgang',?5,?6,?7,?8,?9)`;
+const SQL_EREIGNIS_KORR =
+  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
+   VALUES (?1,?2,?3,?4,'vorgang-korrektur',?5,?6,?7,?8,?9)`;
 
+/* Ereignisse aus dem Zustand eines abgeschlossenen Vorgangs ableiten.
+
+   Zwei Anforderungen, die sich zu widersprechen scheinen:
+   · Dasselbe Paket zweimal darf nichts verdoppeln. Die Warteschlange
+     schickt nach einem Netzabbruch gern ein zweites Mal.
+   · Eine Korrektur nach dem Abschluss muss im Bestand ankommen. Vorher
+     stieg diese Funktion aus, sobald es zum Vorgang schon Ereignisse gab:
+     der Vorgang wurde überschrieben, das Journal blieb stehen, Anzeige
+     und Bestand liefen still auseinander.
+
+   Beides zusammen geht, wenn nicht die ANWESENHEIT von Ereignissen
+   entscheidet, sondern ihr INHALT: gebucht wird die Differenz zwischen
+   dem, was das Journal für diesen Vorgang schon sagt, und dem, was der
+   neue Zustand sagt. Ist die Differenz null, passiert nichts — das ist
+   der Fall „dasselbe noch einmal". Sonst kommt die Gegenbuchung als
+   NEUE Zeile dazu; gelöscht oder geändert wird nie (Regel 6).
+
+   Warum nicht die `zaehlnr`? Sie wächst bei jedem Zwischenstand, auch
+   wenn sich keine Menge ändert, und zwei Geräte zählen unabhängig
+   voneinander hoch. Sie beantwortet „ist das ein neues Paket?", nicht
+   „ist das ein anderer Zustand?". Nur der Inhalt beantwortet das. */
+async function ereignisseAbleiten(env, vid, d, p) {
   const zeilen = [];
   const zu = (art, artikel, menge, ort) => {
     menge = +menge || 0;
@@ -225,13 +254,62 @@ async function ereignisseAbleiten(env, vid, d, p) {
   Object.keys(d.gent || {}).forEach(id => zu("entnahme", id, d.gent[id], "lager"));
   Object.keys(d.gzusatz || {}).forEach(id => zu("entnahme", id, d.gzusatz[id], "lager"));
 
-  if (!zeilen.length) return;
-  const stmt = env.DB.prepare(
-    `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
-     VALUES (?1,?2,?3,?4,'vorgang',?5,?6,?7,?8,?9)`);
-  const jetzt = Date.now();
-  await env.DB.batch(zeilen.map(z => stmt.bind(
-    crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge, d.name || p.name)));
+  /* Was steht für diesen Vorgang schon im Journal? */
+  const { results: alt } = await env.DB.prepare(
+    `SELECT art, artikel, ort, menge, ts FROM ereignis
+      WHERE vorgang = ?1 AND artikel IS NOT NULL ORDER BY ts ASC`).bind(vid).all();
+
+  const schreibe = async (sql, zn) => {
+    if (!zn.length) return;
+    const stmt = env.DB.prepare(sql);
+    /* `bestand()` entscheidet bei Zählungen über den Zeitstempel: die
+       jüngste gilt. Zwei Anfragen in derselben Millisekunde wären sonst
+       eine Münze — deshalb liegt die Korrektur notfalls eine
+       Millisekunde nach der jüngsten Zeile, die schon da ist. */
+    const jetzt = Math.max(Date.now(), alt.reduce((m, r) => Math.max(m, +r.ts || 0), 0) + 1);
+    await env.DB.batch(zn.map(z => stmt.bind(
+      crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge, d.name || p.name)));
+  };
+
+  /* Erster Abschluss: nichts zu vergleichen, die Zeilen gehen so hinaus
+     wie sie entstanden sind. */
+  if (!alt.length) return schreibe(SQL_EREIGNIS, zeilen);
+
+  /* Die Marke fasst zusammen, was dieselbe Buchung ausmacht. Sie wird nie
+     wieder zerlegt — die Felder stehen daneben, damit ein Artikelname mit
+     einem senkrechten Strich darin nichts durcheinanderbringt. */
+  const marke = z => z.art + "|" + z.artikel + "|" + (z.ort || "");
+  const felder = new Map();
+  /* Eine Zählung ist ein Stand, keine Bewegung: die jüngste Zeile gilt.
+     Entnahme und Eingang summieren sich auf. */
+  const falte = (map, z, m) => {
+    const k = marke(z);
+    felder.set(k, { art: z.art, artikel: z.artikel, ort: z.ort || null });
+    map.set(k, z.art === "zaehlung" ? m : (map.get(k) || 0) + m);
+  };
+
+  const ist = new Map();
+  alt.forEach(r => falte(ist, r, +r.menge || 0));
+  const soll = new Map();
+  zeilen.forEach(z => falte(soll, z, z.menge));
+
+  const korr = [];
+  for (const k of new Set([...ist.keys(), ...soll.keys()])) {
+    const { art, artikel, ort } = felder.get(k);
+    const a = ist.get(k) || 0, s = soll.has(k) ? soll.get(k) : 0;
+    if (art === "zaehlung") {
+      /* Eine Zählung wird durch eine neue Zählung berichtigt, nicht durch
+         eine Differenz. Und eine Zählung, die im neuen Stand gar nicht
+         mehr vorkommt, wird nicht zurückgenommen: gezählt wurde sie
+         trotzdem: */
+      if (soll.has(k) && Math.abs(s - a) > 1e-9)
+        korr.push({ art, artikel, ort, menge: s });
+    } else if (Math.abs(s - a) > 1e-9) {
+      korr.push({ art, artikel, ort, menge: s - a });
+    }
+  }
+  /* Kein Unterschied: dasselbe Paket ein zweites Mal. Nichts tun. */
+  return schreibe(SQL_EREIGNIS_KORR, korr);
 }
 
 /* ── Bestand ─────────────────────────────────────────────────────────── */
@@ -380,10 +458,10 @@ export default {
       if (pfad === "/api/anlage" && m === "POST") {
         if (!env.ANLAGE_OFFEN) return json({ fehler: "geschlossen" }, 403);
         const b = await koerper(request);
-        return b ? personSchreiben(env, b) : keinJson();
+        return b ? await personSchreiben(env, b) : keinJson();
       }
 
-      if (pfad === "/api/anmelden" && m === "POST") return anmelden(request, env);
+      if (pfad === "/api/anmelden" && m === "POST") return await anmelden(request, env);
       if (pfad === "/api/abmelden") return json({ ok: true }, 200, { "set-cookie": keks(null) });
 
       const p = await ich(request, env);
@@ -395,22 +473,22 @@ export default {
         const { results } = await env.DB.prepare(`SELECT schluessel, daten FROM stamm`).all();
         return json(Object.fromEntries(results.map(r => [r.schluessel, JSON.parse(r.daten)])));
       }
-      if (pfad === "/api/bestand") return bestand(env);
-      if (pfad === "/api/vorgaenge") return vorgaengeLesen(env, url);
+      if (pfad === "/api/bestand") return await bestand(env);
+      if (pfad === "/api/vorgaenge") return await vorgaengeLesen(env, url);
 
       if (pfad.startsWith("/api/vorgang/") && m === "PUT") {
         let id;
         try { id = decodeURIComponent(pfad.slice(13)); }
         catch { return json({ fehler: "unlesbarer Vorgangsschlüssel" }, 400); }
         const b = await koerper(request);
-        return b ? vorgangSchreiben(env, p, id, b) : keinJson();
+        return b ? await vorgangSchreiben(env, p, id, b) : keinJson();
       }
 
       if (pfad === "/api/fassungsliste") {
-        if (m === "GET") return fassungslistenLesen(env, url);
+        if (m === "GET") return await fassungslistenLesen(env, url);
         if (m === "POST") {
           if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
-          return fassungsliste(env, await request.text(), "hand:" + p.name);
+          return await fassungsliste(env, await request.text(), "hand:" + p.name);
         }
       }
 
@@ -423,7 +501,7 @@ export default {
         if (m === "POST") {
           if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
           const b = await koerper(request);
-          return b ? mappingSchreiben(env, p, b) : keinJson();
+          return b ? await mappingSchreiben(env, p, b) : keinJson();
         }
       }
 
@@ -436,7 +514,7 @@ export default {
         }
         if (m === "POST") {
           const b = await koerper(request);
-          return b ? personSchreiben(env, b) : keinJson();
+          return b ? await personSchreiben(env, b) : keinJson();
         }
       }
 

@@ -168,18 +168,57 @@ describe("Ausgang: offline und wieder online", () => {
     assert.equal(u.netz().zustand, "serverfehler");
   });
 
-  /* ── Zweite bekannte Lücke ─────────────────────────────────────────
-     Bei 409 (auf einem anderen Gerät gibt es einen neueren Stand) wird
-     der Eintrag verworfen und die Zeile meldet danach „alles
-     übertragen". Wer gerade gezählt hat, erfährt nie, dass seine
-     Zählung nicht angekommen ist. */
-  test("409 verwirft den eigenen Stand und meldet trotzdem Vollzug (bekannt)", async () => {
+  /* ── 409: überholt, nicht verloren ─────────────────────────────────
+     War bis Runde 2 eine bekannte Lücke: Der Eintrag verschwand aus dem
+     Ausgang und die Zeile meldete „Nichts offen – alles übertragen".
+     Jetzt verlässt er die Reihe (weiter senden wäre sinnlos und hielte
+     alles dahinter auf), wandert aber ins Sackfach und bleibt dort, bis
+     ihn jemand quittiert. */
+  test("409: der Stand verlässt die Reihe, aber nicht das Gerät", async () => {
+    const u = umgebung(() => antwort(409,
+      { konflikt: true, server: { zaehlnr: 9, name: "Ian", zeit: "2026-09-16T22:55:00.000Z" } }));
+    u.k.inDenAusgang(fassung({ barrot: { w001: 7 } }), "fertig");
+    await u.k.schiebe();
+
+    assert.equal(u.ausgang().length, 0, "die Reihe läuft weiter");
+    const s = JSON.parse(u.speicher.get("hh_ueberholt_v1") || "[]");
+    assert.equal(s.length, 1, "der Stand liegt im Sackfach");
+    assert.equal(s[0].schluessel, "tag_2026-09-16");
+    assert.equal(s[0].daten.barrot.w001, 7, "mit allen gezählten Flaschen");
+    assert.equal(s[0].fremd.name, "Ian", "und mit dem, der schneller war");
+    assert.equal(u.netz().ueberholt, 1, "die Zeile weiss davon");
+  });
+
+  test("409: ein zweiter Konflikt am selben Vorgang ersetzt den ersten", async () => {
+    const u = umgebung(() => antwort(409, { konflikt: true, server: { zaehlnr: 9 } }));
+    u.k.inDenAusgang(fassung({ barrot: { w001: 1 } }), "fertig");
+    await u.k.schiebe();
+    u.k.inDenAusgang(fassung({ barrot: { w001: 2 } }), "fertig");
+    await u.k.schiebe();
+    const s = JSON.parse(u.speicher.get("hh_ueberholt_v1") || "[]");
+    assert.equal(s.length, 1, "je Schlüssel ein Eintrag");
+    assert.equal(s[0].daten.barrot.w001, 2, "der jüngste Stand");
+  });
+
+  test("409 hält die Reihe nicht auf: der nächste Vorgang geht hinaus", async () => {
+    const u = umgebung(n => n === 1
+      ? antwort(409, { konflikt: true, server: { zaehlnr: 9 } })
+      : antwort(200));
+    u.k.inDenAusgang(fassung(), "fertig");
+    u.k.inDenAusgang({ mode: "nach", tag: "2026-09-17", ent: { w002: 1 } }, "fertig");
+    await u.k.schiebe();
+    assert.equal(u.ausgang().length, 0);
+    assert.equal(u.gesendet.length, 2, "beide wurden versucht");
+  });
+
+  test("quittieren löscht den Stand nicht, nur die Meldung", async () => {
     const u = umgebung(() => antwort(409, { konflikt: true, server: { zaehlnr: 9 } }));
     u.k.inDenAusgang(fassung(), "fertig");
     await u.k.schiebe();
-    assert.equal(u.ausgang().length, 0);
-    assert.equal(u.netz().zustand, "verbunden");
-    assert.equal(u.netz().offen, 0);
+    u.k.ueberholtQuittieren();
+    assert.equal(u.k.ueberholtOffen().length, 0, "die Zeile schweigt");
+    assert.equal(u.k.ueberholtAlle().length, 1, "der Stand liegt weiter im Gerät");
+    assert.equal(u.netz().ueberholt, 0);
   });
 });
 

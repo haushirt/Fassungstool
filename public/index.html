@@ -1468,7 +1468,8 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast(
    Frage an den Menschen — deshalb wird gefragt, nicht zusammengerechnet. */
 const API="/api";
 const K_AUSGANG="hh_ausgang_v1", K_GERAET="hh_geraet_v1",
-      K_ZAEHL="hh_zaehlnr_v1", K_FERN="hh_fern_v1";
+      K_ZAEHL="hh_zaehlnr_v1", K_FERN="hh_fern_v1",
+      K_UEBERHOLT="hh_ueberholt_v1";
 
 function uuid(){
   try{ if(crypto.randomUUID)return crypto.randomUUID(); }catch(e){}
@@ -1483,7 +1484,7 @@ const GERAET=geraetId();
 const jlese=(k,f)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r):f;}catch(e){return f;}};
 const jschreib=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 
-let NETZ={zustand:"unbekannt", offen:0, letzte:0, laeuft:false};
+let NETZ={zustand:"unbekannt", offen:0, ueberholt:0, letzte:0, laeuft:false};
 let FERN=jlese(K_FERN,{});          /* schluessel → Vorgang vom Server  */
 let AEND=0;                          /* Zeitstempel der letzten Änderung */
 function merkeAenderung(){ AEND=Date.now(); }
@@ -1516,6 +1517,35 @@ function inDenAusgang(rec,status){
   NETZ.offen=a.length; netzChip();
 }
 
+/* ── Sackfach für überholte Stände ─────────────────────────────────────
+   409 heißt: Auf einem anderen Gerät gibt es einen neueren Stand
+   desselben Vorgangs. Noch einmal senden hilft nicht — der Server lehnt
+   denselben Stand wieder ab, und die Reihe dahinter stünde still. Der
+   Eintrag muss also aus der Warteschlange heraus.
+   Wegwerfen darf man ihn aber nicht (Regel 6): Wer eine Stunde gezählt
+   hat, hörte sonst als einzige Antwort „Nichts offen – alles übertragen".
+   Er wandert deshalb ins Sackfach, bleibt im Gerät und bleibt sichtbar,
+   bis ihn jemand zur Kenntnis genommen hat. */
+function ueberholtAlle(){ return jlese(K_UEBERHOLT,[]); }
+function ueberholtOffen(){ return ueberholtAlle().filter(x=>!x.quittiert); }
+function insSackfach(e,fremd){
+  /* Je Vorgang der jüngste überholte Stand — ein zweiter Konflikt am
+     selben Schlüssel ersetzt den ersten. Zwanzig Einträge sind die
+     Obergrenze, damit der Gerätespeicher nicht zuläuft. */
+  const a=ueberholtAlle().filter(x=>x.schluessel!==e.schluessel);
+  a.push({schluessel:e.schluessel, id:e.id, daten:e.daten,
+          zeit:(e.daten&&e.daten.zeit)||new Date().toISOString(),
+          fremd:fremd?{name:fremd.name||"", zeit:fremd.zeit||"",
+                       zaehlnr:+fremd.zaehlnr||0}:null,
+          quittiert:0});
+  jschreib(K_UEBERHOLT,a.slice(-20));
+}
+/* Zur Kenntnis genommen. Der Stand bleibt liegen, nur die Zeile schweigt. */
+function ueberholtQuittieren(){
+  jschreib(K_UEBERHOLT,ueberholtAlle().map(x=>{x.quittiert=1;return x;}));
+  NETZ.ueberholt=0; netzChip();
+}
+
 async function schiebe(){
   if(NETZ.laeuft)return; NETZ.laeuft=true;
   try{
@@ -1536,13 +1566,19 @@ async function schiebe(){
       if(r.status===401){ NETZ.zustand="abgemeldet"; break; }
       if(r.status>=500||r.status===429){ NETZ.zustand="serverfehler"; break; }
       if(!r.ok && r.status!==409){ NETZ.zustand="serverfehler"; break; }
-      /* 409 heißt: der Server hat einen neueren Stand. Der Eintrag ist
-         damit erledigt — nicht verloren, sondern überholt. */
+      /* 409: nicht verloren, sondern überholt — der Stand geht ins
+         Sackfach, bevor er die Reihe verlässt. */
+      if(r.status===409){
+        let fremd=null;
+        try{ const j=await r.json(); fremd=(j&&j.server)||null; }catch(err){}
+        insSackfach(e,fremd);
+      }
       a=jlese(K_AUSGANG,[]).filter(x=>x.id!==e.id);
       jschreib(K_AUSGANG,a);
       NETZ.zustand="verbunden"; NETZ.letzte=Date.now();
     }
     NETZ.offen=jlese(K_AUSGANG,[]).length;
+    NETZ.ueberholt=ueberholtOffen().length;
   } finally { NETZ.laeuft=false; netzChip(); }
 }
 
@@ -1595,6 +1631,22 @@ function fernNeuer(m){
   return (v.zaehlnr||0)>eigen ? v : null;
 }
 
+/* Der Satz für einen Stand, den der Server nicht angenommen hat. Er nennt
+   die Uhrzeit des eigenen Standes — daran erkennt man ihn wieder — und,
+   wenn der Server ihn mitgeschickt hat, wer schneller war. Die Wortwahl
+   gehört gegengelesen, der Mechanismus dahinter ist der Punkt. */
+function ueberholtSatz(l){
+  const uhr=s=>{ const d=new Date(s||0);
+    return isNaN(d)?"":d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}); };
+  if(l.length>1)
+    return l.length+" Stände sind nicht übernommen – auf einem anderen Gerät "
+      +"gab es neuere. Tippen, wenn gesehen.";
+  const e=l[0]||{}, meine=uhr(e.zeit), wer=(e.fremd&&e.fremd.name)||"";
+  return "Dein Stand"+(meine?" von "+meine+" Uhr":"")+" ist nicht übernommen – "
+    +(wer?wer+" war mit einem neueren Stand schneller."
+         :"auf einem anderen Gerät gibt es einen neueren Stand.")
+    +" Tippen, wenn gesehen.";
+}
 /* Ein Satz, der beantwortet: Ist meine Arbeit draußen oder noch im Gerät?
    Vorher stand „Offline" in zwei Zeilen mit zwei verschiedenen Zusagen.
    „Nicht angemeldet" und „Server antwortet nicht" sind Fehler, keine
@@ -1606,9 +1658,17 @@ function netzChip(){
   const z=NETZ.zustand, o=NETZ.offen;
   const weg=(navigator.onLine===false)||z==="offline";
   const viele=o===1?"1 Vorgang":o+" Vorgänge";
+  /* Die Zeile ist nur anfassbar, wenn es etwas zu quittieren gibt. */
+  const ueb=ueberholtOffen();
+  el.onclick=null; el.style.cursor="";
   let t="", k="";
-  if(z==="kein-server"){ el.style.display="none"; return; }
+  if(z==="kein-server"&&!ueb.length){ el.style.display="none"; return; }
+  /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
+     nichts hinaus. Gleich danach aber der überholte Stand — er darf nie
+     hinter „Nichts offen – alles übertragen" verschwinden. */
   if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
+  else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler";
+    el.onclick=ueberholtQuittieren; el.style.cursor="pointer"; }
   else if(weg&&o>0){ t=viele+" warten – kein Netz"; k="wartet"; }
   else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
   else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" warten"

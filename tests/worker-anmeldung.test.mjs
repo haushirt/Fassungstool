@@ -83,9 +83,12 @@ describe("Anmeldung", () => {
     for (let i = 0; i < 9; i++) await anmelden(env, "000000");
     assert.equal((await anmelden(env, CODE_LEITUNG)).status, 200);
     assert.equal(env.DB.tabellen.anmeldeversuch.filter(v => !v.ok).length, 0);
-    /* und der nächste Vertipper fängt wieder bei neun an */
-    assert.equal((await anmelden(env, "000000")).json
-      ? (await (await anmelden(env, "000000")).json()).uebrig : null, 8);
+    /* und der nächste Vertipper fängt wieder bei neun an.
+       Hier stand eine Bedingung (`(await anmelden(…)).json ? …`), die
+       immer wahr war und dabei einen zusätzlichen Fehlversuch abgesetzt
+       hat — geprüft wurde deshalb die 8 des ZWEITEN Versuchs, während
+       der Kommentar von der 9 sprach. Ein Versuch, eine Zahl. */
+    assert.equal((await (await anmelden(env, "000000")).json()).uebrig, 9);
   });
 
   test("leerer oder kaputter Körper sperrt niemanden aus, gibt aber 401", async () => {
