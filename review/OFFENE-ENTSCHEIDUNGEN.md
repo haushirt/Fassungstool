@@ -465,3 +465,59 @@ Dazu zwei Fragen, die ich nicht selbst beantworten kann:
    „Zweigelt 0,75 l 0,125 l" wird „Zweigelt". Das ist eine begründete
    Auslegung, keine Vorgabe – im Repo benutzt die Spalte sonst niemand.
    Ist etwas anderes gemeint, ist es eine Zeile Code.
+
+---
+
+### Antwort aus dem Betrieb (hospitality-pro, Runde 3)
+
+**Zu 1 – ein Z-Bericht je Betriebstag, nicht je Kostenstelle.** Der
+Tagesabschluss wird am Ende des Betriebstages für das Haus gezogen, und die
+Positionsliste darin führt Bar und Restaurant als getrennte Zeilen. Genau
+deshalb kommt derselbe Name zweimal vor – das ist Eigenheit 1 in
+`gnparse.js` und Regel 7, und sie wäre sinnlos, wenn es zwei getrennte
+Berichte gäbe. **Ein Eintrag je Tag in `fassungsliste` ist damit richtig,
+`kostenstelle` bleibt leer.**
+
+**Aber: „der zweite ersetzt den ersten" ist im Betrieb nicht immer harmlos.**
+Zwei Fälle, die vorkommen:
+
+* **Nachzügler und Storno.** Die Kasse wird abgeschlossen, danach kommt noch
+  eine Buchung oder ein Storno – es wird ein zweiter Z gezogen. Der ist der
+  richtige, Ersetzen ist hier genau das Gewünschte.
+* **Getrennter Abschluss.** Die Bar schließt um 1 Uhr, das Restaurant um
+  23 Uhr; wer aus Gewohnheit zweimal abschließt, schickt zwei **Teil**-Berichte
+  für denselben Tag. Dann wirft der zweite den ersten weg, und dem Abgleich
+  fehlt eine ganze Kostenstelle – ohne dass es irgendwo steht.
+
+Beide Fälle sehen im Worker gleich aus. **Was ich brauche, ist keine
+Schemaänderung, sondern eine Spur:** Wird ein Bericht für einen Tag ersetzt,
+soll die Notiz im Journal die alte und die neue Z-Nummer und beide
+Positionszahlen nennen („Z 41 (218 Positionen) ersetzt durch Z 42 (96
+Positionen)"). Fällt die Zahl der Positionen beim Ersetzen deutlich, war es
+ein Teilbericht, und die Leitung sieht es am Morgen. → Backlog, mittel.
+
+**Am Postfach nachzusehen (Aufgabe für den Betreiber):** ob an einem Tag
+eine oder zwei Mails von gastronovi eintreffen, und ob im Kopf des Berichts
+eine Kostenstelle steht. Solange `tests/fixtures/` leer ist, ist alles oben
+Hauspraxis, nicht gemessen.
+
+**Zu 2 – `kern` ist richtig gedeutet: der Positionsname ohne Größe.** Der
+Zweck der Spalte ist der Blick, den die Leitung und der Sommelier ohnehin
+haben: *ein* Wein, zwei Ausschankgrößen. „Grüner Veltliner Leindl" – 34
+Achtel und 6 Flaschen, eine Zeile. Die Größe darf dabei nicht verloren
+gehen, sie steckt in `ausschankMl` und wird für die Umrechnung auf Flaschen
+gebraucht; `rohbez` bleibt daneben unangetastet. Beides ist so gebaut.
+
+Zwei Dinge dazu aus der Praxis:
+
+* **`kern` darf kein Suchschlüssel werden.** Kleinschreiben, Umlaute
+  auflösen, Winzer abschneiden – das ist der Anfang der Ähnlichkeitssuche,
+  die nach Regel 5 abgeschaltet bleibt, weil sie falsche Treffer liefert
+  („Riesling Federspiel" ≠ „Riesling Smaragd", und der Preis unterscheidet
+  sich um das Doppelte). Nur abschneiden, sonst nichts – so wie jetzt.
+* **Geschnitten wird heute nur die Maßangabe.** In der Kasse heißen
+  Positionen aber auch „… Glas", „… Fl.", „… Karaffe", „… 1/8". Die
+  Bruchzahl ist abgedeckt, die Wörter nicht: „Zweigelt Glas" und „Zweigelt
+  0,75 l" bekämen zwei verschiedene `kern`. Ob das im Haus vorkommt, sagt
+  der erste echte Z-Bericht – **nicht vorab erweitern**, sondern am echten
+  Bericht ablesen und dann eine Zeile ändern. → Backlog, niedrig.

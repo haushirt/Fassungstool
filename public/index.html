@@ -1388,8 +1388,12 @@ const SCHRANK={1:{t:"Schrank 1 · Rotwein kräftig",s:"Zweigelt · Blaufränkisc
 const MODES={
  /* „Kühlschränke" war falsch: Schritt 1 ist die Bar — Rotweine und die
     sechs Laden —, die Schränke stehen im Restaurant und sind Schritt 2. */
+ /* Der Schritt hieß in der Tagesfassung „Keller" und im Nachfüllen „Holen" —
+    derselbe Gang nach unten, zwei Wörter. „Holen" ist die Tätigkeit und steht
+    ohnehin überall sonst („Noch nicht alles geholt", „Holen und einräumen");
+    „Keller" wäre dazu das dritte Wort neben Kellerzählung und Getränkelager. */
  tag:{t:"Tagesfassung",d:"Bar und Restaurant prüfen, aus dem Keller holen, Liste fotografieren.",ic:"tag",
-      steps:["Bar","Restaurant","Keller","Abschluss"]},
+      steps:["Bar","Restaurant","Holen","Abschluss"]},
  /* Nur die Getränke der Bar \u2014 ohne Rotweine, ohne Backup, ohne Lade 3. */
  fuellen:{t:"Nachfüllen",d:"Nur die Getränke an der Bar prüfen und auffüllen.",ic:"fuellen",
       steps:["Bar","Holen","Abschluss"]},
@@ -1405,7 +1409,7 @@ const MODES={
 
 /* 3.8 · Schrittlisten pro Zweig */
 const STEPS={
- tag:    {wein:["Bar","Restaurant","Keller","Abschluss"]},
+ tag:    {wein:["Bar","Restaurant","Holen","Abschluss"]},
  fuellen:{wein:["Bar","Holen","Abschluss"]},
  keller:{wein:["Zählen","Abschluss"], getr:["Laden prüfen","Abschluss"]},
  nach:  {wein:["Entnahme","Abschluss"], getr:["Getränke","Abschluss"]},
@@ -2261,6 +2265,10 @@ function renderHowto(){
   if(b)b.style.display=HILFE_SCHRITT.p?"":"none";
 }
 const BEDIEN=[
+ /* Die tragende Annahme der ganzen Fassung stand nirgends: Wer eine Lade
+    auslässt, sagt damit „voll“. Eine neue Kraft ohne Einschulung erfährt
+    das sonst erst, wenn am nächsten Abend der Wein fehlt. Darum zuerst. */
+ ["Ungepr\u00fcft gilt als voll","Was du nicht antippst, z\u00e4hlt als vollst\u00e4ndig da und kommt nicht auf die Liste zum Holen. Eine Lade, die du \u00fcberspringst, fehlt darum am n\u00e4chsten Abend im Service."],
  ["Punkte antippen","Du tippst herunter auf das, was noch dasteht. Der oberste Punkt ist der hinterste Platz."],
  ["H\u00e4kchen \u201evoll\u201c","Alles da, nichts fehlt. Nochmal antippen l\u00f6st es wieder."],
  ["Produktfoto antippen","Markiert die Spalte als angeschaut \u2013 ohne die Menge zu \u00e4ndern."],

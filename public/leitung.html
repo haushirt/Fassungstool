@@ -759,10 +759,16 @@ const QUELLLAGE={
     "dann hierher zurück.","tuer"],
   "Datei":       ["info","Gezeigt wird eine eingelesene Datei.",
     "Das ist ein Auszug von einem Gerät, nicht der laufende Betrieb. "+
-    "„Aktualisieren“ holt wieder den Server.","neu"],
-  "Leer":        ["info","Der Server antwortet — er hat nur noch keinen Vorgang.",
-    "Sobald die erste Fassung aus dem Keller ankommt, steht sie hier. "+
-    "Bis dahin ist jede Null auf dieser Seite eine Leerstelle, kein Ergebnis.","neu"]
+    "Der Knopf daneben holt wieder den Server.","neu","Aktualisieren"],
+  /* Diesen Satz liest die Leitung am ersten Morgen nach dem Livegang. Er darf
+     nicht nach Störung klingen: Es ist nichts kaputt, es war nur noch kein
+     Abendservice. Drei Sätze, jeder mit einer Aufgabe — was ist der Fall,
+     wann ändert es sich, und woran erkenne ich, dass doch etwas hängt. */
+  "Leer":        ["info","Der Server antwortet — angekommen ist noch keine Fassung.",
+    "Das ist am Anfang normal: Die erste Tagesfassung kommt nach dem Abendservice. "+
+    "Bis dahin ist jede Null auf dieser Seite eine Leerstelle, kein Ergebnis. "+
+    "Bleibt es leer, obwohl im Keller gefasst wurde, hängt der Vorgang noch auf dem "+
+    "Gerät — die Zeile unter dem Kopf sagt dort, wie viele warten.","neu","Nochmal nachsehen"]
 };
 function quellSchluessel(){
   if(String(QUELLE).startsWith("Datei")) return "Datei";
@@ -781,14 +787,14 @@ function quelleSatz(){
 }
 function quellBanner(m){
   const l=QUELLLAGE[quellSchluessel()]; if(!l) return;
-  const [stufe,titel,text,knopf]=l;
+  const [stufe,titel,text,knopf,knopfText]=l;
   const d=document.createElement("div");
   d.className="quellzeile "+(stufe==="warn"?"":stufe);
   d.setAttribute("role","status");
   d.innerHTML=`<div class="txt"><b>${esc(titel)}</b>${esc(text)}</div>`+
     (knopf==="tuer"
       ? `<a class="b stark" href="index.html">Zum Fassungstool</a>`
-      : `<button class="b" data-quellneu>Erneut versuchen</button>`);
+      : `<button class="b" data-quellneu>${esc(knopfText||"Erneut versuchen")}</button>`);
   const k=d.querySelector("[data-quellneu]");
   if(k) k.onclick=async()=>{ await ladeDaten(); zeichne(); };
   const erste=m.querySelector("section");
@@ -1113,7 +1119,7 @@ function vHeute(m){
     kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
       a.berichte
         ?(grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich")
-        :"kein Z-Bericht im Fenster — nicht vergleichbar",
+        :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
       a.berichte?(grob.length>4?"bad":grob.length?"warn":"ok"):"")+
     kachel("Nachbestellen", B.hat?best.length:"—",
       B.hat
@@ -1126,7 +1132,7 @@ function vHeute(m){
   const fehlt=[];
   if(!fassung) fehlt.push("Für "+deTag(tag)+" liegt keine Tagesfassung vor.");
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
-  else if(a.berichte<SPANNE) fehlt.push("Im Fenster fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
+  else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
   if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else if(minus.length) fehlt.push(minus.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
@@ -1145,7 +1151,7 @@ function vHeute(m){
        Fassung"; hier fehlte sie, und der Mittagsblick ist der Schirm, den
        die Leitung morgens zuerst sieht. */
     (a.berichte||!top.length?"":`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
-      Kein Z-Bericht im Fenster. „Verkauf“ bleibt darum 0 und die Differenz ist
+      Kein Z-Bericht im Zeitraum. „Verkauf“ bleibt darum 0 und die Differenz ist
       die reine Entnahme — das ist noch kein Abgleich.</div>`)+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
@@ -1157,7 +1163,7 @@ function vHeute(m){
       </tr>`).join("")}</tbody></table></div>`
     : `<div class="karte leer">${a.zeilen.length
         ?"Keine Abweichung über einer Flasche."
-        :"Für dieses Fenster gibt es weder Verkauf noch Entnahme — nichts zu vergleichen."}</div>`);
+        :"Weder Verkauf noch Entnahme in diesem Zeitraum — es gibt noch nichts zu vergleichen."}</div>`);
   /* Der Bestellvorschlag darunter hat „Alle ansehen" — gleiche Stelle,
      also auch hier ein Weg in die volle Ansicht. */
   if(top.length)s2.insertAdjacentHTML("beforeend",
@@ -1200,7 +1206,7 @@ function vAbgleich(m){
     <select id="selTag">${tage.map(t=>`<option value="${t}" ${t===tag?"selected":""}>${esc(deTag(t))}</option>`).join("")}</select>
     <label class="mini" style="margin-left:10px">Zeitraum</label>
     <select id="selSpanne">${[1,7,14,30].map(n=>`<option value="${n}" ${n===SPANNE?"selected":""}>${n===1?"nur dieser Tag":n+" Tage"}</option>`).join("")}</select>
-    <span class="mini">${a.berichte} Z-Bericht${a.berichte===1?"":"e"} im Fenster</span>
+    <span class="mini">${a.berichte} Z-Bericht${a.berichte===1?"":"e"} im Zeitraum</span>
     <span class="rechts"></span>
     <button class="b klein" id="bCsv">Als CSV</button>`;
   m.appendChild(w);
@@ -1210,7 +1216,7 @@ function vAbgleich(m){
 
   if(!a.berichte){
     const s=document.createElement("section");
-    s.innerHTML=`<div class="hinweis warn">In diesem Fenster liegt kein Z-Bericht vor.
+    s.innerHTML=`<div class="hinweis warn">In diesem Zeitraum liegt kein Z-Bericht vor.
       Ohne ihn zeigt die Tabelle nur die Entnahme.</div>`;
     m.appendChild(s);
   }else if(a.berichte<a.spanne){
