@@ -21,6 +21,12 @@
      voll   drei Vorgänge, darunter eine Kellerzählung.
      aus    Server antwortet nicht (503) → Rückfall auf den Gerätespeicher.
      tuer   401 → die Seite zeigt die Tür zum Fassungstool.
+     leerarchiv  Server antwortet mit null Vorgängen UND dieser Browser hat
+            noch ein Archiv. Seit Runde 3 gewinnt der Server: der
+            Gerätespeicher wird nicht mehr gelesen, die alten Vorgänge
+            verschwinden vom Schirm. Das ist der Zustand des MacBooks der
+            Leitung am ersten Morgen nach dem Livegang — ergänzt vom
+            qa-guardian in Runde 3, weil genau er vorher ungeprüft war.
 
    Ergebnis: review/screens/runde-<N>/                            */
 
@@ -126,15 +132,15 @@ async function messe(p) {
 (async () => {
   const b = await pw.chromium.launch();
   let fehler = 0;
-  for (const lage of ["leer", "voll", "aus", "lokal", "tuer"]) {
-    const srv = bau(lage === "lokal" ? "aus" : lage);
+  for (const lage of ["leer", "voll", "aus", "lokal", "tuer", "leerarchiv"]) {
+    const srv = bau(lage === "lokal" ? "aus" : lage === "leerarchiv" ? "leer" : lage);
     await new Promise(r => srv.listen(8933, r));
     for (const [g, cfg] of Object.entries(GERAETE)) {
       const ctx = await b.newContext(cfg);
       /* „Lokal": Server stumm, aber dieser Browser hat noch ein Archiv der
          Fassungsseite. Genau der Zustand, in dem die Leitung drei Runden
          lang lief, ohne dass es jemand gemerkt hat. */
-      if (lage === "lokal") await ctx.addInitScript(
+      if (lage === "lokal" || lage === "leerarchiv") await ctx.addInitScript(
         `try{localStorage.setItem("hh_archiv", ${JSON.stringify(JSON.stringify(
           Object.fromEntries(VOLL.map(v => [v.mode + "_" + v.tag, v]))))});}catch(e){}`);
       const p = await ctx.newPage();
@@ -151,6 +157,16 @@ async function messe(p) {
           fullPage: s === "heute" });
       }
       console.log(lage, g, JSON.stringify(await messe(p)));
+      if (lage === "leerarchiv") {
+        const lage2 = await p.evaluate(() => ({
+          quelle: QUELLE, gezeigt: VORGAENGE.length,
+          imSpeicher: Object.keys(JSON.parse(localStorage.getItem("hh_archiv") || "{}")).length,
+          wegZurueck: [...document.querySelectorAll("button, a")]
+            .filter(e => e.getClientRects().length && /speicher|browser|datei|gerät/i.test(e.textContent))
+            .map(e => e.textContent.trim())
+        }));
+        console.log("   ↳ Archiv im Browser:", JSON.stringify(lage2));
+      }
       /* Schmal: die Navigation ist ein Blatt — einmal aufmachen und ansehen. */
       if (g === "iphone" && (lage === "leer" || lage === "voll")) {
         await p.evaluate(() => { SEITE = "heute"; zeichne(); });

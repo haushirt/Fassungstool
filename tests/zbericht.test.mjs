@@ -103,6 +103,73 @@ describe("Z-Bericht lesen", () => {
   });
 });
 
+/* ── Die Blockwahl, und was sie kostet ───────────────────────────────────
+   Gefunden vom qa-guardian in Runde 3.
+
+   `parseZ` sucht EINE Sektion — die mit den meisten Zeilen aus Text und
+   Zahl — und liest nur diese als Positionsblock. Das ist richtig, solange
+   gastronovi alle Artikel in einem Block ausgibt, und es ist die einzige
+   Abwehr gegen den Zahlungsartenblock (Prüfung 8 oben).
+
+   Es hat aber eine Kehrseite, die niemand gesehen hat, weil
+   `tests/fixtures/` seit vier Zügen leer ist: Trennt die Kasse den
+   Abschluss nach Kostenstellen in ZWEI Sektionen („Restaurant", „Bar"),
+   dann gewinnt die grössere und die kleinere fällt LAUTLOS weg. Kein
+   Fehler, keine Meldung — im Backoffice steht eine plausible Zahl, der
+   halbe Ausschank fehlt darin.
+
+   Diese Prüfungen ÄNDERN das Verhalten nicht (Regel 7: an `gnparse.js`
+   wird nicht auf Verdacht geschraubt, und ohne echten Bericht ist jede
+   Änderung geraten). Sie halten es fest, damit der nächste es sieht statt
+   es zu entdecken. Die Entscheidung steht in
+   `review/OFFENE-ENTSCHEIDUNGEN.md`.                                    */
+describe("Z-Bericht: welcher Block gewinnt", () => {
+  const zeile = (n, a, p, u) => T(n, a, p, u);
+  const kopf = [T("Tagesabschluss Z 412", "", "", ""),
+                T("Von", "15.09.2026 06:00", "", ""),
+                T("Bis", "16.09.2026 05:59", "", "")];
+  const strich = "-----------------------------------------";
+
+  const einBlock = [...kopf, strich, T("Artikelumsätze", "", "", ""), strich,
+    zeile("GV Leindl 1/8", "12", "5,00", "60,00 €"),
+    zeile("GV Leindl 1/8", "8", "5,00", "40,00 €"),
+    zeile("Cola 0,33 l", "20", "3,50", "70,00 €")].join("\n");
+
+  const zweiBloecke = [...kopf, strich, T("Restaurant", "", "", ""), strich,
+    zeile("GV Leindl 1/8", "12", "5,00", "60,00 €"),
+    zeile("Riesling Hirsch 1/8", "9", "5,50", "49,50 €"),
+    zeile("Cola 0,33 l", "20", "3,50", "70,00 €"),
+    strich, T("Bar", "", "", ""), strich,
+    zeile("GV Leindl 1/8", "8", "5,00", "40,00 €"),
+    zeile("Gin Tonic", "14", "9,00", "126,00 €")].join("\n");
+
+  test("ein Block: alles ist drin, doppelte Namen summieren sich (Eigenheit 1)", () => {
+    const z = parseZ(einBlock);
+    assert.equal(z.positionen.length, 2);
+    assert.equal(z.positionen.find(p => p.name === "GV Leindl 1/8").anzahl, 20);
+    assert.equal(z.umsatz, 170);
+  });
+
+  test("zwei Blöcke: der kleinere fällt lautlos weg — HEUTIGES Verhalten", () => {
+    const z = parseZ(zweiBloecke);
+    assert.equal(z.block, "Restaurant", "die grössere Sektion gewinnt");
+    assert.equal(z.positionen.length, 3);
+    assert.equal(z.positionen.find(p => p.name === "GV Leindl 1/8").anzahl, 12,
+      "die 8 Achtel aus der Bar fehlen");
+    assert.equal(z.positionen.find(p => p.name === "Gin Tonic"), undefined,
+      "der Gin Tonic aus der Bar kommt gar nicht vor");
+    assert.equal(z.umsatz, 179.5, "166 € Umsatz fehlen, ohne dass es jemand merkt");
+  });
+
+  test("der Verlust ist an `sektionen` ablesbar — der Rohstoff für eine Warnung", () => {
+    const z = parseZ(zweiBloecke);
+    const andere = z.sektionen.filter(s => s.titel !== z.block && s.titel !== "(Kopf)");
+    assert.ok(andere.some(s => s.n >= 2),
+      "neben dem gewählten Block steht eine zweite Sektion mit Positionszeilen. "
+      + "Wer hier eine Warnung bauen will, hat die Zahl schon.");
+  });
+});
+
 /* ── Echte Berichte, sobald sie da sind ──────────────────────────────── */
 const dateien = listet("tests", "fixtures")
   .filter(f => /\.(csv|txt|tsv)$/i.test(f));
@@ -119,6 +186,20 @@ describe("Z-Bericht: echte Beispiele aus tests/fixtures/", { skip:
       assert.ok(z.positionen.every(p => typeof p.umsatz === "number"));
       const namen = z.positionen.map(p => p.name);
       assert.equal(new Set(namen).size, namen.length, "je Name genau eine Position");
+      /* Der Tag, an dem ein echter Bericht hier liegt, ist der Tag, an dem
+         sich die Blockwahl beweisen muss: Steht neben dem gewählten Block
+         eine zweite Sektion mit ähnlich vielen Positionszeilen, dann ist
+         der Bericht nach Kostenstellen gespalten und `parseZ` liest nur die
+         Hälfte (siehe „welcher Block gewinnt" oben). */
+      const andere = z.sektionen
+        .filter(s => s.titel !== z.block && s.titel !== "(Kopf)")
+        .filter(s => s.n >= Math.max(3, z.positionen.length / 2));
+      assert.deepEqual(andere, [],
+        "Neben dem gelesenen Block '" + z.block + "' steht mindestens eine weitere "
+        + "Sektion mit ebenso vielen Positionszeilen: " + JSON.stringify(andere)
+        + ". Dann liest parseZ nur einen Teil des Berichts. NICHT den Test lockern "
+        + "— erst entscheiden, ob beide Blöcke gelesen werden sollen "
+        + "(review/OFFENE-ENTSCHEIDUNGEN.md).");
     });
   }
 });

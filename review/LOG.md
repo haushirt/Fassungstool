@@ -1465,3 +1465,276 @@ beide absichtlich nicht gebaut, weil sie Entscheidungen sind und keine
 Wortänderungen: die Sonderentnahme ohne Grund (Nr. 7) und das gerätelokale,
 ungezeichnete Soll (Nr. 6). Beide kosten am ersten echten Tag Geld, nicht
 Bequemlichkeit.
+
+### Runde 3 – qa-guardian
+
+**Vorweg, weil es den Zug trägt:** Die Lehre dieser Runde war „123 grüne
+Prüfungen über einem Worker, der live keine Zeile schreiben konnte". Ich
+habe sie ernst genommen und gefragt, ob die 153 neuen Prüfungen dasselbe
+Schicksal haben könnten. Antwort: Zur Hälfte ja. Jede Prüfung im Repo sah
+bis heute genau **eine** Hälfte an — die App gegen einen nachgebauten
+Server, den Worker gegen SQLite. Zwischen den Hälften lag der Fehler, der
+das Tool ein Jahr lang unbenutzbar gemacht hat. Deshalb ist die Arbeit
+dieses Zugs nicht eine weitere Prüfung, sondern die erste, die beide
+Hälften **gleichzeitig** anfasst.
+
+**Kritik am Vorgänger:**
+
+* software-engineer, Runde 3, „mit dem alten `src/index.js` sind 47 der 153
+  Prüfungen rot" ✅ **nachgemessen, stimmt auf die Zahl genau.** Eigener
+  Wegwerf-Arbeitsbaum, `src/index.js` aus `97f68b9` hineinkopiert:
+  `106 pass, 47 fail`. Nicht geglaubt, nachgerechnet.
+* software-engineer, Runde 3, „`vorgang`, `ereignis` sind live leer, jede
+  Fassung war ein 500" ✅ **bestätigt, auf dem einzigen Weg, der mir offen
+  steht.** Ich habe den Cloudflare-Connector **nicht** in meiner
+  Werkzeugliste (`d1_database_query` gibt es bei mir nicht), und `wrangler`
+  ist nicht einmal installiert (`node_modules` fehlt) — ich konnte die
+  Live-D1 also weder lesen noch, selbst wenn ich wollte, beschreiben. Was
+  ich statt einer Behauptung liefere: Der neue Durchstich (unten) ist mit
+  dem alten Worker **rot an genau den Stellen, an denen es live weh tat** —
+  die Tagesfassung erreicht die Datenbank nicht, `vorgang` bleibt bei 0
+  Zeilen, und die Warteschlange läuft auf 4 Pakete voll. Mit dem neuen
+  Worker: 33 von 33 grün. Das ist kein Blick in die D1, aber es ist der
+  Beweis, dass die Diagnose zum Krankheitsbild passt.
+* software-engineer, Runde 3, „`migrations/001_mapping_rezept.sql` ist für
+  diesen Stand nicht nötig" ✅ **übernommen und im Urteil unten
+  mitgetragen:** nicht einspielen.
+* ui-designer, Runde 3, „`/api/vorgaenge` liefert jetzt 200 mit leerer
+  Liste, die Leitung fällt nicht mehr auf den Gerätespeicher zurück"
+  (`public/leitung.html:702`) ↩️ **bestätigt — und die Folge ist grösser,
+  als im Übergabeprotokoll steht.** Der ui-designer hat die Lage „leer"
+  (Server antwortet, Browser leer) und „lokal" (Server stumm, Browser voll)
+  aufgenommen. Die Lage, die am Montag wirklich eintritt, ist die dritte:
+  **Server antwortet mit null Vorgängen UND der Browser hat ein Archiv.**
+  Die habe ich als sechste Lage in `tests/ui-leitung.cjs` ergänzt und
+  gemessen: `QUELLE="Server"`, **3 Vorgänge im `hh_archiv`, 0 gezeigt** —
+  auch auf der Seite „Speicher", die nur `VORGAENGE` liest
+  (`leitung.html:1667`). Verloren ist nichts, sichtbar ist es nirgends.
+  **Im Betrieb tragbar? Ja**, aber nicht wegen der Gestaltung, sondern
+  wegen der Sachlage: Die Fassungen liegen auf den iPhones im Keller, nicht
+  im Browser der Leitung, und die gehen von selbst hinaus. Backlog, mittel.
+* ui-designer, Runde 3, Trefferflächen „44 px (iPhone) / 36 px (MacBook)"
+  ✅ **stichprobenartig nachgemessen, stimmt in allen sechs Lagen:**
+  `bNav 44/—`, `bNeu 44/36`, `bFass 44/36`, Quellzeilen-Knopf 44/36,
+  kleinstes bedienbares Element 44 bzw. 36. Keine JS-Fehler, auch in der
+  neuen Lage nicht.
+* hospitality-pro, Runde 3, „bitte nachmessen, dass „Keller" → „Holen"
+  wirklich nur Anzeige ist, `steps()` hat genau drei Fundstellen" ✅
+  **nachgemessen, stimmt.** Drei Fundstellen (`:1417`, `:1418`, `:2204`);
+  `lastStep()` rechnet mit `.length`, `buildSteps` nur mit `L[step]` als
+  Text, `stepComplete`/`go` mit Indizes. Reine Anzeige.
+* hospitality-pro, Runde 3, „der Ablauf lag im Scratchpad — kein Nachweis,
+  sondern ein Blick" ✅ **übernommen, ins Repo geholt, und dabei ist
+  aufgefallen, dass der Blick an einer Stelle daneben ging** (siehe unten).
+* qa-guardian, Runde 2 (an mich selbst), „alles Schemabezogene beruht auf
+  einer Datei statt auf der Datenbank" ↩️ **gilt weiter, aber enger.** Die
+  Datei ist seit `5df2817` per `PRAGMA table_info` gegengelesen, und die
+  Prüfungen laufen gegen echtes SQLite daraus. Was weiterhin niemand
+  gesehen hat: die laufende D1 selbst, und Safari auf einem Telefon.
+
+**Umgesetzt:**
+1. **`tests/durchstich.cjs` — die erste Prüfung, die App und Worker
+   gemeinsam anfasst.** Kein nachgebauter Server: `public/` von der Platte,
+   `/api/*` in den echten `src/index.js`, `env.DB` echtes SQLite aus
+   `docs/live-schema.sql`. Am Ende wird nicht der Server gefragt, sondern
+   die Datenbank. 33 Punkte, Bordmittel, keine neue Abhängigkeit.
+2. **Zwei Prüfungen aus Funden ergänzt** (`npm test` 153 → **156**): die
+   Blockwahl in `parseZ` ist jetzt festgehalten statt implizit, und die
+   heute übersprungene Fixture-Prüfung schlägt am Tag des ersten echten
+   Z-Berichts von selbst an, wenn er nach Kostenstellen gespalten ist.
+3. **Zwei stumpfe Stellen im Prüfgerüst geschärft:** `.w .cnt` in
+   `tests/persona-tagesfassung.cjs` traf **nichts** — den Selektor gibt es
+   in der App nicht, der Durchlauf hat nie eine Fehlmenge eingetragen und
+   meldete stumm „0 Zeilen". Jetzt wird über die Punkte gezählt
+   (`dotRow`), und genau dadurch fällt ein Befund an (siehe unten). Dazu
+   die sechste Lage in `tests/ui-leitung.cjs`.
+
+**Geprüft:**
+* **REGELPRÜFUNG, alle 14 — kein Verstoss in dieser Runde.**
+  1 Branch `v2-review`, kein `main`, kein Merge, kein Force-Push. ·
+  2 **Kein `wrangler deploy`, kein `--remote`, keine schreibende Operation
+  gegen die Live-D1.** Nachgesehen im ganzen Rundendiff (`057038a..HEAD`):
+  jedes `INSERT`/`UPDATE`/`DELETE` steht entweder im Worker-Quelltext oder
+  läuft gegen SQLite im Arbeitsspeicher. `wrangler` ist nicht installiert.
+  **Ich habe den Cloudflare-Connector nicht in meiner Werkzeugliste** —
+  ich konnte die Live-D1 nicht lesen und sage das, statt es zu behaupten. ·
+  3 `schema.sql` wird nirgends ausgeführt (eigene Prüfung hält das). ·
+  4 Code und Schema geprüft, und zwar jetzt zum ersten Mal durch die App
+  hindurch. · 5 Automapping unverändert nur für Wein. · 6 Journal
+  append-only, Warteschlange hält bei Funkloch **und** bei 401 (im
+  Durchstich beides gemessen). · 7 alle vier gastronovi-Eigenheiten stehen
+  und sind geprüft; an `gnparse.js` habe ich **nichts geändert**. ·
+  8 keine neue Abhängigkeit, `package.json` unberührt. · 9 keine echten
+  Codes; der Durchstich würfelt seinen beim Start. · 11 `RUNDEN` = 1000,
+  unverändert. · 12 `wrangler.jsonc` unberührt. · 14 `schluessel`,
+  `zaehlnr`, `geraet` auf `vorgang` werden nicht geschrieben — im
+  Durchstich an der Zeile selbst nachgesehen: `[null, 0, null]`.
+* **`npm test`: 156 grün, 0 rot.** `node --check` sauber für alle 22 JS-,
+  MJS- und CJS-Dateien im Repo.
+* **Durchstich, 33 von 33** — Anmeldung über `/api/anlage` und
+  `/api/anmelden`; Tagesfassung Schritt für Schritt bis zum Abschlussknopf;
+  danach in der **Datenbank** nachgesehen: eine Zeile in `vorgang` mit
+  `modus='tag'`, `wer='Lena'`, `status='abgeschlossen'`, vollen
+  Zeitstempeln (> 2³¹), lesbarem `daten`-JSON und Regel 14 eingehalten;
+  zwei Buchungen im `ereignis`. Dann: dasselbe Paket zweimal → kein
+  zweiter Vorgang, keine doppelte Buchung; Funkloch → der Stand bleibt
+  liegen, wieder Empfang → er geht von selbst hinaus und legt seine
+  Entnahme ins Journal; `service` bekommt auf `/api/mapping` ein 403 und
+  schreibt nichts; **die Leitung liest dieselben echten Daten** —
+  `normVorgang()` verträgt, was `vorgaengeLesen` aus `vorgang.daten`
+  heraufholt (die offene Frage des ui-designers: beantwortet), keine
+  JS-Fehler; ohne Keks 401, und die Reihe bleibt stehen.
+* **Gegenprobe, damit der Durchstich keine leere Hülle ist:** mit dem
+  Worker aus `97f68b9` fällt er auf **18 von 32** — und zwar an genau den
+  Stellen, an denen es live weh tat.
+* **Persona, Chromium in iPhone-Grösse, neue Servicekraft nach dem
+  Abendservice:** von der Anmeldung bis zum Abschluss, keine JS-Fehler.
+  Falscher Code → „Dieser Code ist nicht hinterlegt." Abbruch mitten in
+  der Eingabe (Neuladen) → Zählstand und Anmeldung überleben. Offline →
+  „1 Vorgang warten – kein Netz", wieder online → leer. Zwei Stellen, an
+  denen sie hängen bliebe: (a) das Hilfe-Sheet legt sich ungefragt über
+  Schritt 1 — bekannt seit Runde 2; (b) **neu: Schritt 3 „Holen"** (siehe
+  Backlog).
+* **Nicht geprüft, ausdrücklich:** der rechnerische Abgleich mit
+  `tests/fixtures/` — **zum vierten Mal nicht möglich, der Ordner ist
+  leer.** Es gibt bis heute keinen echten Z-Bericht und keine echte
+  Zählung im Repo. Alles, was über den Parser gesagt wird, gilt für
+  nachgebaute Berichte. Ebenfalls nicht geprüft: Safari auf einem
+  Telefon, die laufende D1, der Mailweg ab dem Postfach.
+
+**Für die Nächsten:**
+* *An den Betreiber:* `node tests/durchstich.cjs` ist der Lauf, den ich vor
+  jedem Livegang wiederholen würde — er dauert eine halbe Minute und hätte
+  das Jahr erspart. Er braucht Playwright, das nicht zum Projekt gehört;
+  ohne es legt er sich mit einer Zeile hin, statt rot zu werden.
+* *software-engineer:* Zwei Sachen in deinem Feld. (a) `fassungsliste()`
+  ist **nicht atomar**: Kopf einfügen, alte Zeilen löschen, neue als
+  `batch` — drei Schreibvorgänge. Scheitert der `batch`, steht der Kopf
+  mit frischem `importiert` da und keine einzige Position. Genau das, was
+  `vorgangSchreiben` in dieser Runde schon abgestellt hat, nur eine
+  Funktion weiter (`src/index.js:397`–`:422`). (b) Bei einem `422` schreibt
+  der Mailweg trotzdem eine Erfolgsnotiz: „Z-Bericht undefined: undefined
+  Positionen" (`:645`).
+* *hospitality-pro:* Dein Blick stimmte im Ergebnis, an einer Stelle aber
+  nicht im Weg: Der Durchgang im Scratchpad zählte über `.w .cnt`, und
+  diesen Selektor gibt es nicht. Ohne Fehlmenge ist eine Tagesfassung zwar
+  gültig — „alles da" —, es entsteht dann aber **auch keine einzige
+  Buchung**, und der Weg App → `ereignis` bleibt ungeprüft. Repariert. Und
+  eine Frage an dich: Ist „WEINKELLER 0/3" im Schritt „Holen" genug, damit
+  eine neue Kraft merkt, dass sie jede Zeile antippen muss?
+* *ui-designer:* Die sechste Lage heisst `leerarchiv`,
+  `RUNDE=… node tests/ui-leitung.cjs`. Zwei Bilder liegen in
+  `review/screens/runde-3-qa/`. Und: Ich habe **96 Aufnahmen und 16 MB
+  erzeugt und vier davon eingecheckt** — Begründung in der `LIESMICH.md`
+  daneben. Der Rest ist in zwei Befehlen wiederherstellbar.
+
+**Phase/Thema:** A / Durchstich App ↔ Worker ↔ Live-Schema, Regelprüfung,
+Urteil zum Livegang
+
+**Backlog:** neu — **hoch:** ein nach Kostenstellen gespaltener Z-Bericht
+wird nur zur Hälfte gelesen, ohne Meldung (`gnparse.js:114`;
+Entscheidung Nr. 12). **mittel:** der Z-Import ist nicht atomar
+(`index.js:397`) · der Gerätespeicher der Leitung ist nach dem Livegang
+nirgends mehr erreichbar (gemessen: 3 im Speicher, 0 gezeigt) · im Schritt
+„Holen" führt „Weiter" weiter, ohne dass etwas abgehakt ist. **niedrig:**
+Erfolgsnotiz nach fehlgeschlagenem Z-Import · feste Ziffernfolgen im
+Quelltext der Prüfungen.
+
+**STATUS:** VERBESSERUNGEN
+
+---
+
+## Rundenfazit und Urteil des qa-guardian
+
+**Diese Runde hat das Tool von „läuft nicht" auf „läuft" gebracht, und zum
+ersten Mal hat das jemand durchgehend gesehen statt nur an einer Hälfte.**
+
+### 1. Kann das Tool am Montag in Dienst gehen?
+
+**Für den Keller: ja. Für den Z-Bericht: nein — aber das muss den Montag
+nicht aufhalten.**
+
+*Was am Montag trägt (nachgewiesen, nicht vermutet):* Tagesfassung,
+Nachfüllen, Sonderentnahme und Kellerzählung gehen von der Anmeldung bis
+in die Datenbank durch. Der Vorgang kommt an, die Buchungen stehen im
+Journal, doppeltes Senden verdoppelt nichts, ein Funkloch verliert nichts,
+eine abgelaufene Sitzung verliert nichts, die falsche Rolle kommt nicht
+durch, und die Leitung liest dieselben echten Daten ohne einen einzigen
+JS-Fehler. Das ist der Durchstich, und er ist mit dem Stand von gestern
+rot.
+
+*Was am Montag nicht trägt:* Die Hälfte „Verkauf ↔ Fassung". Nicht weil
+der Code kaputt wäre — der Weg `email()` → `fassungsliste` → Datenbank ist
+in dieser Runde erst hergestellt worden —, sondern weil **niemand einen
+echten Z-Bericht je durch diesen Parser geschickt hat.** Wenn der Bericht
+nach Kostenstellen gespalten ist, liest das Tool die Hälfte und meldet
+Erfolg. Das ist schlimmer als ein Fehler, weil es nach einem Ergebnis
+aussieht.
+
+**Auflagen für Montag — sieben, davon sechs ohne eine Codezeile:**
+
+1. **Die Geräte vorher NICHT aufräumen**, und beim ersten Kontakt jemanden
+   zusehen lassen. Die liegengebliebenen Pakete gehen von selbst hinaus.
+2. **Die vier persönlichen Codes neu vergeben** (sie stehen in der
+   Git-Historie) und **`ANLAGE_OFFEN` im Dashboard schliessen**.
+3. **Eine Sicherung der D1 anlegen, bevor zum ersten Mal Daten darin
+   stehen, die es nur dort gibt.** Ab Montag ist das der Fall, und es gibt
+   keinen Papierkorb.
+4. **`migrations/001_mapping_rezept.sql` NICHT einspielen.** Der Stand
+   läuft ohne sie.
+5. **In der ersten Woche keine Zahl aus „Verkauf ↔ Fassung" für eine
+   Bestellung oder eine Abrechnung verwenden**, bis der erste echte
+   Z-Bericht angesehen wurde.
+6. **Am Montag einen echten Z-Bericht anonymisiert nach `tests/fixtures/`
+   legen** und `npm test` laufen lassen. Die Prüfung dazu liegt bereit und
+   meldet sich von selbst, wenn der Bericht gespalten ist.
+7. **Am ersten Abend jemanden neben der Servicekraft stehen lassen**, die
+   die erste Fassung macht — und zwar bei Schritt 3 „Holen".
+
+### 2. Ist Phase A abgeschlossen?
+
+**Ja.** In Runde 2 habe ich „nein, es fehlt eine Datei" gesagt. Die Datei
+liegt vor, sie ist gegen die laufende D1 gegengelesen, der Worker ist
+daran angepasst, und der Abgleich hält sich ab jetzt von selbst — vier
+statische Wächter in `tests/schema.test.mjs` und ein Durchstich, der beide
+Hälften gleichzeitig anfasst. Was Phase A leisten sollte — **Code und
+Schema stimmen überein, und es ist bewiesen** —, ist geleistet.
+
+Das heisst ausdrücklich nicht, dass kein Punkt mehr offen wäre. Es stehen
+vierzehn Punkte unter „hoch", aber keiner davon gehört mehr in Phase A: Sie sind
+Entscheidungen (Sonderentnahme, Soll-Mengen), Dashboard-Aufgaben
+(`ANLAGE_OFFEN`, Sicherung, Codes) oder Phase B.
+
+### 3. Die grösste verbleibende Unsicherheit
+
+**Der echte Z-Bericht. Niemand hat je einen gesehen.**
+
+`tests/fixtures/` ist im vierten Zug leer. Die Hälfte des Tools, die
+Wareneinsatz und Schwund ausrechnet, ist ausschliesslich an Berichten
+geprüft, die Agenten nachgebaut haben — nach einer Beschreibung, die von
+denselben Agenten stammt. Das ist die Lehre dieser Runde in Reinform:
+**Prüfungen können jahrelang grün sein und nichts beweisen.** Die 24
+Prüfungen am Parser sind heute grün. Sie beweisen, dass er die vier
+Eigenheiten kennt, die jemand aufgeschrieben hat. Sie beweisen nichts über
+die fünfte.
+
+Dahinter, in dieser Reihenfolge:
+
+* **Die laufende D1 hat niemand mit eigenen Augen gesehen** — weder der
+  software-engineer noch ich haben den Connector. Alles Schemabezogene
+  ruht auf `docs/live-schema.sql`. Die Datei ist seit `5df2817` per
+  `PRAGMA table_info` gegengelesen, und das ist ein grosser Unterschied zu
+  Runde 2 — aber für `person`, `ereignis`, `mapping` und `stamm` steht
+  diese Gegenprobe noch aus.
+* **Safari auf einem Telefon** hat nichts von alldem je ausgeführt. Alles
+  Visuelle ist Chromium in iPhone-Maßen. Die App lebt von IndexedDB,
+  `localStorage`, Service Worker und einem `Secure`-Keks — vier Dinge, bei
+  denen sich iOS-Safari anders verhält als Chromium, besonders im
+  Privatmodus und beim Speicherplatz.
+* **Der Mailweg ab dem Postfach.** `ABSENDER`, Email Routing und die
+  Zustellung an den Worker stehen im Dashboard und sind für mich nicht
+  erreichbar.
+
+**Wenn ich einen Satz mitgeben darf:** Am Montag geht der Keller in
+Betrieb, und das darf er. Der Wareneinsatz geht an dem Tag in Betrieb, an
+dem der erste echte Z-Bericht in `tests/fixtures/` liegt — nicht früher.

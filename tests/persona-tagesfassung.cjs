@@ -182,8 +182,12 @@ async function hilfeWeg(p, wo) {
   if (tor) { await p.locator('.gbtn[data-b="wein"]').click(); await p.waitForTimeout(400); }
   await bild(p, "schritt1-wein");
 
-  /* Fehlmengen eintragen: die Plus-Knöpfe der ersten drei Zeilen. */
-  const plus = p.locator(".w .cnt");
+  /* Fehlmengen eintragen. ACHTUNG, Fund des qa-guardian in Runde 3: hier
+     stand `.w .cnt` — diesen Selektor gibt es in der App nicht, der Zähler
+     traf nie etwas und meldete stumm „0 Zeilen". Gezählt wird mit den
+     Punkten (`dotRow`): voll ist der Anfang, der Punkt mit dem Index i
+     heisst „noch i+1 da". Der zweite Punkt bei Soll 3 ist „eine fehlt". */
+  const plus = p.locator('.w .dot[data-i="1"]');
   const wieViele = await plus.count();
   console.log("   Zeilen im Weinzweig:", wieViele);
   for (let i = 0; i < Math.min(3, wieViele); i++) { await plus.nth(i).click(); await p.waitForTimeout(80); }
@@ -214,7 +218,7 @@ async function hilfeWeg(p, wo) {
   await hilfeWeg(p, "Schritt 1 nach Abbruch");
   const p2 = p.locator(".gbtn");
   if (await p2.count()) { await p2.first().click(); await p.waitForTimeout(300); }
-  const plus2 = p.locator(".w .cnt");
+  const plus2 = p.locator('.w .dot[data-i="1"]');
   for (let i = 0; i < Math.min(2, await plus2.count()); i++) { await plus2.nth(i).click(); await p.waitForTimeout(80); }
   await p.evaluate(() => { if (typeof sammle === "function") sammle();
                            if (typeof zwischenstand === "function") zwischenstand();

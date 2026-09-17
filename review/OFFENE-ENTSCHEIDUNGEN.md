@@ -521,3 +521,66 @@ Zwei Dinge dazu aus der Praxis:
   0,75 l" bekämen zwei verschiedene `kern`. Ob das im Haus vorkommt, sagt
   der erste echte Z-Bericht – **nicht vorab erweitern**, sondern am echten
   Bericht ablesen und dann eine Zeile ändern. → Backlog, niedrig.
+
+---
+
+## 12. Ein Z-Bericht, zwei Blöcke — welcher gewinnt?
+
+*Gefunden vom qa-guardian, Runde 3. Das ist aus meiner Sicht die grösste
+offene Unsicherheit vor dem Livegang.*
+
+`parseZ` sucht **eine** Sektion — die mit den meisten Zeilen aus Text und
+Zahl — und liest nur diese als Positionsblock (`src/gnparse.js:114–120`).
+Das ist bewusst so: Es ist die einzige Abwehr dagegen, den
+Zahlungsartenblock für die Artikel zu halten (`tests/zbericht.test.mjs`,
+Prüfung 8), und es ist richtig, solange gastronovi alle Artikel in einem
+Block ausgibt.
+
+**Gibt die Kasse den Abschluss aber nach Kostenstellen in zwei Sektionen
+aus — „Restaurant" und „Bar" —, dann gewinnt die grössere und die kleinere
+fällt lautlos weg.** Nachgestellt und gemessen:
+
+| | eine Sektion | zwei Sektionen |
+|---|---|---|
+| gelesener Block | „Artikelumsätze" | „Restaurant" |
+| Positionen | 2 | 3 |
+| GV Leindl 1/8 | 20 | **12** (8 aus der Bar fehlen) |
+| Gin Tonic | – | **fehlt ganz** |
+| Umsatz | 170,00 € | 179,50 € statt 345,50 € |
+
+Kein Fehler, keine Meldung, kein 422. Im Backoffice steht eine plausible
+Zahl, und „Verkauf ↔ Fassung" vergleicht den halben Ausschank mit der
+ganzen Fassung — jede Nacht, in dieselbe Richtung. Wer das für Schwund
+hält, sucht im Keller nach etwas, das an der Bar verkauft wurde.
+
+**Was dagegen spricht, es jetzt einfach zu ändern:** Regel 7 sagt
+ausdrücklich, dass an `gnparse.js` nicht auf Verdacht geschraubt wird, und
+`tests/fixtures/` ist im vierten Zug leer. Ich weiss nicht, wie ein echter
+Bericht aus diesem Haus aussieht. Jede Erweiterung („nimm alle Sektionen
+mit Positionszeilen") riskiert, den Zahlungsartenblock oder die
+Trinkgeldliste mit einzulesen — und das wäre schlimmer als das heutige
+Verhalten, weil es Umsatz **erfindet** statt ihn zu verlieren.
+
+**Was ich stattdessen getan habe:** Das Verhalten ist jetzt festgehalten
+statt implizit (`tests/zbericht.test.mjs`, Block „welcher Block gewinnt",
+drei Prüfungen). Und die Fixture-Prüfung, die heute übersprungen wird,
+schlägt am Tag des ersten echten Berichts von selbst an, wenn neben dem
+gelesenen Block eine zweite Sektion mit ebenso vielen Positionszeilen
+steht. Der Text der Fehlermeldung sagt dann ausdrücklich: **nicht die
+Prüfung lockern, sondern hier entscheiden.**
+
+**Zu entscheiden ist:**
+
+1. **Ein echter (anonymisierter) Z-Bericht nach `tests/fixtures/`.** Ohne
+   ihn ist alles oben eine Möglichkeit, keine Tatsache. Das ist die
+   billigste Antwort auf die teuerste offene Frage.
+2. Falls der Bericht gespalten ist: Sollen **beide** Blöcke gelesen und
+   je Positionsname summiert werden (das wäre Eigenheit 1 aus Regel 7,
+   nur eine Ebene höher)? Oder soll je Kostenstelle eine eigene
+   `fassungsliste`-Zeile entstehen? Letzteres widerspricht der Antwort
+   des hospitality-pro zu Nr. 11 („ein Eintrag je Tag") und wäre ein
+   grösserer Eingriff.
+3. Unabhängig davon: Soll der Import melden, wie viele Positionszeilen
+   **ausserhalb** des gelesenen Blocks standen? Die Zahl liegt schon vor
+   (`parseZ(...).sektionen`), es wäre eine Zeile in der Journalnotiz. Das
+   macht den Fall sichtbar, ohne das Verhalten zu ändern.
