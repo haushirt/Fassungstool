@@ -397,15 +397,27 @@ async function bestand(env) {
     if (r.art === "zaehlung") { zaehlTag[r.artikel] = r.tag; gezaehlt[r.artikel] = r.ts; }
   });
 
-  const b = {};
+  const b = {}, unklar = {};
   results.forEach(r => {
     if (r.art === "zaehlung") { b[r.artikel] = r.menge; return; }
     const basis = zaehlTag[r.artikel];
     if (basis == null) return;                        // ohne Zählung kein Bestand
     if ((r.tag || "") < basis) return;                // vor dem Zähltag zählt nicht
+    /* Wareneingang AM Zähltag: nicht entscheidbar, ob die Zählung ihn schon
+       enthält — `ts` ist die Ankunftszeit beim Server, nicht der Zeitpunkt
+       im Keller. Bis v29 wurde er addiert und damit möglicherweise doppelt
+       gezählt. Seit v30 gilt die Zählung als die härtere Tatsache: nicht
+       addieren, sondern in `unklar` ausweisen (Menge je Artikel), damit das
+       Backoffice es an der Zahl sagen kann. Entnahmen desselben Tages
+       zählen unverändert nach der Zählung. Gleiche Regel in
+       `public/leitung.html`, `bestand()`. */
+    if (r.art === "eingang" && (r.tag || "") === basis) {
+      unklar[r.artikel] = (unklar[r.artikel] || 0) + r.menge;
+      return;
+    }
     b[r.artikel] = (b[r.artikel] || 0) + (r.art === "eingang" ? r.menge : -r.menge);
   });
-  return json({ bestand: b, gezaehlt });
+  return json({ bestand: b, gezaehlt, unklar });
 }
 
 /* ── Fassungsliste ─────────────────────────────────────────────────────

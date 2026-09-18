@@ -29,6 +29,15 @@
    Die Falle bleibt: `tag > Zähltag` ALLEIN ist falsch — was am Abend des
    Zähltags gefasst wird, fiele sonst unter den Tisch.
 
+   Nachtrag v30 (er verengt Punkt 8 an einer Stelle): Für den WARENEINGANG
+   desselben Betriebstages gilt „zählt danach" NICHT. Ob die Zählung die
+   Lieferung schon gesehen hat, ist nicht feststellbar — `ts` ist die
+   Ankunftszeit beim Server, und die Zählung trägt keinen erfassten
+   Zeitpunkt. Seit v30 wird eine Lieferung des Zähltages deshalb nicht
+   addiert (sonst zählte sie doppelt: 34 statt 10), sondern als `unklar`
+   ausgewiesen; das Backoffice sagt es an der Zahl. Entnahmen desselben
+   Tages zählen unverändert nach der Zählung.
+
    Geprüft wird derselbe Datensatz auf beiden Wegen: einmal echt durch den
    Worker (`/api/bestand`, SQLite aus `docs/live-schema.sql`), einmal durch
    `bestand()` aus dem ausgelieferten `leitung.html`.                     */
@@ -98,7 +107,7 @@ async function spiele(schritte) {
   }
   const r = await worker.fetch(anfrage("/api/bestand", { keks }), env);
   const j = await r.json();
-  return { worker: j.bestand, backoffice: B.rechne(liste) };
+  return { worker: j, backoffice: B.rechne(liste) };
 }
 
 const zaehlung = (tag, reihen, einzel) => ({
@@ -116,25 +125,32 @@ const tagesfassung = (tag, n) => ({
 });
 
 describe("Betriebstag, dann Kellerzählung: eine Reihenfolge für beide Fassungen", () => {
-  test("vormittags gezählt, mittags geliefert → 34 in beiden", async () => {
+  test("vormittags gezählt, mittags geliefert → 10 und eine Angabe", async () => {
+    /* Bis v29 stand hier 34 — die Lieferung wurde auf die Zählung
+       addiert. Sie kann aber längst im Keller gestanden haben, als
+       gezählt wurde: `ts` ist die Ankunftszeit beim Server, nicht der
+       Zeitpunkt im Keller. Seit v30 zählt die Zählung, die Lieferung des
+       Zähltages wird ausgewiesen statt addiert (`unklar`). */
     const e = await spiele([zaehlung(TAG, 1, 4), lieferung(TAG, 2, 12)]);
-    assert.equal(e.worker.w003, 34, "Worker");
-    assert.equal(e.backoffice.B.b.w003, 34, "Backoffice");
-    assert.equal(e.backoffice.B.seit.ein.w003, 24,
-      "der Banner darf nicht „Seither 0 Flaschen eingegangen“ sagen");
+    assert.equal(e.worker.bestand.w003, 10, "Worker");
+    assert.equal(e.backoffice.B.b.w003, 10, "Backoffice");
+    assert.equal(e.worker.unklar.w003, 24, "Worker weist die Lieferung aus");
+    assert.equal(e.backoffice.B.unklar.w003, 24, "Backoffice weist sie ebenso aus");
+    assert.equal(e.backoffice.B.seit.ein.w003, undefined,
+      "sie darf nicht als „seither eingegangen“ gelten — sie ist nicht gerechnet");
   });
 
   test("die Falle: am Morgen gezählt, am Abend desselben Tages gefasst", async () => {
     /* `tag > Zähltag` allein würde diese Entnahme verschlucken. */
     const e = await spiele([zaehlung(TAG, 2, 0), tagesfassung(TAG, 3)]);
-    assert.equal(e.worker.w003, 9, "Worker: 12 − 3");
+    assert.equal(e.worker.bestand.w003, 9, "Worker: 12 − 3");
     assert.equal(e.backoffice.B.b.w003, 9, "Backoffice: 12 − 3");
     assert.equal(e.backoffice.B.seit.raus.w003, 3);
   });
 
   test("was VOR der Zählung liegt, zählt in beiden Fassungen nicht", async () => {
     const e = await spiele([lieferung(VORTAG, 2, 12), zaehlung(TAG, 1, 4)]);
-    assert.equal(e.worker.w003, 10, "Worker: die Zählung ist die Wahrheit");
+    assert.equal(e.worker.bestand.w003, 10, "Worker: die Zählung ist die Wahrheit");
     assert.equal(e.backoffice.B.b.w003, 10, "Backoffice");
     assert.equal(e.backoffice.B.seit.ein.w003, undefined);
   });
@@ -142,13 +158,15 @@ describe("Betriebstag, dann Kellerzählung: eine Reihenfolge für beide Fassunge
   test("ganzer Tagesablauf: zählen, liefern, fassen, nachfüllen", async () => {
     const e = await spiele([
       zaehlung(TAG, 1, 4),          /* 10 */
-      lieferung(TAG, 2, 12),        /* +24 → 34 */
-      tagesfassung(TAG, 6),         /* −6  → 28 */
+      lieferung(TAG, 2, 12),        /* am Zähltag: nicht gerechnet, ausgewiesen */
+      tagesfassung(TAG, 6),         /* −6  → 4 */
       { mode: "nach", tag: TAG, name: "Asad", geraet: "ipad-1", zaehlnr: 1,
-        finished: true, ent: { w003: 2 }, gent: {}, gzusatz: {} }   /* −2 → 26 */
+        finished: true, ent: { w003: 2 }, gent: {}, gzusatz: {} }   /* −2 → 2 */
     ]);
-    assert.equal(e.worker.w003, 26, "Worker");
-    assert.equal(e.backoffice.B.b.w003, 26, "Backoffice");
+    assert.equal(e.worker.bestand.w003, 2, "Worker");
+    assert.equal(e.backoffice.B.b.w003, 2, "Backoffice");
+    assert.equal(e.worker.unklar.w003, 24, "die Lieferung des Zähltages steht daneben");
+    assert.equal(e.backoffice.B.unklar.w003, 24, "Backoffice");
   });
 
   test("Fall 2 · die Zählung kommt erst am nächsten Morgen herauf", async () => {
@@ -158,7 +176,7 @@ describe("Betriebstag, dann Kellerzählung: eine Reihenfolge für beide Fassunge
        danach. Bis v28 rechneten beide Fassungen 10 (die Entnahme fiel
        ganz weg) und der Banner sagte „Seither 0 Flaschen entnommen". */
     const e = await spiele([tagesfassung(TAG, 6), zaehlung(TAG, 1, 4)]);
-    assert.equal(e.worker.w003, 4, "Worker: 10 − 6");
+    assert.equal(e.worker.bestand.w003, 4, "Worker: 10 − 6");
     assert.equal(e.backoffice.B.b.w003, 4, "Backoffice: 10 − 6");
     assert.equal(e.backoffice.B.seit.raus.w003, 6);
   });
@@ -187,26 +205,48 @@ describe("Betriebstag, dann Kellerzählung: eine Reihenfolge für beide Fassunge
        schließen soll. */
     const e = await spiele([tagesfassung(VORTAG, 0), tagesfassung(TAG, 6),
                             zaehlung(VORTAG, 1, 4)]);
-    assert.equal(e.worker.w003, 4, "Worker: die Zählung vom 15. ist die Basis");
+    assert.equal(e.worker.bestand.w003, 4, "Worker: die Zählung vom 15. ist die Basis");
     assert.equal(e.backoffice.B.b.w003, 4, "Backoffice");
   });
 
-  test("die Lieferung des Zähltages zählt, gleich wann sie ankommt", async () => {
-    /* Beide Reihenfolgen ergeben dieselbe Zahl — das ist der Preis von
-       Punkt 8 und ausdrücklich in Kauf genommen: Kommt die Lieferung VOR
-       der Zählung desselben Tages herein, wird sie trotzdem obendrauf
-       gerechnet. Ein Tag mit Zählung UND Lieferung ist selten, ein Tag
-       mit spät hochkommender Zählung ist der Normalfall. Umgekehrt fiel
-       bis Runde 8 die Lieferung des Zähltages ganz weg (Fund A/6-4). */
+  test("Fall 7 · die Lieferung des Zähltages wird ausgewiesen, nicht addiert", async () => {
+    /* Der eine Fall, den keine Reihenfolge entscheiden kann: Stand die
+       Lieferung schon im Keller, als gezählt wurde, oder kam sie danach?
+       Die Ankunftszeit beim Server sagt es nicht (genau deshalb rechnet
+       seit v29 niemand mehr mit ihr) — und die Zählung selbst trägt
+       keinen erfassten Zeitpunkt.
+
+       Bis v29 wurde addiert: 10 gezählte + 24 gelieferte = 34, obwohl die
+       24 in den 10 schon enthalten sein können. Seit v30 gilt die Zählung
+       als die härtere Tatsache (sie hat die Flaschen gesehen), die
+       Lieferung des Zähltages steht daneben als Angabe. Die Zahl ist damit
+       im Zweifel zu niedrig statt zu hoch: jemand geht nachsehen, statt
+       dass eine Bestellung ausbleibt.
+
+       Beide Ankunftsreihenfolgen ergeben dieselbe Zahl — das ist der
+       Sinn der Regel. */
     const nachher = await spiele([zaehlung(TAG, 1, 4), lieferung(TAG, 2, 12)]);
-    assert.equal(nachher.worker.w003, 34);
-    assert.equal(nachher.backoffice.B.b.w003, 34);
+    assert.equal(nachher.worker.bestand.w003, 10);
+    assert.equal(nachher.backoffice.B.b.w003, 10);
 
     const vorher = await spiele([lieferung(TAG, 2, 12), zaehlung(TAG, 1, 4)]);
-    assert.equal(vorher.worker.w003, 34, "Worker");
-    assert.equal(vorher.backoffice.B.b.w003, 34, "Backoffice — dieselbe Zahl");
+    assert.equal(vorher.worker.bestand.w003, 10, "Worker");
+    assert.equal(vorher.backoffice.B.b.w003, 10, "Backoffice — dieselbe Zahl");
+    assert.equal(vorher.worker.unklar.w003, 24, "Worker weist die Menge aus");
+    assert.equal(vorher.backoffice.B.unklar.w003, 24, "Backoffice ebenso");
     assert.deepEqual(Array.from(vorher.backoffice.reihe), ["keller", "ware"],
       "die Kellerzählung steht als Erstes ihres Betriebstages");
+  });
+
+  test("eine Lieferung NACH dem Zähltag zählt weiterhin ganz normal", async () => {
+    /* Die Gegenprobe zur neuen Regel: nur der Zähltag SELBST ist unklar.
+       Am Tag danach hat die Zählung die Flaschen sicher nicht gesehen. */
+    const e = await spiele([zaehlung(VORTAG, 1, 4), lieferung(TAG, 2, 12)]);
+    assert.equal(e.worker.bestand.w003, 34, "Worker: 10 + 24");
+    assert.equal(e.backoffice.B.b.w003, 34, "Backoffice: 10 + 24");
+    assert.equal(e.backoffice.B.seit.ein.w003, 24, "und der Banner nennt sie");
+    assert.equal(e.worker.unklar.w003, undefined, "nichts auszuweisen");
+    assert.equal(e.backoffice.B.unklar.w003, undefined);
   });
 
   test("ein laufender Stand ohne Zeitstempel zählt nach der Zählung seines Tages", () => {

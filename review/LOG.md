@@ -2327,3 +2327,68 @@ rechnen jetzt nachweislich gleich — die Leitung sollte `/api/bestand` lesen.
 
 **STATUS:** VERBESSERUNGEN — die drei A-Funde sind zu, der Preis von
 Entscheidung Nr. 8 ist neu und gehört vor dem Livegang entschieden.
+
+---
+
+### Runde 11 – software-engineer (der Preis von Entscheidung Nr. 8)
+
+**Kritik am Vorgänger (Runde 10, dieselbe Rolle):**
+* ↩️ geändert: Entscheidung Nr. 8 („Zählung zuerst") wurde auch auf den
+  **Wareneingang** desselben Betriebstages angewandt. Damit wurde eine
+  Lieferung, die schon im Keller stand, als gezählt wurde, ein zweites Mal
+  addiert — gemessen 34 statt 10. Jetzt konservativ: nicht addieren, sondern
+  ausweisen (Entscheidung Nr. 10 der Nacht).
+* ❗ **Die Basislinie „274 grün" war nicht stabil.** `tests/modi.test.mjs:194`
+  („gleiche Millisekunde … BEKANNT") hing an der Uhr des Rechners und fiel in
+  zwei von sechs Läufen — ohne Zutun. Seit v29 war die Prüfung ohnehin
+  gegenstandslos. Ersetzt durch eine feste Zusicherung. **Damit ist auch meine
+  eigene Abnahme von Runde 10 zu korrigieren: „274 grün" war ein Wert, der
+  nicht jedes Mal herauskam.**
+* ✅ übernommen: Entnahmen desselben Tages zählen unverändert nach der
+  Zählung; die Fälle 1 bis 6 behalten ihre Zahlen, nachgemessen.
+
+**Umgesetzt:**
+1. Ein Wareneingang am Zähltag wird nicht mehr auf den gezählten Bestand
+   addiert, sondern je Artikel als `unklar` ausgewiesen — wortgleiche Regel in
+   `public/leitung.html` und `src/index.js`; `/api/bestand` gibt jetzt
+   `{bestand, gezaehlt, unklar}`.
+2. Das Backoffice sagt es an der Zahl: ein neutraler Satz über der Tabelle und
+   derselbe Satz mit seiner Menge in der Zeile jedes betroffenen Weins — „Am
+   Zähltag wurden 24 Flaschen … geliefert — ob die Zählung sie schon enthält,
+   ist nicht feststellbar. Sie sind im Bestand nicht mitgerechnet."
+3. `tests/reihenfolge.test.mjs` rechnet Worker und Backoffice auch für Fall 7
+   gegeneinander, dazu die Gegenprobe „Lieferung NACH dem Zähltag zählt ganz
+   normal". `sw.js` v29 → v30.
+
+**Die sieben Fälle, v29 → v30** (Worker / Backoffice):
+Fall 1 4/4 → 4/4 · Fall 2 4/4 → 4/4 · Fall 3 —/4 → —/4 · Fall 4 —/4 → —/4 ·
+Fall 5 10/10 → 10/10 · Fall 6 4/4 → 4/4 ·
+**Fall 7 34/34 → 10/10 mit `unklar {w003: 24}`** · Fall 7b ebenso.
+
+**Geprüft:** `npm test` **275 grün**, von mir **viermal hintereinander**
+nachgelaufen (wegen des Flackerns oben) — jedes Mal 275/0.
+`durchstich` 35/35 · `ui-leitung-echt` 40/40 · `ui-zweiter-vorgang` 15/15 ·
+`ui-fremdgeraet` 10/10 · `LAUF=runde-11 node tests/ui-mass.cjs` alle Urteile ✓.
+**Ungeprüft:** echtes Safari/iPad; die neuen Sätze nur als HTML geprüft, nicht
+als Bild; `bestellliste` und Mittagsblick wurden nicht angefasst — sie rechnen
+auf der niedrigeren Zahl und können eine Bestellung vorschlagen, die gerade
+geliefert wurde.
+
+**Für die Nächsten:**
+* **Berichtigung meiner eigenen Annahme aus Runde 10:** `vorgang.begonnen`
+  trägt **nicht** den echten Zählzeitpunkt. `src/index.js:205` bindet dort
+  `jetzt`, also die Ankunftszeit des ersten Pakets (`begonnen = geaendert`
+  beim INSERT); die App legt in `blank()` gar keinen Startzeitpunkt ab. Der
+  saubere Weg wäre zweiteilig — die App schreibt beim Anlegen einen
+  Gerätezeitpunkt in den Vorgang, der Worker führt ihn nach `begonnen` und ins
+  Journal. Erst dann ist Fall 7 entscheidbar statt ausweisbar. Umbau, gehört in
+  den Morgenbrief.
+
+**Phase/Thema:** A / Bestandsreihenfolge, Wareneingang am Zähltag
+
+**Backlog:** „Lieferung vor der Zählung zählt doppelt" ist mit v30 zu. Neu
+unter „mittel": Nachbestellen und Mittagsblick nennen die nicht gerechnete
+Menge nicht; erfasster Zählzeitpunkt statt Ankunftszeit.
+
+**STATUS:** VERBESSERUNGEN — Fall 7 ist entschärft und ausgewiesen; offen
+bleiben der erfasste Zählzeitpunkt und die Angabe in der Bestellliste.

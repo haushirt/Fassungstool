@@ -191,19 +191,22 @@ describe("Die fünf Modi im Journal", { skip: SCHEMA_DA ? false :
         "gezählt 10, geliefert 24, entnommen 4");
     });
 
-  test("gleiche Millisekunde: die Bewegung fällt heraus — BEKANNT (Nr. 15)",
+  test("gleiche Millisekunde ändert nichts mehr — Nr. 15 ist entschieden",
     async () => {
-      /* `bestand()` ordnet allein über `ereignis.ts`, und `ts` ist die
-         Zeit des SCHREIBENS. Treffen Zählung und Lieferung in derselben
-         Millisekunde ein — und genau das tun sie, wenn die Geräte nach
-         einem Funkloch ihre Warteschlange auf einmal nachschicken —, dann
-         verwirft `r.ts <= basis` die Bewegung.
+      /* Bis v28 ordnete `bestand()` allein über `ereignis.ts`, und `ts`
+         ist die Zeit des SCHREIBENS. Trafen Zählung und Lieferung in
+         derselben Millisekunde ein — genau das tun sie, wenn die Geräte
+         nach einem Funkloch ihre Warteschlange auf einmal nachschicken —,
+         verwarf `r.ts <= basis` die Bewegung.
 
-         Diese Prüfung ÄNDERT nichts, sie hält den Zustand fest: Die
-         Rechnung anzufassen hat eine fachliche Folge (zählt der
-         Betriebstag oder der Zeitstempel?) und gehört dem Betreiber —
-         `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 15. Wird sie rot, ist die
-         Entscheidung umgesetzt und der Text hier gegenstandslos. */
+         Seit v29 ordnet die Rechnung nach BETRIEBSTAG (Entscheidung Nr. 8,
+         sie erledigt Nr. 15): 14.09. gezählt, 15.09. geliefert — ein
+         späterer Tag, also zählt die Lieferung, gleich welchen Stempel die
+         beiden Zeilen tragen. Bis zu dieser Runde stand hier eine
+         Fallunterscheidung auf `zeilen[0].ts === zeilen[1].ts`; die war
+         seit v29 gegenstandslos und machte die Prüfung von der Uhr des
+         Rechners abhängig (rot, sobald beide Zeilen in dieselbe
+         Millisekunde fielen — rund jeder dritte Lauf). */
       const { env, keks } = await haus();
       await senden(env, keks, "keller_2026-09-14", {
         mode: "keller", tag: "2026-09-14", name: "Asad",
@@ -216,11 +219,9 @@ describe("Die fünf Modi im Journal", { skip: SCHEMA_DA ? false :
 
       const j = await (await worker.fetch(anfrage("/api/bestand", { keks }), env)).json();
       const zeilen = env.DB.zeilen("ereignis").filter(r => r.artikel === "w003");
-      const gleich = zeilen.length === 2 && zeilen[0].ts === zeilen[1].ts;
-      if (gleich) assert.equal(j.bestand.w003, 10,
-        "gleiche Millisekunde: die 24 gelieferten Flaschen fallen heraus");
-      else assert.equal(j.bestand.w003, 34,
-        "verschiedene Millisekunden: die Lieferung zählt");
+      assert.equal(zeilen.length, 2, "eine Zählung, ein Eingang");
+      assert.equal(j.bestand.w003, 34,
+        "der Zeitstempel entscheidet nichts mehr: 10 gezählt + 24 am Folgetag geliefert");
     });
 });
 

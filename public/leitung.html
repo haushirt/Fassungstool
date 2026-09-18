@@ -1118,27 +1118,45 @@ function bestand(){
     basis=v;                        /* die jüngste Zählung trägt die Zeile im Banner */
     Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=v; });
   });
-  const b={}, seit={ein:{}, raus:{}};
+  const b={}, seit={ein:{}, raus:{}}, unklar={};
   VORGAENGE.forEach(v=>{
     if(v.zaehlung) Object.keys(v.zaehlung).forEach(id=>{
       if(v.zaehlung[id]!=null && zuletzt[id]===v) b[id]=v.zaehlung[id];
     });
-    /* „Danach" heisst: `tag > Zähltag` ODER (`tag = Zähltag` UND es ist
-       keine Zählung). `tag > Zähltag` allein wäre falsch — am Morgen
-       gezählt, am Abend desselben Tages gefasst: diese Entnahme fiele
-       sonst unter den Tisch. Der Zeitstempel stand hier bis v28 und
+    /* ENTNAHMEN: „danach" heisst `tag > Zähltag` ODER (`tag = Zähltag` UND
+       es ist keine Zählung). `tag > Zähltag` allein wäre falsch — am
+       Morgen gezählt, am Abend desselben Tages gefasst: diese Entnahme
+       fiele sonst unter den Tisch. Der Zeitstempel stand hier bis v28 und
        ist fort: er sagt, wann das Paket ANKAM, nicht wann gezählt wurde
        (siehe `nachZeit`). Dieselbe Regel rechnet der Worker
        (`bestand()` in src/index.js, `ORDER BY tag, Zählung zuerst`). */
     const nach=id=>{ const z=zuletzt[id]; if(!z) return false;
       return (v.tag||"")>(z.tag||"") ||
              ((v.tag||"")===(z.tag||"") && tagRang(v)>tagRang(z)); };
-    Object.keys(v.eingang).forEach(id=>{ if(!nach(id)) return;
+    /* WARENEINGANG am Zähltag SELBST ist der eine Fall, den keine
+       Reihenfolge entscheiden kann: stand die Lieferung schon im Keller,
+       als gezählt wurde, oder kam sie danach? `ts` sagt es nicht — er ist
+       die Ankunftszeit des Pakets beim Server (deshalb rechnet seit v29
+       niemand mehr mit ihm). Bis v29 wurde sie addiert und damit doppelt
+       gezählt (10 gezählte + 24 gelieferte = 34, obwohl die 24 in den 10
+       schon drin sein können).
+
+       Seit v30: NICHT addieren, sondern ausweisen (`unklar`). Die Zählung
+       ist die härtere Tatsache — sie hat die Flaschen gesehen. Die Zahl
+       ist damit im Zweifel zu niedrig statt zu hoch: jemand geht nachsehen,
+       statt dass eine Bestellung ausbleibt. Derselbe Schnitt im Worker. */
+    /* Dieselben drei Wächter in derselben Reihenfolge wie im Worker. */
+    Object.keys(v.eingang).forEach(id=>{
+      const z=zuletzt[id];
+      if(!z) return;                                   /* ohne Zählung kein Bestand */
+      if((v.tag||"")<(z.tag||"")) return;              /* vor dem Zähltag zählt nicht */
+      if((v.tag||"")===(z.tag||"")){                   /* am Zähltag: ausweisen */
+        unklar[id]=(unklar[id]||0)+v.eingang[id]; return; }
       b[id]=(b[id]||0)+v.eingang[id]; seit.ein[id]=(seit.ein[id]||0)+v.eingang[id]; });
     Object.keys(v.wein).forEach(id=>{ if(!nach(id)) return;
       b[id]=(b[id]||0)-v.wein[id]; seit.raus[id]=(seit.raus[id]||0)+v.wein[id]; });
   });
-  return {basis, b, seit, hat:!!basis};
+  return {basis, b, seit, unklar, hat:!!basis};
 }
 
 /* Verbrauch je Tag über das Fenster in EINST.tage */
@@ -1883,6 +1901,21 @@ function vBestand(m){
     m.insertAdjacentHTML("beforeend",
       `<section><div class="hinweis">Basis ist die Zählung vom ${esc(deTag(B.basis.tag))}${B.basis.name?" durch "+esc(B.basis.name):""}.
        Seither ${summe(B.seit.ein)} Flaschen eingegangen, ${summe(B.seit.raus)} entnommen.</div></section>`);
+    /* Lieferung am Zähltag selbst: weder Fehler noch Warnung, sondern eine
+       Angabe — deshalb `hinweis` ohne `warn`/`bad`. Ein Artikel wird beim
+       Namen genannt, mehrere nur gezählt (der Satz bliebe sonst unlesbar);
+       die Einzelmenge steht ohnehin in der Zeile des Artikels. */
+    const uIds=Object.keys(B.unklar||{}).filter(id=>B.unklar[id]>0);
+    if(uIds.length){
+      const w0=byId(uIds[0]);
+      const wer=uIds.length===1
+        ?`${num(B.unklar[uIds[0]])} Flaschen ${w0?w0.winzer+" · "+w0.wein:uIds[0]}`
+        :`${num(summe(B.unklar))} Flaschen zu ${uIds.length} Artikeln`;
+      m.insertAdjacentHTML("beforeend",
+        `<section><div class="hinweis">Am Zähltag wurden ${esc(wer)} geliefert — ob die Zählung
+         sie schon enthält, ist nicht feststellbar. Sie sind im Bestand nicht mitgerechnet;
+         der Bestand ist insoweit eher zu niedrig als zu hoch.</div></section>`);
+    }
     const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
     if(minus.length) m.insertAdjacentHTML("beforeend",
       `<section><div class="hinweis bad">${minus.length} Positionen stehen rechnerisch unter null.
@@ -1897,11 +1930,14 @@ function vBestand(m){
     reihen.push(`<tr class="zwt"><td colspan="7">${esc((PLAN.zonen[z]||{}).t||("Zone "+z))} · ${esc((PLAN.zonen[z]||{}).s||"")}</td></tr>`);
     zonen[z].sort((a,b)=>(PLAN.restorder[a.id]??999)-(PLAN.restorder[b.id]??999)).forEach(w=>{
       const b=B.b[w.id], pt=V.proTag[w.id]||0;
+      const u=(B.unklar||{})[w.id]||0;           /* am Zähltag geliefert, nicht mitgerechnet */
       const rw = b==null||!pt ? Infinity : (b<=0 ? 0 : b/pt);
       const soll=PLAN.soll[w.id]||0;
       const anteil=b!=null&&soll?Math.min(100,Math.round(b/(soll*4)*100)):0;
       reihen.push(`<tr>
-        <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span></td>
+        <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span>
+          ${u?`<div class="mini">Am Zähltag ${num(u)} Flaschen geliefert — ob die Zählung sie schon
+               enthält, ist nicht feststellbar. Nicht mitgerechnet.</div>`:""}</td>
         <td class="mini">${esc(w.reb)}</td>
         <td class="r">${b==null?'<span class="dim">—</span>'
           :b<0?`<b class="neg">${num(b)}</b>`:`<b>${num(b)}</b>`}</td>
