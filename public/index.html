@@ -505,6 +505,14 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   display:grid;place-items:center;
   transition:background var(--dur-fast) var(--ease),
              border-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+/* NEU GEMESSEN (Jagd 13): 36 px breit, also unter den 44 px des Hauses.
+   Dieselbe Loesung wie bei „Menue" und „?" im Kopf: der Knopf bleibt
+   gezeichnet wie er ist, seine Flaeche waechst in einem ::after. Die
+   Leiste steht am rechten Rand; die zwei Pixel, die die Flaeche links
+   uebersteht, liegen ueber der Seite, nicht ueber einem Nachbarn. */
+.rail button{position:relative}
+.rail button::after{content:"";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);width:var(--tap-min);height:100%}
 .rail button:active{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
 .rail button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-tint)}
 
@@ -690,8 +698,18 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .zw.zebra{background:var(--surface-3)}
 .zw.seen .nm{opacity:.55}
 .ztop{margin-bottom:var(--space-2)}
-.zsteppers{display:flex;gap:var(--space-3);align-items:flex-end}
-.zstep{flex:1;text-align:center}
+/* NEU GEMESSEN (Jagd 13): Die Zeile traegt drei Felder — Reihen, Einzeln,
+   Summe. Zwei davon brauchen je 122 px (40 + 34 + 40 + zwei Fugen), das
+   dritte mindestens 60. Bei 320 px stehen 288 zur Verfuegung: die Summe
+   ragte 18 px aus dem Fenster, die Seite rollte waagrecht (338 > 320) und
+   nahm die Sprungleiste gleich mit hinaus. Aufgefallen ist das erst, seit
+   das Messgeraet jeden Schritt jedes Modus ansieht — die Kellerzaehlung
+   hat es bis Runde 12 nie gesehen.
+   Jetzt bricht die Zeile um: bei 320 px steht die Summe unter den beiden
+   Zaehlfeldern, ab 375 px wieder daneben. */
+.zsteppers{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:flex-end}
+.zstep{flex:1 1 122px;min-width:122px;text-align:center}
+.zsteppers .zstep:last-child{flex:1 1 60px;min-width:60px}
 .zstep .zl{font-size:var(--text-xs);color:var(--fg-subtle);
   font-weight:var(--weight-medium);margin-bottom:var(--space-1)}
 .zsteprow{display:flex;align-items:center;gap:var(--space-1);justify-content:center}
@@ -699,6 +717,12 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-lg);
   color:var(--fg-muted);cursor:pointer;line-height:1;flex-shrink:0;
   transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+/* NEU GEMESSEN (Jagd 13): 40 px breit. Die Fuge zwischen den Feldern ist
+   4 px — eine Flaeche von 44 px steht damit genau bis zur Mitte der Fuge
+   und stoesst an die des Nachbarn, ohne sie zu ueberlappen. */
+.zbtn{position:relative}
+.zbtn::after{content:"";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);width:var(--tap-min);height:100%}
 .zbtn:active{background:var(--accent);color:var(--fg-on-dark)}
 .zval{flex:1;min-width:34px;height:var(--tap-min);border:2px solid var(--border-strong);
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-base);
@@ -4481,7 +4505,11 @@ function rDoc(m){
       zeig.forEach(t=>ul.appendChild(offenZeile(t)));
       box.appendChild(ul);
       if(offen.length>5){
-        const mehr=document.createElement("button");mehr.className="btn btn--leise btn--klein";
+        /* NEU GEMESSEN (Jagd 13): `btn--klein` ist 36 px hoch. Im Service
+           gilt 44 — und dieser Knopf steht im Abschluss, spaet abends, mit
+           einer Flasche in der anderen Hand. Die kleine Form bleibt der
+           Hilfe vorbehalten, wo die Maus im Einsatz ist. */
+        const mehr=document.createElement("button");mehr.className="btn btn--leise";
         mehr.textContent="+ "+(offen.length-5)+" weitere anzeigen";
         mehr.onclick=()=>{offen.slice(5).forEach(t=>ul.appendChild(offenZeile(t)));mehr.remove();};
         box.appendChild(mehr);}
