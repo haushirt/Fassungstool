@@ -109,11 +109,35 @@ jetzt um, statt zu schrumpfen.
 
 * `npm test`: **325 Prüfungen grün** (Start der Runde: 286). Neu:
   `tests/betriebstag.test.mjs` (11), `tests/oberflaeche-f.test.mjs` (26).
-* `tests/ui-mass.cjs`, sechs Breiten (320/375/390/430/768/1280), Laden 1–6
-  einzeln: **acht Urteile ✓**, null Überlauf, null Beschnitt, null
+* `tests/ui-mass.cjs`, sechs Breiten (320/375/390/430/768/1280), **jeder
+  Schritt jedes Modus in beiden Zweigen**, Laden 1–6 einzeln — 288
+  Seitenmessungen: **zehn Urteile ✓**, null Überlauf, null Beschnitt, null
   JS-Fehler, keine Schrift unter 15 px, kein Griff unter 44 px im Service,
   kein Kontrast unter 4,5:1, Gestaltungsschicht wortgleich.
+* `tests/ui-nachjagd.cjs`: neun Prüfungen, die die A- und B-Funde der
+  fünften Jagd nachstellen — alle ja.
 * Belege je Befund in 320/375/390/430 px: `review/screens/f1/` bis `f9/`.
+
+## Was die Jagd danach gefunden hat
+
+Der Jäger fand in diesem Stand **vier A-Funde, vier B-Funde**. Drei der
+vier A-Funde waren meine eigenen, aus dieser Runde:
+
+* **A1** — Das Raster aus F3 stand an `.w`, der Grundform ALLER acht
+  Listenzeilen. In „Sonderentnahme · Getränke" stand der Zählknopf 31 px
+  ausserhalb des Fensters. Behoben.
+* **A2/A3** — `fernNeuer()` und `start()` fragten verschiedene Tage, und
+  ein laufender Vorgang wurde still weggeräumt, sobald „Anderes Datum"
+  gewählt war. Beides behoben, beides in `tests/ui-nachjagd.cjs`.
+* **A4** — siehe oben unter „Was NICHT erledigt ist": eine Entscheidung,
+  kein Fehler, den ich beheben darf.
+
+Und die erweiterte Messung fand sofort **vier Fehler, die es seit Monaten
+gibt und die niemand gemessen hatte**: die Kellerzählung rollte bei 320 px
+waagrecht (178 Stellen), die Sprungleiste lag unter der Statuszeile, ihre
+Knöpfe waren 36 px breit, die Zählfelder 40 px. Alle vier behoben. Die
+Lehre ist die des Auftrags: eine Messung, die nur die Eingangstür jedes
+Modus ansieht, sagt über das Haus nichts.
 
 ## Sperrliste
 

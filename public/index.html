@@ -496,6 +496,10 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 /* ═══════════════ Sprungleiste ═══════════════ */
 .rail{position:fixed;right:2px;top:50%;transform:translateY(-50%);z-index:var(--z-rail);
   display:flex;flex-direction:column;gap:2px}
+/* Bei 320 px ragte die 44-px-Flaeche des Knopfes (36 px breit, 2 px vom
+   Rand) rechts aus dem Fenster: der Daumen findet dort nichts mehr, weil
+   dort kein Schirm mehr ist. Sechs Pixel Abstand holen sie ganz herein. */
+@media (max-width:360px){ .rail{right:6px} }
 /* Gedreht und auf 40px beschnitten wurde aus „Bubbles“ ein „Bubb“.
    Zwei Buchstaben, waagrecht, passen immer. */
 .rail button{width:36px;min-height:var(--tap-min);padding:var(--space-2) 0;
@@ -2925,6 +2929,27 @@ function buildRail(show){
   rail.querySelectorAll("button").forEach(b=>b.onclick=()=>{
     const el=document.getElementById("anchor_"+b.dataset.anchor);
     if(el)el.scrollIntoView({behavior:"smooth",block:"start"});});
+  /* NEU GEMESSEN (Jagd 13): Die Leiste steht `position:fixed` in der Mitte
+     des FENSTERS. Der klebende Kopf (Titel, Schritte, Netzzeile) steht
+     darueber und deckt bei 320 x 568 die oberen Pixel des ersten Knopfes
+     zu: wer im Keller „Rot" oben antippt, trifft die Statuszeile. Gemessen
+     an fuenf von zwoelf Tastpunkten.
+     Die Leiste wird deshalb in der Mitte des Raumes UNTER dem Kopf
+     zentriert, nicht in der Mitte des Fensters. Die Hoehe des Kopfes
+     steht erst zur Laufzeit fest — sie haengt an Hinweiszeile und
+     Suchfeld —, also wird sie gemessen. */
+  const setzeMitte=()=>{
+    const kopf=$("#topwrap");
+    const h=kopf?kopf.getBoundingClientRect().height:0;
+    rail.style.top="calc(50% + "+Math.round(h/2)+"px)";
+  };
+  setzeMitte();
+  /* Der Kopf waechst und schrumpft (Hilfe auf, Suchfeld an). */
+  if(!buildRail._beobachter&&window.ResizeObserver){
+    const kopf=$("#topwrap");
+    if(kopf){ buildRail._beobachter=new ResizeObserver(()=>{
+      if($("#rail").innerHTML)setzeMitte(); }); buildRail._beobachter.observe(kopf); }
+  }
 }
 
 /* ── Konsum ── */

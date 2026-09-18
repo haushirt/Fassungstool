@@ -1,6 +1,6 @@
 {
  "lauf": "schluss",
- "zeit": "2026-09-18T09:32:00.007Z",
+ "zeit": "2026-09-18T10:23:24.908Z",
  "seiten": {
   "leitung/heute@390": {
    "vw": 390,
@@ -4823,7 +4823,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/tag@320": {
+  "app/tag-1@320": {
    "vw": 320,
    "scrollW": 320,
    "ueber": [],
@@ -4948,7 +4948,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/keller@320": {
+  "app/tag-2@320": {
    "vw": 320,
    "scrollW": 320,
    "ueber": [],
@@ -4967,9 +4967,195 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 33,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -4977,14 +5163,16 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
+     "SPAN.stlbl"
     ],
     "16": [
-     "B."
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -4993,7 +5181,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/nach@320": {
+  "app/tag-3@320": {
    "vw": 320,
    "scrollW": 320,
    "ueber": [],
@@ -5012,9 +5200,33 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 6,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5022,14 +5234,10 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
-    ],
-    "16": [
-     "B."
+     "SPAN.stlbl"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -5038,7 +5246,739 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/fuellen@320": {
+  "app/tag-4@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-1@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RT"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RS"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "NA"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "WE"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "CU"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "BU"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    }
+   ],
+   "kleinN": 238,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "SPAN.wn",
+     "BUTTON.zval",
+     "BUTTON.zval",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1.",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-2@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-1@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 202,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-2@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-1@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-2@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-1@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-2@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-1@320": {
    "vw": 320,
    "scrollW": 320,
    "ueber": [],
@@ -5100,7 +6040,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/ware@320": {
+  "app/fuellen-2@320": {
    "vw": 320,
    "scrollW": 320,
    "ueber": [],
@@ -5119,9 +6059,27 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 5,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5129,14 +6087,447 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-3@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
      "SPAN.netztext"
     ],
     "16": [
-     "B."
+     "BUTTON.finishbtn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-1@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-2@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-3@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-4@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-1@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-2@320": {
+   "vw": 320,
+   "scrollW": 320,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
     ]
    },
    "schwach": [],
@@ -5182,7 +6573,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/tag@375": {
+  "app/tag-1@375": {
    "vw": 375,
    "scrollW": 375,
    "ueber": [],
@@ -5307,7 +6698,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/keller@375": {
+  "app/tag-2@375": {
    "vw": 375,
    "scrollW": 375,
    "ueber": [],
@@ -5326,9 +6717,195 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 33,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5336,14 +6913,16 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
+     "SPAN.stlbl"
     ],
     "16": [
-     "B."
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -5352,7 +6931,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/nach@375": {
+  "app/tag-3@375": {
    "vw": 375,
    "scrollW": 375,
    "ueber": [],
@@ -5371,9 +6950,33 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 6,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5381,14 +6984,10 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
-    ],
-    "16": [
-     "B."
+     "SPAN.stlbl"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -5397,7 +6996,739 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/fuellen@375": {
+  "app/tag-4@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-1@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RT"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RS"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "NA"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "WE"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "CU"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "BU"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    }
+   ],
+   "kleinN": 238,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "SPAN.wn",
+     "BUTTON.zval",
+     "BUTTON.zval",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1.",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-2@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-1@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 202,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-2@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-1@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-2@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-1@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-2@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-1@375": {
    "vw": 375,
    "scrollW": 375,
    "ueber": [],
@@ -5459,7 +7790,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/ware@375": {
+  "app/fuellen-2@375": {
    "vw": 375,
    "scrollW": 375,
    "ueber": [],
@@ -5478,9 +7809,27 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 5,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5488,14 +7837,447 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-3@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
      "SPAN.netztext"
     ],
     "16": [
-     "B."
+     "BUTTON.finishbtn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-1@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-2@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-3@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-4@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-1@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-2@375": {
+   "vw": 375,
+   "scrollW": 375,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
     ]
    },
    "schwach": [],
@@ -5541,7 +8323,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/tag@390": {
+  "app/tag-1@390": {
    "vw": 390,
    "scrollW": 390,
    "ueber": [],
@@ -5666,7 +8448,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/keller@390": {
+  "app/tag-2@390": {
    "vw": 390,
    "scrollW": 390,
    "ueber": [],
@@ -5685,9 +8467,195 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 33,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5695,14 +8663,16 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
+     "SPAN.stlbl"
     ],
     "16": [
-     "B."
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -5711,7 +8681,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/nach@390": {
+  "app/tag-3@390": {
    "vw": 390,
    "scrollW": 390,
    "ueber": [],
@@ -5730,9 +8700,33 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 6,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5740,14 +8734,10 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
-    ],
-    "16": [
-     "B."
+     "SPAN.stlbl"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -5756,7 +8746,739 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/fuellen@390": {
+  "app/tag-4@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-1@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RT"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RS"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "NA"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "WE"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "CU"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "BU"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    }
+   ],
+   "kleinN": 238,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "SPAN.wn",
+     "BUTTON.zval",
+     "BUTTON.zval",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1.",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-2@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-1@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 202,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-2@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-1@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-2@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-1@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-2@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-1@390": {
    "vw": 390,
    "scrollW": 390,
    "ueber": [],
@@ -5818,7 +9540,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/ware@390": {
+  "app/fuellen-2@390": {
    "vw": 390,
    "scrollW": 390,
    "ueber": [],
@@ -5837,9 +9559,27 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 5,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -5847,14 +9587,447 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-3@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
      "SPAN.netztext"
     ],
     "16": [
-     "B."
+     "BUTTON.finishbtn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-1@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-2@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-3@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-4@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-1@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-2@390": {
+   "vw": 390,
+   "scrollW": 390,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
     ]
    },
    "schwach": [],
@@ -5900,7 +10073,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/tag@430": {
+  "app/tag-1@430": {
    "vw": 430,
    "scrollW": 430,
    "ueber": [],
@@ -6025,7 +10198,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/keller@430": {
+  "app/tag-2@430": {
    "vw": 430,
    "scrollW": 430,
    "ueber": [],
@@ -6044,9 +10217,195 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 33,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6054,14 +10413,16 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
+     "SPAN.stlbl"
     ],
     "16": [
-     "B."
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -6070,7 +10431,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/nach@430": {
+  "app/tag-3@430": {
    "vw": 430,
    "scrollW": 430,
    "ueber": [],
@@ -6089,9 +10450,33 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 6,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6099,14 +10484,10 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
-    ],
-    "16": [
-     "B."
+     "SPAN.stlbl"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -6115,7 +10496,739 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/fuellen@430": {
+  "app/tag-4@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-1@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RT"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RS"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "NA"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "WE"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "CU"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "BU"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    }
+   ],
+   "kleinN": 238,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "SPAN.wn",
+     "BUTTON.zval",
+     "BUTTON.zval",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1.",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-2@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-1@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 202,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-2@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-1@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-2@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-1@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-2@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-1@430": {
    "vw": 430,
    "scrollW": 430,
    "ueber": [],
@@ -6177,7 +11290,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/ware@430": {
+  "app/fuellen-2@430": {
    "vw": 430,
    "scrollW": 430,
    "ueber": [],
@@ -6196,9 +11309,27 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 5,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6206,14 +11337,447 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-3@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
      "SPAN.netztext"
     ],
     "16": [
-     "B."
+     "BUTTON.finishbtn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-1@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-2@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-3@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-4@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-1@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-2@430": {
+   "vw": 430,
+   "scrollW": 430,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
     ]
    },
    "schwach": [],
@@ -6259,7 +11823,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/tag@768": {
+  "app/tag-1@768": {
    "vw": 768,
    "scrollW": 768,
    "ueber": [],
@@ -6384,7 +11948,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/keller@768": {
+  "app/tag-2@768": {
    "vw": 768,
    "scrollW": 768,
    "ueber": [],
@@ -6403,9 +11967,195 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 33,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6413,14 +12163,16 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
+     "SPAN.stlbl"
     ],
     "16": [
-     "B."
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -6429,7 +12181,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/nach@768": {
+  "app/tag-3@768": {
    "vw": 768,
    "scrollW": 768,
    "ueber": [],
@@ -6448,9 +12200,33 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 6,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6458,14 +12234,10 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
-    ],
-    "16": [
-     "B."
+     "SPAN.stlbl"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -6474,7 +12246,739 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/fuellen@768": {
+  "app/tag-4@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-1@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RT"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RS"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "NA"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "WE"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "CU"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "BU"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    }
+   ],
+   "kleinN": 238,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "SPAN.wn",
+     "BUTTON.zval",
+     "BUTTON.zval",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1.",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-2@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-1@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 202,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-2@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-1@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-2@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-1@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-2@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-1@768": {
    "vw": 768,
    "scrollW": 768,
    "ueber": [],
@@ -6536,7 +13040,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/ware@768": {
+  "app/fuellen-2@768": {
    "vw": 768,
    "scrollW": 768,
    "ueber": [],
@@ -6555,9 +13059,27 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 5,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6565,14 +13087,447 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-3@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
      "SPAN.netztext"
     ],
     "16": [
-     "B."
+     "BUTTON.finishbtn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-1@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-2@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-3@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-4@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-1@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-2@768": {
+   "vw": 768,
+   "scrollW": 768,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
     ]
    },
    "schwach": [],
@@ -6618,7 +13573,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/tag@1280": {
+  "app/tag-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
    "ueber": [],
@@ -6743,7 +13698,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/keller@1280": {
+  "app/tag-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
    "ueber": [],
@@ -6762,9 +13717,195 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
+    },
+    {
+     "was": "SPAN.dot",
+     "b": 26,
+     "h": 26,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 33,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6772,14 +13913,16 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
+     "SPAN.stlbl"
     ],
     "16": [
-     "B."
+     "B.",
+     "SPAN.wn",
+     "SPAN.wn",
+     "SPAN.wn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -6788,7 +13931,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/nach@1280": {
+  "app/tag-3@1280": {
    "vw": 1280,
    "scrollW": 1280,
    "ueber": [],
@@ -6807,9 +13950,33 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 6,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6817,14 +13984,10 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
-     "SPAN.netztext"
-    ],
-    "16": [
-     "B."
+     "SPAN.stlbl"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
     ]
    },
    "schwach": [],
@@ -6833,7 +13996,739 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/fuellen@1280": {
+  "app/tag-4@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-1@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RT"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "RS"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "NA"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "WE"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "CU"
+    },
+    {
+     "was": "BUTTON.",
+     "b": 36,
+     "h": 44,
+     "text": "BU"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    }
+   ],
+   "kleinN": 238,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "SPAN.wn",
+     "BUTTON.zval",
+     "BUTTON.zval",
+     "SPAN.wn"
+    ],
+    "19": [
+     "H1.",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn",
+     "BUTTON.zbtn"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-wein-2@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-1@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt",
+     "DIV.gpt"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 202,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/keller-getr-2@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-1@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-wein-2@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-1@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/nach-getr-2@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
    "ueber": [],
@@ -6895,7 +14790,7 @@
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
-  "app/ware@1280": {
+  "app/fuellen-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
    "ueber": [],
@@ -6914,9 +14809,27 @@
      "b": 62,
      "h": 36,
      "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
     }
    ],
-   "kleinN": 2,
+   "kleinN": 5,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -6924,14 +14837,447 @@
      "SPAN.",
      "BUTTON.hilfebtn",
      "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/fuellen-3@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
      "SPAN.netztext"
     ],
     "16": [
-     "B."
+     "BUTTON.finishbtn"
     ],
     "19": [
-     "H1.",
-     "H2."
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-1@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "DIV.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-2@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-3@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 6,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-wein-4@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 5,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-1@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.hilfebtn",
+     "b": 36,
+     "h": 36,
+     "text": "?"
+    },
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 4,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.hilfebtn",
+     "BUTTON.home",
+     "SPAN.stlbl"
+    ],
+    "16": [
+     "P.empty"
+    ],
+    "19": [
+     "H1."
+    ]
+   },
+   "schwach": [],
+   "schwachN": 0,
+   "leiseZiffern": 0,
+   "kontrastUebersprungen": 0,
+   "jsFehler": []
+  },
+  "app/ware-getr-2@1280": {
+   "vw": 1280,
+   "scrollW": 1280,
+   "ueber": [],
+   "ueberN": 0,
+   "schnitt": [],
+   "schnittN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 62,
+     "h": 36,
+     "text": "Menü"
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    },
+    {
+     "was": "BUTTON.st",
+     "b": 10,
+     "h": 10,
+     "text": ""
+    }
+   ],
+   "kleinN": 3,
+   "griff": [],
+   "griffN": 0,
+   "schrift": {
+    "15": [
+     "SPAN.",
+     "BUTTON.home",
+     "SPAN.stlbl",
+     "SPAN.netztext"
+    ],
+    "16": [
+     "BUTTON.finishbtn"
+    ],
+    "19": [
+     "H1."
+    ],
+    "28": [
+     "DIV.big"
     ]
    },
    "schwach": [],
@@ -10448,8 +18794,8 @@
  },
  "summe": {
   "ueberGes": 0,
-  "kleinGes": 698,
-  "kleinSvc": 462,
+  "kleinGes": 2738,
+  "kleinSvc": 2502,
   "griffGes": 229,
   "griffSvc": 0,
   "schwachGes": 0,
