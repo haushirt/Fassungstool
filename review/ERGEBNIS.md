@@ -1,6 +1,138 @@
 # Ergebnis
 
-Diese Datei ist die Beschreibung des Pull Requests `v2-review` → `main`. Sie wird am Ende einer Phase gefüllt, nicht laufend.
+Diese Datei ist die Beschreibung des Pull Requests. Sie wird am Ende einer
+Phase gefüllt, nicht laufend.
+
+---
+
+# Runde 13 · Dringende Fehlerbehebung, 18.09.2026
+
+**Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v32.**
+Auftrag: elf Befunde vom echten iPhone, ausgeführt als F1 bis F9 plus
+„Messung reparieren". Wortlaut und Ergebnis je Befund mit Datei:Zeile und
+Beleg: `review/INPUT-TEAM.md`.
+
+## Was sich ändert — und was das im Haus bedeutet
+
+**1 · Der Betriebstag stimmt wieder (F1, A-Fund).** Am Freitag stand im
+Kopf „Für Donnerstag, 17.09.2026", während die Kellerzählung auf demselben
+Gerät „Für Freitag" schrieb. Zwei Ursachen lagen übereinander: Der Tag kam
+aus `toISOString()`, also aus UTC — zwischen Mitternacht und 02:00 Ortszeit
+ist das der Vortag —, und `blank()` zog für die Tagesfassung noch einen
+weiteren Tag ab. Ein Vorgang trägt den Schlüssel `<modus>_<tag>`; zwei
+Rechnungen heißt zwei Schlüssel für denselben Abend. Gerechnet wird jetzt
+in Europe/Vienna, an einer Stelle je Datei, und in allen dreien: App,
+Backoffice, Worker.
+
+> **Das bewegt Zahlen, die die Leitung sieht.** Bis heute früh lag ein
+> Vorgang des Modus `tag` unter dem VORTAG, ab jetzt unter dem Tag, an dem
+> er gemacht wird. Vorgänge von vor und nach dem Merge liegen damit unter
+> verschiedenen Schlüsseln. Es geht nichts verloren; der Abgleich gegen den
+> Z-Bericht vergleicht in den Tagen um den Merge herum einmal um einen Tag
+> versetzt. Steht auch in `review/BACKLOG.md`.
+
+**2 · Die Laden sind wieder eindeutig (F2, der gefährlichste Befund nach
+F1).** Ein zweizeiliger Name („Alm-dudler", „Weiss-bier afr.") hob seine
+ganze Spalte an, weil die Spalten unten bündig standen. In Lade 6 lagen
+dadurch fünf Kopfzahlen auf fünf Höhen, kein Name stand unter seiner
+Flasche, und in Lade 1 trugen einzelne Flaschen gar keine Beschriftung —
+das Kürzel stand nur unter der LETZTEN einer Reihe, obwohl in derselben
+Spalte zwei Sorten übereinander liegen. Im Keller wird so der Name der
+falschen Flasche zugeordnet. Jede Lade ist jetzt ein Raster, das umbricht:
+Kopfzahlen auf einer Linie, Trennstriche auf einer Linie, Namen auf einer
+Linie, jede Flasche mit Namen, und bei 320 px nichts mehr angeschnitten.
+
+**3 · Die Zählringe fluchten (F3).** Sie hingen im Namensblock, gleich
+hinter dem Namen — bei jedem Wein woanders, und bei 320 px lief der Name
+sogar unter den ersten Ring. Die Zeile ist jetzt ein Raster mit fester
+Ringspalte.
+
+**4 · Der Fotoschritt der Fassungsliste ist weg (F4).** Restlos, an 23
+Stellen, jede einzeln aufgeführt in `review/INPUT-TEAM.md`. Mit ihm geht
+die IndexedDB `hh_fotos`.
+
+> **Achtung, unwiederbringlich:** Beim ersten Start nach dem Merge löscht
+> jedes Gerät seinen Bildspeicher EINMAL. Protokolle im Archiv, die ein
+> Foto trugen, zeigen es danach nicht mehr. Das war die ausdrückliche
+> Vorgabe („der Foto-Zwischenspeicher in der IndexedDB … Dann löschen").
+> Wer eines dieser Bilder noch braucht, holt es sich VOR dem Merge.
+
+**5 · „Verwaltung" raus, „Backoffice" rein (F5).** An derselben Stelle,
+sichtbar nur für die Rolle `leitung`, vorerst auf die Leitungsübersicht.
+Die Rolle kommt aus `GET /api/ich` — die Anmeldung selbst ist nicht
+angefasst. Ohne Netz bleibt der Link weg, statt ins Leere zu führen. Der
+Verwaltungs-Editor ist nicht gelöscht, er hat nur keinen Eingang mehr.
+
+**6 · Der Kopf beginnt unter der Statusleiste (F6).** Auf der Startseite,
+in der Anmeldung, in jeder Fassung und im Backoffice. `viewport-fit=cover`
+fehlte in `leitung.html` ganz — ohne das liefert `env()` auch auf dem
+iPhone 0.
+
+**7 · Die Startseite widerspricht sich nicht mehr (F7).** Das grüne Feld
+spricht nur noch von Übertragung („Alles übertragen", „1 Vorgang wartet").
+Das Wort „offen" gehört der Aufgabe.
+
+**8 · Begrüßung beim Öffnen (F9).** Einmal je Gerät und Betriebstag, klein,
+von unten: Tag, Name, was heute ansteht, dazu „Passt" und „Anderes Datum".
+Ohne Netz bleibt die dritte Zeile weg statt falsch zu sein. Gebaut erst
+nach F1 — ein Knopf, der den falschen Tag bestätigt, wäre schlimmer als
+kein Knopf.
+
+**9 · Die Messung war falsch, nicht der Befund.** Sie meldete „0 Überlauf
+bei 390 px", während die achte Kachel angeschnitten dastand. Drei Gründe,
+alle drei behoben; der vermutete („misst gegen die Dokumentbreite") traf
+nicht zu. Die Laden wurden nie gemessen, Beschnitt durch einen
+`overflow:hidden`-Vorfahren war kein Urteil, und 320 px stand nicht in der
+Liste. Nachweis: Gegen `50c1123` ist der neue Test ROT
+(`review/screens/beweis-alt/`), gegen den Stand danach grün
+(`review/screens/schluss/`).
+
+**Nebenher gefunden, weil jetzt auch 320 px gemessen wird:** die
+Stationsleiste (R · 1 … 6) hatte dort 38 px je Knopf statt 44. Sie bricht
+jetzt um, statt zu schrumpfen.
+
+## Was NICHT erledigt ist
+
+* **F10 und F11 gibt es nicht.** Der Auftrag kündigt „elf Befunde" und
+  „F1…F11" an, führt aber nur F1 bis F9 aus. Sie sind nicht erfunden
+  worden. Bitte nachreichen.
+* **F8 ist nicht bestätigt.** Der Abstand zwischen Ladenkasten und
+  „Überspringen" war schon vorher genau 24 px — in jeder der sechs Laden
+  nachgemessen, Tabelle in `review/INPUT-TEAM.md`. Geändert habe ich das
+  tote Ende darunter (Fußpolster 40 → 12 px). Welche Lade, welches Gerät?
+* **Echtes Safari bleibt ungeprüft.** Alles hier ist in Chromium belegt.
+  F6 lässt sich dort grundsätzlich nicht zeigen: Chromium hat weder Notch
+  noch Statusleiste, `env(safe-area-inset-top)` ist immer 0. Geprüft ist
+  nur, dass die Regel dasteht.
+
+## Geprüft
+
+* `npm test`: **325 Prüfungen grün** (Start der Runde: 286). Neu:
+  `tests/betriebstag.test.mjs` (11), `tests/oberflaeche-f.test.mjs` (26).
+* `tests/ui-mass.cjs`, sechs Breiten (320/375/390/430/768/1280), Laden 1–6
+  einzeln: **acht Urteile ✓**, null Überlauf, null Beschnitt, null
+  JS-Fehler, keine Schrift unter 15 px, kein Griff unter 44 px im Service,
+  kein Kontrast unter 4,5:1, Gestaltungsschicht wortgleich.
+* Belege je Befund in 320/375/390/430 px: `review/screens/f1/` bis `f9/`.
+
+## Sperrliste
+
+Der Diff berührt nichts aus **Anmeldung, Token, Codes, Schema,
+Migrationen, `RUNDEN`, `wrangler.jsonc`**. `public/` hat unverändert vier
+Dateien. Die geteilte Gestaltungsschicht steht in beiden HTML-Dateien
+wortgleich. `sw.js` VERSION v31 → v32. Keine Migration in diesem Stand.
+
+## Vor dem Merge
+
+Keine Migration nötig. Aber: **Merge = Livegang auf alle Geräte.** Was
+dabei einmalig passiert, steht oben unter 1 (verschobener Betriebstag) und
+4 (gelöschter Bildspeicher).
+
+
+---
+
+# Vorgeschichte · Nacht auf den 18.09.2026
+
 
 ## Was sich geändert hat
 

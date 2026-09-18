@@ -4687,7 +4687,9 @@ function resultText(){
       offen?offen+" Position"+(offen===1?"":"en")+" noch offen.":"Alles geholt und eingeräumt."];}
   if(mode==="tag"){const fl=sum(d.rest)+sum(d.barrot)+sum(d.bar)+sum(d.backup);
     const zu=sum(d.zusatz);
-    const off=holList().filter(x=>!d.holt[x.w.id]).length;
+    /* `holt` fehlt in Vorgaengen aelterer Fassungen; resultText() laeuft
+       auch ueber das Archiv. */
+    const off=holList().filter(x=>!(d.holt||{})[x.w.id]).length;
     return [fl+" Flaschen aus dem Keller geholt"+(zu?", dazu "+zu+" zusätzlich entnommen.":"."),
       off?off+(off===1?" Wein ist noch nicht geholt.":" Weine sind noch nicht geholt.")
          :"Alles geholt und eingeräumt."];}
