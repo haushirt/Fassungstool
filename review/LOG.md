@@ -2455,3 +2455,69 @@ im Getränkefach 1 px vom Rand; Mittagsblick bei halb gedecktem Minus.
 
 **STATUS:** VERBESSERUNGEN — die drei Punkte sind erledigt und gemessen; offen
 bleibt der erfasste Zählzeitpunkt, ein Umbau über App und Worker.
+
+---
+
+### Runde 13 – Fehlerbehebung (18.09.2026, Tag)
+
+**Kritik am Vorgänger:** Die Nacht hat die Oberfläche vermessen und
+acht Urteile grün gemeldet, während auf dem echten iPhone die achte Kachel
+angeschnitten stand. Drei Punkte konkret:
+* ✅ übernommen — `tests/ui-mass.cjs:329 ff.`: `MESSE` lief nur auf dem
+  ERSTEN Schritt jedes Modus. Die Laden 1–6 wurden nie gemessen, der Zweig
+  `branch="getr"` gar nicht. Jetzt jeder Schritt, jeder Zweig, jede Lade.
+* ✅ übernommen — `tests/ui-mass.cjs:134`: gemessen wurde nur gegen das
+  Fenster. `.drwi` trug `overflow:hidden` und verschluckte den Beweis.
+  Beschnitt durch einen Vorfahren ist jetzt ein eigenes Urteil.
+* ✅ übernommen — `tests/ui-mass.cjs:81`: 320 px stand nicht in der Liste,
+  und genau dort lief das Kürzel aus dem Fenster.
+* ❌ abgelehnt — `review/ENTSCHIEDEN-NACHTS.md` Nr. 3 („Weg fällt die
+  Freigabe-Kopplung, nicht die Möglichkeit zu fotografieren"). Der Auftrag
+  von heute sagt „Restlos raus, an ALLEN Stellen" und nennt den
+  Zwischenspeicher ausdrücklich. Die Entscheidung stand unter „vorläufig,
+  revidierbar"; sie ist revidiert.
+* ↩️ geändert — `review/ENTSCHIEDEN-NACHTS.md` Nr. 5 rechnete den
+  Betriebstag richtig, ließ aber `blank()` unangetastet: dort zog die
+  Tagesfassung noch einen weiteren Tag ab (`public/index.html:1571`). Die
+  UTC-Rechnung war nur die halbe Ursache.
+
+**Umgesetzt:**
+1. F1 · Betriebstag in Europe/Vienna, an einer Stelle je Datei, in App,
+   Backoffice und Worker; die Tagesfassung läuft nicht mehr auf den Vortag.
+2. F2/F3 · Die Laden sind ein umbrechendes Raster (Kopfzahlen, Striche und
+   Namen je auf einer Linie, jede Flasche benannt), die Zählringe der
+   Weinzeile fluchten in jeder Zeile.
+3. F4–F9 · Fotoschritt restlos raus, „Backoffice" statt „Verwaltung",
+   Safe-Area in beiden Dateien, grünes Feld ohne das Wort „offen",
+   Begrüßung beim Öffnen.
+
+**Geprüft:** `npm test` 327 grün (vorher 286; neu: `betriebstag.test.mjs`,
+`oberflaeche-f.test.mjs`). `tests/ui-mass.cjs` in sechs Breiten
+(320/375/390/430/768/1280), jeder Schritt jedes Modus in beiden Zweigen,
+Laden 1–6 einzeln. Der reparierte Test ist gegen `50c1123` **rot**
+(`review/screens/beweis-alt/`). Belege je Befund in vier Breiten unter
+`review/screens/f1/` bis `f9/`. `tests/ui-nachjagd.cjs` stellt die vier
+A- und B-Funde der fünften Jagd nach — neun Prüfungen, alle ja.
+
+**Für die Nächsten:**
+* **An die Moderation:** `abgleich()` im Backoffice paart Z-Bericht(X) mit
+  Vorgang(X). Seit F1 trägt die Fassung den Tag, an dem sie gemacht wird —
+  die Paarung stimmt damit dauerhaft um einen Tag nicht mehr. Zwei Wege
+  stehen in `review/BACKLOG.md`; entscheiden muss es Casimir.
+* **An den Service:** Lade 4 ist bei 390 px von 608 auf 1040 px gewachsen,
+  bei 320 px auf 1499 px — acht Spalten stehen jetzt 4 über 4. Lieber
+  rollen oder lieber kleinere Punkte?
+* **An alle:** F10 und F11 stehen nicht im Auftrag. Sie sind nicht
+  erfunden worden.
+
+**Phase/Thema:** Dringende Fehlerbehebung / F1–F9 + Messung
+
+**Backlog:** vier neue Punkte unter „hoch" — verschobene Paarung im
+Abgleich (Entscheidung), gelöschter Bildspeicher (unwiederbringlich),
+Backoffice läuft bei 320/375 px aus dem Bild, Ladenhöhe nach F2; dazu die
+Stapelspalte „Red Ale / Pale Ale" mit zwei unbeschrifteten Kopfzahlen.
+
+**STATUS:** VERBESSERUNGEN — alle neun Befunde sind belegt und die vier
+A-Funde der Jagd behoben. Offen und nicht von mir zu entscheiden: die
+Paarung im Abgleich (A4), die Ladenhöhe (B4), F10/F11. **Echtes Safari
+bleibt ungeprüft** — deshalb kein Merge aus eigener Hand.

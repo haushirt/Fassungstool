@@ -118,7 +118,18 @@ const BREITEN = [
 
 const SEITEN = ["heute", "abgleich", "import", "bestand", "bestellen", "getraenke",
   "zaehlliste", "speicher", "zuordnung", "rezepte", "team", "einst"];
+/* BERICHTIGUNG (Jagd 13): Bis hierher wurde je Modus nur der ERSTE Schritt
+   gemessen — und der Zweig „Getränke" (branch="getr") von keller, nach und
+   ware ueberhaupt nicht. Genau dort lag A1: in „Sonderentnahme · Getränke"
+   stand der Zaehlknopf 31 px ausserhalb des Fensters, und die Seite rollte
+   waagrecht. Eine Messung, die nur die Eingangstuer jedes Modus ansieht,
+   sagt ueber den Rest des Hauses nichts.
+   Jetzt wird jeder Schritt jedes Modus in beiden Zweigen gemessen. */
 const SCHRITTE = ["tag", "keller", "nach", "fuellen", "ware"];
+/* Welcher Modus hat welchen Zweig? `tag` und `fuellen` kennen nur Wein. */
+const ZWEIGE = { tag: [null], fuellen: [null],
+                 keller: ["wein", "getr"], nach: ["wein", "getr"],
+                 ware: ["wein", "getr"] };
 
 /* ── Das Messgerät. Läuft im Browser. ────────────────────────────────── */
 const MESSE = `(() => {
@@ -428,30 +439,54 @@ async function grussWeg(p) {
   }catch(e){} })();`;
   for (const br of BREITEN) {
     for (const s of ["menu", ...SCHRITTE]) {
-      const ctx = await b.newContext(br);
-      await ctx.addInitScript(saat);
-      const p = await ctx.newPage();
-      const jsFehler = [];
-      p.on("pageerror", e => jsFehler.push(e.message));
-      await p.goto("http://127.0.0.1:8977/index.html", { waitUntil: "load" });
-      await p.waitForTimeout(500);
-      /* F9: Die Begrüßung liegt beim Öffnen über allem. Sie hat ihre
-         eigenen Belege (review/screens/f9/) — hier wird gemessen, was
-         dahinter steht, sonst misst das Messgerät einmal je Breite
-         dasselbe Fenster. */
-      await grussWeg(p);
-      if (s !== "menu") {
+      for (const zweig of (s === "menu" ? [null] : ZWEIGE[s])) {
+        const ctx = await b.newContext(br);
+        await ctx.addInitScript(saat);
+        const p = await ctx.newPage();
+        const jsFehler = [];
+        p.on("pageerror", e => jsFehler.push(e.message));
+        await p.goto("http://127.0.0.1:8977/index.html", { waitUntil: "load" });
+        await p.waitForTimeout(500);
+        /* F9: Die Begrüßung liegt beim Öffnen über allem. Sie hat ihre
+           eigenen Belege (review/screens/f9/) — hier wird gemessen, was
+           dahinter steht, sonst misst das Messgerät einmal je Breite
+           dasselbe Fenster. */
+        await grussWeg(p);
+        if (s === "menu") {
+          const m = await p.evaluate(MESSE);
+          m.jsFehler = jsFehler;
+          erg.seiten["app/menu@" + br.name] = m;
+          await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-menu.png") });
+          await ctx.close();
+          continue;
+        }
         await p.evaluate(m => { if (typeof start === "function") start(m); }, s);
         await p.waitForTimeout(450);
+        if (zweig) {
+          /* keller/nach/ware fragen zuerst „Wein oder Getränke?". */
+          const tor = p.locator('.gbtn.' + zweig);
+          if (await tor.count()) { await tor.first().click(); await p.waitForTimeout(350); }
+          else await p.evaluate(z => { if (typeof branch !== "undefined") { branch = z; render(); } }, zweig);
+          await p.waitForTimeout(300);
+        }
         const zu = p.locator("#hilfeZu");
         if (await zu.count() && await zu.isVisible()) { await zu.click(); await p.waitForTimeout(250); }
+        /* Jeder Schritt, nicht nur der erste. */
+        const anzahl = await p.evaluate(() =>
+          (typeof steps === "function" ? steps().length : 1));
+        for (let i = 0; i < anzahl; i++) {
+          await p.evaluate(n => { if (typeof go === "function") go(n); }, i);
+          await p.waitForTimeout(350);
+          const zu2 = p.locator("#hilfeZu");
+          if (await zu2.count() && await zu2.isVisible()) { await zu2.click(); await p.waitForTimeout(200); }
+          const marke = s + (zweig ? "-" + zweig : "") + "-" + (i + 1);
+          const m = await p.evaluate(MESSE);
+          m.jsFehler = jsFehler.slice();
+          erg.seiten["app/" + marke + "@" + br.name] = m;
+          await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-" + marke + ".png") });
+        }
+        await ctx.close();
       }
-      const m = await p.evaluate(MESSE);
-      m.jsFehler = jsFehler;
-      erg.seiten["app/" + s + "@" + br.name] = m;
-      await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-" + s + ".png"),
-                           fullPage: false });
-      await ctx.close();
     }
   }
 

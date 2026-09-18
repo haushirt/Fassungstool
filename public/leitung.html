@@ -247,7 +247,13 @@ table{border-collapse:collapse;width:100%}
    und dort lag der Kopf unter der Statusleiste. Das Polster oben ist
    dasselbe wie in index.html; `viewport-fit=cover` steht seit heute auch
    im meta-Tag dieser Datei — ohne das liefert env() 0.
-   height bleibt 56px fuer die Zeile selbst, das Polster kommt darueber. */
+   BERICHTIGUNG (Jagd 13, B2): Die Zeile bleibt 56 px hoch, der Kasten
+   waechst aber um das Polster. Drei weitere Regeln rechneten fest mit
+   56 px — die Navigationsschublade (`top`), ihr Grund (`inset`) und die
+   Huelle (`min-height`); unter einer Notch lagen deren oberste Pixel
+   hinter dem Kopf. Die Hoehe steht deshalb an EINER Stelle, als
+   `--kopfh`, und alle vier lesen sie. */
+:root{--kopfh:calc(56px + max(12px,env(safe-area-inset-top)))}
 .kopf{position:sticky;top:0;z-index:var(--z-top);background:var(--accent);
   color:var(--fg-on-dark);display:flex;align-items:center;gap:var(--space-4);
   padding:max(12px,env(safe-area-inset-top)) var(--space-6) 0;
@@ -286,7 +292,7 @@ table{border-collapse:collapse;width:100%}
   color:var(--fg-on-dark);place-items:center;flex-shrink:0}
 
 /* ═══════════════ Gerüst ═══════════════ */
-.huelle{display:grid;grid-template-columns:212px 1fr;min-height:calc(100vh - 56px)}
+.huelle{display:grid;grid-template-columns:212px 1fr;min-height:calc(100vh - var(--kopfh))}
 nav.seite{border-right:1px solid var(--border);background:var(--surface-2);
   padding:var(--space-5) var(--space-3)}
 nav.seite .grp{font-size:var(--text-xs);text-transform:uppercase;
@@ -501,12 +507,12 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
     text-transform:none;letter-spacing:0;color:var(--fg-on-dark);white-space:nowrap}
   .kopf button.k{padding:0 10px;font-size:var(--text-xs);white-space:nowrap}
   .huelle{display:block}
-  nav.seite{position:fixed;left:0;top:56px;bottom:0;width:min(280px,86vw);
+  nav.seite{position:fixed;left:0;top:var(--kopfh);bottom:0;width:min(280px,86vw);
     z-index:var(--z-overlay);overflow:auto;border-right:1px solid var(--border);
     transform:translateX(-102%);transition:transform var(--dur) var(--ease);
     box-shadow:var(--shadow-overlay)}
   body.navoffen nav.seite{transform:none}
-  body.navoffen::after{content:"";position:fixed;inset:56px 0 0;
+  body.navoffen::after{content:"";position:fixed;inset:var(--kopfh) 0 0;
     background:rgba(28,34,32,.4);z-index:calc(var(--z-overlay) - 1)}
   main{padding:var(--space-5) var(--space-4) var(--space-8)}
   h2{font-size:24px}

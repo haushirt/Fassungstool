@@ -568,12 +568,20 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
    nebeneinander vorkommt (3 x 26 + 2 x 20 = 118). Mehr bricht um — die
    Spalte bleibt gleich breit, damit der erste Ring seine x-Position nie
    verlaesst. */
-.w{--dotsp:118px;
-  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);
-  padding:var(--space-3) 0;cursor:pointer;
-  display:grid;grid-template-columns:minmax(0,1fr) var(--dotsp) 24px auto;
-  align-items:center;column-gap:var(--space-2);
+/* BERICHTIGUNG (Jagd 13, A1/B1): Das Raster stand zuerst an `.w` selbst.
+   `.w` ist aber die Grundform ALLER Listenzeilen — acht Stellen tragen
+   sie, nur eine davon ist die Zaehlzeile: die Archivliste (`:2318`), der
+   Zaehler (`countRow`), die Jahrgaenge und das Einraeumen im
+   Wareneingang, die Getraenkezeile (`getrRow`). Dort schob das Raster den
+   Namen in die Ringspalte und den Zaehlknopf 31 px aus dem Fenster.
+   Die Grundform ist deshalb wieder eine Reihe; das Raster traegt die
+   Zaehlzeile allein (`.w--zaehl`). */
+.w{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);
+  padding:var(--space-3) 0;display:flex;align-items:center;gap:var(--space-3);cursor:pointer;
   transition:background var(--dur-fast) var(--ease)}
+.w--zaehl{--dotsp:118px;
+  display:grid;grid-template-columns:minmax(0,1fr) var(--dotsp) 24px auto;
+  align-items:center;column-gap:var(--space-2);gap:0}
 .w:active{background:var(--surface-3)}
 .wtx{display:flex;align-items:center;gap:11px;min-width:0}
 .w .tx{flex:1;min-width:0}
@@ -642,7 +650,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
    nebeneinander und der dritte eine Zeile tiefer: die Spalte wird schmaler,
    die x-Position des ERSTEN Rings bleibt, und der Name behaelt seine
    Zeilen. Das Raster von 46 px bleibt unangetastet. */
-@media (max-width:360px){ .w{--dotsp:72px} }
+@media (max-width:360px){ .w--zaehl{--dotsp:72px} }
 .dot{position:relative;width:26px;height:26px;border-radius:50%;background:transparent;
   border:2px solid var(--accent);box-shadow:inset 0 0 0 20px var(--accent-ring)}
 /* inset rechnet gegen die POLSTERkante: der 2px-Rahmen faellt heraus.
@@ -1126,9 +1134,14 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 /* 52 px, nicht 46: die beiden Knöpfe sind das Letzte, was vor dem Keller
    getroffen werden muss. Die Untergrenze des Auftrags ist 46. */
 .grussdatum,.grusspasst{flex:1;min-height:var(--control-h-lg);border-radius:var(--radius-md);
-  font:inherit;font-size:var(--text-md);font-weight:var(--weight-medium);cursor:pointer}
-.grussdatum{background:var(--surface);border:1px solid var(--border-strong);color:var(--fg)}
+  font:inherit;font-size:var(--text-md);font-weight:var(--weight-medium);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;text-align:center}
+.grussdatum{position:relative;background:var(--surface);
+  border:1px solid var(--border-strong);color:var(--fg)}
 .grussdatum:active{background:var(--surface-3)}
+/* Durchsichtig über dem Knopf, volle Fläche — siehe `.datumline`. */
+.grussdatum input{position:absolute;inset:0;width:100%;height:100%;
+  opacity:0;border:0;padding:0;margin:0;cursor:pointer}
 .grusspasst{background:var(--accent);border:1px solid var(--accent);color:var(--fg-on-dark)}
 .grusspasst:active{background:var(--accent-dunkel)}
 .sheetkoerper .hp{margin:0;font-size:var(--text-md);line-height:var(--leading-normal)}
@@ -1518,9 +1531,18 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
       <div class="grussstand" id="grussStand"></div>
     </div>
     <div class="grussknoepfe">
-      <button type="button" class="grussdatum" id="grussDatum">Anderes Datum</button>
+      <!-- BERICHTIGUNG (Jagd 13): Das Datumsfeld lag zuerst als `.vh` in
+           der Ecke — 5x4 px, `clip:rect(0,0,0,0)`. `showPicker()` wirft
+           darauf in manchen Browsern, und ein `click()` auf ein geclipptes
+           Feld öffnet unter iOS keinen Kalender: der ganze Weg „Anderes
+           Datum" wäre tot gewesen, ohne dass es jemand gemerkt hätte.
+           Jetzt liegt das Feld durchsichtig ÜBER seinem Knopf — dieselbe
+           Form wie das Datum in der Kopfzeile (`.datumline`), die im Haus
+           seit v12 funktioniert. Wer den Knopf trifft, trifft das Feld. -->
+      <label class="grussdatum" id="grussDatum">Anderes Datum
+        <input type="date" id="grussSel" aria-label="Anderen Betriebstag wählen">
+      </label>
       <button type="button" class="grusspasst" id="grussPasst">Passt</button>
-      <input type="date" id="grussSel" class="vh" aria-label="Anderen Betriebstag wählen">
     </div>
   </div>
 </div>
@@ -1576,7 +1598,14 @@ async function bekannterCode(code){
 const USER={};   /* bleibt leer — nur noch Rückwärtskompatibilität */
 const UKEY="hh_user";
 function whoAmI(){try{return sessionStorage.getItem(UKEY)||"";}catch(e){return "";}}
-function setUser(n){try{n?sessionStorage.setItem(UKEY,n):sessionStorage.removeItem(UKEY);}catch(e){}}
+/* BERICHTIGUNG (Jagd 13, B3): Wer sich abmeldet, nimmt seine Rolle mit.
+   Blieb `hh_rolle` stehen, sah die naechste Person am selben Geraet den
+   Backoffice-Link der Leitung — oder die Leitung bekam ihn nicht, weil
+   noch „service" darin stand. Die Rolle haengt am Namen, nicht am Geraet. */
+function setUser(n){try{
+  if(n)sessionStorage.setItem(UKEY,n);
+  else {sessionStorage.removeItem(UKEY);setRolle("");}
+}catch(e){}}
 const KEY="hh_keller_v12";
 const $=s=>document.querySelector(s);
 /* Zurück/Weiter wandern bei jedem Aufbau in den Inhalt. Die Knoten
@@ -1950,7 +1979,14 @@ function fernOffen(){
 }
 /* Gibt es zu diesem Modus einen neueren Stand woanders? */
 function fernNeuer(m){
-  const ziel=today();
+  /* BERICHTIGUNG (Jagd 13, A2): Hier stand `today()`, waehrend `start()`
+     mit `vorgabeTag()` rechnet. Wer in der Begruessung einen anderen Tag
+     gewaehlt hatte, bekam den Dialog „Auf einem anderen Geraet weiter?"
+     fuer den HEUTIGEN Tag, und `start()` legte danach einen leeren
+     Vorgang fuer den GEWAEHLTEN an: der uebernommene Stand war sofort
+     wieder weg, und der Dialog kam nie wieder, weil die Zaehlnummer
+     quittiert war. Beide Seiten fragen jetzt denselben Tag. */
+  const ziel=vorgabeTag();
   const v=FERN[m+"_"+ziel];
   if(!v||v.geraet===GERAET)return null;
   const eigen=zaehlnr(m+"_"+ziel);
@@ -2022,7 +2058,7 @@ function netzChip(){
      Vokabel fuer eine leere Warteschlange.
      Diese Zeile spricht jetzt nur noch von der UEBERTRAGUNG; das Wort
      „offen" gehoert der Aufgabe. */
-  const viele=o===1?"1 Vorgang":o+" Vorgänge";
+  const viele=o===1?"1 Vorgang wartet":o+" Vorgänge warten";
   const ueb=ueberholtOffen();
   let t="", k="", quittierbar=false;
   /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
@@ -2031,11 +2067,11 @@ function netzChip(){
   if(z==="kein-server"&&!ueb.length){ t=""; }
   else if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
   else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler"; quittierbar=true; }
-  else if(weg&&o>0){ t=viele+" wartet – kein Netz"; k="wartet"; }
+  else if(weg&&o>0){ t=viele+" – kein Netz"; k="wartet"; }
   else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
-  else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" wartet"
+  else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele
                                     :"Server antwortet nicht"; k="fehler"; }
-  else if(o>0){ t=viele+" wartet"; k="wartet"; }
+  else if(o>0){ t=viele; k="wartet"; }
   else if(z==="verbunden"){ t="Alles übertragen"; k="ok"; }
   els.forEach(el=>{
     if(!t){ el.style.display="none"; return; }
@@ -2220,8 +2256,8 @@ function renderLogin(){
     if(!name&&!serverHat) name=await bekannterCode(code);  /* Rückfallebene */
     if(name&&serverHat) await merkeCode(code,name);        /* fürs nächste Mal */
     laeuftPruefung=false;
-    if(name){ setUser(name);L.style.display="none";renderMenu();
-      window.scrollTo(0,0);netzStart();return; }
+    if(name){ setUser(name);setRolle("");L.style.display="none";renderMenu();
+      window.scrollTo(0,0);netzStart();zieheRolle();return; }
     inp.value="";male();
     $("#pinFehler").textContent=
       "Kein Netz. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";};
@@ -2564,6 +2600,35 @@ function start(m){
     return;
   }
 
+  /* BERICHTIGUNG (Jagd 13, A3): Diese Zeile raeumte einen laufenden
+     Vorgang still weg, sobald sein Tag nicht mehr der vorgeschlagene war.
+     Solange der Tag nur um Mitternacht wechselte, fiel das kaum auf; seit
+     „Anderes Datum" (F9) loest es ein Fingertipp aus — eine angefangene
+     Tagesfassung war danach leer, ohne Frage und ohne Hinweis.
+     Jetzt gilt: Ein Vorgang mit Inhalt, der noch laeuft, wird nie ohne
+     Frage verlassen. Ein leerer darf still weichen, dabei geht nichts
+     verloren. */
+  if(cur&&!cur.finished&&cur.tag!==ziel&&hasData(m,cur)&&!start._tagfrage){
+    const weiter=(mitTag)=>{
+      $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
+      if(mitTag)setTagWahl(mitTag===today()?null:mitTag);
+      start._tagfrage=true; start(m); start._tagfrage=false; };
+    $("#ovT").textContent=MODES[m].t+" für "+deTag(cur.tag)+" ist angefangen";
+    $("#ovBody").innerHTML=`<p>Auf diesem Gerät läuft ${esc(MODES[m].t)} für
+      <b>${esc(deTag(cur.tag))}</b> – ${esc(kurzInhalt(m,cur))}.
+      Vorgeschlagen ist gerade <b>${esc(deTag(ziel))}</b>.</p>
+      <button class="andererweg" id="ovNeu"><b>Neu für ${esc(deTag(ziel))} beginnen</b>
+      <span>Der angefangene Stand für ${esc(deTag(cur.tag))} wandert ins Archiv
+      und ist im laufenden Betrieb nicht mehr in der Hand.</span></button>`;
+    $("#ov").classList.add("on");
+    $("#ovOk").textContent="Weiter am "+kurzTag(cur.tag);
+    $("#ovOk").onclick=()=>weiter(cur.tag);
+    $("#ovBody").querySelector("#ovNeu").onclick=()=>{
+      archive(cur);S[m]=blank(m);save();weiter(null); };
+    $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
+      $("#ovOk").textContent="Ja"; mode=null; renderMenu(); };
+    return;
+  }
   if(cur&&(cur.finished||cur.tag!==ziel)){archive(cur);S[m]=blank(m);}
   else if(!cur)S[m]=blank(m);
   if(!S[m].name)S[m].name=whoAmI();
@@ -2723,12 +2788,9 @@ function grussVielleicht(){
   sheet.querySelectorAll("[data-gzu]").forEach(e=>e.onclick=grussSchliessen);
   $("#grussPasst").onclick=grussSchliessen;
   const sel=$("#grussSel");
-  $("#grussDatum").onclick=()=>{
-    /* showPicker() gibt es erst seit Safari 16. Ohne das öffnet ein
-       normaler Klick auf das Feld denselben Kalender. */
-    try{ if(sel.showPicker){sel.showPicker();return;} }catch(e){}
-    sel.click();
-  };
+  /* Kein eigener Klick-Handler mehr: das Feld liegt über dem Knopf und
+     bekommt den Tipp selbst. Ein zusätzliches `showPicker()` würde ihn
+     doppelt auslösen. */
   sel.onchange=()=>{
     if(!sel.value)return;
     setTagWahl(sel.value===today()?null:sel.value);
@@ -3035,7 +3097,7 @@ function schrankHead(m,titel,sub,list,checkFn,fullFn,fullLabel){
 function dotRow(w,bucket,soll,pos){
   const d=D();
   const key=bucket==="rest"?w.id:w.id+"_"+bucket;
-  const b=document.createElement("div");b.className="w";
+  const b=document.createElement("div");b.className="w w--zaehl";
   /* F3 (18.09.2026): Die Zaehlringe hingen bis hierher IM Namensblock,
      gleich hinter dem Namen. Weil die Namen verschieden lang sind, stand
      der erste Ring in jeder Zeile woanders — beim Zaehlen wandert der
@@ -3061,7 +3123,7 @@ function dotRow(w,bucket,soll,pos){
   const upd=()=>{const f=g(D()[bucket],w.id),ist=soll-f,seen=!!D().seen[key]||f>0;
     pts.forEach((s,i)=>s.classList.toggle("off",i>=ist));
     missN.textContent=f?"\u2212"+f:"";
-    b.className="w"+(f?" miss":(seen?" seen":""));
+    b.className="w w--zaehl"+(f?" miss":(seen?" seen":""));
     chk.className="chk"+(f?" warn":(seen?" on":""));
     chk.textContent=f?"!":(seen?"\u2713":"");
     chk.setAttribute("aria-label",seen&&!f?`${w.wein} als voll bestätigt – antippen zum Lösen`:`${w.wein} als voll bestätigen`);
@@ -3855,9 +3917,18 @@ function gFit(box,L){
   const cb=erste?erste.clientWidth:72;
   const maxPlatz=Math.max.apply(null,cols.map(colPlatz));
   /* Zwei Deckel: die Spalte (ein Punkt darf nie breiter sein als seine
-     Zelle) und die Lade (bei zehn Flaschen uebereinander waere eine Lade
-     sonst hoeher als der Schirm; DHOCH ist die gemessene Grenze, bei der
-     Lade 4 auf einem iPhone noch als Ganzes lesbar bleibt). */
+     Zelle) und die Hoehe eines Stapels.
+     BERICHTIGUNG (Jagd 13, B4): Hier stand, DHOCH sei die Grenze, bei der
+     Lade 4 „auf einem iPhone noch als Ganzes lesbar bleibt". Das stimmt
+     nicht. Seit das Raster umbricht (F2), steht Lade 4 bei 390 px in zwei
+     Reihen zu vier Spalten und ist 1040 px hoch statt 608, bei 320 px in
+     drei Reihen und 1499 px — sie passt auf keinen iPhone-Schirm mehr und
+     wird gerollt. Das ist der Preis der Vorgabe („Passt eine Spalte nicht,
+     bricht das Raster um") und keine Nebenwirkung: gewonnen ist, dass
+     jeder Name unter seiner Flasche steht und nichts beschnitten wird.
+     DHOCH begrenzt allein die Hoehe EINES Stapels, damit die Punkte bei
+     zehn Flaschen nicht ins Riesenhafte wachsen. Steht in
+     review/BACKLOG.md. */
   const DHOCH=320;
   const dd=Math.max(18,Math.min(34,cb-6,
     Math.floor((DHOCH-(maxPlatz-1)*GGAP)/maxPlatz)));
@@ -4932,16 +5003,32 @@ window.addEventListener("resize",()=>{measure();
 const FOTO_WEG="hh_fotos_geloescht_v1";
 function aufraeumenFotospeicher(){
   try{
-    Object.keys(S||{}).forEach(k=>{ if(S[k]&&S[k].fotos){ delete S[k].fotos; } });
-    save();
-    const a=loadArch();let ge=false;
-    Object.keys(a).forEach(k=>{ if(a[k]&&a[k].fotos){ delete a[k].fotos; ge=true; } });
-    if(ge)saveArch(a);
+    /* Nur schreiben, wenn wirklich etwas wegzunehmen ist — sonst legt
+       jeder Start denselben Stand noch einmal in den Speicher. */
+    let ge=false;
+    Object.keys(S||{}).forEach(k=>{ if(S[k]&&S[k].fotos){ delete S[k].fotos; ge=true; } });
+    if(ge)save();
+    const a=loadArch();let ga=false;
+    Object.keys(a).forEach(k=>{ if(a[k]&&a[k].fotos){ delete a[k].fotos; ga=true; } });
+    if(ga)saveArch(a);
   }catch(e){}
   try{
     if(localStorage.getItem(FOTO_WEG))return;
-    localStorage.setItem(FOTO_WEG,"1");
-    if(window.indexedDB&&indexedDB.deleteDatabase)indexedDB.deleteDatabase("hh_fotos");
+    if(!(window.indexedDB&&indexedDB.deleteDatabase)){
+      /* Kein indexedDB (privates Fenster, gesperrter Speicher): die Marke
+         bleibt weg, damit es der naechste Start noch einmal versucht. */
+      return;
+    }
+    /* Die Marke erst setzen, wenn das Loeschen wirklich durch ist. Stand
+       sie davor und das Loeschen scheiterte, bliebe die Datenbank fuer
+       immer liegen und niemand versuchte es noch einmal. */
+    const q=indexedDB.deleteDatabase("hh_fotos");
+    const fertig=()=>{try{localStorage.setItem(FOTO_WEG,"1");}catch(e){}};
+    q.onsuccess=fertig;
+    /* „blocked" heisst: ein anderer Tab haelt die Datenbank offen. Dann
+       beim naechsten Start noch einmal — keine Marke. */
+    q.onerror=()=>{};
+    q.onblocked=()=>{};
   }catch(e){}
 }
 /* Der Zustand steht in der Statuszeile unter dem Kopf (netzChip). */

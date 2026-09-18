@@ -92,7 +92,8 @@ describe("F7 · „offen“ gehört der Aufgabe, nicht der Warteschlange", () =>
   });
   test("die Wartezeile nennt den Vorgang, nicht „offen“", () => {
     assert.doesNotMatch(APP, /warten auf Übertragung/);
-    assert.match(APP, /t=viele\+" wartet"/);
+    assert.match(APP, /o===1\?"1 Vorgang wartet":o\+" Vorgänge warten"/);
+    assert.match(APP, /else if\(o>0\)\{ t=viele; k="wartet"; \}/);
   });
 });
 
@@ -118,8 +119,23 @@ describe("F2/F3 · was die Gestaltung tragen muss", () => {
     assert.match(APP, /\.gcap\{[^}]*overflow-wrap:anywhere/);
   });
   test("die Weinzeile ist ein Raster mit fester Ringspalte", () => {
-    assert.match(APP, /\.w\{[^}]*grid-template-columns:minmax\(0,1fr\) var\(--dotsp\)/);
+    assert.match(APP, /\.w--zaehl\{[^}]*grid-template-columns:minmax\(0,1fr\) var\(--dotsp\)/);
     assert.match(APP, /\.dots\{[^}]*width:var\(--dotsp\)/);
     assert.match(APP, /\.dots\{[^}]*justify-content:flex-start/);
+  });
+
+  /* Jagd 13, A1: Das Raster stand zuerst an `.w` und zerriss damit sieben
+     andere Zeilentypen. Die Grundform muss eine Reihe bleiben. */
+  test("die Grundform .w bleibt eine Reihe, nicht ein Raster", () => {
+    const grund = /\n\.w\{[^}]*\}/.exec(APP);
+    assert.ok(grund, ".w nicht gefunden");
+    assert.match(grund[0], /display:flex/);
+    assert.doesNotMatch(grund[0], /grid-template-columns/);
+  });
+
+  test("nur die Zählzeile trägt das Raster", () => {
+    /* dotRow() ist die einzige Stelle, die `w--zaehl` vergibt. */
+    const treffer = [...APP.matchAll(/className="w w--zaehl"/g)];
+    assert.equal(treffer.length, 2, "Aufbau und upd() in dotRow()");
   });
 });
