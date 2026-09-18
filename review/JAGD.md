@@ -43,13 +43,18 @@ weiterbearbeitet; ab Zeile 1751 verschieben sich die Nummern um +4.
 | C | 8 | Zuordnungsseite zeigt ein Mischgetränk mit Rezeptur als „festgelegt“, während das Feld daneben „— offen —“ steht | `public/leitung.html:1969`, `:1978` | `zuordnung()` gibt `status:"rezept"` zurück; der Pillen-Ausdruck hat dafür keinen Zweig und fällt in „festgelegt“ | → BACKLOG | offen |
 | C | 7 | `kurzInhalt(m,"ware")` zählt die gelieferten Getränke (`gent`) nicht mit — der Dialog nennt eine zu kleine Flaschenzahl | `public/index.html:2207` | 2 Kisten à 20 + 24 Cola → „1 Position · 40 Flaschen“; die 24 Cola fehlen im Satz, obwohl sie im selben Vorgang stehen | → BACKLOG | offen |
 | C | 7 | „Ein zweiter, leerer Vorgang würde den ersten ersetzen“ — auch ein VOLLER zweiter Vorgang ersetzt ihn vollständig | `public/index.html:2262` | `ereignisseAbleiten` vergleicht Soll gegen Ist: der neue Zustand ist der ganze Zustand, die erste Lieferung wird in jedem Fall gegengebucht | → BACKLOG | offen |
-| A | 11 | Die am Zähltag gelieferte Menge wird ausgewiesen — aber nur im Kellerbestand. Nachbestellen, Mittagsblick und Zählliste rechnen auf der zu niedrigen Zahl, ohne den Satz, der sie erklärt | `public/leitung.html:1964`, `:1970`, `:1514`, `:1534`, `:2186` | Zählung 14.09. w003 = 10 Fl., Lieferung 14.09. = 24 Fl., danach 3 × 6 Fl. gefasst: Bestand **−8**, `unklar 24`. Nachbestellen: „Bestand −8 · 11 × 12 = **132 Flaschen**“; Zählliste: „rechnerisch unter null“; Mittagsblick: „1 Positionen stehen rechnerisch unter null — die Zählung ist überholt. Neu zählen.“ Im Keller stehen 16 | software-engineer | neu |
-| B | 9 | Im Getränkefach „Mischgetränke“ überlappen sich die Kürzel bei 390 px, seit `--text-xs` 15 px ist | `public/index.html:113`, `:1252`, `:1298` | In Chromium gemessen (Range + elementFromPoint, Kellerzählung → Getränke): „Ginger Ale“/„Bitter Lemon“ −3 px, „Bitter Lemon“/„Tonic TH“ −4 px, „Ginger Beer“/„Gast. 0,25“ −3 px. Mit `--text-xs:11px` im selben Aufbau: keine einzige Berührung | ui-designer | neu |
-| B | 10 | Trifft der Vorbehalt und ist die Differenz 0, steht die grüne Plakette „stimmt“ da | `public/leitung.html:1738`, `:1734`, `:1392` | 2 Fl. aus einer Position gerechnet, 3 Fl. an einer zweiten ohne Größe, 2 Fl. entnommen → `diff 0`, `vorbehalt {ohne:1,gesamt:2}`. Die Zeile sagt „stimmt“ und daneben klein „1 von 2 Positionen ohne Größe — die Differenz ist unvollständig“. In der roten Zahl und in der Zählliste steht sie mit 0 | software-engineer | neu |
+| A | 11 | Die am Zähltag gelieferte Menge wird ausgewiesen — aber nur im Kellerbestand. Nachbestellen, Mittagsblick und Zählliste rechnen auf der zu niedrigen Zahl, ohne den Satz, der sie erklärt | `public/leitung.html:1964`, `:1970`, `:1514`, `:1534`, `:2186` | Zählung 14.09. w003 = 10 Fl., Lieferung 14.09. = 24 Fl., danach 3 × 6 Fl. gefasst: Bestand **−8**, `unklar 24`. Nachbestellen: „Bestand −8 · 11 × 12 = **132 Flaschen**“; Zählliste: „rechnerisch unter null“; Mittagsblick: „1 Positionen stehen rechnerisch unter null — die Zählung ist überholt. Neu zählen.“ Im Keller stehen 16 | software-engineer | **behoben in Runde 12** — am 18.09. selbst gerechnet: alle vier Ansichten nennen die 24 Flaschen; Bestellvorschlag **10–11 × 12 = 120–132** statt 11 × 12 = 132 (Ziel 126, mit 16 im Keller sind 10 Kisten richtig). Spanne reist in Tabelle, Mittagsblick, Zettel und CSV mit |
+| B | 9 | Im Getränkefach „Mischgetränke“ überlappen sich die Kürzel bei 390 px, seit `--text-xs` 15 px ist | `public/index.html:113`, `:1252`, `:1298` | In Chromium gemessen (Range + elementFromPoint, Kellerzählung → Getränke): „Ginger Ale“/„Bitter Lemon“ −3 px, „Bitter Lemon“/„Tonic TH“ −4 px, „Ginger Beer“/„Gast. 0,25“ −3 px. Mit `--text-xs:11px` im selben Aufbau: keine einzige Berührung | ui-designer | **behoben in Runde 12** — über 15 Breiten von 320 bis 768 px in Chromium nachgemessen: **0 Überlappungen**. Gegenprobe gegen `44825cd` im selben Messgerät: 9 Stellen. Lade 4 versetzt (34 px Spalte), Lade 5/6 nicht (48 px) |
+| B | 10 | Trifft der Vorbehalt und ist die Differenz 0, steht die grüne Plakette „stimmt“ da | `public/leitung.html:1738`, `:1734`, `:1392` | 2 Fl. aus einer Position gerechnet, 3 Fl. an einer zweiten ohne Größe, 2 Fl. entnommen → `diff 0`, `vorbehalt {ohne:1,gesamt:2}`. Die Zeile sagt „stimmt“ und daneben klein „1 von 2 Positionen ohne Größe — die Differenz ist unvollständig“. In der roten Zahl und in der Zählliste steht sie mit 0 | software-engineer | **behoben in Runde 12** — `BEFUND` (`leitung.html:1309`) gibt bei `\|diff\| < 0,5` mit Vorbehalt „unvollständig" (p-grau); Tabelle und CSV lesen dieselbe Funktion. Rest siehe C/12-4 |
 | C | 9 | Kürzel im Getränkefach werden unten beschnitten: `.gcap` ist 15 px hoch, die Zeile misst seit v28 18,75 px | `public/index.html:1242`, `:1279` | gemessen: „Still“, „Serena“, „Seher“, „Noblier“, „De Saint Gall“, „Leindl“, „Hirsch“, „Verus“, „Fritsch (Karl)“ mit scrollHeight 19 / clientHeight 15; im Bild sind die Klammern von „Fritsch (Karl)“ unten abgeschnitten | → BACKLOG | neu |
 | C | 9 | Das Messgerät sieht die Getränkeladen nie — es ruft `start(m)` und misst den ERSTEN Schritt jedes Modus | `tests/ui-mass.cjs:330`, `:93` | Beide Funde oben liegen hinter `branch="getr"`. Ein eigener Durchlauf über 17 Lagen (alle Schritte aller fünf Modi) fand sie; `LAUF=jagd-final` meldet dieselben Lagen als ✓ | → BACKLOG | neu |
 | C | 10 | Der Mittagsblick nennt einen Grund, den es seit v29 nicht mehr gibt: „Größe fehlt oder Position nicht zugeordnet“ | `public/leitung.html:1510` | `UNKLAR_GRUND` kennt nur noch `groesse` und `keinbericht` (`:1255`); eine offene Position schaltet seit Entscheidung 9 nichts mehr stumm | → BACKLOG | neu |
 | C | 11 | Der Kommentar über `nachZeit` behauptet das Gegenteil dessen, was v30 rechnet | `public/leitung.html:820` | „Bewusst in Kauf genommen: Wird die Lieferung eines Tages VOR der Zählung desselben Tages in den Keller gestellt, zählt sie trotzdem obendrauf“ — seit v30 wird sie ausgewiesen statt addiert (`:1153`) | → BACKLOG | neu |
+| C | 12 | „Das ist kein Zählfehler" behauptet eine Gewissheit, die es nicht gibt — steckte die Lieferung schon in der Zählung, sind die 8 Flaschen wirklich fort; der rote Alarm ist in diesem Fall zum neutralen Satz geworden | `public/leitung.html:1577`, `:1972` | Zählung 10, Lieferung 24 am Zähltag, 18 gefasst: `minusGeteilt` legt den Wein in `erklaert`, `hinweis bad` wird zu `hinweis` ohne Klasse. Die Maßnahme daneben („im Keller nachsehen") bleibt richtig, deshalb C | → BACKLOG |
+| C | 12 | Die Untergrenze der Bestellspanne kann 0 werden, die Obergrenze hat `Math.max(1,…)` — die Zeile schlägt „0–2 × 12 · 0–24 Flaschen" vor und zählt trotzdem in die Kachel „Nachbestellen" | `public/leitung.html:2029`, `:2032`, `:1458` | Gerechnet: Zählung 8, Lieferung 24 am Zähltag, danach 6 × 1 Fl., `pt` 1 → Ziel 21, `b` 2, `b+u` 26 ≥ 21 → `kistenMin` 0, `kisten` 2 | → BACKLOG |
+| C | 12 | `bestellvorschlag.csv` führt in „Kisten"/„Flaschen" weiter die OBERE Einzelzahl (11 / 132); die Spanne steht nur in der neuen Spalte „Kisten mindestens" | `public/leitung.html:2080`, `:2083` | Im Code ausdrücklich so entschieden (Kommentar `:2078`). Wer nur die alten Spalten liest, bestellt bis zu eine Kiste zu viel | → BACKLOG |
+| C | 12 | Eine Zeile mit Vorbehalt und `\|diff\| < 0,5` steht in KEINEM Zähler: nicht in der roten Zahl (Filter `\|diff\| ≥ 1`), nicht in `ohneUrteil` (nur `r.unklar`), nicht in der Zählliste | `public/leitung.html:1424`, `:1512`, `:2261` | Rest von B/10-1: die grüne Plakette ist fort, die Zeile bleibt aber unsichtbar, sobald man nach Zahlen statt nach Zeilen sieht | → BACKLOG |
+| C | 12 | Bei 320 px ragt der Tintenkasten der versetzten Kürzel 6,2 px über die Kante der Ladenkarte | `public/index.html:1274` | Über 15 Breiten gemessen: 320 → 6,2 px, 402 → 3,6, 414/428 → 1,1, 390/393 → 0. Kein Beschnitt, kein waagrechter Überlauf (`scrollWidth = clientWidth`). 320 px ist kein Gerät im Haus | → BACKLOG |
 
 ---
 
@@ -674,3 +679,108 @@ Fall                                               Worker   Backoffice  unklar
 * Echtes Safari, echtes iPad, Bildschirmtastatur, Notch, Safe-Area,
   Gummiband, der Wechsel des Service Workers von v27 auf v30 auf einem
   Gerät, das v27 im Speicher hat.
+
+
+---
+
+# Vierte Jagd · Runde 12 (18.09.2026, Stand `ea34f84`, Diff `44825cd..HEAD`)
+
+**Kein A, kein B.** Fünf C-Funde, alle oben in der Tabelle.
+
+## 1 · A/11-1 — zu, nachgerechnet
+
+Der Fall des Fundes durch den ausgelieferten `leitung.html`, im Browser
+gezeichnet (Chromium, 1280 und 390 px), nicht aus dem Kommentar gelesen:
+
+```
+Zählung   14.09.  w003 = 1 Reihe + 4   → 10 Fl.
+Lieferung 14.09.  2 Kisten à 12        → 24 Fl., ausgewiesen
+Fassung   15./16./17.09. je 6 Fl.      → −18
+
+bestand().b.w003 = −8   ·   unklar.w003 = 24   ·   proTag 6
+Ziel = ceil(6 × 14 × 1,5) = 126
+kisten    = ceil((126 − 0)/12)  = 11      (Bestand −8, gedeckelt auf 0)
+kistenMin = ceil((126 − 16)/12) = 10      (−8 + 24 = 16)
+```
+
+| Ansicht | was jetzt dasteht |
+|---|---|
+| Kellerbestand | „Am Zähltag wurden 24 Flaschen … geliefert"; zusätzlich „1 weitere Position steht nur deshalb unter null …" |
+| Nachbestellen | „**10–11** à 12 · **120–132**" plus der Satz „… Vor dem Bestellen nachsehen." |
+| Mittagsblick | „1 Position steht nur deshalb unter null, weil am Zähltag 24 Flaschen geliefert wurden … kein Zählfehler — im Keller nachsehen." |
+| Zählliste | „am Zähltag 24 Fl. geliefert, nicht mitgerechnet", Rang 1 statt 0 |
+
+Alle vier nennen die 24. Die Bestellmenge ist vertretbar: im Keller stehen
+16, gebraucht werden 126 − 16 = 110, das sind 10 Kisten — genau die
+Untergrenze. Die Obergrenze 11 bleibt stehen, sie liegt eine Kiste darüber.
+
+Die Spanne wird nirgends als einzelne Zahl weiterverarbeitet: `bestellSpanne`
+steht in der Tabelle (`:2060`, `:2061`), im Mittagsblick (`:1644`) und im
+kopierten Zettel (`:2070`). `r.kisten` als nackte Zahl gibt es nur noch in
+der CSV (`:2082`) — dort neben zwei neuen Spalten (C/12-3). Kein weiterer
+Leser im Repo (`grep` über `public/`, `src/`; der Worker kennt keine
+Bestellliste).
+
+## 2 · Folgefehler: keine gefunden
+
+Die fünf selbst genannten Bewegungen, jede nachgesehen:
+
+* **Kistenzahl-Untergrenze** — `kistenMin = Math.min(kistenMin, kisten)`
+  (`:2032`). Die Obergrenze ist Zeichen für Zeichen die alte Formel; sie
+  sinkt nie. Stimmt.
+* **Rote Bannerzahl** — `vBestand` zeigt `M.echt.length` im roten Kasten,
+  `M.erklaert.length` in einem neutralen (`:1968`, `:1974`). Stimmt.
+* **Sortierung der Zählliste** — erklärtes Minus Rang 1, halb gedecktes
+  bleibt Rang 0 (`:2272`). Kein `bestand` ändert sich; die Länge der Liste
+  und damit die Zahl in der Navigation bleibt gleich. Stimmt.
+* **Zwei neue CSV-Spalten** — hinten angehängt, Kopf und Zeile haben beide
+  11 Felder (`:2080`, `:2083`). Stimmt.
+* **Ladenhöhen** — `.gcap` folgt der Zeilenhöhe (`index.html:1242`).
+  Gegenprobe gegen `44825cd` im selben Messgerät: vorher **9 Überlappungen
+  und 27 Beschnitte**, jetzt **0 und 0**. Der Prüfstein beißt.
+
+Zur ausdrücklichen Frage: **keine Ansicht rechnet ungesagt mit
+`bestand + unklar`.** `unklarMenge` hat genau fünf Leser
+(`:1578` Mittagsblick, `:1982` Kellerbestand, `:2028` Bestellliste,
+`:2264` Zählliste, `:1179` `minusGeteilt`), alle vier Rechenstellen sind in
+der Übergabe benannt. `reichweite`, `anteil`, `seit`, die Zahl in der
+Bestandsspalte und der Worker rechnen unverändert auf `b`.
+
+## 3 · Gesamtstand
+
+```
+npm test                    286 grün, dreimal hintereinander, kein Flackern
+                            286 grün unter TZ=Pacific/Kiritimati, Pacific/Midway, Europe/Vienna
+durchstich                  35/35
+ui-leitung-echt             40/40
+ui-zweiter-vorgang          15/15
+ui-fremdgeraet              10/10
+LAUF=jagd-schluss ui-mass   alle 8 Urteile ✓ (Überlauf 0, JS-Fehler 0,
+                            Schrift ≥ 15 px, Griffe, Kontrast, Kürzel-Stoß 0,
+                            Kürzel-Beschnitt 0, Gestaltungsschicht wortgleich)
+```
+
+Vier Dateien in `public/`, `sw.js` auf **v31**, keine Änderung an `src/`,
+`migrations/`, `docs/`, `schema.sql`, `package.json`, `wrangler.jsonc` —
+also keine Schemaänderung und keine neue Abhängigkeit. Journal und
+Offline-Reihe sind im Diff nicht berührt. Keine Codes, Namen oder
+Geheimnisse in den Diffs.
+
+**Eigene Messung über 15 Breiten** (320–768 px, Laden 4/5/6/1, Tintenkasten
+per Range): 0 Überlappungen an jeder Breite, `scrollWidth = clientWidth`
+überall. Der Versatz schaltet bei Spalten < 40 px; bei 440 px (Spalte 40 px,
+ohne Versatz) berührt sich trotzdem nichts.
+
+**Zwei Bilder wirklich angesehen:** `review/screens/jagd-schluss/app-390-lade-4.png`
+— Mischgetränke, acht Spalten, Kürzel abwechselnd hoch/tief gesetzt, keine
+Berührung, jedes Kürzel mittig über seiner Säule. Und die Bestellliste,
+einmal mit den Prüfdaten (`leitung-1280-bestellen.png`, keine Spanne, weil
+keine Lieferung am Zähltag) und einmal mit dem Fall des Fundes: „10–11 à 12 ·
+120–132" mit dem Satz darunter.
+
+## Ungeprüft geblieben
+
+* Echtes Safari, echtes iPad, Tastatur, Notch, Safe-Area, der Wechsel des
+  Service Workers von v30 auf v31 auf einem Gerät, das v30 im Speicher hat.
+* Die Live-D1 (kein Connector in dieser Sitzung).
+* Das Druck-Layout der Getränkeladen mit der neuen Kürzelhöhe.
