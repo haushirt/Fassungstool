@@ -139,6 +139,20 @@ async function hilfeWeg(p, wo) {
   return false;
 }
 
+/* Seit Runde 14 (F9) begruesst die App beim Oeffnen — einmal je Geraet
+   und Betriebstag, als Blatt ueber dem Menue. Fuer die Persona ist auch
+   das eine Handlung: erst „Passt", dann geht es weiter. Wird sie nicht
+   weggetippt, faengt das dunkle Feld darunter JEDEN Fingertipp ab. */
+async function grussWeg(p, wo) {
+  const k = p.locator("#grussPasst");
+  if (await k.count() && await k.isVisible()) {
+    notiere(wo, "Begruessung liegt ueber dem Schirm — erst „Passt“ tippen");
+    await k.click(); await p.waitForTimeout(250);
+    return true;
+  }
+  return false;
+}
+
 (async () => {
   await new Promise(r => srv.listen(8932, r));
   const b = await pw.chromium.launch();
@@ -172,6 +186,7 @@ async function hilfeWeg(p, wo) {
     const m = document.getElementById("menu");
     return !!m && getComputedStyle(m).display !== "none";
   });
+  await grussWeg(p, "nach dem Anmelden");
   console.log("2. Im Menü:", imMenu);
   if (!imMenu) notiere("Anmeldung", "kommt mit gültigem Code nicht ins Menü");
   await bild(p, "menu");
@@ -211,6 +226,7 @@ async function hilfeWeg(p, wo) {
     imMenu: getComputedStyle(document.getElementById("menu")).display !== "none",
     angemeldet: !!sessionStorage.getItem("hh_user")
   }));
+  await grussWeg(p, "nach dem Neuladen");
   console.log("4. Abbruch mitten in der Eingabe (Neuladen):");
   console.log("   Zählstand überlebt:", vorAbbruch === nachAbbruch.stand);
   console.log("   noch angemeldet:", nachAbbruch.angemeldet, "· steht im Menü:", nachAbbruch.imMenu);
@@ -224,6 +240,7 @@ async function hilfeWeg(p, wo) {
   SERVER.aus = 1;
   await p.evaluate(() => { try { start("tag"); } catch (e) {} });
   await p.waitForTimeout(400);
+  await grussWeg(p, "Schritt 1 nach Abbruch");
   await hilfeWeg(p, "Schritt 1 nach Abbruch");
   const p2 = p.locator(".gbtn");
   if (await p2.count()) { await p2.first().click(); await p.waitForTimeout(300); }
@@ -320,6 +337,7 @@ async function hilfeWeg(p, wo) {
      nur, wenn es die Karte nicht mehr gibt. */
   let letzterSchritt = -1, stehtSeit = 0;
   for (let runde = 0; runde < 40; runde++) {
+    await grussWeg(p, "Schritt " + (runde + 1));
     await hilfeWeg(p, "Schritt " + (runde + 1));
     const lage = await p.evaluate(() => ({
       nr: (typeof step !== "undefined") ? step : -1,

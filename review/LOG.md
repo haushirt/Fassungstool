@@ -2533,3 +2533,93 @@ bleibt ungeprüft** — deshalb kein Merge aus eigener Hand.
 **Phase/Thema:** Oberfläche / Startseite, Laden, Weinzeile, Sonderentnahme
 **Backlog:** Kellerzählung ausdrücklich nicht Teil dieser Runde (Priorität mittel). A4 (Abgleich-Paarung im Backoffice dauerhaft um einen Tag versetzt) weiter offen (hoch).
 **STATUS:** FERTIG
+
+
+---
+
+### Runde 15 – qa-guardian (Schlusskontrolle vor dem Merge)
+
+**Kritik am Vorgänger:**
+* ❌ abgelehnt — `public/index.html:5104` gegen `:3658`: Runde 14 macht den
+  Grund zur Pflicht für den ganzen Modus `nach`, baut die Knöpfe aber nur in
+  `rNach()`, also in den Wein-Zweig. Im Zweig „Getränke" (`RG.nach` →
+  `rGetrMenge`, `:3114`) gibt es keinen einzigen Grundknopf. Gemessen:
+  `offenList()` meldet dort dauerhaft „Grund fehlt", `offenZiel` springt auf
+  Schritt 0 und landet wieder ohne Knöpfe, und der Abschluss geht nur noch
+  über „Trotzdem abschließen?" mit persönlichem Code. Beleg:
+  `review/screens/qa15/390-sonderentnahme-getraenke-abschluss-code.png`.
+* ↩️ geändert — Commit `7a6bd39` und die Übergabe von Runde 14 melden
+  „elf von elf Urteilen grün" bzw. „zehn von zehn". `tests/ui-mass.cjs` hat
+  **zehn** `urteil(...)`-Aufrufe (`:626`–`:652`), alle grün. Die Zahl war
+  beide Male um eins zu hoch; das Ergebnis selbst stimmt.
+* ↩️ geändert — `src/stamm.json` (Gasteiner 0,25 von 7 auf 8): eine
+  Stammdatenzahl, begründet mit „gleich hohe Flaschenspalten". `GSOLL`
+  (`public/index.html:3955`) → `gFehlt()` → `gent` → append-only Journal:
+  stimmt die 8 nicht, bucht jedes Nachfüllen dauerhaft eine Flasche zu viel.
+  Nicht zurückgedreht (kein Umbau in dieser Runde), aber Merge-Bedingung.
+* ✅ übernommen — `aufraeumenFotospeicher()` (`:5479`) ist sauber gebaut: die
+  Marke fällt nur in `onsuccess`, `onblocked`/`onerror` lassen sie weg, das
+  Löschen braucht kein Netz. Nachgestellt und bestätigt.
+
+**Umgesetzt (nur Prüfwerkzeug, kein Produktcode angefasst):**
+1. `tests/grund-journal.test.mjs` — der Grund gegen das ECHTE Schema
+   (`docs/live-schema.sql` in node:sqlite): zehn Parameter halten, `notiz`
+   trägt `grund=bruch`, ein Paket von VOR dem Deploy (ohne Feld `grund`)
+   kommt an, die Korrektur danach trägt ihn ebenfalls, ein erfundener Grund
+   wird verworfen, andere Modi bleiben ohne Notiz. 5 Prüfungen.
+2. `tests/qa-schluss.cjs` — bedient statt gemessen: Zweig Getränke, alter
+   Vorgang ohne `grund`, Ausgang bei doppeltem Abschluss, Abbruch mitten in
+   der Eingabe, 401, Bildspeicher (auch offline und beim zweiten Start).
+3. `tests/persona-tagesfassung.cjs` — lief seit F9 nicht mehr durch: die
+   Begrüßung fängt nach dem Neuladen jeden Tipp ab. `grussWeg()` ergänzt,
+   die Stelle wird als Befund der Persona notiert.
+
+**Geprüft:**
+* `npm test` **350/350** (345 vorher + 5 neue) · `tests/ui-nachjagd.cjs`
+  **9/9** · `LAUF=qa14 node tests/ui-mass.cjs` **10/10 Urteile grün** in
+  320/375/390/430/768/1280 (nicht 11 — es gibt zehn).
+* `tests/qa-schluss.cjs`: **4 von 22 nein**, alle vier derselbe Fund
+  (Getränke-Zweig ohne Grund). Grün: alter Vorgang ohne `grund` läuft und
+  schliesst ab; `hh_ausgang_v1` hält je Schlüssel EINEN Eintrag, der jüngste
+  Stand gewinnt, online leert sich die Reihe; Abbruch mitten in der Eingabe
+  behält Grund und Menge; bei 401 bleibt der Stand liegen und die Zeile sagt
+  „Nicht angemeldet"; `hh_fotos` wird geräumt, die Marke fällt erst nach
+  `onsuccess`, offline genauso, zweiter Start ohne Fehler.
+* Persona (iPhone 390 px, neue Servicekraft, 22:40): kompletter Weg bis zum
+  Abschluss, keine JS-Fehler. Zwei Stellen zum Hängenbleiben: Hilfe-Blatt und
+  Begrüßung legen sich ungefragt über den Schirm.
+* Regeln 1–14: `wrangler.jsonc` unberührt, `RUNDEN` unberührt (1000), keine
+  `CREATE/ALTER/DROP`-Zeile im Diff, keine neue Migration nötig
+  (`ereignis.notiz` existiert live, `docs/live-schema.sql:76`), vier Dateien
+  in `public/`, Gestaltungsschicht wortgleich (Urteil in `ui-mass`),
+  `sw.js` v31 → v35, Regel 14 (`schluessel`/`zaehlnr`/`geraet`) unberührt,
+  `gnparse.js` nicht angefasst (Regel 7), keine Secrets im Diff.
+* **UNGEPRÜFT:** echtes Safari/iPad; die Live-D1 selbst — in dieser Sitzung
+  gibt es keinen Cloudflare-Zugang, geprüft wurde gegen `docs/live-schema.sql`
+  (Stand 17.09.) in echtem SQLite.
+
+**Für die Nächsten:**
+* An die **Oberfläche**: Der Grund gehört vor den Zweigschalter oder in beide
+  Zweige. Solange er nur im Wein-Zweig steht, ist jede Getränke-Entnahme eine
+  Freigabe mit Code — und im Backoffice eine rote Zeile ohne Anlass.
+* An **Casimir**: `CLAUDE.md` wird mit diesem Merge mitverändert
+  (`5629ea1`, Abschnitt „Arbeitsweise", von einem Agenten geschrieben) —
+  bitte bestätigen. `review/ERGEBNIS.md` beschreibt nur Runde 13 und nennt
+  v32; als PR-Text wäre sie falsch.
+
+**Phase/Thema:** Schlusskontrolle vor dem Livegang (Runde 13 + 14)
+
+**Backlog:** neu unter „hoch": Getränke-Zweig ohne Grund (Merge-Sperre),
+Gasteiner 0,25 von 7 auf 8 bestätigen lassen, ERGEBNIS.md als PR-Text
+unbrauchbar. Neu unter „mittel": `sw.js` räumt den alten Vorrat auch nach
+leerer Installation, der Grund steht im Journal aber nirgends im Backoffice,
+grosse „0" bei reiner Getränke-Sonderentnahme.
+
+**STATUS:** BLOCKER — **Veto gegen den Merge nach `main`.** Der Livegang
+scheitert nicht an der Technik: Fotolöschung, Offline-Reihe, Idempotenz,
+401, alte Pakete ohne `grund` und das Journal gegen das echte Schema sind
+alle sauber. Er scheitert an einem Weg, den es im Haus jeden Tag gibt.
+
+**Rundenfazit:** Elf Commits, ein einziger echter Blocker — aber der steht
+mitten im Alltag: Wer Cola für die Küche holt, kommt aus dem Tool nur noch
+mit seinem persönlichen Code heraus.
