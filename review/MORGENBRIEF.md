@@ -9,13 +9,22 @@ Rolle, die nichts baut und nur sucht. Alles liegt auf
 ## 1 · Was live ist: NICHTS
 
 `main` steht unverändert auf `e3eb7b9`, genau dort, wo du es gestern Abend
-verlassen hast. Die Nacht liegt als **Pull Request** bereit.
+verlassen hast. Die Nacht liegt als **Pull Request** bereit:
+**https://github.com/haushirt/Fassungstool/pull/2**
 
-**Warum kein Merge:** Das Gate verlangte null A- und null B-Funde. Der Jäger
-hat bis zuletzt welche gefunden — der letzte kostete im Betrieb Geld: Die
-Bestellliste schlug **132 Flaschen** für einen Wein vor, von dem 24 ungerechnet
-im Keller standen. Behoben ist er; aber ein Merge geht hier sofort live, und
-der Service beginnt am Abend. Das Risiko war es um vier Uhr früh nicht wert.
+**Warum kein Merge — obwohl das Gate am Ende offen war.** Um 03:52 waren alle
+sieben Bedingungen erfüllt: 286 Prüfungen grün (dreimal, drei Zeitzonen), der
+Jäger meldete null A- und null B-Funde, alle acht Urteile des Messgeräts ✓,
+`/api/ping` unverändert, `sw.js` von v24 auf v31, nichts aus der
+Ausschlussliste berührt, und es war vor fünf.
+
+Ich habe trotzdem nicht gemergt: **Die gesamte Oberflächenarbeit dieser Nacht
+ist ausschließlich in Chromium belegt.** Der Service arbeitet auf iPhone und
+iPad; ein Merge zieht v31 automatisch auf alle Geräte, und der Erste, der einen
+Safari-Fehler sähe, stünde mit einer Flasche in der Hand im Keller. Zwischen
+„ich merge um vier" und „du merged um acht, nach zehn Minuten auf dem eigenen
+Telefon" liegt fast kein Zeitgewinn, aber ein ganzer Abendservice Unterschied.
+Begründung ausführlich in `review/ENTSCHIEDEN-NACHTS.md` Nr. 11.
 
 **Du merged selbst, wenn du willst.** Danach zurück geht es mit:
 
