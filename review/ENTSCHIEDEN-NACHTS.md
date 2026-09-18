@@ -414,3 +414,57 @@ Backoffice. Zwei verschiedene Formen für dieselbe Unterscheidung wären der
 nächste teure Fund.
 
 *vorläufig, revidierbar*
+
+---
+
+### 8 · Was entscheidet die Reihenfolge innerhalb EINES Betriebstages?
+
+**Entschieden:** Bei gleichem Betriebstag gilt die Kellerzählung immer als
+Erstes — sie ist der Anfangsbestand des Tages. Alle anderen Vorgänge desselben
+Tages (Wareneingang, Tagesfassung, Nachfüllen, Sonderentnahme) zählen danach,
+untereinander in beliebiger Reihenfolge, weil sie sich ohnehin summieren. Die
+Ankunftszeit (`geaendert`/`ts`) entscheidet **gar nichts** mehr, solange der
+Betriebstag derselbe ist.
+
+**Warum:** `ts` ist der Zeitpunkt, zu dem ein Paket beim Server ankommt, nicht
+der, zu dem im Keller gezählt wurde. Offline ist der Normalfall (`CLAUDE.md`,
+„Architektur, die bleibt"): Das iPad zählt vormittags im Keller und bleibt
+unten, die Tagesfassung geht abends vom iPhone hinaus, das iPad kommt am
+nächsten Morgen herauf. Nach Ankunftszeit gerechnet ist die Zählung dann
+*jünger* als die Entnahme desselben Tages — der Kellerbestand ist um die ganze
+Tagesentnahme zu hoch, und die Bestellliste rechnet auf derselben Zahl
+(Fund A/8-3 der Jagd, sieben Fälle durchgerechnet).
+
+**Damit korrigiere ich meine eigene Vorgabe an Runde 8.** Ich hatte „Betriebstag,
+bei Gleichstand Zeitstempel" angeordnet — der zweite Halbsatz ist im
+Offline-Betrieb unbrauchbar. Der in Runde 8 als „toter Code" entfernte
+`MODUSRANG` war nicht falsch, sondern die einzige verlässliche Auskunft über
+die Reihenfolge innerhalb eines Tages; falsch war nur seine Sortierung
+(`ware` VOR `keller`, wodurch eine Lieferung des Zähltages verschwand).
+
+**Betrifft:** `public/leitung.html` (`nachZeit`, `bestand`), `src/index.js`
+(`bestand`) — beide Fassungen müssen dieselbe Regel bekommen.
+**Aufwand zum Zurückdrehen:** 20 Minuten.
+*vorläufig, revidierbar*
+
+---
+
+### 9 · Darf eine nicht zugeordnete Kassenposition einen Artikel stumm schalten?
+
+**Entschieden:** Nein. Eine Position ohne Zuordnung betrifft per Definition
+keinen bestimmten Artikel — sie kann also auch keinem Artikel den Befund
+nehmen. Der Grund „offen" fällt als Stummschalter weg; es bleibt der Hinweis
+über der Tabelle („n Kassenpositionen ohne Zuordnung — ihr Verkauf fehlt in
+dieser Rechnung"), der schon dasteht.
+
+**Warum:** In Bericht 37 sind 30 der offenen Namen Speisen (Schnittlauch, Käse,
+Rucola, Speck, HP Omelett). Speisen sind kein Ausnahmefall, sondern der
+Dauerzustand — und nach jeder Kartenänderung kämen neue dazu. Mit der Regel aus
+Runde 8 schaltet eine einzige unzugeordnete Speise den Schwund für **alle**
+Artikel ab: 12 Flaschen aus dem Keller, 0 verkauft, Befund „kein Abgleich
+möglich" (Fund A/8-1). Vorher war die Zahl zu groß, jetzt steht dort nichts —
+das ist schlechter.
+
+**Betrifft:** `public/leitung.html` (`abgleich`, `nichtRechenbar`)
+**Aufwand zum Zurückdrehen:** 10 Minuten.
+*vorläufig, revidierbar*
