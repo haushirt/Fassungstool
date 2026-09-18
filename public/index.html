@@ -1006,11 +1006,21 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   .tools>#q,.howto>*{max-width:var(--maxw);margin-left:auto;margin-right:auto}
   main{max-width:var(--maxw);margin-left:auto;margin-right:auto}
   .rail{right:max(var(--space-1),calc(50% - (var(--maxw)/2) - var(--rail) - var(--space-2)))}
-  /* Name links, Z\u00e4hlung und H\u00e4kchen an einer festen rechten Kante \u2014 sonst
-     liegen bei 1280px f\u00fcnfhundert Pixel Leere dazwischen. */
-  .w{display:grid;grid-template-columns:1fr auto auto;column-gap:var(--space-5);
-     align-items:center}
-  .w>.tx{min-width:0}}
+  /* Name links, Zählung und Häkchen an einer festen rechten Kante — sonst
+     liegen bei 1280px fünfhundert Pixel Leere dazwischen.
+
+     BERICHTIGUNG (Beleg geraete/f3/ipadmini-bar-rotweine.png): Diese Regel
+     hat bis Runde 14 auch die Zählzeile getroffen. Die hat aber VIER
+     Kinder (Name · Ringe · Fehlzahl · Kästchen), und in einem Raster mit
+     drei Spalten rutscht das vierte in die zweite Zeile: am iPad stand
+     „voll" mittig unter dem Namen. Die Zählzeile bringt ihr eigenes Raster
+     mit (`.w--zaehl`) und will hier nichts — ihre Namensspalte ist schon
+     `1fr` und schiebt Ringe und Kästchen von selbst nach rechts.
+     Derselbe Fehler wie A1 aus Runde 13: eine allgemeine `.w`-Regel greift
+     in die Zählzeile. Deshalb hier ausdrücklich ausgenommen. */
+  .w:not(.w--zaehl){display:grid;grid-template-columns:1fr auto auto;
+     column-gap:var(--space-5);align-items:center}
+  .w:not(.w--zaehl)>.tx{min-width:0}}
 @media(min-width:768px){:root{--maxw:760px}}
 
 /* ═══════════════ Teil 2 ═══════════════ */

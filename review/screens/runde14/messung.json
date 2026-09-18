@@ -1,10 +1,12 @@
 {
  "lauf": "runde14",
- "zeit": "2026-09-18T17:30:14.435Z",
+ "zeit": "2026-09-18T18:09:58.710Z",
  "seiten": {
   "leitung/heute@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -55,6 +57,8 @@
   "leitung/abgleich@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -121,6 +125,8 @@
   "leitung/import@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -159,6 +165,8 @@
   "leitung/bestand@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -200,6 +208,8 @@
   "leitung/bestellen@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -237,6 +247,8 @@
   "leitung/getraenke@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -274,6 +286,8 @@
   "leitung/zaehlliste@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -325,6 +339,8 @@
   "leitung/speicher@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -394,6 +410,8 @@
   "leitung/zuordnung@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -445,6 +463,8 @@
   "leitung/rezepte@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -501,6 +521,8 @@
   "leitung/team@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -570,6 +592,8 @@
   "leitung/einst@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -612,6 +636,8 @@
   "leitung/heute@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -662,6 +688,8 @@
   "leitung/abgleich@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -728,6 +756,8 @@
   "leitung/import@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -766,6 +796,8 @@
   "leitung/bestand@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -807,6 +839,8 @@
   "leitung/bestellen@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -844,6 +878,8 @@
   "leitung/getraenke@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -881,6 +917,8 @@
   "leitung/zaehlliste@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -932,6 +970,8 @@
   "leitung/speicher@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1001,6 +1041,8 @@
   "leitung/zuordnung@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1052,6 +1094,8 @@
   "leitung/rezepte@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1108,6 +1152,8 @@
   "leitung/team@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1177,6 +1223,8 @@
   "leitung/einst@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1219,6 +1267,8 @@
   "leitung/heute@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1269,6 +1319,8 @@
   "leitung/abgleich@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1335,6 +1387,8 @@
   "leitung/import@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1373,6 +1427,8 @@
   "leitung/bestand@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1414,6 +1470,8 @@
   "leitung/bestellen@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1451,6 +1509,8 @@
   "leitung/getraenke@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1488,6 +1548,8 @@
   "leitung/zaehlliste@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1539,6 +1601,8 @@
   "leitung/speicher@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1626,6 +1690,8 @@
   "leitung/zuordnung@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1677,6 +1743,8 @@
   "leitung/rezepte@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1733,6 +1801,8 @@
   "leitung/team@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1802,6 +1872,8 @@
   "leitung/einst@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -1844,6 +1916,8 @@
   "leitung/heute@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -2084,6 +2158,8 @@
   "leitung/abgleich@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -2342,6 +2418,8 @@
   "leitung/import@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -2564,6 +2642,8 @@
   "leitung/bestand@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -2775,6 +2855,8 @@
   "leitung/bestellen@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -3006,6 +3088,8 @@
   "leitung/getraenke@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -3213,6 +3297,8 @@
   "leitung/zaehlliste@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -3456,6 +3542,8 @@
   "leitung/speicher@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -3747,6 +3835,8 @@
   "leitung/zuordnung@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -3966,6 +4056,8 @@
   "leitung/rezepte@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -4228,6 +4320,8 @@
   "leitung/team@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -4515,6 +4609,8 @@
   "leitung/einst@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -4789,6 +4885,8 @@
   "app/menu@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -4833,6 +4931,8 @@
   "app/tag-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -4976,6 +5076,8 @@
   "app/tag-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5251,6 +5353,8 @@
   "app/tag-3@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5316,6 +5420,8 @@
   "app/tag-4@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5387,6 +5493,8 @@
   "app/keller-wein-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5665,6 +5773,8 @@
   "app/keller-wein-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5718,6 +5828,8 @@
   "app/keller-getr-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5777,6 +5889,8 @@
   "app/keller-getr-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5830,6 +5944,8 @@
   "app/nach-wein-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5886,6 +6002,8 @@
   "app/nach-wein-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5939,6 +6057,8 @@
   "app/nach-getr-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -5995,6 +6115,8 @@
   "app/nach-getr-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6048,6 +6170,8 @@
   "app/fuellen-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6110,6 +6234,8 @@
   "app/fuellen-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6169,6 +6295,8 @@
   "app/fuellen-3@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6228,6 +6356,8 @@
   "app/ware-wein-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6296,6 +6426,8 @@
   "app/ware-wein-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6364,6 +6496,8 @@
   "app/ware-wein-3@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6432,6 +6566,8 @@
   "app/ware-wein-4@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6497,6 +6633,8 @@
   "app/ware-getr-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6553,6 +6691,8 @@
   "app/ware-getr-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6606,6 +6746,8 @@
   "app/menu@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6650,6 +6792,8 @@
   "app/tag-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -6793,6 +6937,8 @@
   "app/tag-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7068,6 +7214,8 @@
   "app/tag-3@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7133,6 +7281,8 @@
   "app/tag-4@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7204,6 +7354,8 @@
   "app/keller-wein-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7482,6 +7634,8 @@
   "app/keller-wein-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7535,6 +7689,8 @@
   "app/keller-getr-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7594,6 +7750,8 @@
   "app/keller-getr-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7647,6 +7805,8 @@
   "app/nach-wein-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7703,6 +7863,8 @@
   "app/nach-wein-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7756,6 +7918,8 @@
   "app/nach-getr-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7812,6 +7976,8 @@
   "app/nach-getr-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7865,6 +8031,8 @@
   "app/fuellen-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7927,6 +8095,8 @@
   "app/fuellen-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -7986,6 +8156,8 @@
   "app/fuellen-3@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8045,6 +8217,8 @@
   "app/ware-wein-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8113,6 +8287,8 @@
   "app/ware-wein-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8181,6 +8357,8 @@
   "app/ware-wein-3@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8249,6 +8427,8 @@
   "app/ware-wein-4@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8314,6 +8494,8 @@
   "app/ware-getr-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8370,6 +8552,8 @@
   "app/ware-getr-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8423,6 +8607,8 @@
   "app/menu@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8467,6 +8653,8 @@
   "app/tag-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8610,6 +8798,8 @@
   "app/tag-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8885,6 +9075,8 @@
   "app/tag-3@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -8950,6 +9142,8 @@
   "app/tag-4@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9021,6 +9215,8 @@
   "app/keller-wein-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9299,6 +9495,8 @@
   "app/keller-wein-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9352,6 +9550,8 @@
   "app/keller-getr-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9411,6 +9611,8 @@
   "app/keller-getr-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9464,6 +9666,8 @@
   "app/nach-wein-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9520,6 +9724,8 @@
   "app/nach-wein-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9573,6 +9779,8 @@
   "app/nach-getr-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9629,6 +9837,8 @@
   "app/nach-getr-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9682,6 +9892,8 @@
   "app/fuellen-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9744,6 +9956,8 @@
   "app/fuellen-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9803,6 +10017,8 @@
   "app/fuellen-3@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9862,6 +10078,8 @@
   "app/ware-wein-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9930,6 +10148,8 @@
   "app/ware-wein-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -9998,6 +10218,8 @@
   "app/ware-wein-3@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10066,6 +10288,8 @@
   "app/ware-wein-4@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10131,6 +10355,8 @@
   "app/ware-getr-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10187,6 +10413,8 @@
   "app/ware-getr-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10240,6 +10468,8 @@
   "app/menu@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10284,6 +10514,8 @@
   "app/tag-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10427,6 +10659,8 @@
   "app/tag-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10702,6 +10936,8 @@
   "app/tag-3@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10767,6 +11003,8 @@
   "app/tag-4@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -10838,6 +11076,8 @@
   "app/keller-wein-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11116,6 +11356,8 @@
   "app/keller-wein-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11169,6 +11411,8 @@
   "app/keller-getr-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11228,6 +11472,8 @@
   "app/keller-getr-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11281,6 +11527,8 @@
   "app/nach-wein-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11337,6 +11585,8 @@
   "app/nach-wein-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11390,6 +11640,8 @@
   "app/nach-getr-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11446,6 +11698,8 @@
   "app/nach-getr-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11499,6 +11753,8 @@
   "app/fuellen-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11561,6 +11817,8 @@
   "app/fuellen-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11620,6 +11878,8 @@
   "app/fuellen-3@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11679,6 +11939,8 @@
   "app/ware-wein-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11747,6 +12009,8 @@
   "app/ware-wein-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11815,6 +12079,8 @@
   "app/ware-wein-3@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11883,6 +12149,8 @@
   "app/ware-wein-4@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -11948,6 +12216,8 @@
   "app/ware-getr-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12004,6 +12274,8 @@
   "app/ware-getr-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12057,6 +12329,8 @@
   "app/menu@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12101,6 +12375,8 @@
   "app/tag-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12244,6 +12520,8 @@
   "app/tag-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12519,6 +12797,8 @@
   "app/tag-3@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12584,6 +12864,8 @@
   "app/tag-4@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12655,6 +12937,8 @@
   "app/keller-wein-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12933,6 +13217,8 @@
   "app/keller-wein-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -12986,6 +13272,8 @@
   "app/keller-getr-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13045,6 +13333,8 @@
   "app/keller-getr-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13098,6 +13388,8 @@
   "app/nach-wein-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13154,6 +13446,8 @@
   "app/nach-wein-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13207,6 +13501,8 @@
   "app/nach-getr-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13263,6 +13559,8 @@
   "app/nach-getr-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13316,6 +13614,8 @@
   "app/fuellen-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13378,6 +13678,8 @@
   "app/fuellen-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13437,6 +13739,8 @@
   "app/fuellen-3@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13496,6 +13800,8 @@
   "app/ware-wein-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13564,6 +13870,8 @@
   "app/ware-wein-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13632,6 +13940,8 @@
   "app/ware-wein-3@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13700,6 +14010,8 @@
   "app/ware-wein-4@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13765,6 +14077,8 @@
   "app/ware-getr-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13821,6 +14135,8 @@
   "app/ware-getr-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13874,6 +14190,8 @@
   "app/menu@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -13918,6 +14236,8 @@
   "app/tag-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14061,6 +14381,8 @@
   "app/tag-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14336,6 +14658,8 @@
   "app/tag-3@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14401,6 +14725,8 @@
   "app/tag-4@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14472,6 +14798,8 @@
   "app/keller-wein-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14750,6 +15078,8 @@
   "app/keller-wein-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14803,6 +15133,8 @@
   "app/keller-getr-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14862,6 +15194,8 @@
   "app/keller-getr-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14915,6 +15249,8 @@
   "app/nach-wein-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -14971,6 +15307,8 @@
   "app/nach-wein-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15024,6 +15362,8 @@
   "app/nach-getr-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15080,6 +15420,8 @@
   "app/nach-getr-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15133,6 +15475,8 @@
   "app/fuellen-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15195,6 +15539,8 @@
   "app/fuellen-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15254,6 +15600,8 @@
   "app/fuellen-3@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15313,6 +15661,8 @@
   "app/ware-wein-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15381,6 +15731,8 @@
   "app/ware-wein-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15449,6 +15801,8 @@
   "app/ware-wein-3@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15517,6 +15871,8 @@
   "app/ware-wein-4@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15582,6 +15938,8 @@
   "app/ware-getr-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15638,6 +15996,8 @@
   "app/ware-getr-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15691,6 +16051,8 @@
   "app/lade-R@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15834,6 +16196,8 @@
   "app/lade-1@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15902,6 +16266,8 @@
   "app/lade-2@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -15973,6 +16339,8 @@
   "app/lade-3@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16044,6 +16412,8 @@
   "app/lade-4@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16115,6 +16485,8 @@
   "app/lade-5@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16186,6 +16558,8 @@
   "app/lade-6@320": {
    "vw": 320,
    "scrollW": 320,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16257,6 +16631,8 @@
   "app/lade-R@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16400,6 +16776,8 @@
   "app/lade-1@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16468,6 +16846,8 @@
   "app/lade-2@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16539,6 +16919,8 @@
   "app/lade-3@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16610,6 +16992,8 @@
   "app/lade-4@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16681,6 +17065,8 @@
   "app/lade-5@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16752,6 +17138,8 @@
   "app/lade-6@375": {
    "vw": 375,
    "scrollW": 375,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16823,6 +17211,8 @@
   "app/lade-R@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -16966,6 +17356,8 @@
   "app/lade-1@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17034,6 +17426,8 @@
   "app/lade-2@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17105,6 +17499,8 @@
   "app/lade-3@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17176,6 +17572,8 @@
   "app/lade-4@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17247,6 +17645,8 @@
   "app/lade-5@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17318,6 +17718,8 @@
   "app/lade-6@390": {
    "vw": 390,
    "scrollW": 390,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17389,6 +17791,8 @@
   "app/lade-R@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17532,6 +17936,8 @@
   "app/lade-1@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17600,6 +18006,8 @@
   "app/lade-2@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17671,6 +18079,8 @@
   "app/lade-3@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17742,6 +18152,8 @@
   "app/lade-4@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17813,6 +18225,8 @@
   "app/lade-5@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17884,6 +18298,8 @@
   "app/lade-6@430": {
    "vw": 430,
    "scrollW": 430,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -17955,6 +18371,8 @@
   "app/lade-R@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18098,6 +18516,8 @@
   "app/lade-1@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18166,6 +18586,8 @@
   "app/lade-2@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18237,6 +18659,8 @@
   "app/lade-3@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18308,6 +18732,8 @@
   "app/lade-4@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18379,6 +18805,8 @@
   "app/lade-5@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18450,6 +18878,8 @@
   "app/lade-6@768": {
    "vw": 768,
    "scrollW": 768,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18521,6 +18951,8 @@
   "app/lade-R@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18664,6 +19096,8 @@
   "app/lade-1@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18732,6 +19166,8 @@
   "app/lade-2@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18803,6 +19239,8 @@
   "app/lade-3@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18874,6 +19312,8 @@
   "app/lade-4@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -18945,6 +19385,8 @@
   "app/lade-5@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],
@@ -19016,6 +19458,8 @@
   "app/lade-6@1280": {
    "vw": 1280,
    "scrollW": 1280,
+   "umbruch": [],
+   "umbruchN": 0,
    "ueber": [],
    "ueberN": 0,
    "schnitt": [],

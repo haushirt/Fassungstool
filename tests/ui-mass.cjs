@@ -340,7 +340,31 @@ const MESSE = `(() => {
       vg: s.color, hg: "rgb(" + hg.r + "," + hg.g + "," + hg.b + ")",
       text: txt.slice(0, 30) });
   });
+  /* Die Zaehlzeile muss EINE Zeile bleiben.
+
+     Am iPad ist das Kaestchen „voll" unter den Namen gerutscht, und keines
+     der bisherigen Urteile hat es bemerkt: nichts lief ueber, nichts war
+     beschnitten, jeder Griff hatte seine 44 px — die Zeile war nur
+     zweizeilig statt einzeilig. Gemessen wird deshalb die Lage der Kinder
+     zueinander: faengt eines unterhalb der Unterkante eines Geschwisters
+     an, ist die Zeile umgebrochen. Zwei Pixel Nachsicht, weil Raster und
+     Bildpunkte sich nicht immer auf ganze Zahlen einigen. */
+  const umbruch = [];
+  document.querySelectorAll(".w--zaehl").forEach(z => {
+    if (!sicht(z)) return;
+    const kinder = [...z.children].filter(k => sicht(k))
+      .map(k => k.getBoundingClientRect()).filter(r => r.width > 0 && r.height > 0);
+    if (kinder.length < 2) return;
+    const oben = Math.min(...kinder.map(r => r.top));
+    const tief = kinder.filter(r => r.top > oben + 2 &&
+      kinder.some(v => v !== r && r.top >= v.bottom - 2));
+    if (tief.length) umbruch.push({
+      was: "W--ZAEHL", b: Math.round(z.getBoundingClientRect().width),
+      h: Math.round(z.getBoundingClientRect().height),
+      text: (z.textContent || "").trim().slice(0, 30) });
+  });
   return { vw, scrollW: document.documentElement.scrollWidth,
+           umbruch: umbruch.slice(0, 12), umbruchN: umbruch.length,
            ueber: ueber.slice(0, 12), ueberN: ueber.length,
            schnitt: schnitt.slice(0, 12), schnittN: schnitt.length,
            klein: klein.slice(0, 40), kleinN: klein.length,
@@ -569,7 +593,7 @@ async function grussWeg(p) {
   /* ── Urteil ─────────────────────────────────────────────────────────── */
   console.log("\n─── Urteil ───");
   let ueberGes = 0, kleinGes = 0, kleinSvc = 0, griffGes = 0, griffSvc = 0,
-      schwachGes = 0, winzig = 0, fehlerGes = 0, klemmSvc = 0;
+      schwachGes = 0, winzig = 0, fehlerGes = 0, klemmSvc = 0, umbruchSvc = 0;
   Object.entries(erg.seiten).forEach(([k, m]) => {
     if (m.ueberN) { ueberGes += m.ueberN;
       console.log("  Überlauf " + k + ": " + m.ueberN + " → " +
@@ -587,6 +611,10 @@ async function grussWeg(p) {
     if (k.startsWith("app/")) { kleinSvc += m.kleinN; griffSvc += m.griffN || 0;
       if (m.griffN) console.log("  Griff unter 44px " + k + ": " +
         m.griff.map(g => g.was + "(" + g.b + "\u00d7" + g.h + ")").join(", ")); }
+    if (m.umbruchN && k.startsWith("app/")) { umbruchSvc += m.umbruchN;
+      console.log("  Zählzeile umgebrochen " + k + ": " + m.umbruchN + " → " +
+        m.umbruch.slice(0, 3).map(u => u.b + "\u00d7" + u.h +
+          (u.text ? " (" + u.text + ")" : "")).join(", ")); }
     schwachGes += m.schwachN;
     if (k.startsWith("app/"))
       Object.keys(m.schrift).map(Number).filter(px => px < 15)
@@ -604,6 +632,10 @@ async function grussWeg(p) {
   urteil("Trefferflächen mindestens 44 px (Service)", griffSvc === 0,
          griffSvc + " Knöpfe ohne Griff · " + kleinSvc + " sichtbar kleiner (erlaubt)");
   urteil("Kontrast mindestens 4,5:1", schwachGes === 0, schwachGes + " Stellen");
+  /* Am iPad ist „voll" unter den Namen gerutscht, und kein Urteil hat es
+     gesehen. Seit Runde 14 ist das eines. */
+  urteil("die Zählzeile bleibt eine Zeile", umbruchSvc === 0,
+         umbruchSvc + " umgebrochene Zeilen");
   {
     const leise = Object.values(erg.seiten).reduce((a, m) => a + (m.leiseZiffern || 0), 0);
     if (leise) console.log("  (Ziffern auf Zählpunkten: " + leise +

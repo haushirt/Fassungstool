@@ -259,6 +259,20 @@ describe("Runde 14 · Laden und Weinzeile", () => {
   });
 });
 
+describe("Runde 14 · die Zählzeile bleibt eine Zeile", () => {
+  /* Am iPad rutschte „voll" unter den Namen: die Regel im Block
+     @media(min-width:720px) gab `.w` drei Spalten, die Zählzeile hat aber
+     vier Kinder. Derselbe Fehler wie A1 aus Runde 13, nur eine Breite
+     höher. */
+  test("die 720er-Regel nimmt die Zählzeile aus", () => {
+    assert.match(APP, /\.w:not\(\.w--zaehl\)\{display:grid;grid-template-columns:1fr auto auto/);
+    assert.doesNotMatch(APP, /\n  \.w\{display:grid;grid-template-columns:1fr auto auto/);
+  });
+  test("die Zählzeile behält ihre vier Spalten", () => {
+    assert.match(APP, /\.w--zaehl\{[^}]*grid-template-columns:minmax\(0,1fr\) var\(--dotsp\) 24px auto/);
+  });
+});
+
 describe("Runde 14 · Abschluss", () => {
   test("der Knopf heißt „Fertig – Speichern“", () => {
     assert.match(APP, /"Fertig – Speichern"/);
