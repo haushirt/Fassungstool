@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht
 
-**Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v36.**
+**Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v37.**
 Der Merge bringt **drei Runden zusammen** hinaus: Runde 13 (elf Befunde vom
 echten iPhone), Runde 14 (Oberfläche, Punkt für Punkt) und Runde 15 (die
 Funde von Jäger und qa-guardian). Elf Commits.
@@ -245,17 +245,17 @@ versuchte es weiter. `vorgang` und `ereignis` waren leer, keine einzige
 Fassung ist je angekommen. Der Worker ist jetzt an das dokumentierte
 Live-Schema angepasst — nicht umgekehrt, es wird keine Tabelle geändert.
 
-**Die Anmeldung nimmt längere Codes an.** Bis v21 hörte jedes Codefeld nach
-vier Ziffern auf, und die App schickte den Code bei der vierten Ziffer von
-selbst los. Wer einen sechsstelligen Code bekommen hätte, wäre nicht mehr
-hereingekommen: vier Ziffern raus, „Code stimmt nicht", Feld leer — nach
-zehn davon sperrt sich das Haus für eine Viertelstunde selbst aus. Jetzt
-nehmen Anmeldung, Verwaltung und Freigabe sechs bis acht Ziffern,
-abgeschickt wird auf eine Bestätigungstaste (✓, unten links im
-Ziffernblock, leuchtet, sobald der Code lang genug ist). Der Worker vergibt
-neue Codes nur noch mit sechs bis acht Ziffern; bestehende Codes gelten
-weiter, bis sie ersetzt sind. **Das ist die Voraussetzung für Auflage 4
-unten** — ohne diesen Stand lässt sich kein längerer Code vergeben.
+**Die Anmeldung nimmt genau vier Ziffern.** Runde 13 hatte die Felder auf
+sechs bis acht geöffnet, weil die vier ersten Codes des Hauses aus der
+Geschichte des Anhangs bekannt sind. Runde 15 dreht das zurück: Im Keller
+wird mit kalten Fingern getippt, und vier Ziffern sind das, was sich ein
+Team merkt. Abgeschickt wird jetzt von selbst, sobald die vierte Ziffer
+steht; der Haken bleibt als zweiter Weg. **Der Worker vergibt neue Codes
+nur noch mit vier Ziffern; bestehende Prüfsummen gelten weiter** — geprüft
+wird die Länge ausschliesslich beim Vergeben, nie beim Anmelden. Was das
+für den Livegang bedeutet, steht unter „Die Codes Schritt für Schritt":
+ein Code mit mehr als vier Ziffern lässt sich danach nirgends mehr
+eintippen.
 
 Zwei Fehler in derselben Ecke sind dabei mitgegangen: Die Löschtaste des
 Ziffernblocks hängte „undefined" an den Code statt die letzte Ziffer
@@ -429,78 +429,106 @@ Fall, in dem sie noch einmal nötig wäre, steht unten unter „Notweg".
 | 1 | **vor** dem Merge | **Die Geräte nicht aufräumen.** Kein Cache leeren, keine Seite „neu installieren". In der Reihe der Geräte (`hh_ausgang_v1`) liegen alle Fassungen, die nie angekommen sind. |
 | 2 | **vor** dem Merge | **Sicherung der D1 anlegen.** Heute ist sie fast leer, ab dem ersten Abend stehen dort Daten, die es nur dort gibt, und D1 hat keinen Papierkorb. |
 | 3 | beim Merge | **`migrations/001_mapping_rezept.sql` NICHT einspielen.** Dieser Stand braucht sie nicht (siehe oben, Abschnitt Migrationen). |
-| 4 | direkt nach dem Merge | **Auf jedem Gerät die neue App holen** — mit Netz öffnen und neu laden. Erkennbar am Anmeldeschirm: **sechs** Kästchen, eine **✓**-Taste unten links im Ziffernblock und der Satz „Code eintippen, dann auf ✓." Stehen dort noch vier Kästchen ohne ✓, läuft die alte App — dann nimmt das Feld nur vier Ziffern. |
-| 5 | danach | **Die vier persönlichen Codes neu vergeben.** Ablauf unten. |
+| 4 | direkt nach dem Merge | **Auf jedem Gerät die neue App holen** — mit Netz öffnen und neu laden. Erkennbar am Anmeldeschirm: ein Kopf in der Hausfarbe mit „Haus Hirt", darunter **vier** Kästchen und der Satz „Melde dich mit deinem Code an." Stehen dort sechs Kästchen oder drei Sätze Text, läuft noch die alte App. |
+| 5 | danach | **Die persönlichen Codes auf vier Ziffern bringen.** Ablauf unten. |
 | 6 | erster Abend | **Jemanden neben die Servicekraft stellen**, die die erste Fassung macht — bei Schritt 3 „Holen". Und beim ersten Kontakt der Geräte zusehen: Die Reihe schickt die liegengebliebenen Fassungen auf einmal nach. Das sieht aus wie ein Fehler und ist richtig so. |
 | 7 | erste Woche | **Zahlen aus „Verkauf ↔ Fassung" gegenlesen**, bevor eine Bestellung oder Abrechnung darauf steht. Der erste echte Bericht liegt jetzt vor und wird richtig gelesen — aber es ist ein Bericht aus einer Nacht. Die Gegenprobe steht im Bericht selbst: Die Stückzahl und die Summe des Werkzeugs müssen mit „Warengruppen" und „Hauptwarengruppen" übereinstimmen (bei Nr. 37: 145 Stück, 602,50 €). |
 
-### Die vier Codes Schritt für Schritt — ohne `ANLAGE_OFFEN`
+### Die Codes Schritt für Schritt
 
-Die vier ersten Codes stehen im Klartext in der Geschichte des Anhangs
-(Commits `3e8d7e2` und `f6ab7e1`) und wurden bis v11 öffentlich
-ausgeliefert. Sie sind als bekannt zu behandeln. Umschreiben der Geschichte
-verbietet Regel 1.
+**Runde 15 dreht die Länge zurück: genau vier Ziffern.** Der Grund ist die
+Bedienung im Keller — kalte Finger, eine Flasche in der anderen Hand. Der
+Preis ist der kleinere Zahlenraum; was dagegensteht, ist die gestaffelte
+Sperre (unten).
 
-**Die Benutzerverwaltung braucht `ANLAGE_OFFEN` nicht.** Sie liegt im
-Backoffice unter **Team** und läuft über `GET/POST /api/personen`; der
-Worker verlangt dort nur eines — eine gültige Anmeldung mit der Rolle
-`leitung`. `ANLAGE_OFFEN` betrifft ausschliesslich `/api/anlage` und
-`/api/hash`, also die Selbstanlage OHNE Anmeldung. Beides ist seit dem
-17.09. geschlossen und bleibt es. Die Ansicht gibt es übrigens nicht erst
-mit diesem Stand: Sie steht schon live; dieser Stand macht sie nur sicherer
-(sechsstellige Vorschläge, keine Selbstsperre, richtige Meldung bei
-abgelaufener Sitzung).
+**Vorher lesen, es ist die einzige Falle dieses Merges:**
 
-**Der alte vierstellige Code funktioniert weiter.** Die Anmeldung prüft
-keine Länge, sie rechnet nur die Prüfsumme — begrenzt ist allein das
-VERGEBEN neuer Codes (sechs bis acht Ziffern). Genau deshalb kommst du nach
-dem Merge mit deinem alten Code herein, um die neuen zu setzen.
+Der Stand von Runde 13 hat das Gegenteil verlangt — dort stand hier die
+Anweisung, alle Codes durch **sechs- bis achtstellige** zu ersetzen, weil
+die vier ersten Codes des Hauses im Klartext in der Geschichte des Anhangs
+stehen (Commits `3e8d7e2` und `f6ab7e1`) und bis v11 öffentlich
+ausgeliefert wurden. Wer dieser Anweisung gefolgt ist, hat heute einen
+Code mit mehr als vier Ziffern.
 
-1. **Zuerst die neue App holen** (Auflage 4 oben): Gerät mit Netz, Seite neu
-   laden, bis am Anmeldeschirm sechs Kästchen und die ✓-Taste stehen. Das
-   ist die Voraussetzung dafür, dass ein sechsstelliger Code überhaupt
-   eingetippt werden kann.
-2. **Mit dem alten Code anmelden**, dann `leitung.html` öffnen und auf
-   **Team** gehen.
-3. Je Person: **Name genau so schreiben, wie er in der Liste steht** (die
-   Zeile wird über den Namen gefunden; eine andere Schreibweise legt die
-   Person ein zweites Mal an), Rolle wie gehabt, **Code: „Vorschlagen"**
-   oder sechs bis acht eigene Ziffern. Speichern. Der Code erscheint danach
-   nirgends mehr — jetzt notieren.
-4. **Eine Person zuerst, dann prüfen:** auf einem zweiten Gerät (mit neuer
-   App, siehe 1.) mit dem neuen Code anmelden. Erst wenn das geht, die
-   übrigen drei ändern.
-5. **Deinen eigenen Code zuletzt.** Die offene Sitzung bleibt gültig — sie
-   hängt am Keks, nicht am Code —, du fliegst also nicht heraus. Melde dich
-   erst ab, wenn du den neuen Code auf einem zweiten Gerät ausprobiert hast.
-6. **Zum Schluss jedes Gerät im Haus einmal mit dem neuen Code anmelden.**
+**Nach diesem Merge lässt sich ein solcher Code nirgends mehr eintippen.**
+Der Worker prüft beim Anmelden weiterhin keine Länge — die Prüfsumme
+bleibt gültig. Aber jedes Eingabefeld der App hört nach der vierten Ziffer
+auf: Anmeldung, Verwaltung, Freigabe. Und `leitung.html` hat keine eigene
+Anmeldung, es lebt vom Keks aus der App. Wer nicht in die App kommt, kommt
+auch nicht ins Backoffice.
+
+> **Deshalb vor dem Merge:** Tippe deinen Code und zähle die Ziffern.
+> **Mehr als vier → nicht mergen**, sondern zuerst über den Notweg unten
+> einen vierstelligen setzen.
+
+Sind es vier Ziffern, ist nichts zu tun — du meldest dich nach dem Merge
+an wie bisher.
+
+### Codes vergeben und zurücksetzen
+
+Die Benutzerverwaltung liegt im Backoffice unter **Team** und läuft über
+`GET/POST /api/personen`. Der Worker verlangt dort nur eines: eine gültige
+Anmeldung mit der Rolle `leitung`. `ANLAGE_OFFEN` braucht sie nicht — das
+betrifft ausschliesslich `/api/anlage` und `/api/hash`, also die
+Selbstanlage OHNE Anmeldung, und die ist seit dem 17.09. geschlossen.
+
+Zwei Wege, einen Code zu setzen:
+
+* **„PIN zurücksetzen"** (neu in Runde 15), je Zeile in der Liste. Der
+  Server würfelt vier Ziffern, prüft sie gegen alle anderen Personen auf
+  Dopplung, speichert nur die Prüfsumme und zeigt den Code **genau
+  einmal** gross auf dem Schirm. Er lässt sich nicht noch einmal anzeigen —
+  notieren, solange er dasteht.
+* **Selbst eintragen** im Kasten „Aufnehmen oder Code neu setzen": Name
+  genau so schreiben, wie er in der Liste steht (die Zeile wird über den
+  Namen gefunden; eine andere Schreibweise legt die Person ein zweites Mal
+  an), Rolle wie gehabt, vier Ziffern oder „Vorschlagen". Speichern.
+
+**Reihenfolge, wenn mehrere Codes zu ändern sind:**
+
+1. **Eine Person zuerst, dann prüfen:** auf einem zweiten Gerät mit der
+   neuen App mit dem neuen Code anmelden. Erst wenn das geht, die übrigen.
+2. **Deinen eigenen zuletzt.** Die offene Sitzung bleibt gültig — sie hängt
+   am Keks, nicht am Code —, du fliegst also nicht heraus. Melde dich erst
+   ab, wenn der neue Code auf einem zweiten Gerät funktioniert hat.
+3. **Zum Schluss jedes Gerät im Haus einmal mit dem neuen Code anmelden.**
    Erst diese Anmeldung räumt den alten Code aus dem Gerät; ein Gerät, das
    nie wieder angemeldet wird, kennt ihn ohne Netz weiter.
 
-Vierstellige Codes nimmt das Backoffice nicht mehr an, die Taste
-„Vorschlagen" schlägt sechsstellige vor. Aussperren kannst du dich dabei
-nicht: Die eigene Person und die letzte freigegebene Leitung lassen sich
-nicht mehr sperren.
+**Aussperren kannst du dich dabei teilweise doch.** Die eigene Person und
+die letzte freigegebene Leitung lassen sich in der Oberfläche nicht
+sperren — der Worker setzt das aber nicht durch, und „PIN zurücksetzen"
+hat keine solche Bremse. Beides steht im Backlog.
 
-### Notweg — nur, wenn du KEINE Leitung bist
+### Die Sperre nach Fehlversuchen
 
-Er gilt für genau einen Fall: Schritt 0 oben zeigt „Nur die Leitung darf
-Mitarbeiter verwalten". Dann gibt es im Haus kein Konto mit der Rolle
-`leitung`, und ohne ein solches kommt niemand an die Benutzerverwaltung.
+Zehn Fehlversuche in zwei Stunden sperren **die IP** für eine
+Viertelstunde, die nächsten zehn für eine halbe, danach für eine ganze.
+Länger wird es nicht. Eine geglückte Anmeldung räumt alle Fehlversuche
+dieser IP sofort weg.
+
+**Im Haus teilen sich alle Geräte eine IP.** Zehn Vertipper an der Bar
+sperren also auch den Keller aus — auch jemanden, der seinen Code weiss.
+Das ist bekannt und nicht behoben; der Weg dorthin (pro Gerät zählen
+statt pro IP) steht mit Priorität hoch im Backlog und braucht eine
+Migration.
+
+### Notweg — wenn niemand mehr hineinkommt
+
+Er gilt für zwei Fälle: Es gibt kein Konto mit der Rolle `leitung`, oder
+der hinterlegte Code hat mehr als vier Ziffern und lässt sich nicht mehr
+eintippen. Die D1-Konsole wird dafür **nicht** gebraucht.
 
 1. `ANLAGE_OFFEN` im Dashboard **wieder setzen** (irgendein Wert).
 2. Sofort eine Leitung anlegen: `POST /api/anlage` mit
-   `{"name":"…","rolle":"leitung","code":"…"}`, Code sechs bis acht Ziffern.
+   `{"name":"…","rolle":"leitung","code":"…"}`, **Code genau vier Ziffern**.
    Kontrolle: `/api/ping` — `personen` muss um eins gestiegen sein.
 3. **`ANLAGE_OFFEN` im selben Arbeitsgang wieder löschen** — nicht „später",
    nicht „nach dem Service". Zwischen Setzen und Löschen liegen Minuten, und
    in dieser Zeit legt sich jeder, der die Adresse kennt, ein Konto mit
    Rolle `leitung` an. Kontrolle: `/api/ping` meldet wieder
    `anlage: false`.
-4. Dann weiter bei Schritt 2 des Ablaufs darüber.
-
-Solange Schritt 0 die Personenliste zeigt, wird nichts davon gebraucht.
-
+4. Anmelden, dann im Backoffice unter **Team** die übrigen Codes richten.
 
 ### Weiterhin offen, unabhängig vom Livegang
 
@@ -549,8 +577,8 @@ Solange Schritt 0 die Personenliste zeigt, wird nichts davon gebraucht.
 | `tests/modi.test.mjs` | 16 Prüfungen: alle fünf Modi bis ins Journal (Vorzeichen, Ort, Kistengröße), die Zuordnung in beide Richtungen, die Absenderprüfung des Postfachs. |
 | `tests/zbericht-37.test.mjs` | 24 Prüfungen am echten Bericht Nr. 37: Kopf, Blockwahl, die vier Eigenheiten mit ihren Zahlen, Rabatt und Storno, und der ganze Weg durch den Worker bis in `fassungszeile` (48 Zeilen, 145 Stück, 602,50 €, `ausschankMl` 125 für das Achtel). |
 | `node tests/durchstich.cjs` | 35 von 35 Punkten. Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. **Vor jedem Livegang laufen lassen.** |
-| `node tests/persona-tagesfassung.cjs` | Anmeldung mit sechsstelligem Code, Tagesfassung bis zum Abschluss, Abbruch, Offline, doppeltes Absenden, abgelaufene Sitzung — durchgelaufen. |
-| Anmeldung am iPhone-Maß (Chromium) | Sechs Felder, ✓ dunkel bis zur vierten Ziffer, danach hell; Löschtaste nimmt die letzte Ziffer; acht Ziffern sind die Grenze. |
+| `node tests/persona-tagesfassung.cjs` | Anmeldung mit vierstelligem Code, Tagesfassung bis zum Abschluss, Abbruch, Offline, doppeltes Absenden, abgelaufene Sitzung — durchgelaufen. |
+| Anmeldung am iPhone-Maß (Chromium) | Vier Felder; Ziffern kommen vom Ziffernblock UND von der Tastatur, Rücktaste nimmt die letzte weg, die vierte Ziffer sendet von selbst. |
 
 Nicht geprüft: **Safari auf einem Telefon** (alles Visuelle ist Chromium in
 iPhone-Maßen) und der **Mailweg ab dem Postfach** (Dashboard). Der echte

@@ -177,7 +177,58 @@ const SZENEN = {
             setTagWahl(g); renderMenu();
           }); await warte(p, 350); }],
         ["startseite-quittieren", async p => { await grussZu(p); await warte(p, 300); },
-         SAAT_UEBERHOLT]]
+         SAAT_UEBERHOLT]],
+
+  /* Runde 15 · Anmeldeseite, vier Stellen, Tastatur.
+     Ohne Saat steht die Anmeldung — genau darum geht es hier. */
+  r15: [["anmeldung", async p => { await warte(p, 400); }, " "],
+        ["anmeldung-getippt", async p => { await warte(p, 400);
+          await p.keyboard.press("1"); await p.keyboard.press("2");
+          await warte(p, 250); }, " "],
+        ["anmeldung-falsch", async p => { await warte(p, 400);
+          for (const z of ["1","2","3","4"]) await p.keyboard.press(z);
+          await warte(p, 900); }, " "],
+        /* Das Backoffice mit drei Personen und dem neuen Knopf. Der
+           Prüfserver kennt keine Personen, also antwortet die Seite sich
+           hier selbst — es geht um die Gestaltung, nicht um den Weg. */
+        ["backoffice-team", async p => { await warte(p, 600);
+          await p.evaluate(() => {
+            const echt = window.fetch;
+            window.fetch = (u, o) => {
+              const s = String(u);
+              if (s.includes("/api/personen"))
+                return Promise.resolve(new Response(JSON.stringify({ personen: [
+                  { id: "1", name: "Asad",    rolle: "service",    aktiv: 1 },
+                  { id: "2", name: "Ian",     rolle: "wirtschaft", aktiv: 1 },
+                  { id: "3", name: "Casimir", rolle: "leitung",    aktiv: 1 }]}),
+                  { headers: { "content-type": "application/json" } }));
+              return echt(u, o);
+            };
+          });
+          await p.evaluate(() => { SEITE = "team"; zeichne(); });
+          await warte(p, 700);
+        }, SAAT_LEITUNG],
+        ["backoffice-neuer-pin", async p => { await warte(p, 600);
+          await p.evaluate(() => {
+            const echt = window.fetch;
+            window.fetch = (u, o) => {
+              const s = String(u);
+              if (s.includes("/api/person/pin"))
+                return Promise.resolve(new Response(JSON.stringify({ pin: "7391", name: "Asad" }),
+                  { headers: { "content-type": "application/json" } }));
+              if (s.includes("/api/personen"))
+                return Promise.resolve(new Response(JSON.stringify({ personen: [
+                  { id: "1", name: "Asad", rolle: "service", aktiv: 1 }]}),
+                  { headers: { "content-type": "application/json" } }));
+              return echt(u, o);
+            };
+            window.confirm = () => true;
+          });
+          await p.evaluate(() => { SEITE = "team"; zeichne(); });
+          await warte(p, 700);
+          const k = p.locator("[data-pin]");
+          if (await k.count()) { await k.first().click(); await warte(p, 700); }
+        }, SAAT_LEITUNG]]
 };
 
 (async () => {
@@ -205,7 +256,8 @@ const SZENEN = {
         const p = await ctx.newPage();
         const fehler = [];
         p.on("pageerror", e => fehler.push(e.message));
-        const seite = (name === "backoffice") ? "/leitung.html" : "/index.html";
+        const seite = (name === "backoffice" || name.startsWith("backoffice-"))
+          ? "/leitung.html" : "/index.html";
         await p.goto("http://127.0.0.1:8979" + seite, { waitUntil: "load" });
         await warte(p, 500);
         if (vorbereiten) await vorbereiten(p);

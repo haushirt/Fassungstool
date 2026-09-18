@@ -69,7 +69,7 @@ function backoffice() {
 
 const TAG = "2026-09-16";
 const VORTAG = "2026-09-15";
-const CODE = "660941";                 /* nur in dieser Prüfung */
+const CODE = "6609";                 /* nur in dieser Prüfung */
 let worker, B;
 before(async () => { worker = await ladeWorker(); B = backoffice(); });
 

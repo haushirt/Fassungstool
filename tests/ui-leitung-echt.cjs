@@ -32,7 +32,7 @@ const PORT = 8955;
 const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
                 ".png": "image/png", ".json": "application/json" };
 /* Bei jedem Lauf gewürfelt (Regel 9). */
-const CODE = String(require("crypto").randomInt(100000, 1000000));
+const CODE = String(require("crypto").randomInt(1000, 10000));
 
 let fehler = 0, geprueft = 0;
 const ok = (satz, bedingung, dazu) => {

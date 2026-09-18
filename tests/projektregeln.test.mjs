@@ -162,53 +162,74 @@ describe("Rollen (Regel 4)", () => {
   });
 });
 
-/* Auflage 2 vor dem Livegang: Die vier ersten Codes des Hauses sind aus
-   der Geschichte des Anhangs bekannt und werden durch längere ersetzt.
-   Das ist keine Einstellung im Dashboard, sondern eine Zusage des Codes:
-   Wer einen sechsstelligen Code vergibt, muss ihn auch eintippen können.
-   Bis v21 hörte jedes Codefeld nach vier Ziffern auf — die Umstellung
-   hätte das Haus ausgesperrt, ohne dass irgendwo ein Fehler erscheint. */
+/* Was der Worker vergibt, muss die App eintippen können — sonst sperrt
+   eine Umstellung das Haus aus, ohne dass irgendwo ein Fehler erscheint.
+   Runde 15 (18.09.2026) dreht die Länge von sechs bis acht zurück auf
+   genau vier: im Keller wird mit kalten Fingern getippt. Die Zahl steht
+   jetzt an EINER Stelle je Datei (`PIN_LAENGE`), und diese Prüfungen
+   halten die drei Dateien aufeinander. */
 describe("Codelänge: was der Worker vergibt, muss die App annehmen", () => {
   const app = lies("public", "index.html");
   const leitung = lies("public", "leitung.html");
   const worker = lies("src", "index.js");
+  const LAENGE = 4;
 
-  test("der Worker vergibt keine vierstelligen Codes mehr", () => {
-    const m = /!\/\^\\d\{(\d),(\d)\}\$\/\.test\(code\)/.exec(worker);
-    assert.ok(m, "die Prüfung der Codelänge in personSchreiben() ist weg oder umgebaut");
-    assert.equal(m[1], "6", "Mindestlänge ist nicht sechs Ziffern");
-    assert.equal(m[2], "8", "Höchstlänge ist nicht acht Ziffern");
+  test("der Worker nennt die Länge genau einmal", () => {
+    const m = /const PIN_LAENGE = (\d+);/.exec(worker);
+    assert.ok(m, "PIN_LAENGE fehlt in src/index.js");
+    assert.equal(+m[1], LAENGE);
+    assert.match(worker, /PIN_MUSTER\.test\(code\)/,
+      "personSchreiben prüft die Länge nicht mehr über PIN_MUSTER");
+    assert.doesNotMatch(worker, /\^\\d\{\d,\d\}\$/,
+      "es steht noch eine zweite, fest eingetragene Länge im Worker");
+  });
+
+  test("die App nennt dieselbe Länge", () => {
+    const m = /const PIN_LAENGE=(\d+);/.exec(app);
+    assert.ok(m, "PIN_LAENGE fehlt in public/index.html");
+    assert.equal(+m[1], LAENGE, "App und Worker sind sich uneinig");
   });
 
   test("das Backoffice prüft dieselbe Länge wie der Worker", () => {
-    assert.match(leitung, /\/\^\\d\{6,8\}\$\//,
+    assert.match(leitung, new RegExp("\\^\\\\d\\{" + LAENGE + "\\}\\$"),
       "das Backoffice liesse eine Länge durch, die der Worker ablehnt");
   });
 
-  test("die Taste zum Vorschlagen bietet keinen vierstelligen Code an", () => {
-    const m = /#nCode"\)\.value=String\((\d+)\+/.exec(leitung);
+  test("die Taste zum Vorschlagen bietet einen Code der richtigen Länge", () => {
+    const m = /#nCode"\)\.value=String\(a\[0\]%spanne\)\.padStart\((\d+),"0"\)/.exec(leitung);
     assert.ok(m, "der Vorschlag ist weg oder umgebaut");
-    assert.ok(String(m[1]).length >= 6,
-      "der Vorschlag ist wieder vierstellig: " + m[1]);
+    assert.equal(+m[1], LAENGE);
+    assert.match(leitung, /spanne=10000/, "der Vorschlag würfelt nicht über 0000…9999");
   });
 
-  test("jedes Codefeld der App nimmt acht Ziffern", () => {
+  test("jedes Codefeld der App nimmt genau diese Länge", () => {
     const felder = [...app.matchAll(/<input[^>]*class="[^"]*input--pin[^"]*"[^>]*>/gs)];
     assert.ok(felder.length >= 3, "erwartet: Anmeldung, Verwaltung, Freigabe");
     for (const f of felder) {
-      const m = /maxlength="(\d+)"/.exec(f[0]);
+      const m = /maxlength="([^"]+)"/.exec(f[0]);
       assert.ok(m, "Codefeld ohne maxlength: " + f[0].slice(0, 80));
-      assert.equal(m[1], "8",
-        "dieses Codefeld nimmt nur " + m[1] + " Ziffern: " + f[0].slice(0, 80));
+      assert.equal(m[1], "${PIN_LAENGE}",
+        "dieses Codefeld nennt die Länge selbst statt PIN_LAENGE: " + f[0].slice(0, 80));
     }
   });
 
-  test("die Anmeldung schickt erst auf Tastendruck ab", () => {
+  /* Runde 15: Bei fester Länge weiss die App, wann der Code zu Ende ist —
+     die vierte Ziffer sendet. Das war bei wechselnder Länge genau falsch
+     (es verbrannte die Versuche bis zur Sperre) und ist jetzt richtig. */
+  test("die Anmeldung schickt nach der letzten Ziffer von selbst ab", () => {
     const s = inlineSkript();
-    assert.match(s, /\[data-ok\]/, "die Bestätigungstaste fehlt");
-    assert.equal(/inp\.oninput=\(\)=>\{male\(\);pruefe\(\);\}/.test(s), false,
-      "die Anmeldung schickt wieder bei jeder Ziffer ab — bei wechselnder "
-      + "Länge verbrennt das die Versuche bis zur Sperre");
+    assert.match(s, /\[data-ok\]/, "die Bestätigungstaste fehlt als zweiter Weg");
+    assert.match(s, /vielleichtSenden=\(\)=>\{ if\(inp\.value\.length===PIN_LAENGE\)pruefe\(\); \}/,
+      "das Absenden nach der letzten Ziffer fehlt");
+  });
+
+  test("die Anmeldung lässt sich mit der Tastatur bedienen", () => {
+    const s = inlineSkript();
+    assert.match(s, /renderLogin\._tastatur/, "der Horcher für die Tastatur fehlt");
+    assert.match(s, /e\.key==="Backspace"/, "die Rücktaste fehlt");
+    assert.match(s, /a\.pruefe\(\)/, "die Eingabetaste sendet nicht");
+    assert.match(s, /renderLogin\._akt=/,
+      "der Horcher klebt an den Funktionen eines einzelnen Aufbaus");
   });
 
   test("die Löschtaste fragt nicht auf Wahrheit ab (dataset liefert \"\")", () => {

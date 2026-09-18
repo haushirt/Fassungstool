@@ -307,6 +307,56 @@ const hilfeWeg = async p => {
     await ctx.close();
   }
 
+  /* ── Runde 15 · Vier Ziffern, Tastatur, Selbstabsenden ─────────────── */
+  {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    const p = await ctx.newPage();
+    const fehler = [];
+    p.on("pageerror", e => fehler.push(e.message));
+    /* Ohne Saat: die Anmeldung steht. */
+    await p.goto("http://127.0.0.1:8991/index.html", { waitUntil: "load" });
+    await p.waitForTimeout(700);
+
+    const lage = await p.evaluate(() => ({
+      felder: document.querySelectorAll("#pinReihe .pinfeld").length,
+      laenge: typeof PIN_LAENGE !== "undefined" ? PIN_LAENGE : -1,
+      kopf: !!document.querySelector("#login .akopf"),
+      saetze: document.querySelectorAll("#login p").length
+    }));
+    urteil("R15 · die Anmeldung zeigt vier Felder", lage.felder === 4, lage.felder + " Felder");
+    urteil("R15 · PIN_LAENGE steht auf vier", lage.laenge === 4, String(lage.laenge));
+    urteil("R15 · die Seite hat einen Kopf in der Hausfarbe", lage.kopf);
+
+    /* Mit der TASTATUR tippen, nicht klicken. */
+    await p.keyboard.press("1"); await p.keyboard.press("2");
+    await p.waitForTimeout(150);
+    const nachZwei = await p.evaluate(() => ({
+      wert: document.querySelector("#uCode").value,
+      voll: document.querySelectorAll("#pinReihe .pinfeld.voll").length
+    }));
+    urteil("R15 · Ziffern von der Tastatur kommen an", nachZwei.wert.length === 2, nachZwei.wert.length + " Ziffern");
+    urteil("R15 · die Felder zeigen es", nachZwei.voll === 2, nachZwei.voll + " voll");
+
+    await p.keyboard.press("Backspace");
+    await p.waitForTimeout(150);
+    const nachWeg = await p.evaluate(() => document.querySelector("#uCode").value.length);
+    urteil("R15 · die Rücktaste nimmt weg", nachWeg === 1, nachWeg + " Ziffern");
+
+    /* Die vierte Ziffer muss von selbst absenden — der Code ist falsch,
+       also kommt eine Meldung, ohne dass jemand den Haken gedrückt hat. */
+    await p.keyboard.press("3"); await p.keyboard.press("4"); await p.keyboard.press("5");
+    await p.waitForTimeout(900);
+    const nachVier = await p.evaluate(() => ({
+      meldung: (document.querySelector("#pinFehler") || {}).textContent || "",
+      wert: document.querySelector("#uCode").value
+    }));
+    urteil("R15 · die vierte Ziffer sendet von selbst",
+           nachVier.meldung.length > 0, JSON.stringify(nachVier));
+    urteil("R15 · keine JS-Fehler dabei", fehler.length === 0, fehler[0] || "");
+    await ctx.close();
+  }
+
   await b.close(); srv.close();
   console.log(nein ? "\n" + nein + " Prüfung(en) NEIN." : "\nAlle Prüfungen ja.");
   process.exit(nein ? 1 : 0);

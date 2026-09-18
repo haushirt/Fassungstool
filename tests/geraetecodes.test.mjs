@@ -17,7 +17,7 @@ import { randomInt } from "node:crypto";
 
 /* Gewürfelt statt festgeschrieben: keine erfundene Ziffernfolge soll je
    zufällig mit einem Code aus dem Haus zusammenfallen (Regel 9). */
-const wuerfel = (n = 6) => String(randomInt(10 ** (n - 1), 10 ** n));
+const wuerfel = (n = 4) => String(randomInt(10 ** (n - 1), 10 ** n));
 const NEU = wuerfel(), ALT = wuerfel(4), ANDERE = wuerfel();
 
 const QUELLE = ausschnitt('const K_BEKANNT="', "const USER={}");

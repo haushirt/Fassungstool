@@ -279,7 +279,7 @@ import { randomInt } from "node:crypto";
 
 describe("Z 37 – bis in die Datenbank", { skip: SCHEMA_DA ? false :
   "docs/live-schema.sql fehlt" }, () => {
-  const CODE = String(randomInt(100000, 1000000));
+  const CODE = String(randomInt(1000, 10000));
 
   async function haus() {
     const worker = await ladeWorker();

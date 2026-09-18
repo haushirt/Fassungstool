@@ -29,7 +29,7 @@ import { d1Echt, SCHEMA_DA } from "./hilfe/d1-echt.mjs";
 let worker;
 before(async () => { worker = await ladeWorker(); });
 
-const CODE = String(randomInt(100000, 1000000));
+const CODE = String(randomInt(1000, 10000));
 
 async function haus() {
   const env = { DB: d1Echt(), TOKEN_SECRET: "pruefgeheimnis", ANLAGE_OFFEN: "1" };

@@ -20,12 +20,52 @@ import { mappe } from "./gnmap.js";
    sorgt die Sperre nach zehn Fehlversuchen. Zieht das Tool auf einen
    eigenen Server, gehört diese Zahl wieder auf 100000. */
 const RUNDEN = 1000;
+/* Die Laenge des PIN steht genau hier. Runde 15 (18.09.2026) bringt sie von
+   sechs bis acht auf vier zurueck: im Keller wird mit kalten Fingern und
+   einer Flasche in der anderen Hand getippt, und vier Ziffern sind das, was
+   sich ein Team merkt. Der Preis ist der kleinere Zahlenraum — zehntausend
+   statt einer Million. Was dagegensteht, ist die Sperre weiter unten; sie
+   ist nach dieser Aenderung der einzige Schutz und deshalb gestaffelt.
+   Bestehende Pruefsummen bleiben gueltig: geprueft wird die Laenge nur dort,
+   wo ein PIN VERGEBEN wird, nie beim Anmelden. */
+const PIN_LAENGE = 4;
+const PIN_MUSTER = new RegExp("^\\d{" + PIN_LAENGE + "}$");
 const SITZUNG = 12 * 60 * 60 * 1000;
 /* Die Sperre zählt pro IP, und im Haus teilen sich alle Geräte eine. Fünf
    Versuche waren deshalb nicht fünf pro Person, sondern fünf für das ganze
    Team — ein Vertipper an der Bar sperrte den Keller mit aus. Zehn ist der
-   Kompromiss: immer noch eine Sperre, aber keine, die im Betrieb zuschnappt. */
-const SPERRE = { versuche: 10, fenster: 15 * 60 * 1000 };
+   Kompromiss: immer noch eine Sperre, aber keine, die im Betrieb zuschnappt.
+
+   Runde 15: Seit der PIN vier Stellen hat, ist die Sperre der einzige
+   Schutz — zehntausend Möglichkeiten sind sonst an einem Abend durch. Sie
+   staffelt deshalb: die ersten zehn Fehlversuche kosten eine Viertelstunde,
+   die nächsten zehn eine halbe, danach eine ganze. Gezählt wird über zwei
+   Stunden zurück, und eine geglückte Anmeldung räumt alles weg.
+
+   BEKANNT UND NICHT BEHOBEN: Das Staffeln verhindert nicht, dass ein
+   Vertipper das ganze Haus aussperrt — es verlängert es. Der Ausweg wäre,
+   pro GERÄT zu zählen (die App führt eine dauerhafte Kennung, `geraetId()`
+   in index.html) und die IP nur als lockeren Deckel zu behalten. Das
+   braucht eine zusätzliche Spalte auf `anmeldeversuch`, also eine
+   Migration. Steht als Vorschlag in review/BACKLOG.md. */
+const SPERRE = {
+  versuche: 10,
+  gedaechtnis: 2 * 60 * 60 * 1000,
+  stufen: [15 * 60 * 1000, 30 * 60 * 1000, 60 * 60 * 1000]
+};
+
+/* Wie lange diese IP noch warten muss — 0 heisst: gar nicht.
+   `fehl` sind die Zeitstempel der Fehlversuche im Gedächtnis, aufsteigend. */
+function sperreBis(fehl, jetzt) {
+  if (fehl.length < SPERRE.versuche) return 0;
+  const stufe = Math.min(SPERRE.stufen.length,
+                         Math.floor(fehl.length / SPERRE.versuche));
+  /* Gerechnet wird ab dem ältesten Fehlversuch, der noch mitzählt — so
+     endet die Sperre zu einer Uhrzeit, die die App nennen kann, statt
+     pauschal „in einer Viertelstunde". */
+  const bis = fehl[fehl.length - SPERRE.versuche] + SPERRE.stufen[stufe - 1];
+  return bis > jetzt ? bis : 0;
+}
 
 /* ── Betriebstag ────────────────────────────────────────────────────────
    F1 (18.09.2026): Der Worker läuft in UTC. Wo er selbst einen Betriebstag
@@ -104,20 +144,15 @@ const darf = (p, ...rollen) => !!p && rollen.includes(p.rolle);
 /* ── Anmeldung ───────────────────────────────────────────────────────── */
 async function anmelden(request, env) {
   const ip = request.headers.get("cf-connecting-ip") || "?";
-  const seit = Date.now() - SPERRE.fenster;
+  const jetzt = Date.now();
+  const seit = jetzt - SPERRE.gedaechtnis;
 
   const { results: letzte } = await env.DB.prepare(
     `SELECT ok, ts FROM anmeldeversuch WHERE ip = ?1 AND ts > ?2`).bind(ip, seit).all();
   const fehl = letzte.filter(r => !r.ok).map(r => +r.ts).sort((a, b) => a - b);
 
-  if (fehl.length >= SPERRE.versuche) {
-    /* Die Sperre endet nicht pauschal in 15 Minuten, sondern sobald der
-       älteste noch mitzählende Fehlversuch aus dem Fenster fällt. Genau
-       diese Uhrzeit zeigt die App an — sonst steht jemand davor und weiss
-       nicht, wie lange noch. */
-    const wartenBis = fehl[fehl.length - SPERRE.versuche] + SPERRE.fenster;
-    return json({ fehler: "zu viele Versuche", wartenBis }, 429);
-  }
+  const wartenBis = sperreBis(fehl, jetzt);
+  if (wartenBis) return json({ fehler: "zu viele Versuche", wartenBis }, 429);
 
   let code = "";
   try { code = (await request.json()).code || ""; } catch {}
@@ -568,12 +603,11 @@ async function personSchreiben(env, body) {
   if (!name || !rolle) return json({ fehler: "name und rolle nötig" }, 422);
 
   if (code) {
-    /* Vier Ziffern sind seit dem 17.09. nicht mehr zu vergeben: die vier
-       ersten Codes des Hauses standen im Klartext in der Geschichte des
-       Anhangs, und 10 000 Möglichkeiten sind an einem Abend durchprobiert.
-       Geprüft wird hier nur das Vergeben — bestehende Prüfsummen bleiben
+    /* Runde 15: wieder genau vier Ziffern (siehe PIN_LAENGE ganz oben).
+       Geprüft wird nur das VERGEBEN — bestehende Prüfsummen bleiben
        gültig, sonst käme niemand mehr hinein, um sie zu ersetzen. */
-    if (!/^\d{6,8}$/.test(code)) return json({ fehler: "Code: sechs bis acht Ziffern" }, 422);
+    if (!PIN_MUSTER.test(code))
+      return json({ fehler: "Code: genau " + PIN_LAENGE + " Ziffern" }, 422);
     const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
     const hash = await hashe(code, salt);
     await env.DB.prepare(
@@ -589,6 +623,58 @@ async function personSchreiben(env, body) {
     ).bind(id, name, rolle, aktiv === 0 ? 0 : 1).run();
   }
   return json({ ok: true });
+}
+
+/* ── PIN zurücksetzen ──────────────────────────────────────────────────
+   Runde 15. Die Leitung kann einer Person einen neuen PIN geben, ohne ihn
+   sich auszudenken und ohne ihn irgendwo zu hinterlegen: Der Worker würfelt
+   ihn, speichert NUR die Prüfsumme und gibt den Klartext GENAU EINMAL in
+   der Antwort zurück. Danach ist er nirgends mehr zu holen — nicht in der
+   Datenbank, nicht im Log, nicht in einer Datei (harte Regel 9). */
+
+/* Gleichverteilt über 0000…9999. `% 10000` auf zwei Bytes wäre schief:
+   65536 ist kein Vielfaches von 10000, die ersten 5536 Werte kämen öfter.
+   Alles ab 60000 wird deshalb verworfen und neu gezogen. */
+function wuerfelPin() {
+  const b = new Uint8Array(2);
+  for (;;) {
+    crypto.getRandomValues(b);
+    const v = (b[0] << 8) | b[1];
+    if (v < 60000) return String(v % 10000).padStart(PIN_LAENGE, "0");
+  }
+}
+
+async function pinZuruecksetzen(env, id) {
+  if (!id) return json({ fehler: "id nötig" }, 422);
+  const ziel = await env.DB.prepare(
+    `SELECT id, name FROM person WHERE id = ?1`).bind(id).first();
+  if (!ziel) return json({ fehler: "unbekannte Person" }, 404);
+
+  /* Jeder Code wird beim Anmelden gegen JEDE Person gerechnet. Zwei
+     Personen mit demselben PIN hiessen: die erste gewinnt, und im Protokoll
+     steht der falsche Name. Bei vier Ziffern und einem Haus voller Leute
+     ist das kein Gedankenspiel — also wird geprüft und neu gewürfelt. */
+  const { results: andere } = await env.DB.prepare(
+    `SELECT id, code_hash, salt FROM person WHERE id != ?1 AND aktiv = 1`).bind(id).all();
+
+  let pin = "", frei = false;
+  for (let i = 0; i < 40 && !frei; i++) {
+    pin = wuerfelPin();
+    frei = true;
+    for (const a of andere) {
+      if (gleich(await hashe(pin, a.salt), a.code_hash)) { frei = false; break; }
+    }
+  }
+  if (!frei) return json({ fehler: "kein freier Code gefunden" }, 503);
+
+  const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await hashe(pin, salt);
+  await env.DB.prepare(
+    `UPDATE person SET code_hash = ?2, salt = ?3 WHERE id = ?1`
+  ).bind(id, hash, salt).run();
+
+  /* Der Klartext steht hier zum ersten und letzten Mal. Kein console.log. */
+  return json({ pin, name: ziel.name });
 }
 
 /* ── Router ──────────────────────────────────────────────────────────── */
@@ -690,6 +776,12 @@ export default {
           const b = await koerper(request);
           return b ? await personSchreiben(env, b) : keinJson();
         }
+      }
+
+      if (pfad === "/api/person/pin" && m === "POST") {
+        if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
+        const b = await koerper(request);
+        return b ? await pinZuruecksetzen(env, b.id) : keinJson();
       }
 
       return json({ fehler: "unbekannter Endpunkt" }, 404);

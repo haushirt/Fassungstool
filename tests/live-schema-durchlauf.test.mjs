@@ -24,7 +24,7 @@ import assert from "node:assert/strict";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
 import { d1Echt, SCHEMA_DA } from "./hilfe/d1-echt.mjs";
 
-const CODE = "418823";                       /* nur in dieser Prüfung */
+const CODE = "4188";                       /* nur in dieser Prüfung */
 let worker;
 before(async () => { worker = await ladeWorker(); });
 
@@ -366,7 +366,7 @@ describe("Der Worker an der echten Tabellenstruktur", { skip: SCHEMA_DA ? false 
   test("/api/personen liest und schreibt gegen die echte Tabelle", async () => {
     const { env, keks } = await haus();
     const a = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
-      body: { name: "Lena", rolle: "service", code: "770231" } }), env);
+      body: { name: "Lena", rolle: "service", code: "7702" } }), env);
     assert.equal(a.status, 200, JSON.stringify(await a.clone().json()));
     const j = await (await worker.fetch(anfrage("/api/personen", { keks }), env)).json();
     assert.deepEqual(j.personen.map(p => p.name), ["Asad", "Lena"]);
@@ -375,7 +375,7 @@ describe("Der Worker an der echten Tabellenstruktur", { skip: SCHEMA_DA ? false 
   test("eine Rolle ausserhalb der drei nimmt die Datenbank nicht an", async () => {
     const { env, keks } = await haus();
     const a = await worker.fetch(anfrage("/api/personen",
-      { method: "POST", keks, body: { name: "X", rolle: "chef", code: "112233" } }), env);
+      { method: "POST", keks, body: { name: "X", rolle: "chef", code: "1122" } }), env);
     assert.equal(a.status, 500, "CHECK (rolle IN …) schlägt zu");
     assert.equal(env.DB.zeilen("person").length, 1);
   });
@@ -383,7 +383,7 @@ describe("Der Worker an der echten Tabellenstruktur", { skip: SCHEMA_DA ? false 
   test("die Anmeldesperre zählt in der echten Tabelle mit", async () => {
     const { env } = await haus();
     for (let i = 0; i < 3; i++)
-      await worker.fetch(anfrage("/api/anmelden", { method: "POST", body: { code: "000000" } }), env);
+      await worker.fetch(anfrage("/api/anmelden", { method: "POST", body: { code: "0000" } }), env);
     assert.equal(env.DB.zeilen("anmeldeversuch").filter(v => !v.ok).length, 3);
   });
 });

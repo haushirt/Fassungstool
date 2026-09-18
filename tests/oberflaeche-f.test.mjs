@@ -77,7 +77,10 @@ describe("F6 · der Kopf beginnt unter der Statusleiste", () => {
   test("index.html: Kopf, Startseite und Anmeldung tragen das Polster", () => {
     assert.match(APP, /header\{[^}]*padding:max\(12px,env\(safe-area-inset-top\)\)/);
     assert.match(APP, /\.mkopf\{[^}]*padding:max\(12px,env\(safe-area-inset-top\)\)/);
-    assert.match(APP, /\.login\{[^}]*env\(safe-area-inset-top\)/);
+    /* Runde 15: Die Anmeldeseite hat einen eigenen Kopf bekommen; das
+       Polster gegen die Statusleiste sitzt jetzt dort, wie auf der
+       Startseite auch. `.login` selbst ist randlos. */
+    assert.match(APP, /\.akopf\{[^}]*padding:max\(20px,env\(safe-area-inset-top\)\)/);
   });
 
   test("leitung.html: der Kopf trägt das Polster, auch am Handy", () => {
