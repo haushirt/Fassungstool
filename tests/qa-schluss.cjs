@@ -122,19 +122,36 @@ const tor = async (p, was) => {
       urteil("Sonderentnahme · Wein: die fünf Grundknöpfe stehen da", wein === 5, wein + " Knöpfe");
       urteil("Sonderentnahme · Getränke: der Grund ist erreichbar", getr === 5,
              getr + " Knöpfe im Zweig Getränke");
-      /* Und was sagt der Abschluss dort? */
-      const offen = await p.evaluate(() => { const o = offenList(); return o; });
-      urteil("Sonderentnahme · Getränke: kein unerfüllbarer offener Punkt",
+      /* Und was sagt der Abschluss dort?
+         BERICHTIGT (Runde 15): Solange kein Grund gewählt ist, MUSS
+         „Grund fehlt" offen stehen — das ist der Sinn der Pflicht. Der
+         Fund war nicht der offene Punkt, sondern dass er im Zweig
+         Getränke nicht zu erfüllen war. Geprüft wird deshalb, dass er
+         verschwindet, sobald jemand einen Grund antippt. */
+      const offenVorher = await p.evaluate(() => offenList());
+      urteil("Sonderentnahme · Getränke: ohne Grund bleibt der Punkt offen",
+             offenVorher.some(t => t.indexOf("Grund fehlt") === 0),
+             JSON.stringify(offenVorher));
+      await p.evaluate(() => { const b = document.querySelector(".grundb"); if (b) b.click(); });
+      await p.waitForTimeout(400);
+      const offen = await p.evaluate(() => offenList());
+      urteil("Sonderentnahme · Getränke: mit Grund ist er erfüllt",
              !offen.some(t => t.indexOf("Grund fehlt") === 0),
              JSON.stringify(offen));
-      /* Der Sprung des offenen Punktes führt wohin? */
+      /* Der Sprung des offenen Punktes führt wohin? Der Grund ist jetzt
+         gesetzt, also wird er für diese Frage wieder weggenommen. */
+      await p.evaluate(() => { const d = D(); d.grund = ""; save(); render(); });
+      await p.waitForTimeout(300);
       const ziel = await p.evaluate(() => offenZiel("Grund fehlt – wofür wurde geholt?"));
       const nachSprung = await p.evaluate(z => { go(z); return null; }, ziel)
         .then(() => p.waitForTimeout(400)).then(() => gruendeSichtbar(p));
       urteil("der Sprung vom offenen Punkt landet bei den Grundknöpfen",
              nachSprung === 5, "Schritt " + ziel + " zeigt " + nachSprung + " Knöpfe");
-      /* Was kostet der unerfüllbare Punkt im Abschluss? */
-      await p.evaluate(() => { const d = D(); d.gent = { cola033: 6 }; save(); go(lastStep()); });
+      /* Was kostet der Punkt im Abschluss, wenn er erfüllt ist? Vorher
+         war das die Pflichtübung „Trotzdem abschliessen?" mit Code. */
+      await p.evaluate(() => { const d = D(); d.gent = { cola033: 6 };
+        const b = document.querySelector(".grundb"); if (b) b.click();
+        save(); go(lastStep()); });
       await p.waitForTimeout(500); await hilfeWeg(p);
       await p.evaluate(() => document.querySelector(".finishbtn").click());
       await p.waitForTimeout(400);
@@ -143,7 +160,7 @@ const tor = async (p, was) => {
         t: (document.querySelector("#ovT") || {}).textContent,
         code: !!document.querySelector("#fgCode") }));
       await bild(p, "390-sonderentnahme-getraenke-abschluss-code");
-      urteil("Getränke-Sonderentnahme lässt sich ohne Code abschliessen",
+      urteil("Getränke-Sonderentnahme lässt sich mit Grund ohne Code abschliessen",
              !(dialog.an && dialog.code), dialog.t + " · Codefeld: " + dialog.code);
       await ctx.close();
     }

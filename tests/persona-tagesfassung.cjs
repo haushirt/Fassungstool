@@ -170,18 +170,20 @@ async function grussWeg(p, wo) {
   const anmeldeText = (await sichtbar(p)).join(" | ");
   console.log("1. Anmeldung sieht:", anmeldeText.slice(0, 200));
 
-  /* Falscher Code zuerst — so fängt ein erster Tag oft an. */
+  /* Falscher Code zuerst — so fängt ein erster Tag oft an.
+     Runde 15: Der Code hat genau vier Ziffern und wird nach der vierten
+     von SELBST abgeschickt. Der Haken wird deshalb nicht mehr gedrückt —
+     er ist zu diesem Zeitpunkt längst wieder gesperrt, weil das Feld
+     nach dem Absenden leer ist. */
   for (const z of FALSCH) await p.locator('[data-z="' + z + '"]').click();
-  await p.locator("[data-ok]").click();
-  await p.waitForTimeout(400);
+  await p.waitForTimeout(600);
   const fehlerSatz = await p.locator("#pinFehler").textContent();
   console.log("   falscher Code →", JSON.stringify(fehlerSatz));
   await bild(p, "anmeldung-falscher-code");
 
-  /* Jetzt der richtige. */
+  /* Jetzt der richtige — auch er schickt sich selbst ab. */
   for (const z of CODE) await p.locator('[data-z="' + z + '"]').click();
-  await p.locator("[data-ok]").click();
-  await p.waitForTimeout(600);
+  await p.waitForTimeout(800);
   const imMenu = await p.evaluate(() => {
     const m = document.getElementById("menu");
     return !!m && getComputedStyle(m).display !== "none";

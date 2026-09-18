@@ -2629,8 +2629,15 @@ function vTeam(m){
     $("#teamL").querySelectorAll("[data-pin]").forEach(b=>b.onclick=async()=>{
       const p=LEUTE.find(x=>x.id===b.dataset.pin);
       if(!p)return;
+      /* Den eigenen Code zurückzusetzen ist erlaubt — die offene Sitzung
+         hängt am Keks, nicht am Code, man fliegt also nicht heraus. Wer
+         den neuen aber wegklickt, ohne ihn zu notieren, kommt beim
+         nächsten Anmelden nicht mehr herein. Deshalb steht das dabei. */
+      const ichSelbst = ICH && p.name === ICH.name;
       if(!confirm("Neuen Code für "+p.name+" würfeln?\n\n"+
-        "Der alte gilt danach nicht mehr. Der neue ist nur EINMAL zu sehen."))return;
+        "Der alte gilt danach nicht mehr. Der neue ist nur EINMAL zu sehen."+
+        (ichSelbst ? "\n\nDas bist DU. Notiere ihn, sonst kommst du beim "+
+          "nächsten Anmelden nicht mehr herein." : "")))return;
       b.disabled=true;
       try{
         const r=await fetch("/api/person/pin",{method:"POST",
