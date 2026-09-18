@@ -2648,3 +2648,139 @@ mit seinem persönlichen Code heraus.
 **Phase/Thema:** Anmeldung / PIN
 **Backlog:** ein Punkt hoch (Sperre pro Gerät), einer mittel (vier Stellen sind zehntausend Möglichkeiten — die Staffelung ist das Einzige, was dagegensteht).
 **STATUS:** FERTIG
+
+### Runde 15 – qa-guardian (zweite Schlusskontrolle vor dem Merge)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — Der Blocker der ersten Schlusskontrolle (Getränke-Zweig
+  ohne Grund) ist behoben. Nachgemessen: `rGrund(m)` läuft jetzt auch in
+  `rGetrMenge`, fünf Knöpfe im Zweig Getränke, Grund setzbar, danach
+  `offenList()` leer (`tests/ui-nachjagd.cjs`, R15-Block). Veto aufgehoben.
+* ❌ abgelehnt — Übergabe „Runde 15 – PIN": „Bestehende Prüfsummen bleiben
+  gültig". Für den WORKER stimmt das (`src/index.js:144` prüft keine Länge,
+  nachgestellt). Für die APP nicht: `public/index.html:2451` `maxlength=4`,
+  `:2475` deckelt den Ziffernblock, `:2473` sendet bei der vierten Ziffer.
+  Ein Code mit fünf bis acht Stellen ist nach dem Merge nicht mehr
+  eintippbar — auch nicht in Verwaltung (`:2742`) und Freigabe (`:5125`).
+  Die Aussage gilt nur, wenn JEDE aktive Person heute genau vier Ziffern hat.
+* ❌ abgelehnt — `review/ERGEBNIS.md` ist als PR-Text unbrauchbar, schärfer
+  als beim letzten Mal: Sie beschreibt den Stand von VOR dieser Runde und
+  weist Casimir in der Nacht des Livegangs falsch an. Einzelheiten unten.
+* ↩️ geändert — „`sw.js` v31 → v35" bzw. „Elf Commits": es sind v31 → **v37**
+  und **17** Commits. `ERGEBNIS.md:10` nennt v36.
+* ❌ abgelehnt — `public/leitung.html:2570` („Der Worker weist beides
+  zusätzlich ab") ist falsch. Nachgestellt gegen den echten Worker:
+  Selbstsperre → 200, `aktiv=0`, Anmeldung danach 401. Rollenwechsel auf
+  sich selbst → 200, Rolle `service`, `/api/personen` danach 403.
+  `personSchreiben()` bekommt `p` gar nicht übergeben, kann es also nicht
+  prüfen. Steht wortgleich schon in `main`, gehört aber richtiggestellt.
+
+**Umgesetzt:** kein Produktcode angefasst (Auftrag: nichts umbauen).
+1. Sperre `sperreBis()` vollständig durchgerechnet (Simulation über sieben
+   Tage, 1-s-Schritte) statt nur an drei Stützstellen geprüft.
+2. Anmeldung, Sitzung, Rollen und `/api/person/pin` gegen den echten Worker
+   nachgestellt (Selbstsperre, Rollenwechsel, verbogener Keks, abgelaufene
+   Sitzung, kaputte `id`, doppeltes Absenden, 1000 Würfe).
+3. Persona-Durchlauf repariert ausserhalb des Baums gefahren und bis zum
+   Abschluss gebracht — `tests/persona-tagesfassung.cjs` selbst fällt.
+
+**Geprüft:**
+* `npm test` **370/370**. `node tests/ui-nachjagd.cjs` **31/31**, Rückgabe 0
+  (die Übergabe nennt 30 — es sind 31). `LAUF=qa15 node tests/ui-mass.cjs`
+  **zehn von zehn**, Gestaltungsschicht wortgleich. `node --check` über alle
+  geänderten JS-Dateien sauber.
+* **Frage 1 · Sperrt sich jemand aus?** Worker: nein — `anmelden()` prüft
+  keine Länge, rechnet nur die Prüfsumme; ein sechsstelliger Bestandscode
+  kommt herein (nachgestellt, und `tests/worker-anmeldung.test.mjs` hält es
+  fest). `personSchreiben()` prüft nur beim VERGEBEN, `pinZuruecksetzen()`
+  würfelt vier. App: **ja** — vier Eingabestellen deckeln hart auf vier
+  Ziffern, `bekannterCode()` selbst deckelt nicht, wird aber nur aus
+  gedeckelten Feldern gerufen. `leitung.html` hat keine eigene Anmeldung
+  (0 Treffer), lebt vom Keks aus `index.html` — wer dort nicht hineinkommt,
+  kommt auch nicht ins Backoffice. Rettung ohne D1-Konsole ist möglich und
+  nachgestellt: `ANLAGE_OFFEN` im Dashboard setzen, `POST /api/anlage` mit
+  vier Ziffern → 200, Anmeldung danach 200 als `leitung`.
+* **Frage 2 · Die gestaffelte Sperre.** Leere Tabelle → 0. Neun Zeilen → 0.
+  Zehn → 15 min, 19 → 15, 20 → 30, 29 → 30, 30 → 60, 10 000 → 60. Länger als
+  eine Stunde kann sie nie halten: der Anker `fehl[len−10]` liegt immer in
+  der Vergangenheit, die höchste Stufe ist 60 min; längste ununterbrochene
+  Sperre in der Simulation 59,8 min. Sie kann auch nie zufallen: während
+  einer Sperre wird nichts eingetragen (429 kommt vor dem INSERT), und ohne
+  neue Fehlversuche ist `bis` monoton fallend — 0 Gegenbeispiele in 12 100
+  geprüften Lagen. `ts` als Text ändert nichts (`+r.ts`). Eine geglückte
+  Anmeldung räumt mit `DELETE … WHERE ip = ?1 AND ok = 0` alle Fehlzeilen
+  der IP weg; das stimmt mit dem Kommentar überein. Preis, sauber benannt:
+  ein Angreifer schafft an einer IP **370 Rateversuche am Tag** — bei 10 000
+  Möglichkeiten im Mittel knapp zwei Wochen, und die Zählung je IP ist
+  beliebig parallelisierbar.
+* **Frage 3 · Der zurückgesetzte PIN.** Klartext nur in der einen Antwort:
+  kein `console.log`, kein `notiz()`, kein `localStorage`, keine URL (der
+  Körper trägt nur die `id`), `zeigePin()` schreibt ihn in einen Knoten, den
+  „Notiert" entfernt. Datenbank: nur `code_hash`/`salt`, der Test prüft die
+  ganze Zeile gegen den Klartext. Fixtures: kein Treffer. Alle Test-Codes
+  sind gewürfelt; Schnittmenge mit den fünf Klartext-Codes aus der
+  Geschichte von `index.html` (alle vierstellig): **0**. Nur `leitung`:
+  ja — 401 ohne Anmeldung, 403 als Service, 401 bei abgelaufener Sitzung.
+  `wuerfelPin()` ist gleichverteilt (1000 Würfe, erste Ziffer 82–112, immer
+  vier Stellen). **Selbst den Zugang nehmen: ja.** Der Knopf hat keine
+  Selbstschutz-Abfrage wie „Sperren"; wer ihn auf der eigenen Zeile drückt,
+  hat den alten Code sofort verloren (nachgestellt: 401) und den neuen genau
+  einmal auf dem Schirm. Beim einzigen Konto des Hauses hängt der Zugang an
+  diesem einen Blatt.
+* **Frage 4 · Schema und Migration.** Keine Schemaänderung nötig, bestätigt
+  gegen `docs/live-schema.sql`: `anmeldeversuch(ip, ts, ok)` deckt SELECT,
+  INSERT und DELETE; `person(code_hash, salt)` deckt das Zurücksetzen;
+  `ereignis.notiz` deckt `grund=`. Kein `CREATE/ALTER/DROP` im Diff,
+  `migrations/` unberührt, Regel 14 (`schluessel`/`zaehlnr`/`geraet`)
+  unberührt. **UNGEPRÜFT:** die Live-D1 selbst — in dieser Sitzung gibt es
+  keinen Cloudflare-Zugang (kein Connector, kein `wrangler`, keine
+  Anmeldedaten). Gerechnet wurde gegen `docs/live-schema.sql` in echtem
+  SQLite.
+* Regeln 1–14: `wrangler.jsonc` unberührt, `RUNDEN` = 1000 unverändert, vier
+  Dateien in `public/`, Gestaltungsschicht wortgleich (`.pinzeig` liegt
+  ausserhalb des geteilten Blocks, Zeile 399 gegen Ende 226), `sw.js` v37,
+  `gnparse.js` nicht angefasst, keine neue Abhängigkeit, keine Secrets im
+  Diff. Regel 1 (`v2-review`) ist branchseitig gebrochen — bekannt, steht
+  als Widerspruch in CLAUDE.md schon im Backlog, nicht von mir zu lösen.
+* Persona (iPhone 390 px, neue Servicekraft, 22:40): `tests/persona-
+  tagesfassung.cjs` **fällt sofort** — die Länge wurde auf vier gestellt, die
+  Bedienung nicht: nach der vierten Ziffer sendet die Seite selbst und leert
+  das Feld, der Haken bleibt gesperrt, `click()` läuft 30 s in den Timeout,
+  Rückgabe 1. Mit reparierter Anmeldung (ausserhalb des Baums) läuft der
+  ganze Weg bis zum Abschluss durch, ohne JS-Fehler: Offline → Online,
+  doppeltes Absenden schreibt einmal (1 → 1), Abbruch mitten in der Eingabe
+  hält den Stand, abgelaufene Sitzung lässt die Reihe liegen. Hängenbleiben
+  würde sie an zwei Stellen, beide alt: Hilfe-Blatt und Begrüßung legen sich
+  ungefragt über den Schirm.
+
+**Für die Nächsten:**
+* An **Casimir**, vor dem Merge: (1) Tippe deinen Code und zähle die Ziffern.
+  Sind es mehr als vier, **nicht mergen** — der Runbook in `ERGEBNIS.md` hat
+  dich am 17.09. ausdrücklich auf sechs bis acht geschickt, und mit einem
+  solchen Code kommst du nach dem Merge nicht mehr herein. (2) Passen acht
+  Flaschen Gasteiner 0,25 in die Spalte in Lade 1, oder sieben? Die Zahl
+  steht seit Runde 14 auf 8 und geht ins append-only Journal.
+* An die **Oberfläche**: „PIN zurücksetzen" braucht dieselbe Rückfrage wie
+  „Sperren", wenn es die eigene Zeile oder die letzte Leitung trifft.
+* An den **software-engineer**: die Selbstschutz-Abfragen gehören in den
+  Worker; heute stehen sie nur im Browser, und der Kommentar behauptet das
+  Gegenteil.
+
+**Phase/Thema:** Schlusskontrolle vor dem Livegang (Runde 13 + 14 + 15)
+
+**Backlog:** neu unter „hoch": `ERGEBNIS.md` weist beim Livegang falsch an;
+Länge des Bestandscodes vor dem Merge bestätigen; Persona-Durchlauf fällt.
+Neu unter „mittel": Selbstschutz nur im Browser; `pinZuruecksetzen` ohne
+Selbstschutz; `qa-schluss.cjs` schlägt falschen Alarm; `/api/person/pin`
+antwortet auf eine krumme `id` mit 500. Neu unter „niedrig": Meldung nennt
+immer 15 Minuten; `anmeldeversuch` wächst unbegrenzt ohne Index.
+
+**STATUS:** BLOCKER — **Veto gegen den Merge nach `main`.** Der Code hält:
+Sperre, Zurücksetzen, Rollen, Sitzung, Schema und die Offline-Reihe sind
+durchgerechnet und sauber. Das Veto gilt der **Anleitung**, die mit dem PR
+mitgeht, und einer **Frage, die nur Casimir beantworten kann** — beides
+zusammen ist genau der Fall, vor dem gewarnt wurde: das Haus kommt nicht
+mehr in sein Werkzeug.
+
+**Rundenfazit:** Der Riegel ist gut gebaut; der Zettel daneben beschreibt
+noch das alte Schloss.
