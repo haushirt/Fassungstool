@@ -1,157 +1,159 @@
 # Morgenbrief · Nacht auf den 18.09.2026
 
-Gearbeitet wurde in vier Runden (6–9) mit sechs Rollen, dazwischen dreimal
-der Jäger. Alles liegt auf `claude/optimistic-feynman-o7jsgy`.
-Ausgangsstand der Nacht: **`e3eb7b9`** (= `main`, `sw.js` v24).
+Sieben Runden (6–12) mit fünf Rollen, dazwischen viermal der Jäger — eine
+Rolle, die nichts baut und nur sucht. Alles liegt auf
+`claude/optimistic-feynman-o7jsgy`. Ausgangsstand: **`e3eb7b9`** (`sw.js` v24).
 
 ---
 
 ## 1 · Was live ist: NICHTS
 
-**Es ist nichts gemergt worden.** `main` steht unverändert auf `e3eb7b9`
-(`sw.js` v24) — genau dort, wo du es gestern Abend verlassen hast. Die ganze
-Nacht liegt auf `claude/optimistic-feynman-o7jsgy`, als Pull Request
-vorbereitet.
+`main` steht unverändert auf `e3eb7b9`, genau dort, wo du es gestern Abend
+verlassen hast. Die Nacht liegt als **Pull Request** bereit.
 
-**Warum kein Merge:** Das Merge-Gate verlangt null A- und null B-Funde. Der
-Jäger hat in der letzten Prüfung einen A-Fund gemeldet, der im Betrieb Geld
-kostet: Die Bestellliste schlug **132 Flaschen** für einen Wein vor, von dem 24
-ungerechnet im Keller standen. Ein Merge geht bei diesem Projekt sofort live,
-und der Service beginnt am Abend — das war es nicht wert.
+**Warum kein Merge:** Das Gate verlangte null A- und null B-Funde. Der Jäger
+hat bis zuletzt welche gefunden — der letzte kostete im Betrieb Geld: Die
+Bestellliste schlug **132 Flaschen** für einen Wein vor, von dem 24 ungerechnet
+im Keller standen. Behoben ist er; aber ein Merge geht hier sofort live, und
+der Service beginnt am Abend. Das Risiko war es um vier Uhr früh nicht wert.
 
-**Du merged selbst, wenn du willst** — die Beschreibung des Pull Requests sagt
-dir, was drin ist und was noch offen ist. Ein Rückweg wird nicht gebraucht,
-weil nichts live gegangen ist; falls du nach dem Merge zurück willst:
+**Du merged selbst, wenn du willst.** Danach zurück geht es mit:
 
 ```
 git revert --no-commit e3eb7b9..HEAD && git commit -m "Nacht zurueckgedreht"
 ```
 
-Die Nacht hat sieben Zahlenfehler gefunden und behoben, die **heute live stehen** — sie sind auf dem Branch behoben, nicht in `main`:
+### Was der Stand behebt — alles Fehler, die HEUTE live sind
 
-1. **Kein geratenes Glas mehr.** „Amaro Averna 2 cl" × 3 wurde als **3 ganze
-   Flaschen** verbucht statt 0,09; „Sanbitter Spritz 1 Glas" als eine
-   Flasche. Positionen ohne bestätigte Größe rechnen jetzt gar nicht mit und
-   stehen sichtbar als „Größe fehlt".
-2. **`mapping.gebinde_ml` wird endlich benutzt.** Die Spalte gab es live, der
-   Worker schrieb sie — gelesen hat sie nie jemand.
-3. **Kistengröße:** Das Backoffice las `p.kg`, ein Feld, das die App nie
-   geschrieben hat. Zwei Kisten à 20 standen im Journal mit 40, auf dem
-   Schirm mit 12.
-4. **Zweiter Wareneingang am selben Tag:** nahm den ersten per Gegenbuchung
-   aus dem Bestand. Jetzt fragt die App („Ergänzen" / „Trotzdem neu
-   beginnen" / „Abbrechen").
+1. **Kein geratenes Glas.** „Amaro Averna 2 cl" × 3 wurde als **3 ganze
+   Flaschen** gebucht statt 0,09; „Sanbitter Spritz 1 Glas" als eine Flasche.
+   Positionen ohne bestätigte Größe rechnen nicht mehr mit und stehen als
+   „Größe fehlt" da.
+2. **`mapping.gebinde_ml` wird endlich gelesen.** Die Spalte gibt es live, der
+   Worker schreibt sie — benutzt hat sie nie jemand.
+3. **Kistengröße:** Das Backoffice las ein Feld, das die App nie geschrieben
+   hat. Zwei Kisten à 20 standen im Journal mit 40, auf dem Schirm mit 12.
+4. **Zweiter Wareneingang am selben Tag** nahm den ersten per Gegenbuchung aus
+   dem Bestand. Jetzt fragt die App: Ergänzen, neu beginnen oder abbrechen.
 5. **Gelieferte Getränke** zählten im Backoffice als Entnahme — 24 gelieferte
    Cola erschienen als „Diff +24, Vorrat aufgebaut oder Schwund".
-6. **Zwei Sortierungen:** Backoffice rechnete Lieferung vor Zählung, der
-   Worker nach Ankunft. 10 Flaschen gegen 34 für denselben Tag.
-7. **Der Fremdgerät-Dialog ließ sich nicht ablehnen** — „Abbrechen" öffnete
-   ihn sofort wieder.
+6. **Zwei Sortierungen im Umlauf:** derselbe Tag ergab 10 Flaschen im
+   Backoffice und 34 im Worker.
+7. **Der Fremdgerät-Dialog ließ sich nicht ablehnen** — „Abbrechen" öffnete ihn
+   sofort wieder.
+8. **Die Oberfläche im Service ist erstmals vermessen:** jeder Griff 44 px
+   (vorher 48 zu kleine), keine Schrift unter 15 px (vorher 36 Stellen), kein
+   Kontrast unter 4,5:1 (vorher 117), kein Überlauf bei 390/768/1280 px.
+
+**Geprüft:** 286 Prüfungen grün (Start der Nacht: 211), dreimal hintereinander
+und unter drei Zeitzonen; vier Browserläufe (Backoffice 40/40, Durchstich
+35/35, zweiter Vorgang 15/15, Fremdgerät 10/10); Messgerät mit acht Urteilen.
 
 ---
 
 ## 2 · Was du selbst tun musst
 
-| ✔ | Was | Minuten | Warum nur du |
+| ✔ | Was | Min. | Warum nur du |
 |---|---|---|---|
-| ☐ | **Die vier persönlichen Codes neu vergeben**, sechs bis acht Ziffern. Ablauf in `review/ERGEBNIS.md`, Abschnitt „Die vier Codes Schritt für Schritt". | 20 | Ich habe lesend nachgesehen: alle vier Personen stammen unverändert vom **01.09.** Die ersten Codes stehen im Klartext in der Git-Historie und gelten weiter. |
-| ☐ | **Jedes Gerät einmal neu anmelden** (iPhone, iPad, MacBook), sonst gilt der alte Code dort ohne Netz weiter. | 10 | Geräte |
-| ☐ | **Im Backoffice die Gebindegrößen bestätigen**: „Verkauf ↔ Fassung" → Block „Größe fehlt" → **„Alle N Vorschläge übernehmen"**. Live sind es 13 Zuordnungen, alle ohne Größe. | 2 | Erst danach zeigt der Abgleich Zahlen. Sechs davon haben keinen Vorschlag (Cola, Sanbitter, Almdudler, Gasteiner still) — für die fehlt noch ein Eingabefeld, siehe Punkt 4. |
-| ☐ | **`review/INPUT-TEAM.md` mit dem Team füllen** — Lagerorte, Laufweg, was beim Fassen nervt. | 15 | Ohne diese Antworten kann Phase B (Keller) nicht spezifiziert werden. |
-| ☐ | **Migration `001_mapping_rezept.sql`**: NICHT einspielen, solange keine Rezepturen gebraucht werden. Wenn doch (Aperol Spritz & Co. sollen mitrechnen): einspielen, Ablauf in `review/ERGEBNIS.md`. | 5 | Migrationen spielst nur du ein. |
-| ☐ | **Dashboard prüfen:** `ANLAGE_OFFEN` muss gelöscht sein. | 2 | Dashboard erreiche ich nicht. |
+| ☐ | **Die vier Codes neu vergeben**, sechs bis acht Ziffern (Ablauf: `review/ERGEBNIS.md`). | 20 | Lesend nachgesehen: alle vier Personen stammen vom **01.09.**, die Codes sind nie ersetzt worden. Die ersten stehen im Klartext in der Git-Historie und gelten weiter. |
+| ☐ | **Jedes Gerät einmal neu anmelden.** | 10 | Sonst gilt der alte Code dort ohne Netz weiter. |
+| ☐ | **Pull Request ansehen und mergen**, falls du den Stand willst. | 10 | Merge = Livegang. |
+| ☐ | **Gebindegrößen bestätigen:** „Verkauf ↔ Fassung" → „Größe fehlt" → „Alle N Vorschläge übernehmen". | 2 | Live haben **alle 13** Zuordnungen keine Größe. Erst danach zeigt der Abgleich Zahlen. Sechs davon (Cola, Sanbitter, Almdudler, Gasteiner still) haben keinen Vorschlag — siehe Punkt 4. |
+| ☐ | **`review/INPUT-TEAM.md` mit dem Team füllen** — Lagerorte, Laufweg, was beim Fassen nervt. | 15 | Ohne diese Antworten lässt sich Phase B (Keller) nicht festlegen. |
+| ☐ | **Migration `001_mapping_rezept.sql`** nur einspielen, wenn Mischgetränke mitrechnen sollen. | 5 | Migrationen spielst nur du ein. Dieser Stand braucht sie nicht. |
+| ☐ | **Dashboard:** prüfen, dass `ANLAGE_OFFEN` gelöscht ist. | 2 | Nicht erreichbar für mich. |
 
-### iPhone-Prüfliste — was in Chromium nicht beweisbar war
-
-Alles unten wurde bei 390 px in Chromium gemessen, **nicht** in echtem Safari.
-Bitte einmal am eigenen Gerät durchgehen:
+### iPhone-Prüfliste — in Chromium nicht beweisbar
 
 | ✔ | Wo tippen | Was passieren muss |
 |---|---|---|
-| ☐ | Tagesfassung öffnen, ganz nach unten scrollen | „Zurück"/„Weiter" sind erreichbar und liegen nicht unter der Home-Leiste (Safe-Area) |
-| ☐ | Im Abschluss den Freigabe-Dialog öffnen, Code tippen | Der Knopf „Freigeben" bleibt über der Bildschirmtastatur sichtbar |
-| ☐ | Im Keller-Schritt eine Zahl tippen und wegtippen | Die getippte Zahl bleibt stehen (kein Neuaufbau der Karte) |
-| ☐ | Zweiten Wareneingang am selben Tag starten | Die Frage „Ergänzen / Trotzdem neu beginnen / Abbrechen" kommt, „Ergänzen" behält die erste Lieferung |
-| ☐ | Flugmodus an, eine Fassung abschließen, Flugmodus aus | Das Paket geht binnen 45 s hinaus, die Statuszeile sagt es |
-| ☐ | Auf dem zweiten Gerät denselben Vorgang öffnen, „Abbrechen" drücken | Der Dialog kommt **nicht** sofort wieder (das war bis heute Nacht kaputt) |
-| ☐ | Service-Worker: Seite zweimal neu laden | Die neue Fassung (v27 oder höher) ist aktiv, nicht die alte aus dem Vorrat |
+| ☐ | Tagesfassung, ganz nach unten | „Zurück"/„Weiter" liegen nicht unter der Home-Leiste (Safe-Area) |
+| ☐ | Freigabe-Dialog, Code tippen | „Freigeben" bleibt über der Tastatur sichtbar |
+| ☐ | Zählpunkte einer Weinzeile antippen | Jeder Punkt trifft einzeln — sie stehen jetzt in einem 46-px-Raster |
+| ☐ | Schrittpunkte oben im Kopf antippen | Schritt 3 trifft Schritt 3, nicht Schritt 2 |
+| ☐ | Lade 4 „Mischgetränke" ansehen | Die Kürzel überlappen nicht und sind unten nicht beschnitten |
+| ☐ | Zweiten Wareneingang am selben Tag starten | Die Frage kommt; „Ergänzen" behält die erste Lieferung |
+| ☐ | Flugmodus an, Fassung abschließen, Flugmodus aus | Das Paket geht binnen 45 s hinaus |
+| ☐ | Zweites Gerät, denselben Vorgang, „Abbrechen" | Der Dialog kommt **nicht** sofort wieder |
+| ☐ | Seite zweimal neu laden | Fassung v31 ist aktiv, nicht die alte aus dem Vorrat |
 
 ---
 
 ## 3 · Was ich nachts entschieden habe
 
-Sieben Entscheidungen, jede mit Begründung, Aufwand zum Zurückdrehen und dem
+Zehn Entscheidungen, jede mit Begründung, Aufwand zum Zurückdrehen und dem
 Vermerk **„vorläufig, revidierbar"**: `review/ENTSCHIEDEN-NACHTS.md`.
 
-Die drei, die am weitesten reichen:
+Die vier, die am weitesten reichen:
 * **Ausschankmenge** gehört in `stamm`, nicht in `mapping.gebinde_ml` — die
-  Spalte wird nicht umgedeutet (45 Min. zurückzudrehen).
-* **Soll-Mengen und Glasweine** ändert künftig die Leitung im Backoffice; der
-  Editor in der App wird schreibgeschützt, nicht gelöscht (5 Min., solange
-  P2 nicht gebaut ist).
-* **Betriebstag entscheidet**, Zeitstempel nur bei Gleichstand (30 Min.).
+  Spalte wird nicht umgedeutet (45 Min.).
+* **Soll-Mengen und Glasweine** ändert die Leitung im Backoffice; der Editor in
+  der App wird schreibgeschützt, nicht gelöscht (5 Min. — noch nicht gebaut).
+* **Bei gleichem Betriebstag gilt die Kellerzählung als Erstes** (20 Min.).
+  Zwei meiner eigenen Vorgaben musste ich dafür zurücknehmen; steht dort.
+* **Eine Lieferung am Zähltag wird nicht addiert, sondern ausgewiesen**
+  (15 Min.) — weil nicht feststellbar ist, ob die Zählung sie schon enthält.
 
-Nicht entschieden und unverändert bei dir: Rollenbindung eines künftigen
-`POST /api/stamm`, eine eigene Spalte `mapping.ausschank_ml`, die volle
-Historie einer Soll-Änderung, `bekannterCode()`, das Zählen des
-Getränkelagers, `RUNDEN`, `wrangler.jsonc`, Dashboard.
+Nicht entschieden, unverändert bei dir: Rollenbindung eines künftigen
+`POST /api/stamm`, eine Spalte `mapping.ausschank_ml`, die Historie einer
+Soll-Änderung, `bekannterCode()`, das Zählen des Getränkelagers, `RUNDEN`,
+`wrangler.jsonc`, Dashboard.
 
 ---
 
 ## 4 · Was ich nicht geschafft habe
 
 * **P2 (Verwaltung raus aus der App) ist nicht gebaut.** Der Editor steht
-  weiter in `public/index.html`, das Backoffice hat keine Verwaltungsseite
-  und keinen Link dorthin. Entschieden ist der Weg (siehe oben), gebaut ist
-  er nicht — das ist der größte offene Posten.
-* **Kein Eingabefeld für Gebindegrößen ohne Vorschlag.** Sechs der 13
-  Live-Zuordnungen (Cola, Sanbitter, Almdudler, Gasteiner still) haben keine
-  Größe im Namen und bleiben deshalb dauerhaft aus der Rechnung. Der
-  Endpunkt nimmt die Zahl an, es fehlt nur das Feld. Backlog, Priorität hoch.
-* **Mischgetränke rechnen nicht mit.** Aperol Spritz, Pisco Sour und die
-  übrigen „1 Glas"-Positionen — im echten Bericht 20 Stück und 244,50 € —
-  brauchen Rezepturen; die liegen heute nur im Browser der Leitung.
-* **Der Worker rechnet `bestand()` weiter nach Ankunftszeit**, das Backoffice
-  seit heute Nacht nach Betriebstag. Im Normalfall dieselbe Zahl; ein
-  nachgereichtes Paket lässt sie auseinanderlaufen. Backlog, Priorität hoch.
-* **Die „sechs Oberflächenfehler aus dem iPhone-Test" lagen nicht vor** —
-  weder `review/UEBERGABE.md` noch `fassungstool_review_referenz.md` sind im
-  Repo. Ich habe die Oberfläche stattdessen neu vermessen
-  (`tests/ui-mass.cjs`, drei Breiten, mit Urteil) und danach gearbeitet.
-* **Echtes Safari bleibt ungeprüft.** Chromium kennt weder Bildschirmtastatur
-  noch Notch noch Gummiband — daher die Prüfliste oben.
+  weiter in `public/index.html`, das Backoffice hat keine Verwaltungsseite und
+  keinen Link dorthin. Der Weg ist entschieden, der Bau fehlt. Größter Posten.
+* **Kein Feld für Gebindegrößen ohne Vorschlag.** Cola, Sanbitter, Almdudler,
+  Gasteiner still tragen keine Größe im Namen und bleiben deshalb aus der
+  Rechnung. Der Endpunkt nimmt die Zahl an, es fehlt nur das Eingabefeld.
+* **Mischgetränke rechnen nicht mit** — im echten Bericht 20 Stück und
+  244,50 €. Sie brauchen Rezepturen, die heute nur im Browser der Leitung
+  liegen.
+* **Kein erfasster Zählzeitpunkt.** Deshalb ist „Zählung oder Lieferung zuerst?"
+  nur ausweisbar, nicht entscheidbar. `vorgang.begonnen` taugt dafür **nicht**
+  (es trägt die Ankunftszeit beim Server) — das müsste die App beim Anlegen
+  schreiben.
+* **Die „sechs Oberflächenfehler aus dem iPhone-Test" lagen nicht vor.** Weder
+  `review/UEBERGABE.md` noch `fassungstool_review_referenz.md` sind im Repo.
+  Ich habe die Oberfläche stattdessen neu vermessen und danach gearbeitet.
+* **Echtes Safari bleibt ungeprüft** — daher die Prüfliste oben.
+
+**Und das Unangenehmste, offen gesagt:** Von den behobenen Rechenfehlern hat
+diese Nacht drei selbst erzeugt — jedes Mal aus einer richtigen Absicht, jedes
+Mal in der Runde danach gefunden und behoben. Gefunden hat sie der Jäger, nicht
+die Rolle, die sie gebaut hat, und nicht ich. Ohne diese Rolle wären sie live
+gegangen. Wenn du aus dieser Nacht eine Sache behältst, dann die: **Wer baut,
+prüft sich nicht selbst.**
 
 ---
 
 ## 5 · Phase B: die Entscheidungen, die du treffen musst
 
-Konzept: `review/PHASE-B-KONZEPT.md` (drei Module, je Zweck, Datenfluss,
-Schema, Feature-Flag). Kein Code, wie verabredet.
+Konzept: `review/PHASE-B-KONZEPT.md` — drei Module (Keller, Wareneingang,
+Sonderentnahme), je Zweck, Datenfluss, Schema, Feature-Flag. Kein Code.
 
-Vorweg drei Befunde, die **vor** dem ersten Modul geklärt sein müssen
-(Abschnitt 0 des Konzepts) — zwei davon sind heute Nacht behoben, der dritte
-nicht: `bestand()` schlüsselt nicht auf `ort`. Sobald das Getränkelager ein
-zweiter Zählort wird, wird die jüngere Zählung zum Anker für beide Orte.
+Vorweg: Ein Befund aus Abschnitt 0 ist noch offen — `bestand()` schlüsselt
+nicht auf `ort`. Sobald das Getränkelager ein zweiter Zählort wird, wird die
+jüngere Zählung zum Anker für beide Orte.
 
-Die Entscheidungen, kurz:
 * **Wie viele Orte führen einen Bestand?** Empfehlung: zwei (Weinkeller,
   Getränkelager). Die Bar ist Phase C.
 * **Wie oft wird das Getränkelager gezählt?** Empfehlung: monatlich, fester
-  Termin, Datum neben jeder Zahl. Braucht die Antwort des Teams.
+  Termin, das Datum neben jeder Zahl. Braucht die Antwort des Teams.
 * **Was passiert mit der Differenz einer Zählung?** Empfehlung: anzeigen,
-  gebucht wird die Zählung — die Differenz ist eine Auswertung, keine
-  Buchung.
-* **Wareneingang und Sonderentnahme:** je drei Fragen in den Abschnitten 2.5
-  und 3.5. Die dringendste ist der **Grund** bei der Sonderentnahme (Küche ·
-  Personal · Bruch/Kork · Verkostung/Gast · Zimmer) — der Stellvertreter hat
-  ihn vorläufig entschieden, Wortlaut und Reihenfolge gehören ins Team.
+  gebucht wird die Zählung. Die Differenz ist eine Auswertung, keine Buchung.
+* **Der Grund bei der Sonderentnahme** (Küche · Personal · Bruch/Kork ·
+  Verkostung/Gast · Zimmer): vorläufig entschieden, Wortlaut gehört ins Team.
 * **Genau eine Migration** braucht Phase B:
-  `ALTER TABLE ereignis ADD COLUMN grund TEXT;` plus Teilindex. Fertig
+  `ALTER TABLE ereignis ADD COLUMN grund TEXT;` plus Teilindex — fertig
   formuliert mit erwarteter Ausgabe im Konzept, Abschnitt 3.3.
 
 ---
 
-**Unterlagen:** `review/JAGD.md` (Funde des Jägers, mit Rechnungen) ·
+**Unterlagen:** `review/JAGD.md` (alle Funde mit Rechnung) ·
 `review/ENTSCHIEDEN-NACHTS.md` · `review/PHASE-B-KONZEPT.md` ·
-`review/LOG.md` (Runden 6–9) · `review/BACKLOG.md` ·
+`review/LOG.md` (Runden 6–12) · `review/BACKLOG.md` ·
 `review/screens/` (`basis-live` = Stand vor der Nacht, danach je Runde).
