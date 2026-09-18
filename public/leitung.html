@@ -408,6 +408,28 @@ tbody tr:hover{background:var(--surface-2)}
    nicht brauchbar. --fg-secondary bringt 5,83:1 auf demselben Grund,
    bleibt aber ruhiger als jede farbige Plakette. */
 .p-grau{background:var(--surface-4);color:var(--fg-secondary)}
+/* Kopfzeile eines Abschnitts mit einer Handlung rechts. Bis v27 stand der
+   Sammelknopf mitten im Satz eines Hinweiskastens („… oder es ist ein
+   Mischgetränk. [Alle 2 Vorschläge übernehmen]") — er brach die Zeile und
+   war weder Text noch Werkzeugleiste. Hier steht der Satz links, die
+   Handlung rechts, und beide bleiben auf schmalem Schirm lesbar. */
+.abschnitt{display:flex;gap:var(--space-4);align-items:flex-start;
+  flex-wrap:wrap;margin-bottom:var(--space-3)}
+.abschnitt>div{flex:1 1 380px;min-width:0}
+.abschnitt h3{margin:0}
+.abschnitt .unter{margin-top:2px}
+.abschnitt .tat{flex:0 0 auto;margin-left:auto}
+/* Derselbe Aufbau als Hinweiskasten: Satz links, Handlung rechts, und der
+   Knopf sitzt auf der Mitte des Satzes statt an seiner ersten Zeile. */
+.hinweis.abschnitt{margin-top:var(--space-3);align-items:center}
+/* Vorschlag und Knopf in einer Tabellenzelle: der Knopf steht immer
+   rechts, egal wie lang der Vorschlag ist — sonst tanzt die Spalte. */
+.vorschlag{display:flex;gap:var(--space-3);align-items:center;
+  justify-content:space-between}
+.vorschlag .b{flex:0 0 auto}
+/* Befund ohne Abgleich: Plakette plus Grund. Die Plakette allein wäre nur
+   Farbe; der Grund steht daneben im Klartext. */
+.befund{display:flex;gap:var(--space-2);align-items:baseline;flex-wrap:wrap}
 
 /* ═══════════════ Knöpfe und Felder ═══════════════
    Namen bleiben, damit das JS unveraendert laeuft. Form kommt aus tokens.css.
@@ -1562,9 +1584,16 @@ function vAbgleich(m){
   if(a.ohneGroesse.length){
     const stk=a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0);
     const s=document.createElement("section");
-    s.innerHTML=`<div class="hinweis">Größe fehlt: ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}
-      mit ${num(stk)} verkauften Einheiten sind zugeordnet, aber ihre Größe ist nicht bestätigt.
-      Sie bleiben aus der Mengenrechnung heraus — das ist keine Abweichung und kein Schwund.</div>
+    /* Ein eigener Abschnitt mit Überschrift, nicht ein Hinweiskasten ohne
+       Kopf: Er steht zwischen der Filterzeile und der Abgleichtabelle, und
+       ohne Überschrift war nicht zu sehen, wo er anfängt und wo er aufhört.
+       Die Zahl gehört in die Überschrift — sie ist das Maß der Arbeit, die
+       hier liegt. */
+    s.innerHTML=`<div class="abschnitt"><div>
+      <h3>Größe fehlt · ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}</h3>
+      <div class="unter">${num(stk)} verkaufte Einheiten sind zugeordnet, ihre Größe aber nicht
+      bestätigt — sie bleiben aus der Mengenrechnung heraus, als fehlende Angabe und nicht als
+      Abweichung</div></div></div>
       <div class="tabhuelle"><table><thead><tr>
         <th>Kassenname</th><th class="r">Menge</th><th>Artikel</th><th>Was fehlt</th><th>Vorschlag</th>
       </tr></thead><tbody>${a.ohneGroesse.map(o=>`<tr>
@@ -1578,9 +1607,9 @@ function vAbgleich(m){
         <td>${o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
           : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
           : o.geb.ml
-            ? `Vorschlag: ${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span>
+            ? `<span class="vorschlag"><span>${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span></span>
                <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
-                 data-ml="${o.geb.ml}" style="margin-left:8px">Übernehmen</button>`
+                 data-ml="${o.geb.ml}">Übernehmen</button></span>`
             : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
       </tr>`).join("")}</tbody></table></div>`;
     m.appendChild(s);
@@ -1598,10 +1627,10 @@ function vAbgleich(m){
     const ohneVorschlag=a.ohneGroesse.length-vorschlaege.length;
     if(vorschlaege.length){
       const z=document.createElement("div");
-      z.className="hinweis";
-      z.innerHTML=`Für ${vorschlaege.length} dieser Positionen steht oben ein Vorschlag samt Herkunft.
-        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt: dort fehlt die Ausschankmenge im Kassennamen, oder es ist ein Mischgetränk." : ""}
-        <button class="b" id="bGebAlle" style="margin-left:8px">Alle ${vorschlaege.length} Vorschläge übernehmen</button>`;
+      z.className="hinweis abschnitt";
+      z.innerHTML=`<div>Für ${vorschlaege.length} dieser Positionen steht oben ein Vorschlag samt Herkunft.
+        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt: dort fehlt die Ausschankmenge im Kassennamen, oder es ist ein Mischgetränk." : ""}</div>
+        <button class="b tat" id="bGebAlle">Alle ${vorschlaege.length} Vorschläge übernehmen</button>`;
       s.appendChild(z);
       const bAlle=z.querySelector("#bGebAlle");
       bAlle.onclick=async()=>{
@@ -1616,16 +1645,20 @@ function vAbgleich(m){
   /* Eine Zeile ohne bestimmbaren Verkauf bekommt KEINE Differenz und
      keine Deutung. Die Entnahme bleibt stehen — sie ist bekannt —, in der
      Differenzspalte steht ein Strich, und der Befund sagt, woran es
-     liegt. Grau statt Plakette: hier fehlt eine Angabe, keine Flasche —
-     und eine graue Plakette blieb mit 4,43:1 unter dem Kontrastmaß des
-     Hauses (`tests/ui-mass.cjs`), der gewöhnliche gedämpfte Text nicht. */
+     liegt. Seit v28 wieder als Plakette: `p-grau` hatte mit 4,43:1 keinen
+     tragfähigen Farbwert und war deshalb keine Plakette wert — mit
+     --fg-secondary sind es 5,83:1 auf demselben Grund. Die Plakette sagt
+     „kein Abgleich", der Grund steht im Klartext daneben; so trägt die
+     Spalte in jeder Zeile dieselbe Form, und die unklaren Zeilen
+     verschwinden nicht mehr zwischen den Pillen der anderen. */
   const zeile=r=>`<tr>
     <td>${esc(r.name)}</td>
     <td class="r">${r.unklar?"—":num(r.verkauf)}</td>
     <td class="r">${num(r.entnahme)}</td>
     <td class="r ${r.unklar||Math.abs(r.diff)<0.5?"dim":(r.diff>0?"diff-plus":"diff-minus")}">${
       r.unklar?"—":(r.diff>0?"+":"")+num(r.diff)}</td>
-    <td>${r.unklar?'<span class="dim">'+esc(unklarSatz(r.unklar))+'</span>'
+    <td>${r.unklar?'<span class="befund"><span class="pill p-grau">kein Abgleich</span>'
+        +'<span class="dim">'+esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")+'</span></span>'
         :Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
         :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
         :'<span class="pill p-bad">prüfen</span>'}</td></tr>`;

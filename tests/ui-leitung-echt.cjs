@@ -273,7 +273,11 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      lage.gv.anzahl === 4 && lage.gv.fehlt === "gebinde", JSON.stringify(lage.gv.anzahl));
   ok("solange nichts bestätigt ist, rechnet keine Zeile mit",
      lage.verk === 0, lage.verk + " Artikel in der Mengenrechnung");
-  ok("der Vorschlag steht sichtbar daneben", /Vorschlag: 750 ml/.test(lage.text));
+  /* Bis v27 stand in jeder Zelle noch einmal das Wort „Vorschlag:" — das
+     steht seit v28 nur in der Spaltenüberschrift, der Knopf daneben ist
+     rechtsbündig. Geprüft wird beides: die Überschrift und der Wert. */
+  ok("der Vorschlag steht sichtbar daneben",
+     /750 ml/.test(lage.text) && /Vorschlag/.test(lage.text));
 
   /* Der Klick, der aus dem Vorschlag eine Bestätigung macht. */
   const geklickt = await p.evaluate(async () => {

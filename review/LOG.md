@@ -2180,3 +2180,78 @@ derselben Millisekunde; kein Feld für die Gebindegröße von Hand. Neu unter
 
 **STATUS:** VERBESSERUNGEN — die vier beauftragten Funde sind zu; offen bleibt
 Entscheidung Nr. 15 im Worker.
+
+---
+
+### Runde 9 – ui-designer (P1/P4: Oberfläche im Service)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen (Jäger, C-Fund): `sicht()` in `tests/ui-mass.cjs` prüfte „vh"
+  nur am Element selbst. Von den gemeldeten 96 zu kleinen Trefferflächen waren
+  **78 echt, 18 Geister** — die nie sichtbaren `#bBack`/`#bNext` aus einem
+  `vh`-Behälter.
+* ↩️ geändert: Das Messgerät maß den **Anstrich statt den Griff**. `.home`
+  (57 × 36) und `.hilfebtn` (36 × 36) tragen seit Runde 2 ein `::after` mit
+  `max(100%,44px)`, das `getBoundingClientRect()` nicht sieht. Jetzt tastet die
+  Messung zwölf Punkte auf einem 44-px-Kreis um die Mitte mit
+  `elementFromPoint`. Von den 78 waren damit **48 wirklich ohne Griff**.
+* ↩️ geändert: Runde 8 hat „kein Abgleich möglich" zu gedämpftem Text gemacht,
+  *weil* die Plakette `p-grau` mit 4,43:1 durchfiel. Die Plakette war nicht das
+  Problem, ihr Farbwert war es — `--fg-secondary` bringt 5,83:1.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Jeder Griff im Service ist 44 px** (46-px-Raster, ein Pixel Luft, damit ein
+   Druck auf die Naht eindeutig einem Knopf gehört): Schrittpunkte `.st`
+   (24 × 44 → 46 × 46, mit Linie dahinter), Zählpunkte `.dot` der Tagesfassung
+   (26 × 26 → 46 × 46 Griff, der Punkt bleibt 26), `.kminus`/`.kplus` 40 → 44.
+   `.home`/`.hilfebtn` blieben unangetastet — sie waren schon richtig.
+2. **Schrift im Service nie unter 15 px**, an einer Stelle gelöst:
+   `--text-xs`/`--text-sm` in der geteilten Tokenebene auf 15 px,
+   `[data-dichte="maus"]` holt sich 11/13 px zurück. Das Backoffice ist dadurch
+   Zeichen für Zeichen unverändert (36 von 36 Seiten gemessen).
+3. **Die drei rohen Bausteine gestaltet:** „Größe fehlt" ist ein Abschnitt mit
+   Überschrift und Zahl statt ein kopfloser Kasten; der Sammelknopf steht in
+   einer Handlungszeile statt mitten im Satz; „kein Abgleich" ist wieder eine
+   Plakette; „Trotzdem neu beginnen" ist ein Knopf über die ganze Breite mit
+   seiner Folge in der zweiten Zeile.
+
+**Geprüft:** `npm test` 270 grün · `durchstich` 35/35 · `ui-leitung-echt` 40/40 ·
+`ui-zweiter-vorgang` 15/15 · `ui-fremdgeraet` 10/10. `sw.js` v27 → v28.
+Messgerät vorher → nachher (`review/screens/runde-9-vorher/` →
+`review/screens/runde-9/`):
+
+| Urteil | vorher | nachher |
+|---|---|---|
+| waagrechter Überlauf | 0 ✓ | 0 ✓ |
+| JS-Fehler | 0 ✓ | 0 ✓ |
+| Schrift im Service < 15 px | 36 ✗ | **0 ✓** |
+| Trefferflächen ohne 44-px-Griff (Service) | 48 ✗ | **0 ✓** |
+| Kontrast < 4,5:1 (beide Oberflächen) | 117 ✗ | **0 ✓** |
+| Gestaltungsschicht wortgleich | ✓ | ✓ |
+
+Die 117 Kontrastfunde waren 99 × `nav.seite .zahl` (4,43:1) und 18 × `.gbtn .go2`,
+wo `font-size:var(--text-lg)` das `font-size:0` der Regel darüber aufhob und das
+Zeichen „›" zusätzlich zur Maskengrafik durchkam.
+Belege angesehen, nicht nur gelesen: `review/screens/runde-9/beleg-*.png`.
+**Ungeprüft:** echtes Safari, Bildschirmtastatur, Notch, Safe-Area, Gummiband,
+der Wechsel des Service Workers auf v28 — und ob iOS die `::after`-Griffe
+genauso trifft wie Chromium.
+
+**Für die Nächsten:**
+* An alle, die künftig messen: `ui-mass.cjs` urteilt jetzt über den **Griff**,
+  nicht über die gezeichnete Größe. Eine sichtbar kleine Fläche mit
+  44-px-`::after` ist ausdrücklich erlaubt.
+* An die nächste Gestaltungsrunde: Die Datumzeile im App-Kopf braucht 248 px,
+  die Spalte hat 240 — bei langen Wochentagen bricht sie seit der
+  Schriftanhebung um. Nicht die Schrift zurückdrehen.
+
+**Phase/Thema:** A / P1+P4 — Trefferflächen, Schriftgrade, Gestalt
+
+**Backlog:** neu unter „mittel": umbrechende Datumzeile; 46-px-Raster kostet
+Namensspalte. Neu unter „niedrig": Punktreihe bricht 5+1; `--text-xs` und
+`--text-sm` sind für den Finger gleich; Backoffice unter 900 px hat
+Fingergeometrie mit Mausschrift.
+
+**STATUS:** VERBESSERUNGEN — die vier Urteile für den Service stehen auf ✓;
+offen bleibt die umbrechende Datumzeile, vom Zug selbst verursacht.

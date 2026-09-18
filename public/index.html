@@ -414,8 +414,8 @@ header{background:var(--accent);color:var(--fg-on-dark);
   margin-top:var(--space-2);height:36px}
 /* Bis v27 lagen die Punkte 6px auseinander; die Trefferflaeche war
    24x44 und die der Nachbarn lag darin — wer im Keller Schritt 3 wollte,
-   traf Schritt 2. Jetzt steht jeder Punkt in einer eigenen 44px-Zelle
-   (Rand 17px links und rechts, Abstand 0). Die Linie dahinter haelt die
+   traf Schritt 2. Jetzt steht jeder Punkt in einer eigenen Zelle
+   (Rand 18px links und rechts, Abstand 0). Die Linie dahinter haelt die
    Punkte optisch zusammen und zeigt den Weg durch die Schritte. */
 .stpts{display:flex;gap:0;flex-shrink:0;position:relative}
 .stpts::before{content:"";position:absolute;left:23px;right:23px;top:50%;
@@ -578,11 +578,12 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 /* Punkte und Häkchen */
 /* Der Abstand zwischen den Punkten ist hier keine Zierde, sondern die
    Trefferflaeche: 26px Punkt + 20px Abstand = 46px Raster. Jeder Punkt
-   traegt seinen Griff in einem ::after (inset -9px), die Griffe stossen
-   aneinander und ueberlappen nicht — ein Fehlgriff faellt also nicht auf
-   den Nachbarn. Mehr als vier Punkte brechen um, statt den Namen des
-   Weins zu zerdruecken; die Zeilen der Punkte liegen 20px auseinander,
-   damit auch senkrecht kein Griff in den naechsten laeuft. */
+   traegt seinen Griff in einem ::after, die Griffe stossen aneinander und
+   ueberlappen nicht — ein Fehlgriff faellt also nicht auf den Nachbarn.
+   Im Plan hat keine Position mehr als drei Flaschen; kaeme je eine
+   sechste dazu, bricht die Reihe um (max-width), statt den Namen des
+   Weins zu zerdruecken. Die Zeilen der Punkte liegen dann 20px
+   auseinander, damit auch senkrecht kein Griff in den naechsten laeuft. */
 .dots{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:20px;
   align-items:center;flex-shrink:0;max-width:210px;
   padding:var(--space-3) 0;cursor:pointer}
@@ -2359,8 +2360,12 @@ function buildSteps(){
     '<span class="stpts">'+L.map((t,i)=>
       `<button class="st" role="tab" aria-controls="main" data-s="${i}" title="${esc(t)}"`+
       ` aria-label="Schritt ${i+1}: ${esc(t)}"${i===step?' aria-selected="true"':""}></button>`).join("")+
-    '</span><span class="stlbl">Schritt '+(step+1)+' von '+L.length+
-    ' \u00b7 '+esc(L[step]||"")+'</span>';
+    /* Der NAME des Schritts steht vorn. Die Punkte daneben sagen bereits,
+       der wievielte von wie vielen es ist; stand das Wort \u201eSchritt\u201c noch
+       einmal davor, blieb bei 390px f\u00fcr \u201eRestaurant\u201c nur \u201eRes\u2026\u201c \u00fcbrig.
+       F\u00fcr die Vorlesefunktion bleibt der volle Satz erhalten. */
+    '</span><span class="stlbl"><span class="vh">Schritt </span>'+
+    esc(L[step]||"")+' \u00b7 '+(step+1)+' von '+L.length+'</span>';
   document.querySelectorAll(".st").forEach(b=>b.onclick=()=>go(+b.dataset.s));
 }
 function go(s){step=s;render();window.scrollTo(0,0);}
