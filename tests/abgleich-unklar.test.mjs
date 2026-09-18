@@ -81,10 +81,13 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     const f = umgebung();
     assert.equal(f.UNKLAR_GRUND.groesse, "Größe fehlt");
     assert.equal(f.unklarSatz("groesse"), "kein Abgleich möglich — Größe fehlt");
-    assert.equal(f.unklarSatz("offen"),
-      "kein Abgleich möglich — Kassenpositionen sind nicht zugeordnet");
     assert.equal(f.unklarSatz("keinbericht"),
       "kein Abgleich möglich — kein Z-Bericht im Zeitraum");
+    /* Bis v28 stand hier ein dritter Grund „offen". Er ist fort
+       (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9) — siehe die Prüfung
+       „eine nicht zugeordnete Kassenposition nimmt keinem Artikel den
+       Befund" weiter unten. Es bleiben zwei Gründe. */
+    assert.deepEqual(Object.keys(f.UNKLAR_GRUND).sort(), ["groesse", "keinbericht"]);
   });
 
   test("bestätigte Größe → die Zeile bekommt ihren Befund zurück", () => {
@@ -117,10 +120,20 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     assert.equal(auffaellig(a), 2);
   });
 
-  test("nicht zugeordnete Kassenpositionen: Entnahme ohne Verkauf bekommt kein Urteil", () => {
-    /* Solange Kassenpositionen offen sind, kann die Entnahme eines
-       Artikels ohne gerechneten Verkauf genau daher stammen. Wer eine
-       gerechnete Zahl hat, behält seine Differenz. */
+  test("eine nicht zugeordnete Kassenposition nimmt keinem Artikel den Befund", () => {
+    /* Diese Prüfung stand bis v28 umgekehrt hier: Solange irgendeine
+       Kassenposition offen war, bekam JEDER Artikel ohne gerechneten
+       Verkauf „kein Abgleich möglich". Der Fund A/8-1 der Jagd hat das
+       an Bericht 37 durchgerechnet: dreißig der offenen Namen sind
+       Speisen (Schnittlauch, Käse, HP Omelett) — Speisen sind kein
+       Ausnahmefall, sondern der Dauerzustand. Eine einzige davon schaltete
+       den Schwund für alle ab: 12 Flaschen aus dem Keller, 0 verkauft,
+       kein Urteil, keine rote Zahl, keine Zeile in der Zählliste.
+
+       Entschieden (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9): Eine Position
+       ohne Zuordnung betrifft per Definition keinen bestimmten Artikel und
+       kann deshalb auch keinem den Befund nehmen. Was offen ist, sagt der
+       Hinweis über der Tabelle — deshalb wird `a.offen` hier mitgeprüft. */
     const f = umgebung();
     f.setzte({ "MU Muster, Gelber Muskateller Styria 0,75 l": "w018" },
              { "MU Muster, Gelber Muskateller Styria 0,75 l": 750 },
@@ -128,13 +141,54 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
                       { name: "Unbekanntes Getränk 0,5 l", anzahl: 9 }]),
              [vorgang({ w018: 4, w001: 2 }, {})]);
     const a = f.abgleich(TAG, 1);
-    assert.equal(a.offen.length, 1);
-    assert.equal(zeile(a, "w001").unklar, "offen");
-    assert.equal(zeile(a, "w001").diff, null);
-    assert.equal(zeile(a, "w001").entnahme, 2, "die Entnahme bleibt stehen");
+    assert.equal(a.offen.length, 1, "der Hinweis über der Tabelle zählt sie");
+    assert.equal(a.offen[0].name, "Unbekanntes Getränk 0,5 l");
+    assert.equal(zeile(a, "w001").unklar, null,
+      "eine offene Speise darf den Schwund eines Weins nicht abschalten");
+    assert.equal(zeile(a, "w001").diff, 2, "2 geholt, 0 verkauft");
     assert.equal(zeile(a, "w018").unklar, null, "gerechnet bleibt gerechnet");
     assert.ok(Math.abs(zeile(a, "w018").diff - 3) < 0.0005);
-    assert.equal(auffaellig(a), 1);
+    assert.equal(auffaellig(a), 2, "beide Zeilen zählen in der roten Zahl mit");
+  });
+
+  test("halb gerechnet: die Differenz bleibt stehen, mit Vorbehalt", () => {
+    /* Fund A/8-2: `nichtRechenbar(id,"groesse")` wurde im Berichtslauf
+       gesetzt, bevor feststand, ob derselbe Artikel an einer späteren
+       Position noch eine gerechnete Zahl bekommt — ein schon gerechneter
+       Verkauf wurde damit rückwirkend gelöscht.
+
+           „Prosecco, Serena 0,1 l"   6 × 100 ml / 750 = 0,80 Fl.
+           „Prosecco, Serena 0,75 l"  1 × 750 ml / 750 = 1,00 Fl.
+           Rezept „Aperol Spritz": ein Bestandteil ohne bestätigte Größe
+
+       Bis v28: Verkauf —, Entnahme 9, Differenz —, „kein Abgleich
+       möglich". 7,2 Flaschen Lücke, stumm. Jetzt: Differenz 7,2 mit dem
+       Zusatz „1 von 3 Positionen ohne Größe". Lieber die Differenz MIT
+       Vorbehalt als gar keine. */
+    const f = umgebung();
+    f.setzte({ "Prosecco, Serena 0,1 l": "spritzer", "Prosecco, Serena 0,75 l": "spritzer" },
+             { "Prosecco, Serena 0,1 l": 750, "Prosecco, Serena 0,75 l": 750 },
+             bericht([{ name: "Prosecco, Serena 0,1 l", anzahl: 6 },
+                      { name: "Prosecco, Serena 0,75 l", anzahl: 1 },
+                      { name: "Aperol Spritz", anzahl: 3 }]),
+             [vorgang({}, { spritzer: 9, sanbitter: 2 })],
+             { "Aperol Spritz": [{ id: "spritzer", ml: 100 }, { id: "sanbitter", ml: 20 }] });
+    const a = f.abgleich(TAG, 1);
+    const r = zeile(a, "spritzer");
+    assert.equal(r.unklar, null, "ein gerechneter Verkauf wird nicht rückwirkend gelöscht");
+    assert.ok(Math.abs(r.verkauf - 1.8) < 0.0005, "0,80 + 1,00 Flaschen");
+    assert.ok(Math.abs(r.diff - 7.2) < 0.0005, "9 − 1,80");
+    /* Feld für Feld statt `deepEqual`: das Objekt stammt aus dem
+       vm-Kontext und hat damit einen anderen `Object`-Prototyp. */
+    assert.equal(r.vorbehalt && r.vorbehalt.ohne, 1,
+      "der Vorbehalt steht an der Zeile, statt den Befund zu löschen");
+    assert.equal(r.vorbehalt.gesamt, 3, "1 von 3 Positionen ohne Größe");
+    assert.equal(auffaellig(a), 1, "die Lücke zählt in der roten Zahl mit");
+
+    /* Der Bestandteil, für den NICHTS gerechnet werden konnte, bleibt
+       ohne Urteil — der Vorbehalt ersetzt die Vorsicht nicht. */
+    assert.equal(zeile(a, "sanbitter").unklar, "groesse");
+    assert.equal(zeile(a, "sanbitter").vorbehalt, null);
   });
 
   test("kein Z-Bericht im Zeitraum: die Verkaufsseite ist unbekannt, nicht null", () => {
@@ -166,13 +220,19 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
   });
 
   test("unklare Zeilen stehen am Ende der Tabelle", () => {
+    /* w003 hat die größere Entnahme, aber keinen bestimmbaren Verkauf —
+       er gehört trotzdem ans Ende. Bis v28 reichte für diese Prüfung eine
+       offene Kassenposition; seit die keinen Artikel mehr stumm schaltet,
+       wird die fehlende Gebindegröße genommen. */
     const f = umgebung();
-    f.setzte({ "MU Muster, Gelber Muskateller Styria 0,75 l": "w018" },
+    f.setzte({ "MU Muster, Gelber Muskateller Styria 0,75 l": "w018",
+               "GV Leindl Langenlois 1/8 l": "w003" },
              { "MU Muster, Gelber Muskateller Styria 0,75 l": 750 },
              bericht([{ name: "MU Muster, Gelber Muskateller Styria 0,75 l", anzahl: 1 },
-                      { name: "Unbekanntes Getränk 0,5 l", anzahl: 9 }]),
-             [vorgang({ w018: 4, w001: 2 }, {})]);
-    const reihe = Array.from(f.abgleich(TAG, 1).zeilen, r => r.id);
-    assert.deepEqual(reihe, ["w018", "w001"]);
+                      { name: "GV Leindl Langenlois 1/8 l", anzahl: 4 }]),
+             [vorgang({ w018: 4, w003: 12 }, {})]);
+    const a = f.abgleich(TAG, 1);
+    assert.equal(zeile(a, "w003").unklar, "groesse");
+    assert.deepEqual(Array.from(a.zeilen, r => r.id), ["w018", "w003"]);
   });
 });

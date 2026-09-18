@@ -14,11 +14,20 @@
 
    Die Bestellliste rechnet auf derselben Zahl.
 
-   Entschieden (review/ENTSCHIEDEN-NACHTS.md, Punkt 5 zu Offener
-   Entscheidung Nr. 15): der Betriebstag entscheidet, der Zeitstempel nur
-   bei Gleichstand innerhalb desselben Tages. Die Falle dabei: `tag >
-   Zähltag` ALLEIN ist falsch — was am Abend des Zähltags gefasst wird,
-   fiele sonst unter den Tisch.
+   Entschieden (review/ENTSCHIEDEN-NACHTS.md, Punkt 8; er korrigiert
+   Punkt 5): Bei gleichem Betriebstag gilt die KELLERZÄHLUNG immer als
+   Erstes — sie ist der Anfangsbestand des Tages. Alles andere desselben
+   Tages zählt danach, untereinander in beliebiger Reihenfolge. Die
+   Ankunftszeit entscheidet innerhalb eines Tages nichts mehr.
+
+   Der Grund (Fund A/8-3): `ts` ist der Zeitpunkt, zu dem das Paket beim
+   Server ankommt. Im Keller ist kein Netz — das iPad zählt vormittags und
+   bleibt unten, die Tagesfassung geht abends vom iPhone hinaus, das iPad
+   kommt am nächsten Morgen herauf. Nach Ankunft gerechnet war die Zählung
+   dann jünger als die Entnahme desselben Tages: 10 Flaschen statt 4.
+
+   Die Falle bleibt: `tag > Zähltag` ALLEIN ist falsch — was am Abend des
+   Zähltags gefasst wird, fiele sonst unter den Tisch.
 
    Geprüft wird derselbe Datensatz auf beiden Wegen: einmal echt durch den
    Worker (`/api/bestand`, SQLite aus `docs/live-schema.sql`), einmal durch
@@ -65,8 +74,10 @@ async function haus() {
 }
 
 /* Zwei Vorgänge im selben Millisekundenschlag bekämen im Worker denselben
-   `ts`; er zählt Gleichstand nicht als „danach" (`r.ts <= basis`). Diese
-   Pause hält die Prüfung von der Uhr unabhängig. */
+   `ts`. Für die Bestandsrechnung ist das seit v29 gleichgültig — sie ordnet
+   nach Betriebstag und Rang —, für die feste Reihenfolge ZWEIER Zählungen
+   desselben Tages aber nicht. Die Pause hält die Prüfung von der Uhr
+   unabhängig. */
 const kurzWarten = () => new Promise(r => setTimeout(r, 3));
 
 /* Ein Vorgang schickt sich zum Worker und steht gleichzeitig in der Liste
@@ -104,7 +115,7 @@ const tagesfassung = (tag, n) => ({
   getr: {}, gent: {}
 });
 
-describe("Betriebstag vor Zeitstempel: eine Reihenfolge für beide Fassungen", () => {
+describe("Betriebstag, dann Kellerzählung: eine Reihenfolge für beide Fassungen", () => {
   test("vormittags gezählt, mittags geliefert → 34 in beiden", async () => {
     const e = await spiele([zaehlung(TAG, 1, 4), lieferung(TAG, 2, 12)]);
     assert.equal(e.worker.w003, 34, "Worker");
@@ -140,28 +151,69 @@ describe("Betriebstag vor Zeitstempel: eine Reihenfolge für beide Fassungen", (
     assert.equal(e.backoffice.B.b.w003, 26, "Backoffice");
   });
 
-  test("sortiert wird nach Tag und Zeitstempel, nicht nach Modus", () => {
-    /* Bis v26 kam `ware` durch `MODUSRANG` immer zuerst — auch wenn die
-       Lieferung Stunden nach der Zählung erfasst wurde. */
-    const reihe = B.rechne([
-      Object.assign(zaehlung(TAG, 1, 4), { archiviert: TAG + "T09:00:00.000Z" }),
-      Object.assign(lieferung(TAG, 2, 12), { archiviert: TAG + "T12:00:00.000Z" })
-    ]).reihe;
-    assert.deepEqual(Array.from(reihe), ["keller", "ware"]);
-
-    const umgekehrt = B.rechne([
-      Object.assign(lieferung(TAG, 2, 12), { archiviert: TAG + "T08:00:00.000Z" }),
-      Object.assign(zaehlung(TAG, 1, 4), { archiviert: TAG + "T10:00:00.000Z" })
-    ]);
-    assert.deepEqual(Array.from(umgekehrt.reihe), ["ware", "keller"]);
-    assert.equal(umgekehrt.B.b.w003, 10,
-      "wird nach der Lieferung gezählt, gilt die Zählung");
+  test("Fall 2 · die Zählung kommt erst am nächsten Morgen herauf", async () => {
+    /* Der Alltagsfall aus Fund A/8-3, und der Grund für Punkt 8: Die
+       Reihenfolge in `spiele()` IST die Ankunftsreihenfolge — hier kommt
+       die Tagesfassung zuerst an, die Zählung desselben Betriebstages
+       danach. Bis v28 rechneten beide Fassungen 10 (die Entnahme fiel
+       ganz weg) und der Banner sagte „Seither 0 Flaschen entnommen". */
+    const e = await spiele([tagesfassung(TAG, 6), zaehlung(TAG, 1, 4)]);
+    assert.equal(e.worker.w003, 4, "Worker: 10 − 6");
+    assert.equal(e.backoffice.B.b.w003, 4, "Backoffice: 10 − 6");
+    assert.equal(e.backoffice.B.seit.raus.w003, 6);
   });
 
-  test("ein laufender Stand ohne Zeitstempel ist das Jüngste seines Tages", () => {
+  test("Fall 3 und 4 · gleicher und fehlender Zeitstempel", () => {
+    /* Nur im Backoffice prüfbar: den `ts` der Journalzeilen setzt der
+       Worker selbst aus der Uhr, zwei gleiche gibt es dort nicht auf
+       Bestellung. Fall 3: zwei Pakete mit demselben Stempel. Fall 4: ein
+       Altarchiv oder eine Dateieinlesung ganz ohne Stempel. Beide ergaben
+       bis v28 10 statt 4. */
+    const gleich = B.rechne([
+      Object.assign(tagesfassung(TAG, 6), { archiviert: TAG + "T09:00:00.000Z" }),
+      Object.assign(zaehlung(TAG, 1, 4), { archiviert: TAG + "T09:00:00.000Z" })
+    ]);
+    assert.deepEqual(Array.from(gleich.reihe), ["keller", "tag"]);
+    assert.equal(gleich.B.b.w003, 4, "gleicher Zeitstempel");
+
+    const ohne = B.rechne([tagesfassung(TAG, 6), zaehlung(TAG, 1, 4)]);
+    assert.equal(ohne.B.b.w003, 4, "gar kein Zeitstempel");
+  });
+
+  test("Fall 6 · eine Zählung von gestern kommt nach der Fassung von heute", async () => {
+    /* Betriebstag 16. gezählt, aber erst nach der Tagesfassung des 17.
+       hochgekommen. Der Worker rechnete das bis v28 anders als das
+       Backoffice (10 gegen 4) — genau die zwei Wahrheiten, die Punkt 8
+       schließen soll. */
+    const e = await spiele([tagesfassung(VORTAG, 0), tagesfassung(TAG, 6),
+                            zaehlung(VORTAG, 1, 4)]);
+    assert.equal(e.worker.w003, 4, "Worker: die Zählung vom 15. ist die Basis");
+    assert.equal(e.backoffice.B.b.w003, 4, "Backoffice");
+  });
+
+  test("die Lieferung des Zähltages zählt, gleich wann sie ankommt", async () => {
+    /* Beide Reihenfolgen ergeben dieselbe Zahl — das ist der Preis von
+       Punkt 8 und ausdrücklich in Kauf genommen: Kommt die Lieferung VOR
+       der Zählung desselben Tages herein, wird sie trotzdem obendrauf
+       gerechnet. Ein Tag mit Zählung UND Lieferung ist selten, ein Tag
+       mit spät hochkommender Zählung ist der Normalfall. Umgekehrt fiel
+       bis Runde 8 die Lieferung des Zähltages ganz weg (Fund A/6-4). */
+    const nachher = await spiele([zaehlung(TAG, 1, 4), lieferung(TAG, 2, 12)]);
+    assert.equal(nachher.worker.w003, 34);
+    assert.equal(nachher.backoffice.B.b.w003, 34);
+
+    const vorher = await spiele([lieferung(TAG, 2, 12), zaehlung(TAG, 1, 4)]);
+    assert.equal(vorher.worker.w003, 34, "Worker");
+    assert.equal(vorher.backoffice.B.b.w003, 34, "Backoffice — dieselbe Zahl");
+    assert.deepEqual(Array.from(vorher.backoffice.reihe), ["keller", "ware"],
+      "die Kellerzählung steht als Erstes ihres Betriebstages");
+  });
+
+  test("ein laufender Stand ohne Zeitstempel zählt nach der Zählung seines Tages", () => {
     /* Der lokale Weg (`ladeDaten()` Stufe 2) reicht den gerade offenen
        Vorgang ohne `archiviert` herein. Er darf nicht vor die Zählung
-       desselben Tages rutschen. */
+       desselben Tages rutschen — das trägt seit v29 der Rang, nicht mehr
+       der fehlende Zeitstempel. */
     const e = B.rechne([
       Object.assign(zaehlung(TAG, 1, 4), { archiviert: TAG + "T09:00:00.000Z" }),
       tagesfassung(TAG, 2)                                   /* ohne archiviert */

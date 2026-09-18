@@ -2255,3 +2255,75 @@ Fingergeometrie mit Mausschrift.
 
 **STATUS:** VERBESSERUNGEN — die vier Urteile für den Service stehen auf ✓;
 offen bleibt die umbrechende Datumzeile, vom Zug selbst verursacht.
+
+---
+
+### Runde 10 – software-engineer (die drei A-Funde der zweiten Jagd)
+
+**Kritik am Vorgänger (Runde 8):**
+* ✅ übernommen: `if(offen.length) nichtRechenbar(id,"offen")` prüfte nicht, OB
+  eine offene Position den Artikel überhaupt betreffen kann, sondern nur, ob
+  irgendwo eine offen ist. Mit Bericht 37 (30 offene Speisen) bekam damit jeder
+  Artikel ohne gerechneten Verkauf `diff: null`.
+* ↩️ geändert: Der Schutz `if(verk[id]>0) return` war bei `groesse` nicht
+  nachrüstbar — im Berichtslauf steht noch nicht fest, ob der Artikel an einer
+  späteren Position gerechnet wird. Deshalb wird jetzt gezählt und erst NACH
+  dem Lauf entschieden.
+* ↩️ geändert: Der in Runde 8 als „toter Code" entfernte `MODUSRANG` war im
+  Kern richtig; er kommt als zweistufiger `tagRang` zurück (Zählung = 0, alles
+  andere = 1). Für die Bewegungen untereinander weiß niemand die Reihenfolge,
+  und für die Summe ist sie gleichgültig.
+* ↩️ geändert: `src/index.js`, `bestand()` las `ereignis.tag` gar nicht, obwohl
+  die Spalte live `NOT NULL` ist.
+* ↩️ geändert: Drei Zusicherungen in `tests/reihenfolge.test.mjs` und
+  `tests/abgleich-unklar.test.mjs` schrieben die Funde fest. Jede ist mit
+  Begründung ersetzt, keine gelöscht.
+
+**Umgesetzt:**
+1. **A/8-1:** Der Grund „offen" ist als Stummschalter weg (Entscheidung Nr. 9
+   der Nacht). Der Hinweis über der Tabelle nennt die offenen Positionen
+   weiterhin.
+2. **A/8-2:** Größenlücken werden je Artikel gezählt und erst nach dem
+   Berichtslauf gewertet — wenigstens eine gerechnete Position heißt: die
+   Differenz bleibt, mit Vorbehalt „1 von 3 Positionen ohne Größe — die
+   Differenz ist unvollständig".
+3. **A/8-3:** Bei gleichem Betriebstag gilt die Kellerzählung als Erstes
+   (Entscheidung Nr. 8), in `public/leitung.html` UND in `src/index.js`.
+   `sw.js` v28 → v29.
+
+**Geprüft (Zahl gegen Zahl):**
+* A/8-1 · w002, 12 Flaschen entnommen, 0 verkauft, eine offene Speise im
+  Bericht: vorher „kein Abgleich möglich" und in keiner Liste gezählt —
+  nachher `diff +12`, Befund „prüfen", rote Zahl 0 → 2.
+* A/8-2 · Spritzerwein `verk 1,80`, Entnahme 9, dazu eine Rezeptzeile mit
+  Lücke: vorher `diff null` (7,2 Flaschen stumm) — nachher `diff +7,20` mit
+  Vorbehalt. Der Bestandteil, für den gar nichts gerechnet wurde, bleibt
+  „Größe fehlt".
+* A/8-3 · die sieben Fälle des Jägers, Backoffice und Worker gegeneinander:
+  Fall 2 (Zählung kommt am Folgetag) 10 → **4**; Fall 3 (gleicher Zeitstempel)
+  10 → **4**; Fall 4 (kein Zeitstempel) 10 → **4**; Fall 6 Backoffice 4 /
+  Worker 10 → **beide 4**. Fall 1 und 5 unverändert richtig.
+  **Fall 7 · Lieferung 08:00, Zählung 10:00 desselben Tages: 10 → 34.**
+  Das ist der in Kauf genommene Preis von Entscheidung Nr. 8 — siehe unten.
+* `npm test` **274 grün** (vorher 270) · `durchstich` 35/35 ·
+  `ui-leitung-echt` 40/40 · `ui-zweiter-vorgang` 15/15 · `ui-fremdgeraet` 10/10 ·
+  `LAUF=runde-10 node tests/ui-mass.cjs`: alle Urteile ✓.
+* **Ungeprüft:** echtes Safari/iPad; die Live-D1 in dieser Runde nicht
+  abgefragt; die neue Vorbehalt-Zeile nur als HTML geprüft, nicht als Bild.
+
+**Für die Nächsten:**
+* An die **Moderation**: Entscheidung Nr. 8 hat einen sichtbaren Preis (Fall 7).
+  Sauber lösbar ist er nur mit einem im Vorgang ERFASSTEN Zählzeitpunkt statt
+  der Ankunftszeit — `vorgang.begonnen` existiert live und wäre der Kandidat.
+* An den **ui-designer**: Die Befund-Spalte kann jetzt zweizeilig werden
+  (Plakette + Satz). Der Wortlaut ist gern zu verbessern, solange
+  „unvollständig" erhalten bleibt.
+
+**Phase/Thema:** A / Abgleich und Bestandsreihenfolge
+
+**Backlog:** neu unter „hoch": Lieferung vor der Zählung desselben Tages zählt
+seit v29 doppelt. Neu unter „mittel": `bestand()` gibt es weiter zweimal, beide
+rechnen jetzt nachweislich gleich — die Leitung sollte `/api/bestand` lesen.
+
+**STATUS:** VERBESSERUNGEN — die drei A-Funde sind zu, der Preis von
+Entscheidung Nr. 8 ist neu und gehört vor dem Livegang entschieden.

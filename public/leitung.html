@@ -799,29 +799,46 @@ function normVorgang(v){
   return o;
 }
 
-/* Reihenfolge: erst der Betriebstag, bei Gleichstand der Zeitstempel.
-   Das ist die Regel aus `review/ENTSCHIEDEN-NACHTS.md`, Punkt 5 (Offene
-   Entscheidung Nr. 15): der Betriebstag entscheidet, der Zeitstempel nur
-   noch innerhalb desselben Tages.
+/* Reihenfolge: erst der Betriebstag, dann die Kellerzählung, dann alles
+   andere. Das ist die Regel aus `review/ENTSCHIEDEN-NACHTS.md`, Punkt 8:
+   Bei gleichem Betriebstag gilt die Kellerzählung IMMER als Erstes — sie
+   ist der Anfangsbestand des Tages. Alle anderen Vorgänge desselben Tages
+   (ware, tag, fuellen, nach) zählen danach, untereinander in beliebiger
+   Reihenfolge, weil sie sich ohnehin summieren.
 
-   Bis v26 stand hier eine gedachte Tagesordnung
-   (`MODUSRANG={ware:0, keller:1, …}`) — der Wareneingang lag damit IMMER
-   vor der Kellerzählung desselben Tages. Der übliche Ablauf ist aber
-   umgekehrt: vormittags zählen, mittags die Lieferung erfassen. Zählung
-   10 Flaschen + Lieferung 24 Flaschen ergaben im Backoffice 10 („Seither
-   0 Flaschen eingegangen"), im Worker 34 — und die Bestellliste rechnet
-   auf derselben Zahl.
+   Die Ankunftszeit entscheidet innerhalb eines Betriebstages NICHTS mehr.
+   `ts` ist `archiviert`, also der Zeitpunkt, zu dem das Paket beim Server
+   ankommt (`vorgaengeLesen` in src/index.js gibt `geaendert` heraus) —
+   nicht der, zu dem im Keller gezählt wurde. Offline ist der Normalfall:
+   Das iPad zählt vormittags im Keller und bleibt unten, die Tagesfassung
+   geht abends vom iPhone hinaus, das iPad kommt am nächsten Morgen herauf.
+   Nach Ankunft gerechnet war die Zählung dann JÜNGER als die Entnahme
+   desselben Tages — 10 Flaschen statt 4, „Seither 0 Flaschen entnommen",
+   und die Bestellliste rechnet auf derselben Zahl (Fund A/8-3). Dasselbe
+   bei gleichem und bei fehlendem Zeitstempel.
 
-   `ts` ist `archiviert`: beim Server der Zeitpunkt der letzten Änderung
-   (`vorgaengeLesen` in src/index.js gibt `geaendert` als ISO-Text
-   heraus), lokal der Zeitpunkt des Archivierens. Ein Stand, der noch
-   läuft, hat keinen — er ist das Jüngste, was es gibt, und sortiert
-   deshalb ans Ende seines Tages. MAX_SAFE_INTEGER statt Infinity, damit
-   die Subtraktion im Vergleich nicht NaN wird. */
+   Bewusst in Kauf genommen: Wird die Lieferung eines Tages VOR der
+   Zählung desselben Tages in den Keller gestellt, zählt sie trotzdem
+   obendrauf. Ein Tag mit Zählung UND Lieferung ist selten; ein Tag mit
+   Zählung, die spät hochkommt, ist der Normalfall.
+
+   Der Zeitstempel bleibt nur als letzte, feste Sortierung stehen — damit
+   die Liste bei zwei Vorgängen desselben Rangs nicht springt. Auf die
+   Rechnung hat er keinen Einfluss mehr. Ein Stand, der noch läuft, hat
+   keinen: MAX_SAFE_INTEGER statt Infinity, damit die Subtraktion im
+   Vergleich nicht NaN wird. */
 const tsZahl = v => { const t=Date.parse((v&&v.ts)||"");
   return Number.isFinite(t) ? t : Number.MAX_SAFE_INTEGER; };
+/* Rang INNERHALB eines Betriebstages. Nicht der alte `MODUSRANG` mit fünf
+   Stufen: unterschieden wird nur „Zählung" gegen „alles andere". Wer die
+   Bewegungen untereinander ordnen wollte, müsste wissen, in welcher
+   Reihenfolge sie im Keller geschahen — das weiß niemand, und für die
+   Summe ist es gleichgültig. */
+const tagRang = v => (v && v.mode==="keller") ? 0 : 1;
 function nachZeit(a,b){
-  return (a.tag||"").localeCompare(b.tag||"") || (tsZahl(a)-tsZahl(b));
+  return (a.tag||"").localeCompare(b.tag||"")
+      || (tagRang(a)-tagRang(b))
+      || (tsZahl(a)-tsZahl(b));
 }
 
 /* ════════════ 3 · Quelle ════════════ */
@@ -1106,18 +1123,16 @@ function bestand(){
     if(v.zaehlung) Object.keys(v.zaehlung).forEach(id=>{
       if(v.zaehlung[id]!=null && zuletzt[id]===v) b[id]=v.zaehlung[id];
     });
-    /* „Danach" heisst: `tag > Zähltag` ODER (`tag = Zähltag` UND
-       `ts > Zähl-ts`). `tag > Zähltag` allein wäre falsch — am Morgen
+    /* „Danach" heisst: `tag > Zähltag` ODER (`tag = Zähltag` UND es ist
+       keine Zählung). `tag > Zähltag` allein wäre falsch — am Morgen
        gezählt, am Abend desselben Tages gefasst: diese Entnahme fiele
-       sonst unter den Tisch. Gleichstand zählt NICHT als danach, genau
-       wie im Worker (`if (basis != null && r.ts <= basis) return;`).
-       Verglichen wird ausdrücklich statt über den Feldindex: zwei
-       Vorgänge mit demselben Zeitstempel stehen in der sortierten Liste
-       in beliebiger, aber fester Reihenfolge — der Index würde einen von
-       beiden stillschweigend zum „danach" machen. */
+       sonst unter den Tisch. Der Zeitstempel stand hier bis v28 und
+       ist fort: er sagt, wann das Paket ANKAM, nicht wann gezählt wurde
+       (siehe `nachZeit`). Dieselbe Regel rechnet der Worker
+       (`bestand()` in src/index.js, `ORDER BY tag, Zählung zuerst`). */
     const nach=id=>{ const z=zuletzt[id]; if(!z) return false;
       return (v.tag||"")>(z.tag||"") ||
-             ((v.tag||"")===(z.tag||"") && tsZahl(v)>tsZahl(z)); };
+             ((v.tag||"")===(z.tag||"") && tagRang(v)>tagRang(z)); };
     Object.keys(v.eingang).forEach(id=>{ if(!nach(id)) return;
       b[id]=(b[id]||0)+v.eingang[id]; seit.ein[id]=(seit.ein[id]||0)+v.eingang[id]; });
     Object.keys(v.wein).forEach(id=>{ if(!nach(id)) return;
@@ -1221,10 +1236,25 @@ function zuordnung(pos){
    Tabelle, Mittagsblick und CSV denselben Satz sagen. */
 const UNKLAR_GRUND={
   groesse:     "Größe fehlt",
-  offen:       "Kassenpositionen sind nicht zugeordnet",
   keinbericht: "kein Z-Bericht im Zeitraum"
 };
 const unklarSatz = g => "kein Abgleich möglich — " + (UNKLAR_GRUND[g] || "Verkauf nicht bestimmbar");
+/* Der Grund „offen" stand hier bis v28 und ist seit v29 fort
+   (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9): eine nicht zugeordnete
+   Kassenposition betrifft per Definition KEINEN bestimmten Artikel und
+   darf deshalb auch keinem Artikel den Befund nehmen. In Bericht 37 sind
+   dreißig der offenen Namen Speisen (Schnittlauch, Käse, HP Omelett) —
+   eine einzige davon schaltete den Schwund für ALLE Artikel ohne
+   gerechneten Verkauf ab: 12 Flaschen aus dem Keller, 0 verkauft,
+   „kein Abgleich möglich". Was offen ist, sagt der Hinweis über der
+   Tabelle („n Kassenpositionen ohne Zuordnung"). */
+
+/* Ein Teil der Positionen eines Artikels konnte nicht gerechnet werden,
+   ein anderer schon: dann bleibt die Differenz stehen — mit Vorbehalt.
+   Eine halbe Wahrheit, die sich als ganze ausgibt, ist der teuerste Fall;
+   eine Differenz MIT Vorbehalt ist besser als gar keine. */
+const vorbehaltSatz = v =>
+  v.ohne+" von "+v.gesamt+" Positionen ohne Größe — die Differenz ist unvollständig";
 
 function abgleich(tag, spanne){
   spanne = spanne || 1;
@@ -1247,6 +1277,18 @@ function abgleich(tag, spanne){
      leer und JEDE Zeile stand als „prüfen" da. */
   const unklar={};
   const nichtRechenbar=(id,grund)=>{ if(id && !unklar[id]) unklar[id]=grund; };
+  /* Je Artikel: wie viele Kassenpositionen ihn betreffen und wie viele
+     davon mangels Größe draußen blieben. Gezählt wird WÄHREND des Laufs,
+     entschieden erst DANACH — im Lauf selbst weiß niemand, ob derselbe
+     Artikel an einer späteren Position noch eine gerechnete Zahl bekommt.
+     Genau daran scheiterte v28: `nichtRechenbar(id,"groesse")` wurde
+     sofort gesetzt und löschte rückwirkend einen schon gerechneten
+     Verkauf (Spritzerwein: 1,80 Fl. gerechnet, Entnahme 9 → die Zeile
+     sagte „kein Abgleich möglich" statt +7,2). */
+  const posZahl={}, posOhne={};
+  const zaehlePos=(id,gerechnet)=>{ if(!id) return;
+    posZahl[id]=(posZahl[id]||0)+1;
+    if(!gerechnet) posOhne[id]=(posOhne[id]||0)+1; };
   /* Dritter Zustand neben „zugeordnet" und „offen": zugeordnet, aber die
      Größe ist nicht bestätigt. Solche Positionen gehen weder in `verk`
      noch in die Differenz ein — sonst sähe eine fehlende Zahl aus wie
@@ -1279,18 +1321,19 @@ function abgleich(tag, spanne){
           merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]}, true);
           /* Die ganze Position bleibt draußen — also fehlt der Verkauf
              JEDES Bestandteils, nicht nur der des einen mit der Lücke. */
-          r.forEach(x=>nichtRechenbar(x.id,"groesse"));
+          r.forEach(x=>zaehlePos(x.id,false));
           return;
         }
-        r.forEach((x,i)=>verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml);
+        r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
+          zaehlePos(x.id,true); });
         return;
       }
       const zu=zuordnung(p);
       if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
       if(zu.status==="ignoriert") return;
       const f=flaschen(p, zu.id);
-      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); nichtRechenbar(zu.id,"groesse"); return; }
-      verk[zu.id]=(verk[zu.id]||0)+f.fl;
+      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false); return; }
+      verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
     });
   });
   const z=berichte.length?berichte[berichte.length-1]:null;
@@ -1302,19 +1345,20 @@ function abgleich(tag, spanne){
     Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
   });
 
-  /* Zwei weitere Gründe, aus denen der Verkauf nicht bestimmbar ist.
-     Beide betreffen nur Artikel, für die in diesem Zeitraum ÜBERHAUPT
-     kein Verkauf gerechnet wurde — wer eine gerechnete Zahl hat, behält
-     seine Differenz. */
-  Object.keys(ent).forEach(id=>{
-    if(verk[id]>0) return;
-    /* Ohne Z-Bericht ist die Verkaufsseite nicht leer, sondern unbekannt. */
-    if(!berichte.length) return nichtRechenbar(id,"keinbericht");
-    /* Nicht zugeordnete Kassenpositionen: welchem Artikel sie gehören,
-       weiß niemand (Regel 5 — geraten wird nicht). Solange welche offen
-       sind, kann die Entnahme eines Artikels ohne gerechneten Verkauf
-       genau daher stammen. „Schwund" wäre eine Behauptung ohne Grundlage. */
-    if(offen.length) nichtRechenbar(id,"offen");
+  /* Jetzt erst, mit dem vollständigen Lauf im Rücken: keine einzige
+     Position gerechnet → kein Befund; wenigstens eine gerechnet → Befund
+     mit Vorbehalt. */
+  const vorbehalt={};
+  Object.keys(posOhne).forEach(id=>{
+    if((posZahl[id]||0)>posOhne[id]) vorbehalt[id]={ohne:posOhne[id], gesamt:posZahl[id]};
+    else nichtRechenbar(id,"groesse");
+  });
+  /* Ohne Z-Bericht ist die Verkaufsseite nicht leer, sondern unbekannt —
+     der einzige verbliebene Grund, der einen Artikel ganz stumm stellt.
+     Er betrifft nur Artikel ohne gerechneten Verkauf; wer eine gerechnete
+     Zahl hat, behält seine Differenz. */
+  if(!berichte.length) Object.keys(ent).forEach(id=>{
+    if(!(verk[id]>0)) nichtRechenbar(id,"keinbericht");
   });
 
   const ids=Array.from(new Set([...Object.keys(verk), ...Object.keys(ent)]));
@@ -1327,11 +1371,12 @@ function abgleich(tag, spanne){
        Auffälligkeitsliste heraus, auch wenn eine Stelle die Prüfung auf
        `r.unklar` vergessen sollte. */
     return {id, name: w ? (w.winzer+" · "+w.wein) : GN(id), art: w?"Wein":"Getränk",
-            verkauf:v, entnahme:e, diff: u?null:e-v, unklar:u};
+            verkauf:v, entnahme:e, diff: u?null:e-v, unklar:u,
+            vorbehalt: u?null:(vorbehalt[id]||null)};
   }).sort((a,b)=>(a.unklar?1:0)-(b.unklar?1:0)
                  || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
-  return {z, zeilen, offen, ohneGroesse, unklar, verk, ent, von, bis, spanne,
+  return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, von, bis, spanne,
           berichte:berichte.length};
 }
 
@@ -1490,7 +1535,7 @@ function vHeute(m){
       unter „Verkauf ↔ Fassung“ ohne Urteil. Das ist noch kein Abgleich.</div>`:"")+
     (a.berichte&&ohneUrteil?`<div class="hinweis" style="margin-bottom:var(--space-4)">
       ${ohneUrteil} Position${ohneUrteil===1?"":"en"} stehen hier nicht: für sie ist der Verkauf
-      nicht bestimmbar (Größe fehlt oder Kassenposition nicht zugeordnet). Ihre Entnahme ist
+      nicht bestimmbar (keine bestätigte Größe oder kein Z-Bericht). Ihre Entnahme ist
       weder Abweichung noch Schwund — nachzulesen unter „Verkauf ↔ Fassung“.</div>`:"")+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
@@ -1498,7 +1543,11 @@ function vHeute(m){
         <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
+        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}${
+          /* Auch hier gesagt: der Mittagsblick ist der Schirm, den die
+             Leitung morgens zuerst sieht, und eine Differenz aus halb
+             gerechnetem Verkauf darf dort nicht als ganze dastehen. */
+          r.vorbehalt?"<br><span class=\"dim\">"+esc(vorbehaltSatz(r.vorbehalt))+"</span>":""}</td>
       </tr>`).join("")}</tbody></table></div>`
     /* Drei verschiedene Lagen, die bis v26 alle „Keine Abweichung über
        einer Flasche" sagten — auch dann, wenn gar nichts vergleichbar war. */
@@ -1659,9 +1708,18 @@ function vAbgleich(m){
       r.unklar?"—":(r.diff>0?"+":"")+num(r.diff)}</td>
     <td>${r.unklar?'<span class="befund"><span class="pill p-grau">kein Abgleich</span>'
         +'<span class="dim">'+esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")+'</span></span>'
-        :Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
-        :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
-        :'<span class="pill p-bad">prüfen</span>'}</td></tr>`;
+        /* Mit Vorbehalt: die Plakette bleibt, der Satz daneben sagt, dass
+           ein Teil des Verkaufs fehlt. Die Differenz ist damit eine
+           Untergrenze — verschwiegen wäre sie eine Behauptung. Die Hülle
+           `.befund` bekommt nur diese Zeile; eine Zeile ohne Vorbehalt
+           sieht aus wie bisher. */
+        :(pill=>r.vorbehalt
+          ? '<span class="befund">'+pill
+            +'<span class="dim">'+esc(vorbehaltSatz(r.vorbehalt))+'</span></span>'
+          : pill)(
+           Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
+          :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
+          :'<span class="pill p-bad">prüfen</span>')}</td></tr>`;
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf Fl.</th><th class="r">Entnahme Fl.</th><th class="r">Differenz</th><th>Befund</th>
     </tr></thead><tbody>
@@ -1683,7 +1741,8 @@ function csvAbgleich(tag,a){
   a.zeilen.forEach(r=>L.push([r.name,r.art,
     r.unklar?"":num(r.verkauf), num(r.entnahme), r.unklar?"":num(r.diff),
     r.unklar?unklarSatz(r.unklar)
-      :Math.abs(r.diff)<0.5?"stimmt":Math.abs(r.diff)<2?"kleine Abweichung":"prüfen"
+      :(Math.abs(r.diff)<0.5?"stimmt":Math.abs(r.diff)<2?"kleine Abweichung":"prüfen")
+       +(r.vorbehalt?" · "+vorbehaltSatz(r.vorbehalt):"")
     ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
