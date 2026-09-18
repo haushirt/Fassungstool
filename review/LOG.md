@@ -2521,3 +2521,15 @@ Stapelspalte „Red Ale / Pale Ale" mit zwei unbeschrifteten Kopfzahlen.
 A-Funde der Jagd behoben. Offen und nicht von mir zu entscheiden: die
 Paarung im Abgleich (A4), die Ladenhöhe (B4), F10/F11. **Echtes Safari
 bleibt ungeprüft** — deshalb kein Merge aus eigener Hand.
+
+### Runde 14 – Oberfläche
+**Kritik am Vorgänger:** Runde 13 hat mit `repeat(auto-fit,minmax(72px,1fr))` die Spaltenladen umbrechen lassen (public/index.html, `.drwi--umbruch`) — Lade 4 stand bei 390 px 4 über 4 statt in einer Reihe ↩️ geändert: eine Reihe, Punktgröße je Spalte, Umbruch nur noch unter 360 px. · Die Ringteilung von 46 px (34 + 12) war breiter als nötig ↩️ geändert auf 45 (32 + 13). · Die Statuszeile sagte „Alles übertragen", während darüber die Tagesfassung noch ausstand ✅ übernommen, neuer Wortlaut.
+**Umgesetzt:**
+- Startseite: farbiger Kopf mit Datum (ohne „Für", ohne Jahr), Anrede über dem Statusfeld, Statusfeld als Knopf zur Begrüßung, „Außer der Reihe" entfernt, neue Kacheltexte.
+- Sonderentnahme verlangt einen Grund (fünf Knöpfe, Pflicht in `offenList`, Journal über `ereignis.notiz` als `grund=<key>` — keine Migration).
+- Lade 1 gleich hohe Flaschenspalten, Gasteiner 0,25 auf 8, Ringe 32 px bei 13 px Luft, farbige Rebsortenköpfe, Abschlussknopf „Fertig – Speichern".
+**Geprüft:** `npm test` 343/343 grün (16 neue Prüfungen für Runde 14). `node tests/ui-nachjagd.cjs` 9/9. `LAUF=runde14 node tests/ui-mass.cjs` zehn von zehn Urteilen grün, sechs Breiten. Belege: `review/screens/f1…f9/` und neu `review/screens/r14/` in 320/375/390/430 px.
+**Für die Nächsten:** Drei Befunde kamen erst aus der Messung: (1) die farbigen Rebsortenköpfe lagen bei 2,0–3,0 : 1 — dieselben Töne, nur dunkler, jetzt ≥ 4,6 : 1; (2) die Grundknöpfe hatten gar kein CSS und waren 29 px hoch; (3) bei Teilung = Griffbreite fällt der Prüfpunkt (±21,5 px) an den Nachbarring — deshalb Teilung 45 bei Griff 44.
+**Phase/Thema:** Oberfläche / Startseite, Laden, Weinzeile, Sonderentnahme
+**Backlog:** Kellerzählung ausdrücklich nicht Teil dieser Runde (Priorität mittel). A4 (Abgleich-Paarung im Backoffice dauerhaft um einen Tag versetzt) weiter offen (hoch).
+**STATUS:** FERTIG

@@ -71,9 +71,12 @@ describe("F6 · der Kopf beginnt unter der Statusleiste", () => {
       assert.match(roh, /<meta name="viewport"[^>]*viewport-fit=cover/);
     });
 
+  /* Runde 14: Das Polster der Startseite ist mit dem farbigen Kopf
+     umgezogen. `.menu` selbst ist seither randlos (der Kopf soll bis an
+     die Kante) — das Polster gegen die Statusleiste sitzt in `.mkopf`. */
   test("index.html: Kopf, Startseite und Anmeldung tragen das Polster", () => {
     assert.match(APP, /header\{[^}]*padding:max\(12px,env\(safe-area-inset-top\)\)/);
-    assert.match(APP, /\.menu\{[^}]*env\(safe-area-inset-top\)/);
+    assert.match(APP, /\.mkopf\{[^}]*padding:max\(12px,env\(safe-area-inset-top\)\)/);
     assert.match(APP, /\.login\{[^}]*env\(safe-area-inset-top\)/);
   });
 
@@ -86,13 +89,18 @@ describe("F6 · der Kopf beginnt unter der Statusleiste", () => {
 });
 
 describe("F7 · „offen“ gehört der Aufgabe, nicht der Warteschlange", () => {
+  /* Runde 14: „Alles übertragen“ war weiterhin zweideutig — darüber stand,
+     die Tagesfassung stehe noch aus. Beide Zeilen sagen jetzt ausdrücklich,
+     dass es um dieses GERÄT geht, nicht um die Arbeit. */
   test("das grüne Feld spricht nur noch von Übertragung", () => {
     assert.doesNotMatch(APP, /Nichts offen – alles übertragen/);
-    assert.match(APP, /t="Alles übertragen"/);
+    assert.doesNotMatch(APP, /t="Alles übertragen"/);
+    assert.match(APP, /t="Nichts liegt mehr auf diesem Gerät"/);
   });
   test("die Wartezeile nennt den Vorgang, nicht „offen“", () => {
     assert.doesNotMatch(APP, /warten auf Übertragung/);
-    assert.match(APP, /o===1\?"1 Vorgang wartet":o\+" Vorgänge warten"/);
+    assert.match(APP, /o===1\?"1 Vorgang liegt noch auf diesem Gerät"/);
+    assert.match(APP, /o\+" Vorgänge liegen noch auf diesem Gerät"/);
     assert.match(APP, /else if\(o>0\)\{ t=viele; k="wartet"; \}/);
   });
 });
@@ -137,5 +145,123 @@ describe("F2/F3 · was die Gestaltung tragen muss", () => {
     /* dotRow() ist die einzige Stelle, die `w--zaehl` vergibt. */
     const treffer = [...APP.matchAll(/className="w w--zaehl"/g)];
     assert.equal(treffer.length, 2, "Aufbau und upd() in dotRow()");
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   Runde 14 · die Punkte aus der Durchsicht am iPhone
+
+   Auch hier gilt: geprüft wird, dass die Regel bzw. der Satz dasteht.
+   Wie es aussieht, zeigen die Belege unter `review/screens/`.          */
+
+describe("Runde 14 · Startseite", () => {
+  test("der Tag steht ohne „Für“ und ohne Jahr", () => {
+    assert.match(APP, /function deTagKurz\(iso\)/);
+    const f = /function deTagKurz\(iso\)\{[\s\S]{0,240}?toLocaleDateString\([^)]*\{[^}]*\}\)/.exec(APP);
+    assert.ok(f, "deTagKurz nicht gefunden");
+    assert.match(f[0], /weekday:"long",day:"2-digit",month:"2-digit"/);
+    assert.doesNotMatch(f[0], /year:/, "das Jahr kostet die halbe Zeile");
+    assert.match(APP, /#datumTxt"\)\.textContent=deTagKurz\(d\.tag\)\+" · ändern"/);
+    assert.doesNotMatch(APP, /"Für "\+/);
+  });
+
+  test("der Kopf der Startseite setzt sich vom Inhalt ab", () => {
+    assert.match(APP, /<header class="mkopf">/);
+    assert.match(APP, /\.mkopf\{[^}]*background:var\(--accent\)/);
+    assert.match(APP, /\.minhalt\{[^}]*max-width:var\(--maxw\)/);
+  });
+
+  test("die Anrede steht ÜBER dem Statusfeld", () => {
+    const menu = /\$\("#menu"\)\.innerHTML=`[\s\S]*?`;/.exec(APP);
+    assert.ok(menu, "renderMenu nicht gefunden");
+    const gruss = menu[0].indexOf("${grussZeile()}");
+    const netz  = menu[0].indexOf("netz--block");
+    assert.ok(gruss > -1 && netz > -1, "Anrede oder Statusfeld fehlt");
+    assert.ok(gruss < netz, "die Anrede muss vor dem Statusfeld kommen");
+  });
+
+  test("das Statusfeld ist ein Knopf und öffnet die Begrüßung", () => {
+    assert.match(APP, /class="netz netz--block netz--tipp"/);
+    assert.match(APP, /nb\.onclick=\(\)=>grussZeigen\(\)/);
+    assert.match(APP, /\.netz--tipp\{[^}]*cursor:pointer/);
+    assert.match(APP, /\.netz--tipp\{[^}]*box-shadow/, "hebt sich vom Grund ab");
+  });
+
+  test("die Überschrift „Außer der Reihe“ ist weg, die Gruppe bleibt", () => {
+    assert.doesNotMatch(APP, /Außer der Reihe/);
+    assert.match(APP, /<div class="grp grp--ausser">\$\{card\("nach"\)\}<\/div>/);
+  });
+
+  test("die Kacheltexte lauten wie abgesprochen", () => {
+    assert.match(APP, /t:"Nachfüllen",d:"Am Nachmittag Bar auffüllen\."/);
+    assert.match(APP, /t:"Sonderentnahme",d:"Schnell was holen\?"/);
+  });
+});
+
+describe("Runde 14 · Sonderentnahme braucht einen Grund", () => {
+  test("es gibt fünf Gründe zur Auswahl", () => {
+    const g = /const GRUENDE=\[[\s\S]*?\]\];/.exec(APP);
+    assert.ok(g, "GRUENDE nicht gefunden");
+    for (const k of ["kueche", "personal", "bruch", "verkostung", "zimmer"])
+      assert.match(g[0], new RegExp('"' + k + '"'));
+  });
+
+  test("ohne Grund bleibt der Vorgang offen", () => {
+    assert.match(APP, /mode==="nach"&&!d\.grund/);
+    assert.match(APP, /Grund fehlt – wofür wurde geholt\?/);
+  });
+
+  test("der Grund geht ins Journal, ohne neue Spalte", () => {
+    const W = lies("src/index.js");
+    assert.match(W, /GRUND_ERLAUBT = \["kueche", "personal", "bruch", "verkostung", "zimmer"\]/);
+    assert.match(W, /"grund=" \+ d\.grund/);
+    /* Die Notiz-Spalte gibt es live schon — keine Migration nötig. */
+    assert.doesNotMatch(W, /ALTER TABLE ereignis/);
+  });
+});
+
+describe("Runde 14 · Laden und Weinzeile", () => {
+  test("Gasteiner 0,25 steht auf acht", () => {
+    const S = JSON.parse(lies("src/stamm.json"));
+    const treffer = JSON.stringify(S).match(/\["gastklein",\s*(\d+)\]/);
+    assert.ok(treffer, "gastklein nicht im Stapel gefunden");
+    assert.equal(treffer[1], "8");
+  });
+
+  test("alle Flaschenspalten der Lade 1 sind gleich hoch", () => {
+    /* Gestreckt wird an der LÄNGSTEN Flaschenspalte; alle bekommen
+       dieselbe Zellenhöhe. Sprite/Spritzer muss unten nicht ankommen. */
+    assert.match(APP, /flaschen\.forEach\(sp=>sp\.style\.setProperty\("--gcellh",neu\)\)/);
+    assert.match(APP, /if\(n>hoch\.n\)hoch=\{n:n,sp:sp\}/);
+  });
+
+  test("die Ringe behalten ihre Größe, die Spalte wird breiter", () => {
+    const f = /function ringMasse\(m\)\{[\s\S]*?\n\}/.exec(APP);
+    assert.ok(f, "ringMasse nicht gefunden");
+    assert.match(f[0], /const G=13, D=32;/);
+    assert.match(f[0], /setProperty\("--dotd",D\+"px"\)/);
+    assert.match(f[0], /setProperty\("--dotsp",\(n\*D\+\(n-1\)\*G\)\+"px"\)/);
+  });
+
+  test("die Ringe brechen nie um", () => {
+    assert.match(APP, /\.dots\{[^}]*flex-wrap:nowrap/);
+  });
+
+  test("die Trefferfläche bleibt 44 px, auch bei 30-px-Ringen", () => {
+    assert.match(APP, /\.dot::after\{[^}]*height:var\(--tap-min\)/);
+    assert.match(APP, /\.chk::after\{[^}]*height:var\(--tap-min\)/);
+  });
+
+  test("die Rebsorte färbt die Überschrift, nicht die Zeile", () => {
+    assert.match(APP, /const REBTON=\{/);
+    assert.match(APP, /\.reb--farbe\{[^}]*border-left:3px solid var\(--rebton\)/);
+    assert.doesNotMatch(APP, /\.reb--b\{/, "die Zebra-Tönung ist ersetzt");
+  });
+});
+
+describe("Runde 14 · Abschluss", () => {
+  test("der Knopf heißt „Fertig – Speichern“", () => {
+    assert.match(APP, /"Fertig – Speichern"/);
+    assert.doesNotMatch(APP, /Fertig – Protokoll erstellen/);
   });
 });

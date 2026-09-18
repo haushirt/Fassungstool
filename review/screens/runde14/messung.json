@@ -1,6 +1,6 @@
 {
  "lauf": "runde14",
- "zeit": "2026-09-18T12:56:59.742Z",
+ "zeit": "2026-09-18T17:30:14.435Z",
  "seiten": {
   "leitung/heute@390": {
    "vw": 390,
@@ -4793,14 +4793,21 @@
    "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
-   "klein": [],
-   "kleinN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 90,
+     "h": 36,
+     "text": "abmelden"
+    }
+   ],
+   "kleinN": 1,
    "griff": [],
    "griffN": 0,
    "schrift": {
     "15": [
-     "P.sub",
-     "BUTTON.abmelden",
+     "DIV.subh",
+     "BUTTON.home",
      "SPAN.netztext",
      "DIV.mgrp"
     ],
@@ -4869,74 +4876,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -5012,206 +5019,206 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -5763,7 +5770,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 202,
+   "leiseZiffern": 203,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -6603,14 +6610,21 @@
    "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
-   "klein": [],
-   "kleinN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 90,
+     "h": 36,
+     "text": "abmelden"
+    }
+   ],
+   "kleinN": 1,
    "griff": [],
    "griffN": 0,
    "schrift": {
     "15": [
-     "P.sub",
-     "BUTTON.abmelden",
+     "DIV.subh",
+     "BUTTON.home",
      "SPAN.netztext",
      "DIV.mgrp"
     ],
@@ -6679,74 +6693,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -6822,206 +6836,206 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -7573,7 +7587,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 202,
+   "leiseZiffern": 203,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -8413,14 +8427,21 @@
    "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
-   "klein": [],
-   "kleinN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 90,
+     "h": 36,
+     "text": "abmelden"
+    }
+   ],
+   "kleinN": 1,
    "griff": [],
    "griffN": 0,
    "schrift": {
     "15": [
-     "P.sub",
-     "BUTTON.abmelden",
+     "DIV.subh",
+     "BUTTON.home",
      "SPAN.netztext",
      "DIV.mgrp"
     ],
@@ -8489,74 +8510,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -8632,206 +8653,206 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -9383,7 +9404,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 202,
+   "leiseZiffern": 203,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -10223,14 +10244,21 @@
    "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
-   "klein": [],
-   "kleinN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 90,
+     "h": 36,
+     "text": "abmelden"
+    }
+   ],
+   "kleinN": 1,
    "griff": [],
    "griffN": 0,
    "schrift": {
     "15": [
-     "P.sub",
-     "BUTTON.abmelden",
+     "DIV.subh",
+     "BUTTON.home",
      "SPAN.netztext",
      "DIV.mgrp"
     ],
@@ -10299,74 +10327,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -10442,206 +10470,206 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -11193,7 +11221,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 202,
+   "leiseZiffern": 203,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -12033,14 +12061,21 @@
    "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
-   "klein": [],
-   "kleinN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 90,
+     "h": 36,
+     "text": "abmelden"
+    }
+   ],
+   "kleinN": 1,
    "griff": [],
    "griffN": 0,
    "schrift": {
     "15": [
-     "P.sub",
-     "BUTTON.abmelden",
+     "DIV.subh",
+     "BUTTON.home",
      "SPAN.netztext",
      "DIV.mgrp"
     ],
@@ -12109,74 +12144,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -12252,206 +12287,206 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -13003,7 +13038,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 202,
+   "leiseZiffern": 203,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -13843,14 +13878,21 @@
    "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
-   "klein": [],
-   "kleinN": 0,
+   "klein": [
+    {
+     "was": "BUTTON.home",
+     "b": 90,
+     "h": 36,
+     "text": "abmelden"
+    }
+   ],
+   "kleinN": 1,
    "griff": [],
    "griffN": 0,
    "schrift": {
     "15": [
-     "P.sub",
-     "BUTTON.abmelden",
+     "DIV.subh",
+     "BUTTON.home",
      "SPAN.netztext",
      "DIV.mgrp"
     ],
@@ -13919,74 +13961,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -14062,206 +14104,206 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -14813,7 +14855,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 202,
+   "leiseZiffern": 203,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -15692,74 +15734,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -16066,7 +16108,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 70,
+   "leiseZiffern": 71,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -16258,74 +16300,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -16632,7 +16674,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 70,
+   "leiseZiffern": 71,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -16824,74 +16866,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -17198,7 +17240,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 70,
+   "leiseZiffern": 71,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -17390,74 +17432,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -17764,7 +17806,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 70,
+   "leiseZiffern": 71,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -17956,74 +17998,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -18330,7 +18372,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 70,
+   "leiseZiffern": 71,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -18522,74 +18564,74 @@
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "SPAN.dot",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     },
     {
      "was": "BUTTON.chk",
-     "b": 34,
-     "h": 34,
+     "b": 32,
+     "h": 32,
      "text": ""
     }
    ],
@@ -18896,7 +18938,7 @@
    },
    "schwach": [],
    "schwachN": 0,
-   "leiseZiffern": 70,
+   "leiseZiffern": 71,
    "kontrastUebersprungen": 0,
    "jsFehler": []
   },
@@ -19262,8 +19304,8 @@
  },
  "summe": {
   "ueberGes": 0,
-  "kleinGes": 2828,
-  "kleinSvc": 2592,
+  "kleinGes": 2834,
+  "kleinSvc": 2598,
   "griffGes": 229,
   "griffSvc": 0,
   "schwachGes": 0,

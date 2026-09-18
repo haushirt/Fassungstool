@@ -10,10 +10,11 @@ Arbeitsweise
 * „Review" = knappes Feedback, nur das Wichtigste.
 * Ablauf jeder Aufgabe:
   1. Ziel feststellen + was konkret zu tun ist
-  2. Mockup zeigen → auf Freigabe warten
-  3. Nach Freigabe bauen, Agents drüberlaufen lassen
+  2. Kein separates Mockup. Auf einem eigenen Branch bauen.
+  3. Belege erzeugen mit `node tests/ui-befunde.cjs` in 320/375/390/430 px und mir sagen, wo die Bilder liegen.
   4. Ergebnis mit Ziel abgleichen → nicht erfüllt: neue Runde
   5. Erfüllt: „Erledigt – bereit zum Review"
+* Freigabe: erst nach meiner ausdrücklichen Freigabe mergen. Danach Jäger und qa-guardian laufen lassen, nicht davor.
 
 Stack
 

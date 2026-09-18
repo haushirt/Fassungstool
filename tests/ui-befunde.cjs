@@ -87,6 +87,13 @@ async function modus(p, m) {
   await p.evaluate(x => { if (typeof start === "function") start(x); }, m);
   await warte(p, 450); await hilfeZu(p);
 }
+/* keller/nach/ware fragen zuerst „Wein oder Getränke?". */
+async function zweig(p, z) {
+  const tor = p.locator(".gbtn." + z);
+  if (await tor.count()) { await tor.first().click(); await warte(p, 400); }
+  else await p.evaluate(x => { if (typeof branch !== "undefined") { branch = x; render(); } }, z);
+  await warte(p, 350); await hilfeZu(p);
+}
 async function lade(p, nr) {
   const kn = p.locator(".statb", { hasText: new RegExp("^" + nr + "$") });
   if (await kn.count()) { await kn.first().click(); await warte(p, 350); }
@@ -115,7 +122,20 @@ const SZENEN = {
   f7: [["startseite", async p => { await grussZu(p); }]],
   f8: [["lade-3", async p => { await modus(p, "tag"); await lade(p, "3"); }],
        ["lade-5", async p => { await modus(p, "tag"); await lade(p, "5"); }]],
-  f9: [["begruessung", async p => { await warte(p, 600); }]]
+  f9: [["begruessung", async p => { await warte(p, 600); }]],
+
+  /* Runde 14 · was in f1…f9 keine eigene Lage hatte: der Pflichtgrund der
+     Sonderentnahme, der umbenannte Abschlussknopf und die Begrüßung, die
+     jetzt am Statusfeld hängt. */
+  r14: [["sonderentnahme-grund", async p => { await modus(p, "nach"); await zweig(p, "wein"); }],
+        ["sonderentnahme-gewaehlt", async p => { await modus(p, "nach"); await zweig(p, "wein");
+          const g = p.locator(".grundb").first();
+          if (await g.count()) { await g.click(); await warte(p, 350); } }],
+        ["abschluss-knopf", async p => { await modus(p, "tag");
+          await p.evaluate(() => go(lastStep())); await warte(p, 450); await hilfeZu(p); }],
+        ["statusfeld-begruessung", async p => { await grussZu(p);
+          const s = p.locator(".netz--tipp");
+          if (await s.count()) { await s.click(); await warte(p, 400); } }]]
 };
 
 (async () => {

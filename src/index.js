@@ -244,11 +244,23 @@ async function vorgangSchreiben(env, p, id, daten) {
    statt einer zusammengesetzten: SQL wird hier nie gebaut, immer
    gebunden. */
 const SQL_EREIGNIS =
-  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
-   VALUES (?1,?2,?3,?4,'vorgang',?5,?6,?7,?8,?9)`;
+  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer, notiz)
+   VALUES (?1,?2,?3,?4,'vorgang',?5,?6,?7,?8,?9,?10)`;
 const SQL_EREIGNIS_KORR =
-  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
-   VALUES (?1,?2,?3,?4,'vorgang-korrektur',?5,?6,?7,?8,?9)`;
+  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer, notiz)
+   VALUES (?1,?2,?3,?4,'vorgang-korrektur',?5,?6,?7,?8,?9,?10)`;
+
+/* Runde 14 · Der Grund einer Sonderentnahme reist im Journal mit.
+   KEINE Migration: `ereignis.notiz` gibt es live (TEXT, frei), und für
+   abgeleitete Zeilen stand sie bisher leer. Damit das Backoffice sie
+   gruppieren kann, steht der Grund vorn und in fester Form —
+   `grund=bruch` — und erst danach dürfte je freier Text folgen. Eine
+   neue `ereignis.art` wäre eine Migration und kommt nicht in Frage: die
+   CHECK-Bedingung lässt nur zaehlung|entnahme|eingang|korrektur zu.
+   So am 17.09. entschieden, review/ENTSCHIEDEN-NACHTS.md Nr. 7. */
+const GRUND_ERLAUBT = ["kueche", "personal", "bruch", "verkostung", "zimmer"];
+const grundNotiz = (d) =>
+  (d.mode === "nach" && GRUND_ERLAUBT.includes(d.grund)) ? "grund=" + d.grund : "";
 
 /* Ereignisse aus dem Zustand eines abgeschlossenen Vorgangs ableiten.
 
@@ -337,8 +349,10 @@ async function ereignisseAbleiten(env, vid, d, p) {
        liegt die Korrektur notfalls eine Millisekunde nach der jüngsten
        Zeile, die schon da ist. */
     const jetzt = Math.max(Date.now(), alt.reduce((m, r) => Math.max(m, +r.ts || 0), 0) + 1);
+    const notiz = grundNotiz(d);
     return zn.map(z => stmt.bind(
-      crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge, d.name || p.name));
+      crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge,
+      d.name || p.name, notiz));
   };
 
   /* Erster Abschluss: nichts zu vergleichen, die Zeilen gehen so hinaus
