@@ -6,17 +6,28 @@ Ausgangsstand der Nacht: **`e3eb7b9`** (= `main`, `sw.js` v24).
 
 ---
 
-## 1 · Was jetzt live ist
+## 1 · Was live ist: NICHTS
 
-**STAND BEI ABSCHLUSS DES BRIEFS: (wird beim letzten Zug eingetragen)**
+**Es ist nichts gemergt worden.** `main` steht unverändert auf `e3eb7b9`
+(`sw.js` v24) — genau dort, wo du es gestern Abend verlassen hast. Die ganze
+Nacht liegt auf `claude/optimistic-feynman-o7jsgy`, als Pull Request
+vorbereitet.
 
-Rückweg auf den Stand vor der Nacht, falls alles weg soll:
+**Warum kein Merge:** Das Merge-Gate verlangt null A- und null B-Funde. Der
+Jäger hat in der letzten Prüfung einen A-Fund gemeldet, der im Betrieb Geld
+kostet: Die Bestellliste schlug **132 Flaschen** für einen Wein vor, von dem 24
+ungerechnet im Keller standen. Ein Merge geht bei diesem Projekt sofort live,
+und der Service beginnt am Abend — das war es nicht wert.
+
+**Du merged selbst, wenn du willst** — die Beschreibung des Pull Requests sagt
+dir, was drin ist und was noch offen ist. Ein Rückweg wird nicht gebraucht,
+weil nichts live gegangen ist; falls du nach dem Merge zurück willst:
 
 ```
 git revert --no-commit e3eb7b9..HEAD && git commit -m "Nacht zurueckgedreht"
 ```
 
-Die Nacht hat sieben Zahlenfehler behoben, die heute live standen:
+Die Nacht hat sieben Zahlenfehler gefunden und behoben, die **heute live stehen** — sie sind auf dem Branch behoben, nicht in `main`:
 
 1. **Kein geratenes Glas mehr.** „Amaro Averna 2 cl" × 3 wurde als **3 ganze
    Flaschen** verbucht statt 0,09; „Sanbitter Spritz 1 Glas" als eine
