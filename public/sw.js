@@ -21,7 +21,7 @@
    Sonst behält das iPhone hartnäckig den alten Stand.
    ════════════════════════════════════════════════════════════════════ */
 
-const VERSION = "v30";
+const VERSION = "v31";
 const SPEICHER = "hh-fassung-" + VERSION;
 
 /* Was im Keller verfügbar sein muss. Die Schriften stehen mit drin,

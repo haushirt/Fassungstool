@@ -350,6 +350,73 @@ function gestaltung() {
     }
   }
 
+  /* ── Getränkeladen ──────────────────────────────────────────────────── */
+  /* Die Läufe oben rufen `start(m)` und messen den ERSTEN Schritt. Die
+     Laden 1 bis 6 liegen dahinter, hinter den Knöpfen „R 1 2 3 4 5 6" —
+     das Messgerät hat sie bis Runde 11 nie gesehen. Genau dort standen
+     aber die Kürzel, an denen gezählt wird, übereinander (Lade 4 bei
+     390 px: „Ginger Ale"/„Bitter Lemon" 3 px ineinander).
+     Gemessen wird der TINTENKASTEN des Textes (Range über den Inhalt),
+     nicht der Kasten des Elements: ein Wort, das über seine Spalte
+     hinausragt, meldet sonst niemand. */
+  const KUERZEL = `(() => {
+    const kasten = el => { const r = document.createRange();
+      r.selectNodeContents(el); const rs = [...r.getClientRects()];
+      if (!rs.length) return null;
+      return { li: Math.min(...rs.map(x => x.left)),  re: Math.max(...rs.map(x => x.right)),
+               ob: Math.min(...rs.map(x => x.top)),   un: Math.max(...rs.map(x => x.bottom)) }; };
+    const stoss = [], schnitt = [];
+    document.querySelectorAll(".drw").forEach(d => {
+      const caps = [...d.querySelectorAll(".gcap")]
+        .filter(c => c.textContent.trim() && c.getClientRects().length)
+        .map(c => ({ t: c.textContent.trim(), k: kasten(c), el: c })).filter(x => x.k);
+      for (let i = 0; i < caps.length; i++) for (let j = i + 1; j < caps.length; j++) {
+        const a = caps[i].k, b = caps[j].k;
+        const x = Math.min(a.re, b.re) - Math.max(a.li, b.li);
+        const y = Math.min(a.un, b.un) - Math.max(a.ob, b.ob);
+        if (x > 0.5 && y > 0.5) stoss.push(d.id + ": " + caps[i].t + " / " + caps[j].t +
+          " (" + x.toFixed(1) + "\\u00d7" + y.toFixed(1) + " px)");
+      }
+      /* Beschnitt durch das Kürzel selbst oder einen Behälter darüber. */
+      caps.forEach(c => { let p = c.el;
+        while (p) { const s = getComputedStyle(p);
+          if (s.overflow === "hidden" || s.overflowX === "hidden" || s.overflowY === "hidden") {
+            const r = p.getBoundingClientRect();
+            const m = Math.max(r.left - c.k.li, c.k.re - r.right,
+                               r.top - c.k.ob, c.k.un - r.bottom);
+            if (m > 0.5) { schnitt.push(d.id + ": " + c.t + " um " + m.toFixed(1) + " px"); break; }
+          }
+          p = p.parentElement; } });
+    });
+    return { stoss, schnitt };
+  })()`;
+  erg.laden = {};
+  for (const br of BREITEN) {
+    const ctx = await b.newContext(br);
+    await ctx.addInitScript(saat);
+    const p = await ctx.newPage();
+    const jsFehler = [];
+    p.on("pageerror", e => jsFehler.push(e.message));
+    await p.goto("http://127.0.0.1:8977/index.html", { waitUntil: "load" });
+    await p.waitForTimeout(500);
+    await p.evaluate(() => { if (typeof start === "function") start("tag"); });
+    await p.waitForTimeout(450);
+    const zu = p.locator("#hilfeZu");
+    if (await zu.count() && await zu.isVisible()) { await zu.click(); await p.waitForTimeout(250); }
+    for (const nr of ["R", "1", "2", "3", "4", "5", "6"]) {
+      const kn = p.locator(".statb", { hasText: new RegExp("^" + nr + "$") });
+      if (!(await kn.count())) continue;
+      await kn.first().click();
+      await p.waitForTimeout(350);
+      const k = await p.evaluate(KUERZEL);
+      k.jsFehler = jsFehler.slice();
+      erg.laden["lade-" + nr + "@" + br.name] = k;
+      if (br.name === "390")
+        await p.screenshot({ path: path.join(OUT, "app-390-lade-" + nr + ".png") });
+    }
+    await ctx.close();
+  }
+
   await b.close(); srvL.close();
 
   /* ── Urteil ─────────────────────────────────────────────────────────── */
@@ -381,6 +448,14 @@ function gestaltung() {
   urteil("Trefferflächen mindestens 44 px (Service)", griffSvc === 0,
          griffSvc + " Knöpfe ohne Griff · " + kleinSvc + " sichtbar kleiner (erlaubt)");
   urteil("Kontrast mindestens 4,5:1", schwachGes === 0, schwachGes + " Stellen");
+  let stossGes = 0, schnittGes = 0;
+  Object.entries(erg.laden || {}).forEach(([k, v]) => {
+    stossGes += v.stoss.length; schnittGes += v.schnitt.length;
+    v.stoss.slice(0, 3).forEach(s => console.log("  Kürzel stoßen " + k + ": " + s));
+    v.schnitt.slice(0, 3).forEach(s => console.log("  Kürzel beschnitten " + k + ": " + s));
+  });
+  urteil("Kürzel in den Laden überlappen einander nicht", stossGes === 0, stossGes + " Stellen");
+  urteil("kein Kürzel wird beschnitten", schnittGes === 0, schnittGes + " Stellen");
   urteil("Gestaltungsschicht in beiden Dateien wortgleich",
          erg.gestaltung.gefunden && erg.gestaltung.gleich,
          erg.gestaltung.gefunden ? (erg.gestaltung.gleich ? "wortgleich" :

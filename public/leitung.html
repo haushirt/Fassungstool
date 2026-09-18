@@ -1159,6 +1159,27 @@ function bestand(){
   return {basis, b, seit, unklar, hat:!!basis};
 }
 
+/* Die am Zähltag gelieferte, NICHT mitgerechnete Menge ist keine Fußnote
+   der Bestandsansicht: JEDE Zahl, die auf `bestand()` aufsetzt, ist um sie
+   zu niedrig — die Bestellliste, der Minus-Alarm, die Zählliste. Bis v30
+   stand der erklärende Satz nur unter „Kellerbestand", gerechnet wurde
+   überall. Damit die Angabe mitreist, stehen die drei Fragen hier an EINER
+   Stelle. Die Zahlen selbst bleiben, wie sie sind (Entscheidung Nr. 10). */
+const unklarMenge = (B,id) => (B.unklar||{})[id]||0;
+const unklarZeilenSatz = u =>
+  "Am Zähltag "+num(u)+" Flaschen geliefert — ob die Zählung sie schon "+
+  "enthält, ist nicht feststellbar. Nicht mitgerechnet.";
+/* Ein Bestand unter null, der sich vollständig aus dieser Menge erklärt,
+   ist KEIN überholter Zählstand: dieselbe Zählung plus die ausgewiesene
+   Lieferung ergäbe eine Zahl ≥ 0. „Neu zählen" wäre dort die falsche
+   Maßnahme — nachsehen, ob die Lieferung schon in der Zählung steckte,
+   ist die richtige. Getrennt wird deshalb, nicht zusammengezählt. */
+function minusGeteilt(B){
+  const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
+  const erklaert=minus.filter(w=>B.b[w.id]+unklarMenge(B,w.id)>=0);
+  return {minus, erklaert, echt:minus.filter(w=>erklaert.indexOf(w)<0)};
+}
+
 /* Verbrauch je Tag über das Fenster in EINST.tage */
 function verbrauch(){
   const heute=new Date(), grenze=new Date(heute); grenze.setDate(grenze.getDate()-EINST.tage);
@@ -1273,6 +1294,22 @@ const unklarSatz = g => "kein Abgleich möglich — " + (UNKLAR_GRUND[g] || "Ver
    eine Differenz MIT Vorbehalt ist besser als gar keine. */
 const vorbehaltSatz = v =>
   v.ohne+" von "+v.gesamt+" Positionen ohne Größe — die Differenz ist unvollständig";
+
+/* Der Befund einer GERECHNETEN Zeile — an einer Stelle für Tabelle und CSV.
+   Warum die Fallunterscheidung: Eine Zeile mit Vorbehalt sagte bis v30 bei
+   `diff 0` „stimmt" in Grün. Sie stimmt aber nicht — ein Teil des Verkaufs
+   steckt gar nicht in der Rechnung (2 gerechnete + 3 ohne Größe, 2
+   entnommen → diff 0 bei einem Drittel fehlender Rechnung). Die Null ist
+   dort keine geprüfte Null, sondern eine halbe Rechnung. Deshalb dieselbe
+   neutrale Plakette wie bei „kein Abgleich"; der Satz daneben
+   (`vorbehaltSatz`) sagt, wie viel fehlt.
+   Ab einer Differenz von 0,5 Flaschen bleibt der Befund, wie er war:
+   „kleine Abweichung"/„prüfen" behauptet nichts über Vollständigkeit,
+   sondern nennt eine Untergrenze — und die gilt mit Vorbehalt erst recht. */
+const BEFUND = r => Math.abs(r.diff)<0.5
+  ? (r.vorbehalt ? {w:"unvollständig", k:"p-grau"} : {w:"stimmt", k:"p-ok"})
+  : Math.abs(r.diff)<2 ? {w:"kleine Abweichung", k:"p-warn"}
+  : {w:"prüfen", k:"p-bad"};
 
 function abgleich(tag, spanne){
   spanne = spanne || 1;
@@ -1472,7 +1509,7 @@ function vHeute(m){
   const best=bestellliste();
   const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
   const ohneUrteil=a.zeilen.filter(r=>r.unklar).length;
-  const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
+  const minus=minusGeteilt(B);
 
   m.innerHTML=`<section>
     <h2>Mittagsblick</h2>
@@ -1531,7 +1568,16 @@ function vHeute(m){
     +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
     +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
-  else if(minus.length) fehlt.push(minus.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
+  else {
+    /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
+       Bestand, der nur deshalb unter null steht, weil die Lieferung des
+       Zähltags bewusst nicht mitgerechnet wird. Die Zählung ist dann in
+       Ordnung; es fehlt eine Angabe, keine Zählung. Deshalb zwei Sätze. */
+    if(minus.echt.length) fehlt.push(minus.echt.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
+    if(minus.erklaert.length) fehlt.push(minus.erklaert.length+" Position"+(minus.erklaert.length===1?" steht":"en stehen")
+      +" nur deshalb unter null, weil am Zähltag "+num(minus.erklaert.reduce((x,w)=>x+unklarMenge(B,w.id),0))
+      +" Flaschen geliefert wurden, die nicht mitgerechnet sind. Das ist kein Zählfehler — im Keller nachsehen.");
+  }
   if(fehlt.length){
     const s=document.createElement("section");
     s.innerHTML=`<h3>Was noch fehlt</h3><div class="hinweis warn">${fehlt.map(esc).join("<br>")}</div>`;
@@ -1591,10 +1637,11 @@ function vHeute(m){
     s3.innerHTML=`<h3>Bestellvorschlag</h3><div class="tabhuelle"><table><thead><tr>
       <th>Wein</th><th class="r">Bestand</th><th class="r">Pro Tag</th><th class="r">Reicht</th><th class="r">Kisten</th>
       </tr></thead><tbody>${best.slice(0,8).map(r=>`<tr>
-        <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}</td>
+        <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}
+          ${r.unklar?`<div class="mini">${esc(unklarZeilenSatz(r.unklar))}</div>`:""}</td>
         <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
         <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${r.reichweite===Infinity?"—":Math.floor(r.reichweite)+" T"}</span></td>
-        <td class="r"><b>${r.kisten}</b> × ${r.kg}</td></tr>`).join("")}</tbody></table></div>
+        <td class="r"><b>${esc(bestellSpanne(r))}</b> × ${r.kg}</td></tr>`).join("")}</tbody></table></div>
       <div class="reihe" style="margin-top:12px"><button class="b" id="bMehr">Alle ansehen</button></div>`;
     m.appendChild(s3);
     $("#bMehr").onclick=()=>{ SEITE="bestellen"; zeichne(); };
@@ -1726,18 +1773,17 @@ function vAbgleich(m){
       r.unklar?"—":(r.diff>0?"+":"")+num(r.diff)}</td>
     <td>${r.unklar?'<span class="befund"><span class="pill p-grau">kein Abgleich</span>'
         +'<span class="dim">'+esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")+'</span></span>'
-        /* Mit Vorbehalt: die Plakette bleibt, der Satz daneben sagt, dass
-           ein Teil des Verkaufs fehlt. Die Differenz ist damit eine
-           Untergrenze — verschwiegen wäre sie eine Behauptung. Die Hülle
+        /* Mit Vorbehalt: der Satz daneben sagt, dass ein Teil des Verkaufs
+           fehlt. Die Differenz ist damit eine Untergrenze — verschwiegen
+           wäre sie eine Behauptung. Welche Plakette dazugehört, entscheidet
+           `BEFUND`: bei Differenz 0 die neutrale, nie die grüne. Die Hülle
            `.befund` bekommt nur diese Zeile; eine Zeile ohne Vorbehalt
            sieht aus wie bisher. */
         :(pill=>r.vorbehalt
           ? '<span class="befund">'+pill
             +'<span class="dim">'+esc(vorbehaltSatz(r.vorbehalt))+'</span></span>'
           : pill)(
-           Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
-          :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
-          :'<span class="pill p-bad">prüfen</span>')}</td></tr>`;
+           (b=>'<span class="pill '+b.k+'">'+esc(b.w)+'</span>')(BEFUND(r)))}</td></tr>`;
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf Fl.</th><th class="r">Entnahme Fl.</th><th class="r">Differenz</th><th>Befund</th>
     </tr></thead><tbody>
@@ -1759,7 +1805,7 @@ function csvAbgleich(tag,a){
   a.zeilen.forEach(r=>L.push([r.name,r.art,
     r.unklar?"":num(r.verkauf), num(r.entnahme), r.unklar?"":num(r.diff),
     r.unklar?unklarSatz(r.unklar)
-      :(Math.abs(r.diff)<0.5?"stimmt":Math.abs(r.diff)<2?"kleine Abweichung":"prüfen")
+      :BEFUND(r).w                                  /* dasselbe Wort wie in der Tabelle */
        +(r.vorbehalt?" · "+vorbehaltSatz(r.vorbehalt):"")
     ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
@@ -1916,11 +1962,17 @@ function vBestand(m){
          sie schon enthält, ist nicht feststellbar. Sie sind im Bestand nicht mitgerechnet;
          der Bestand ist insoweit eher zu niedrig als zu hoch.</div></section>`);
     }
-    const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
-    if(minus.length) m.insertAdjacentHTML("beforeend",
-      `<section><div class="hinweis bad">${minus.length} Positionen stehen rechnerisch unter null.
+    /* Zwei verschiedene Lagen, zwei verschiedene Maßnahmen — siehe
+       `minusGeteilt`. Die erklärte Lage ist eine Angabe, keine Warnung. */
+    const M=minusGeteilt(B);
+    if(M.echt.length) m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis bad">${M.echt.length} Positionen stehen rechnerisch unter null.
        Entweder wurde ohne Vorgang aus dem Keller geholt, oder die Zählung ist zu alt.
        Beides löst dieselbe Maßnahme aus: neu zählen.</div></section>`);
+    if(M.erklaert.length) m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis">${M.erklaert.length} weitere Position${M.erklaert.length===1?"":"en"}
+       ${M.erklaert.length===1?"steht":"stehen"} nur deshalb unter null, weil die Lieferung vom Zähltag
+       nicht mitgerechnet ist. Das ist kein Zählfehler — im Keller nachsehen genügt.</div></section>`);
   }
 
   const zonen={};
@@ -1930,14 +1982,13 @@ function vBestand(m){
     reihen.push(`<tr class="zwt"><td colspan="7">${esc((PLAN.zonen[z]||{}).t||("Zone "+z))} · ${esc((PLAN.zonen[z]||{}).s||"")}</td></tr>`);
     zonen[z].sort((a,b)=>(PLAN.restorder[a.id]??999)-(PLAN.restorder[b.id]??999)).forEach(w=>{
       const b=B.b[w.id], pt=V.proTag[w.id]||0;
-      const u=(B.unklar||{})[w.id]||0;           /* am Zähltag geliefert, nicht mitgerechnet */
+      const u=unklarMenge(B,w.id);               /* am Zähltag geliefert, nicht mitgerechnet */
       const rw = b==null||!pt ? Infinity : (b<=0 ? 0 : b/pt);
       const soll=PLAN.soll[w.id]||0;
       const anteil=b!=null&&soll?Math.min(100,Math.round(b/(soll*4)*100)):0;
       reihen.push(`<tr>
         <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span>
-          ${u?`<div class="mini">Am Zähltag ${num(u)} Flaschen geliefert — ob die Zählung sie schon
-               enthält, ist nicht feststellbar. Nicht mitgerechnet.</div>`:""}</td>
+          ${u?`<div class="mini">${esc(unklarZeilenSatz(u))}</div>`:""}</td>
         <td class="mini">${esc(w.reb)}</td>
         <td class="r">${b==null?'<span class="dim">—</span>'
           :b<0?`<b class="neg">${num(b)}</b>`:`<b>${num(b)}</b>`}</td>
@@ -1970,10 +2021,23 @@ function bestellliste(){
     const kg=(PLAN.kiste||{})[w.id]||6;
     const ziel=Math.ceil(pt*EINST.reichweite*1.5);        /* auf anderthalb Fenster auffüllen */
     const kisten=Math.max(1, Math.ceil(Math.max(0,ziel-Math.max(0,b))/kg));
-    out.push({w, bestand:b, proTag:pt, reichweite:rw, kg, kisten});
+    /* Am Zähltag geliefert und deshalb nicht im Bestand (Entscheidung
+       Nr. 10): dieselbe Formel ein zweites Mal, mit der oberen statt der
+       unteren Zahl. Keine neue Regel — dieselbe Regel auf beide Enden
+       angewandt. Ergibt sie weniger Kisten, ist der Vorschlag eine Spanne
+       statt einer Zahl, und die Zeile sagt warum. Ohne das schlug die
+       Liste für einen Wein 11 × 12 Flaschen vor, während 16 im Keller
+       standen (Zählung 10, Lieferung 24 am selben Tag, dreimal 6 gefasst). */
+    const u=unklarMenge(B,w.id);
+    const kistenMin = u ? Math.ceil(Math.max(0,ziel-Math.max(0,b+u))/kg) : kisten;
+    out.push({w, bestand:b, proTag:pt, reichweite:rw, kg, kisten, unklar:u,
+              kistenMin:Math.min(kistenMin,kisten)});
   });
   return out.sort((a,b)=>a.reichweite-b.reichweite);
 }
+/* „5–11" statt „11", sobald die beiden Enden auseinanderfallen. */
+const bestellSpanne = (r,fl) => (x=>r.kistenMin===r.kisten
+  ? String(x(r.kisten)) : x(r.kistenMin)+"–"+x(r.kisten))(k=>fl?k*r.kg:k);
 function vBestellen(m){
   const L=bestellliste();
   m.innerHTML=`<section><h2>Nachbestellen</h2>
@@ -1988,26 +2052,35 @@ function vBestellen(m){
     <th>Wein</th><th>Winzer</th><th class="r">Bestand</th><th class="r">Pro Tag</th>
     <th class="r">Reicht</th><th class="r">Kisten</th><th class="r">Flaschen</th>
     </tr></thead><tbody>${L.map(r=>`<tr>
-      <td><b>${esc(r.w.wein)}</b> <span class="mini">${esc(r.w.jg)}</span></td>
+      <td><b>${esc(r.w.wein)}</b> <span class="mini">${esc(r.w.jg)}</span>
+        ${r.unklar?`<div class="mini">${esc(unklarZeilenSatz(r.unklar))} Vor dem Bestellen nachsehen.</div>`:""}</td>
       <td>${esc(r.w.winzer)}</td>
       <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
       <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${Math.floor(r.reichweite)} T</span></td>
-      <td class="r"><b>${r.kisten}</b> <span class="mini">à ${r.kg}</span></td>
-      <td class="r">${r.kisten*r.kg}</td></tr>`).join("")}</tbody></table></div>
+      <td class="r"><b>${esc(bestellSpanne(r))}</b> <span class="mini">à ${r.kg}</span></td>
+      <td class="r">${esc(bestellSpanne(r,true))}</td></tr>`).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:16px">
       <button class="b stark" id="bKop">Als Text kopieren</button>
       <button class="b" id="bCsv2">Als CSV</button></div>`;
   m.appendChild(s);
   $("#bKop").onclick=()=>{
+    /* Der kopierte Zettel ist das, was tatsächlich bestellt wird — die
+       Angabe muss deshalb genau hier mitreisen, nicht nur auf dem Schirm. */
     const t="Bestellvorschlag Haus Hirt · "+new Date().toLocaleDateString("de-AT")+"\n\n"+
-      L.map(r=>`${r.kisten} × ${r.kg}er  ${r.w.winzer}, ${r.w.wein} ${r.w.jg}`).join("\n");
+      L.map(r=>`${bestellSpanne(r)} × ${r.kg}er  ${r.w.winzer}, ${r.w.wein} ${r.w.jg}`
+        +(r.unklar?`\n    (${unklarZeilenSatz(r.unklar)} Vor dem Bestellen nachsehen.)`:"")).join("\n");
     navigator.clipboard.writeText(t).then(()=>toast("In die Zwischenablage kopiert"),()=>toast("Kopieren nicht möglich"));
   };
   $("#bCsv2").onclick=()=>{
     const e=s2=>'"'+String(s2??"").replace(/"/g,'""')+'"';
-    const R=[["Winzer","Wein","Jahrgang","Bestand","Verbrauch/Tag","Reichweite","Kisten","Kistengröße","Flaschen"].map(e).join(";")];
+    /* Die bisherigen Spalten bleiben, wo sie waren und was sie waren —
+       eine Spanne in der Spalte „Kisten" wäre keine Zahl mehr. Die beiden
+       neuen Spalten stehen hinten dran. */
+    const R=[["Winzer","Wein","Jahrgang","Bestand","Verbrauch/Tag","Reichweite","Kisten","Kistengröße","Flaschen",
+              "Am Zähltag geliefert (nicht mitgerechnet)","Kisten mindestens"].map(e).join(";")];
     L.forEach(r=>R.push([r.w.winzer,r.w.wein,r.w.jg,num(r.bestand),num(r.proTag),
-      Math.floor(r.reichweite),r.kisten,r.kg,r.kisten*r.kg].map(e).join(";")));
+      Math.floor(r.reichweite),r.kisten,r.kg,r.kisten*r.kg,
+      r.unklar||"",r.kistenMin].map(e).join(";")));
     hol("bestellvorschlag.csv","\uFEFF"+R.join("\r\n"),"text/csv");
   };
 }
@@ -2188,13 +2261,25 @@ function zaehlliste(){
   const dif={}; A.zeilen.forEach(r=>dif[r.id]=r.diff);
   const out=[];
   WINES.forEach(w=>{
-    const b=B.b[w.id], d=dif[w.id]||0, pt=V.proTag[w.id]||0;
+    const b=B.b[w.id], d=dif[w.id]||0, pt=V.proTag[w.id]||0, u=unklarMenge(B,w.id);
     let grund=null, rang=9;
-    if(b!=null && b<0){ grund="rechnerisch unter null"; rang=0; }
+    /* Zählen ist hier genau die richtige Maßnahme — sie beendet die
+       Ungewissheit über die Lieferung vom Zähltag. Der Grund muss sie aber
+       beim Namen nennen: „rechnerisch unter null" allein liest sich wie
+       Schwund, und Rang 0 (rot) stellte den Wein vor die echten Minusse.
+       Die Zahl selbst bleibt unverändert (Entscheidung Nr. 10). */
+    if(b!=null && b<0){
+      const satz=u?" — am Zähltag "+num(u)+" Fl. geliefert, nicht mitgerechnet":"";
+      /* Deckt die ausgewiesene Lieferung das Minus ganz, ist es keins;
+         deckt sie es nur teilweise, bleibt Rang 0 — die Angabe reist
+         trotzdem mit. */
+      if(u && b+u>=0){ grund=satz.replace(" — ",""); rang=1; }
+      else { grund="rechnerisch unter null"+satz; rang=0; }
+    }
     else if(Math.abs(d)>=3){ grund="Verkauf und Entnahme "+num(Math.abs(d))+" Fl. auseinander"; rang=1; }
     else if(b!=null && b<6 && pt>0){ grund="unter einer Reihe"; rang=2; }
     if(!grund) return;
-    out.push({w, bestand:b, diff:d, grund, rang});
+    out.push({w, bestand:b, diff:d, grund, rang, unklar:u});
   });
   return out.sort((a,b)=>a.rang-b.rang || Math.abs(b.diff)-Math.abs(a.diff));
 }

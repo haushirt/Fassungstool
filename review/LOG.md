@@ -2392,3 +2392,66 @@ Menge nicht; erfasster Zählzeitpunkt statt Ankunftszeit.
 
 **STATUS:** VERBESSERUNGEN — Fall 7 ist entschärft und ausgewiesen; offen
 bleiben der erfasste Zählzeitpunkt und die Angabe in der Bestellliste.
+
+---
+
+### Runde 12 – software-engineer (der A-Fund der dritten Jagd)
+
+**Kritik am Vorgänger (Runde 11, dieselbe Rolle):**
+* ✅ übernommen: Die Selbstauskunft von Runde 11 („`bestellliste` und
+  Mittagsblick rechnen auf der niedrigeren Zahl") war richtig und untertrieben.
+  Nachgestellt: Die Bestellliste schlug **11 × 12 = 132 Flaschen** vor, während
+  16 im Keller standen; der Mittagsblick sagte „die Zählung ist überholt. Neu
+  zählen", obwohl die Zählung stimmte; die Zählliste gab Rang 0.
+* ↩️ geändert: Entscheidung Nr. 10 war nur in `bestand()` und `vBestand`
+  durchgezogen. Die Angabe steht jetzt an EINER Stelle (`unklarMenge`,
+  `unklarZeilenSatz`, `minusGeteilt`) und wird von vier Ansichten gelesen,
+  statt viermal neu formuliert zu werden.
+* ↩️ geändert: Eine Zeile mit Vorbehalt bekam bei `diff 0` die grüne Plakette
+  „stimmt". Der Befund kommt jetzt aus einer Funktion (`BEFUND`), die Tabelle
+  und die CSV lesen dieselbe.
+
+**Umgesetzt:**
+1. **Die nicht gerechnete Menge reist mit** — Bestellliste (Zeile, Spanne,
+   kopierter Zettel, zwei neue CSV-Spalten), Mittagsblick, Minus-Alarm
+   (getrennt in „neu zählen" und „kein Zählfehler"), Zählliste (erklärtes Minus
+   fällt von Rang 0 auf 1, halb gedecktes bleibt Rang 0 und nennt die Menge).
+2. **Keine grüne Plakette unter Vorbehalt** — bei `|diff| < 0,5` mit Vorbehalt
+   steht „unvollständig" statt „stimmt".
+3. **Kürzel im Getränkefach** — `.gcap` folgt der Zeilenhöhe statt 15 px;
+   schmale Spalten setzen die Kürzel versetzt, die Marke wird nach gemessener
+   Spaltenbreite gesetzt. Schrift bleibt 15 px. `tests/ui-mass.cjs` fährt jetzt
+   die Laden R/1–6 ab und urteilt über die Tintenkästen der Kürzel.
+   `sw.js` v30 → v31.
+
+**Vorher/Nachher, gemessen:** Bestellliste 132 Flaschen ohne ein Wort →
+120–132 mit „Am Zähltag 24 Flaschen geliefert … Vor dem Bestellen nachsehen".
+Mittagsblick „Zählung überholt, neu zählen" → „kein Zählfehler — im Keller
+nachsehen". Befund mit Vorbehalt bei diff 0: grün „stimmt" → grau
+„unvollständig". Lade 4 bei 390 px: 3 Überlappungen (3,0 / 3,9 / 3,0 px) → 0.
+Kürzelbeschnitt: 9 Kürzel um 2,0 px → 0.
+
+**Was sich anderswo bewegt (ausdrücklich genannt):** Die vorgeschlagene
+Kistenzahl sinkt nie, neu ist nur die Untergrenze. Die Zahl im roten Banner
+wird um die erklärten Positionen kleiner; sie stehen in einem eigenen,
+neutralen Satz. Die Zählliste sortiert anders, kein Bestand ändert sich.
+`bestellvorschlag.csv` hat zwei Spalten mehr, hinten angehängt.
+
+**Geprüft:** `npm test` **286 grün** (vorher 275), dreimal hintereinander und
+unter drei Zeitzonen. `durchstich` 35/35 · `ui-leitung-echt` 40/40 ·
+`ui-zweiter-vorgang` 15/15 · `ui-fremdgeraet` 10/10 ·
+`LAUF=runde-12 node tests/ui-mass.cjs` alle **8** Urteile ✓ (zwei neu). Die
+beiden neuen Urteile wurden gegen den vorigen Stand gegengeprüft: dort fallen
+sie — der Prüfstein beißt.
+**Ungeprüft:** echtes Safari/iPad; der kopierte Zettel der Zählliste trägt
+weiterhin keinen Grund; der Mittagsblick nennt bei nur teilweise gedecktem
+Minus die gelieferte Menge nicht; das Druck-Layout mit der neuen Kürzelhöhe.
+
+**Phase/Thema:** A / Auskunft der ausgewiesenen Lieferung, Befund mit
+Vorbehalt, Kürzel im Getränkefach
+
+**Backlog:** neu unter „niedrig": Zettel der Zählliste ohne Grund; Randspalte
+im Getränkefach 1 px vom Rand; Mittagsblick bei halb gedecktem Minus.
+
+**STATUS:** VERBESSERUNGEN — die drei Punkte sind erledigt und gemessen; offen
+bleibt der erfasste Zählzeitpunkt, ein Umbau über App und Worker.

@@ -1238,8 +1238,13 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 /* Eine Zeile, abgeschnitten. Das Bild sagt ohnehin, was in der Flasche ist. */
 /* Je Stapel steht das Kuerzel nur unter der untersten Flasche. Die leeren
    Kuerzel darueber reservierten trotzdem Hoehe und zogen den Stapel auf. */
+/* Die Hoehe war mit 15px an die alte Schriftgroesse geheftet. Seit
+   --text-xs auf 15px steht, braucht die Zeile 15 x 1,25 = 18,75px — das
+   Kuerzel wurde unten beschnitten, „Fritsch (Karl)" verlor die Klammern.
+   Jetzt folgt die Hoehe der Zeile, nicht einer festen Zahl. */
 .gcap{font-size:var(--text-xs);line-height:var(--leading-tight);text-align:center;
- color:var(--fg-secondary);margin-top:var(--space-1);height:15px;padding:0 1px;
+ color:var(--fg-secondary);margin-top:var(--space-1);padding:0 1px;
+ height:calc(var(--text-xs) * var(--leading-tight));
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;max-width:100%}
 /* Nur in den Spaltenladen verschwindet ein leeres Kuerzel. Im Fach
    haelt es die Grundlinie \u2014 sonst rutschen Saeulen ohne
@@ -1251,6 +1256,32 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
    „Ginger Ale" zu „Ginge / r Ale". Feste Höhe hält die Grundlinien bündig. */
 .drwi .gcol .gcap{white-space:normal;overflow:visible;height:auto;min-height:26px;
  line-height:1.2;overflow-wrap:normal;word-break:normal;hyphens:manual}
+/* Sehr schmale Spalten: Lade 4 · Mischgetränke hat acht Spalten und damit
+   34 px je Spalte. „Ginger", „Bitter", „Lemon" sind bei 15 px Schrift je
+   46–47 px breit — jedes Kürzel ragte beidseitig über seine Spalte und
+   überlappte den Nachbarn um 3–4 px (gemessen: Ginger Ale/Bitter Lemon 3,0,
+   Bitter Lemon/Tonic TH 3,9, Ginger Beer/Gast. 0,25 3,0). Auf dem Schirm
+   las sich das als „GingerBitter / LemonTH", und an genau dieser
+   Beschriftung wird gezählt. Kleiner setzen ist verboten (15 px ist die
+   Untergrenze im Service), „Ginge-r" zu trennen hilft niemandem.
+   Also Platz statt Schrumpfen: jede zweite Spalte schreibt eine Zeile
+   tiefer. Waagrechte Nachbarn stehen damit nie auf derselben Linie, und
+   jedem Kürzel stehen zwei Spaltenbreiten zur Verfügung. Beide Gruppen
+   reservieren gleich viel Höhe (Polster oben ODER unten) — die Standlinie
+   der Flaschen verschiebt sich nicht. Gesetzt wird die Marke `gversetzt`
+   in `gFit()`, und zwar nach der GEMESSENEN Spaltenbreite: die breiten
+   Laden 5 und 6 brauchen den Versatz nicht und bekommen ihn nicht. */
+/* Feste Hoehe, nicht min-height: bei border-box waere ein einzeiliges
+   Kuerzel sonst niedriger als ein zweizeiliges, und weil die Spalten unten
+   buendig stehen (align-items:flex-end), saenken die kurzen Spalten mitsamt
+   ihren Flaschen ab. Vier Zeilen: zwei fuer die eigene Gruppe, zwei als
+   Polster fuer die andere. */
+.drwi.gversetzt .gcol .gcap{width:200%;max-width:none;min-height:0;
+ line-height:var(--leading-tight);
+ height:calc(var(--text-xs) * var(--leading-tight) * 4);
+ padding-bottom:calc(var(--text-xs) * var(--leading-tight) * 2)}
+.drwi.gversetzt .gcol:nth-child(even) .gcap{padding-bottom:0;
+ padding-top:calc(var(--text-xs) * var(--leading-tight) * 2)}
 
 /* Fächer in einer Lade: eigener Kasten, waagrechte Reihen. */
 .fach{margin:var(--space-3) var(--space-3) 0;border:1px solid var(--border-strong);
@@ -3532,6 +3563,12 @@ function gFit(box,L){
   const inner=box.querySelector(L.kind==="col"?".drwi":".rsec");if(!inner)return;
   const cols=L.cols,k=cols.length;
   const M=gMasse(cols,innenBreite(inner,k));
+  /* Passt das laengste WORT eines Kuerzels nicht mehr in die Spalte, ragt
+     es beidseitig hinaus und ueberlappt den Nachbarn (Lade 4: 34 px Spalte,
+     „Ginger"/„Bitter"/„Lemon" je 46-47 px). Dann schreiben die Kuerzel
+     versetzt, siehe `.drwi.gversetzt`. 40 px ist die gemessene Grenze:
+     Lade 5 und 6 haben 48 px und kommen ohne Versatz aus. */
+  inner.classList.toggle("gversetzt", Math.floor(innenBreite(inner,k)/k) < 40);
   cols.forEach(c=>{
     const teile=colTeile(c),ges=colSum(c),platz=colPlatz(c);
     /* Obergrenze 34 statt 52: Lade 2 und 3 haben wenige, kurze Saeulen und
