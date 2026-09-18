@@ -104,7 +104,13 @@
   --font:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px;
+  /* Im Keller wird nichts unter 15px gelesen — Kunstlicht, kalte Finger,
+     Flasche in der anderen Hand. Die beiden kleinen Grade sind deshalb
+     für den FINGER auf 15px gehoben; die Rangfolge macht dort Gewicht,
+     Farbe und Laufweite, nicht mehr die Größe. Am Schreibtisch
+     (data-dichte="maus") gelten weiter 11/13px — dort zählt Dichte, und
+     die Leitung sitzt vor einem MacBook, nicht im Keller. */
+  --text-xs:15px; --text-sm:15px; --text-md:15px; --text-base:16px;
   --text-lg:19px; --text-display:28px;
   --leading-tight:1.25; --leading-normal:1.45;
   --weight-regular:400; --weight-medium:600; --weight-bold:700;
@@ -133,7 +139,8 @@
 
 /* Maus statt Finger: dieselben Bauteile, engere Geometrie. */
 [data-dichte="maus"]{
-  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px
+  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px;
+  --text-xs:11px; --text-sm:13px
 }
 /* Auf schmalen Schirmen zählt wieder der Finger — auch im Backoffice. */
 @media(max-width:900px){
@@ -405,16 +412,28 @@ header{background:var(--accent);color:var(--fg-on-dark);
    und wurden rechts abgeschnitten. Punkte skalieren, Text sagt wo man ist. */
 .steps{display:flex;align-items:center;gap:var(--space-3);
   margin-top:var(--space-2);height:36px}
-.stpts{display:flex;gap:6px;flex-shrink:0}
-.st{width:10px;height:10px;padding:0;border:0;border-radius:50%;
+/* Bis v27 lagen die Punkte 6px auseinander; die Trefferflaeche war
+   24x44 und die der Nachbarn lag darin — wer im Keller Schritt 3 wollte,
+   traf Schritt 2. Jetzt steht jeder Punkt in einer eigenen 44px-Zelle
+   (Rand 17px links und rechts, Abstand 0). Die Linie dahinter haelt die
+   Punkte optisch zusammen und zeigt den Weg durch die Schritte. */
+.stpts{display:flex;gap:0;flex-shrink:0;position:relative}
+.stpts::before{content:"";position:absolute;left:23px;right:23px;top:50%;
+  height:2px;margin-top:-1px;border-radius:1px;
+  background:var(--border-on-dark)}
+.st{width:10px;height:10px;padding:0;border:0;border-radius:50%;margin:0 18px;
   background:var(--surface-on-dark);cursor:pointer;flex-shrink:0;
   transition:background var(--dur-fast) var(--ease),box-shadow var(--dur-fast) var(--ease)}
 .st.done{background:var(--success-on-dark)}
 .st[aria-selected="true"]{background:var(--fg-on-dark);
   box-shadow:0 0 0 3px var(--border-on-dark)}
-/* Trefferflaeche bleibt 44px, der Punkt bleibt klein. */
-.stpts .st{position:relative}
-.stpts .st::after{content:"";position:absolute;inset:-17px -7px}
+/* Trefferflaeche 46x46, der Punkt bleibt klein. Warum 46 und nicht 44:
+   Die Zellen stossen aneinander. Bei genau 44 liegt der Rand des einen
+   Griffs auf dem Rand des naechsten, und ein Druck genau auf die Naht
+   gehoert rechnerisch beiden — ein Pixel Luft macht die Zuordnung
+   eindeutig, auch fuer die Messung. */
+.stpts .st{position:relative;z-index:1}
+.stpts .st::after{content:"";position:absolute;inset:-18px}
 .stlbl{font-size:var(--text-sm);font-weight:var(--weight-medium);
   color:var(--fg-on-dark-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -544,7 +563,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 
 /* Konsum-Zähler */
 .knum{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
-.kminus,.kplus{width:40px;height:var(--tap-min);border:1px solid var(--border-strong);
+.kminus,.kplus{width:var(--tap-min);height:var(--tap-min);border:1px solid var(--border-strong);
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-lg);
   color:var(--fg-muted);cursor:pointer;line-height:1;
   transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
@@ -557,13 +576,25 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .cnt.on{border-color:var(--fg);color:var(--fg);background:var(--surface-3)}
 
 /* Punkte und Häkchen */
-.dots{display:flex;gap:var(--space-2);align-items:center;flex-shrink:0;
+/* Der Abstand zwischen den Punkten ist hier keine Zierde, sondern die
+   Trefferflaeche: 26px Punkt + 20px Abstand = 46px Raster. Jeder Punkt
+   traegt seinen Griff in einem ::after (inset -9px), die Griffe stossen
+   aneinander und ueberlappen nicht — ein Fehlgriff faellt also nicht auf
+   den Nachbarn. Mehr als vier Punkte brechen um, statt den Namen des
+   Weins zu zerdruecken; die Zeilen der Punkte liegen 20px auseinander,
+   damit auch senkrecht kein Griff in den naechsten laeuft. */
+.dots{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:20px;
+  align-items:center;flex-shrink:0;max-width:210px;
   padding:var(--space-3) 0;cursor:pointer}
 /* Drei volle schwarze Kreise je Zeile waren die groesste optische Last der
    Liste und trugen die kleinste Information: alle sagten dasselbe. Als Ring
    bleibt die Aussage, das Gewicht geht weg. Geometrie unveraendert. */
-.dot{width:26px;height:26px;border-radius:50%;background:transparent;
+.dot{position:relative;width:26px;height:26px;border-radius:50%;background:transparent;
   border:2px solid var(--accent);box-shadow:inset 0 0 0 20px var(--accent-ring)}
+/* inset rechnet gegen die POLSTERkante: der 2px-Rahmen faellt heraus.
+   -12px auf 22px Polsterkasten ergeben 46px Griff — die 44px des Hauses
+   und ein Pixel Luft zum Nachbarn. */
+.dot::after{content:"";position:absolute;inset:-12px}
 .dot.off{background:none;border:2px dashed var(--border-heavy);box-shadow:none}
 /* Rot wird nur, was fehlt. Die vorhandenen Flaschen derselben Zeile
    bleiben ruhig — sonst schreit die ganze Zeile, obwohl nur eine
@@ -991,6 +1022,24 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   font-size:var(--text-md);line-height:var(--leading-normal)}
 .fernzeile b{display:block;font-weight:var(--weight-medium);margin-bottom:2px}
 
+/* Die dritte Wahl in einer Frage — „Trotzdem neu beginnen“ — stand bis v27
+   als graue Kleinschrift mitten im Textkoerper: 36px hoch, ohne Rahmen,
+   ohne Flaeche. Sie sah aus wie eine Bildunterschrift und nicht wie etwas,
+   das man druecken kann; ihre Folge stand drei Zeilen darueber in einem
+   eigenen Absatz. Jetzt ist sie ein Knopf ueber die ganze Breite, traegt
+   ihre Folge in der zweiten Zeile und hat denselben 44px-Griff wie jeder
+   andere Knopf im Keller. Der Name ist NICHT `.wahl` — das ist in der
+   geteilten Gestaltungsschicht das Auswahlfeld. */
+.andererweg{display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  width:100%;min-height:var(--tap-min);margin:var(--space-5) 0 0;
+  padding:var(--space-3) var(--space-4);text-align:left;cursor:pointer;
+  background:var(--surface-2);border:1px solid var(--border-strong);
+  border-radius:var(--radius-ctl);color:var(--fg);font:inherit}
+.andererweg b{font-weight:var(--weight-medium);font-size:var(--text-md)}
+.andererweg span{font-size:var(--text-sm);color:var(--fg-muted);
+  line-height:var(--leading-normal)}
+.andererweg:active{background:var(--surface-3)}
+
 /* ═══════════════ Hilfe-Sheet ═══════════════
    Ersetzt die zwei Dauerzeilen über dem Inhalt. Beides steht jetzt an
    einer Stelle, und die Liste beginnt rund 180px weiter oben. */
@@ -1134,7 +1183,11 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .gbtn b{display:block;font-size:var(--text-base);font-weight:var(--weight-medium)}
 .gbtn.getr b{font-size:var(--text-md)}
 .gbtn span.s{display:block;font-size:var(--text-sm);color:var(--fg-muted);margin-top:2px}
-.gbtn .go2{margin-left:auto;color:var(--fg-subtle);font-size:var(--text-lg)}
+/* Kein font-size hier: das Zeichen › traegt sein Bild im Mask-Bild der
+   Regel oben, die dafuer font-size:0 setzt. Stand hier eine Groesse, kam
+   das Textzeichen zusaetzlich zur Grafik durch — in eigener Farbe auf
+   eigenem Grund, also mit 1:1 Kontrast. */
+.gbtn .go2{margin-left:auto;color:var(--fg-subtle)}
 
 /* ── Lade ── */
 .drw{margin:var(--space-4) 0 0;border:1px solid var(--border-heavy);
@@ -2268,13 +2321,16 @@ function start(m){
     const weiter=()=>{ $("#ov").classList.remove("on"); $("#ovOk").textContent="Ja";
       start._zweiter=true; start(m); start._zweiter=false; };
     $("#ovT").textContent=MODES[m].t+" für "+deTag(cur.tag)+" steht schon";
+    /* Drei Wege, drei Bedienelemente — und jedes sagt seine Folge selbst.
+       Die Folge des zweiten Weges stand vorher als eigener Absatz weit
+       über dem Knopf; wer den Knopf las, las sie nicht mehr. */
     $("#ovBody").innerHTML=`<p>Für diesen Tag ist ${esc(MODES[m].t)} bereits
       abgeschlossen – ${esc(kurzInhalt(m,cur))}.</p>
       <p><b>Ergänzen</b> führt ihn fort. Was du jetzt dazunimmst, kommt
       dazu; der Tag behält einen Vorgang, und nichts geht verloren.</p>
-      <p>Ein zweiter, leerer Vorgang würde den ersten ersetzen – seine
-      Flaschen wären danach aus dem Bestand zurückgenommen.</p>
-      <button class="btn btn--leise btn--klein" id="ovNeu">Trotzdem neu beginnen</button>`;
+      <button class="andererweg" id="ovNeu"><b>Trotzdem neu beginnen</b>
+      <span>Der zweite, leere Vorgang ersetzt den ersten – seine Flaschen
+      wären danach aus dem Bestand zurückgenommen.</span></button>`;
     $("#ov").classList.add("on");
     $("#ovOk").textContent="Ergänzen";
     $("#ovOk").onclick=()=>{ cur.finished=false; save(); weiter(); };

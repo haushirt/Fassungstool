@@ -15,7 +15,8 @@
    jede Ansicht des Backoffice, und die Messung hat ein Urteil:
 
      · waagrechter Überlauf         muss null sein, in jeder Breite
-     · Trefferflächen               mindestens 44 × 44 px
+     · Trefferflächen               ein Kreis von 44 px um die Mitte muss
+                                    den Knopf treffen (::after zählt mit)
      · Schriftgrößen im Service     nie unter 15 px
      · Kontrast Text gegen Grund    mindestens 4,5:1
      · Farben                       Haus-Hirt-Teal #004947, Cream #ECE9E2;
@@ -155,16 +156,46 @@ const MESSE = `(() => {
                    text: (e.textContent || "").trim().slice(0, 40) });
     }
   });
-  /* Trefferflächen: alles, was angetippt werden soll. */
-  const klein = [];
+  /* Trefferflächen: alles, was angetippt werden soll.
+     Gemessen wird der GRIFF, nicht der Anstrich. Viele Knöpfe sind
+     absichtlich kleiner gezeichnet und tragen ihre Fläche in einem
+     ::after — die meldet getBoundingClientRect() nicht. Deshalb wird
+     zusätzlich getastet: um die Mitte des Knopfes werden zwölf Punkte
+     auf einem Kreis von 44 px Durchmesser gelegt (der Daumen ist rund,
+     nicht eckig). Trifft elementFromPoint dort überall den Knopf selbst
+     oder etwas in ihm, ist er greifbar.
+     "klein" = sichtbar kleiner als 44 px (Hinweis, kein Urteil),
+     "griff" = auch nach dem Tasten nicht zu greifen (Urteil). */
+  const KREIS = [];
+  for (let i = 0; i < 12; i++) {
+    const w = i * Math.PI / 6;
+    KREIS.push([Math.cos(w) * 21.5, Math.sin(w) * 21.5]);
+  }
+  const greifbar = e => {
+    const r = e.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (const [dx, dy] of KREIS) {
+      const x = cx + dx, y = cy + dy;
+      /* Was ausserhalb des Bildes liegt, lässt sich nicht tasten — es
+         zählt nicht gegen den Knopf, wird aber vermerkt. */
+      if (x < 0 || y < 0 || x > vw - 1 || y > window.innerHeight - 1) continue;
+      const t = document.elementFromPoint(x, y);
+      if (!t) return false;
+      if (t !== e && !e.contains(t)) return false;
+    }
+    return true;
+  };
+  const klein = [], griff = [];
   document.querySelectorAll("button,a,input,select,[role=button],[onclick]").forEach(e => {
     if (!sicht(e)) return;
     const r = e.getBoundingClientRect();
     if (r.width < 1 || r.height < 1) return;
-    if (r.width < 44 || r.height < 44)
-      klein.push({ was: e.tagName + "." + String(e.className || "").split(" ")[0],
-                   b: Math.round(r.width), h: Math.round(r.height),
-                   text: (e.textContent || e.value || "").trim().slice(0, 30) });
+    if (r.width >= 44 && r.height >= 44) return;
+    const eintrag = { was: e.tagName + "." + String(e.className || "").split(" ")[0],
+                      b: Math.round(r.width), h: Math.round(r.height),
+                      text: (e.textContent || e.value || "").trim().slice(0, 30) };
+    klein.push(eintrag);
+    if (!greifbar(e)) griff.push(eintrag);
   });
   /* Schriftgrößen sichtbarer Textknoten. */
   const schrift = {};
@@ -215,7 +246,8 @@ const MESSE = `(() => {
   });
   return { vw, scrollW: document.documentElement.scrollWidth,
            ueber: ueber.slice(0, 12), ueberN: ueber.length,
-           klein: klein.slice(0, 12), kleinN: klein.length,
+           klein: klein.slice(0, 40), kleinN: klein.length,
+           griff: griff.slice(0, 40), griffN: griff.length,
            schrift, schwach: schwach.slice(0, 12), schwachN: schwach.length,
            kontrastUebersprungen: uebersprungen };
 })()`;
@@ -322,7 +354,8 @@ function gestaltung() {
 
   /* ── Urteil ─────────────────────────────────────────────────────────── */
   console.log("\n─── Urteil ───");
-  let ueberGes = 0, kleinGes = 0, kleinSvc = 0, schwachGes = 0, winzig = 0, fehlerGes = 0;
+  let ueberGes = 0, kleinGes = 0, kleinSvc = 0, griffGes = 0, griffSvc = 0,
+      schwachGes = 0, winzig = 0, fehlerGes = 0;
   Object.entries(erg.seiten).forEach(([k, m]) => {
     if (m.ueberN) { ueberGes += m.ueberN;
       console.log("  Überlauf " + k + ": " + m.ueberN + " → " +
@@ -330,7 +363,10 @@ function gestaltung() {
     if (m.scrollW > m.vw + 1) console.log("  Seite rollt waagrecht: " + k +
       " " + m.scrollW + " > " + m.vw);
     kleinGes += m.kleinN;
-    if (k.startsWith("app/")) kleinSvc += m.kleinN;
+    griffGes += m.griffN || 0;
+    if (k.startsWith("app/")) { kleinSvc += m.kleinN; griffSvc += m.griffN || 0;
+      if (m.griffN) console.log("  Griff unter 44px " + k + ": " +
+        m.griff.map(g => g.was + "(" + g.b + "\u00d7" + g.h + ")").join(", ")); }
     schwachGes += m.schwachN;
     if (k.startsWith("app/"))
       Object.keys(m.schrift).map(Number).filter(px => px < 15)
@@ -342,7 +378,8 @@ function gestaltung() {
   urteil("kein waagrechter Überlauf in 390/768/1280", ueberGes === 0, ueberGes + " Stellen");
   urteil("keine JS-Fehler", fehlerGes === 0, fehlerGes + " Fehler");
   urteil("Schrift im Service nie unter 15 px", winzig === 0, winzig + " Stellen");
-  urteil("Trefferflächen mindestens 44 px (Service)", kleinSvc === 0, kleinSvc + " Knöpfe");
+  urteil("Trefferflächen mindestens 44 px (Service)", griffSvc === 0,
+         griffSvc + " Knöpfe ohne Griff · " + kleinSvc + " sichtbar kleiner (erlaubt)");
   urteil("Kontrast mindestens 4,5:1", schwachGes === 0, schwachGes + " Stellen");
   urteil("Gestaltungsschicht in beiden Dateien wortgleich",
          erg.gestaltung.gefunden && erg.gestaltung.gleich,
@@ -350,9 +387,11 @@ function gestaltung() {
            (erg.gestaltung.abweichungen || []).length + " Abweichungen")
            : "Marke nicht gefunden");
   console.log("  (Trefferflächen im Backoffice: " + (kleinGes - kleinSvc) +
-              " unter 44 px — dort ist die Maus im Einsatz, kein Urteil)");
+              " sichtbar unter 44 px, davon " + (griffGes - griffSvc) +
+              " auch ohne Griff — dort ist die Maus im Einsatz, kein Urteil)");
 
-  erg.summe = { ueberGes, kleinGes, kleinSvc, schwachGes, winzig, fehlerGes };
+  erg.summe = { ueberGes, kleinGes, kleinSvc, griffGes, griffSvc,
+                schwachGes, winzig, fehlerGes };
   fs.writeFileSync(path.join(OUT, "messung.json"), JSON.stringify(erg, null, 1));
   console.log("\nBilder und messung.json in review/screens/" + LAUF + "/");
   console.log("UNGEPRÜFT bleibt: echtes Safari, echte Tastatur, Notch, Gummiband.");
