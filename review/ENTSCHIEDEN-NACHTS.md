@@ -500,3 +500,39 @@ führen, ist ein Umbau und gehört in den Morgenbrief, nicht in diese Nacht.
 **Betrifft:** `public/leitung.html` (`bestand`), `src/index.js` (`bestand`)
 **Aufwand zum Zurückdrehen:** 15 Minuten.
 *vorläufig, revidierbar*
+
+---
+
+### 11 · Der Merge — Gate erfüllt, trotzdem nicht gemergt
+
+**Entschieden:** Kein Merge nach `main`. Der Stand bleibt auf
+`claude/optimistic-feynman-o7jsgy` und liegt als Pull Request bereit.
+
+**Der Stand der Dinge zum Zeitpunkt der Entscheidung (03:52 Uhr):** Alle sieben
+Punkte des Merge-Gates waren erfüllt — 286 Prüfungen grün (dreimal, drei
+Zeitzonen, nichts übersprungen), der Jäger meldete null A- und null B-Funde,
+der Messlauf alle acht Urteile ✓, `/api/ping` unverändert in Form und Antwort,
+`sw.js` von v24 auf v31, der Diff berührt nichts aus der Ausschlussliste
+(nachgesehen: `public/`, `tests/`, und in `src/index.js` nur `bestand()` plus
+ein Kommentar), und es war vor fünf Uhr.
+
+**Warum trotzdem nicht:** Die gesamte Oberflächenarbeit dieser Nacht — Griffe
+über `::after`, versetzte Kürzel im Getränkefach, geänderte Ladenhöhen,
+Schriftgrade — ist **ausschließlich in Chromium** belegt. Der Service arbeitet
+auf iPhone und iPad. Ein Merge zieht `v31` automatisch auf alle Geräte; der
+Erste, der einen Fehler auf echtem Safari sähe, stünde mit einer Flasche in der
+Hand im Keller. Zwischen „ich merge um vier" und „Casimir merged um acht, nach
+zehn Minuten auf dem eigenen Telefon" liegt fast kein Zeitgewinn, aber ein
+ganzer Abendservice Unterschied.
+
+Dazu kommt die Erfahrung dieser Nacht: Drei Runden hintereinander haben
+Folgefehler erzeugt, jede aus einer richtigen Absicht. Der letzte Zug ist
+zwanzig Minuten alt und hat in vier Ansichten Zahlen bewegt. Das Gate sagt
+„mergen ist erlaubt, wenn …" — nicht „muss".
+
+**Was daraus folgt:** Die iPhone-Prüfliste in `review/MORGENBRIEF.md` steht vor
+dem Merge, nicht danach. Sie kostet zehn Minuten.
+
+**Aufwand zum Zurückdrehen:** keiner — es ist nichts passiert. Merge = ein
+Klick im Pull Request.
+*vorläufig, revidierbar*
