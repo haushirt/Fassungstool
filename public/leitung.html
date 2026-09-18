@@ -392,6 +392,26 @@ section{margin-bottom:var(--space-8)}
    die Huelle selbst die Scrollflaeche, und die Koepfe bleiben stehen. */
 .tabhuelle{background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius-lg);max-height:70vh;overflow:auto}
+/* Runde 15 · Der neue Code nach dem Zurücksetzen. Er ist genau einmal zu
+   sehen, also legt er sich über alles und geht erst weg, wenn jemand
+   „Notiert" drückt. Die Ziffern gross und in der Zifferschrift — sie
+   werden abgeschrieben, nicht gelesen. */
+.pinzeig{position:fixed;inset:0;z-index:90;display:flex;align-items:center;
+  justify-content:center;padding:var(--space-4);
+  background:rgba(28,34,32,.55)}
+.pinzeig-karte{background:var(--surface);border-radius:var(--radius-lg);
+  padding:var(--space-6);max-width:420px;width:100%;text-align:center;
+  box-shadow:var(--shadow-overlay)}
+.pinzeig-wer{margin:0 0 var(--space-3);color:var(--fg-muted);
+  font-size:var(--text-sm)}
+.pinzeig-wer b{color:var(--fg);font-weight:var(--weight-medium)}
+.pinzeig-zahl{margin:0 0 var(--space-4);font-family:var(--mono);
+  font-size:44px;font-weight:var(--weight-bold);letter-spacing:.18em;
+  color:var(--accent);font-variant-numeric:tabular-nums}
+.pinzeig-warn{margin:0 0 var(--space-5);font-size:var(--text-sm);
+  color:var(--warn-fg);background:var(--warn-bg);
+  border:1px solid var(--warn-border);border-radius:var(--radius-md);
+  padding:var(--space-3);line-height:var(--leading-normal)}
 th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);
   font-size:var(--text-sm);vertical-align:middle}
 th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
@@ -2549,7 +2569,7 @@ function vTeam(m){
         <span class="deutung" id="nHint">${esc(RECHTETEXT.service)}</span></div>
       <div class="reihe" style="margin-bottom:16px">
         <label style="width:140px">Code</label>
-        <input type="text" id="nCode" placeholder="sechs bis acht Ziffern" maxlength="8"
+        <input type="text" id="nCode" placeholder="vier Ziffern" maxlength="4"
           inputmode="numeric" style="width:180px">
         <button class="b klein" id="nWuerfel">Vorschlagen</button></div>
       <div class="reihe">
@@ -2560,29 +2580,28 @@ function vTeam(m){
 
   $("#nRolle").onchange=e=>{ $("#nHint").textContent=RECHTETEXT[e.target.value]||""; };
   $("#nWuerfel").onclick=()=>{
-    /* Sechs Ziffern statt vier: die vier ersten Codes des Hauses sind aus
-       der Geschichte des Anhangs bekannt und werden ersetzt. Der Vorschlag
-       darf nicht wieder vierstellig sein, sonst schlägt die Taste genau
-       das vor, was nicht mehr sein soll.
-       Der Rest einer 32-Bit-Zahl geteilt durch 900000 bevorzugt die
+    /* Runde 15: wieder vier Ziffern, 0000 bis 9999.
+       Der Rest einer 32-Bit-Zahl geteilt durch 10000 bevorzugt die
        niedrigen Werte leicht; was über der letzten vollen Runde liegt,
        wird deshalb verworfen und neu gewürfelt. */
-    const a=new Uint32Array(1), spanne=900000;
+    const a=new Uint32Array(1), spanne=10000;
     const grenze=Math.floor(4294967296/spanne)*spanne;
     do{ crypto.getRandomValues(a); }while(a[0]>=grenze);
-    $("#nCode").value=String(100000+(a[0]%spanne));
+    $("#nCode").value=String(a[0]%spanne).padStart(4,"0");
   };
 
   let LEUTE=[];
   const male=()=>{
     $("#teamL").innerHTML=LEUTE.length?`<div class="tabhuelle"><table><thead><tr>
       <th>Name</th><th style="width:200px">Rolle</th><th>Sieht</th><th style="width:120px">Zustand</th>
+      <th style="width:150px">Code</th>
       </tr></thead><tbody>${LEUTE.map(p=>`<tr>
         <td><b>${esc(p.name)}</b></td>
         <td><select class="klein" data-rp="${esc(p.id)}">${Object.keys(ROLLNAME).map(k=>
           `<option value="${k}"${p.rolle===k?" selected":""}>${ROLLNAME[k]}</option>`).join("")}</select></td>
         <td class="deutung">${esc(RECHTETEXT[p.rolle]||"")}</td>
         <td><button class="b klein" data-ap="${esc(p.id)}">${p.aktiv?"Sperren":"Freigeben"}</button></td>
+        <td><button class="b klein" data-pin="${esc(p.id)}">PIN zurücksetzen</button></td>
       </tr>`).join("")}</tbody></table></div>`
       :`<div class="karte leer">Noch niemand angelegt.</div>`;
     $("#teamL").querySelectorAll("[data-rp]").forEach(sel=>sel.onchange=()=>{
@@ -2602,6 +2621,43 @@ function vTeam(m){
          && LEUTE.filter(x=>x.aktiv && x.rolle==="leitung").length<2)
         return toast("Das ist die einzige freigegebene Leitung. Erst eine zweite anlegen.");
       sende({id:p.id,name:p.name,rolle:p.rolle,aktiv:p.aktiv?0:1});});
+    /* Runde 15 · PIN zurücksetzen. Der neue Code wird vom Server gewürfelt
+       und kommt GENAU EINMAL zurück — er steht nirgends sonst, auch nicht
+       in der Datenbank (dort liegt nur die Prüfsumme). Deshalb bleibt er
+       stehen, bis die Leitung ihn wegklickt, und wird nicht in einem Toast
+       nach drei Sekunden weggewischt. */
+    $("#teamL").querySelectorAll("[data-pin]").forEach(b=>b.onclick=async()=>{
+      const p=LEUTE.find(x=>x.id===b.dataset.pin);
+      if(!p)return;
+      if(!confirm("Neuen Code für "+p.name+" würfeln?\n\n"+
+        "Der alte gilt danach nicht mehr. Der neue ist nur EINMAL zu sehen."))return;
+      b.disabled=true;
+      try{
+        const r=await fetch("/api/person/pin",{method:"POST",
+          headers:{"content-type":"application/json"},
+          body:JSON.stringify({id:p.id})});
+        const j=await r.json();
+        if(!r.ok){ b.disabled=false; return toast(j.fehler||"Nicht zurückgesetzt"); }
+        zeigePin(p.name, j.pin);
+      }catch(e){ toast("Keine Verbindung"); }
+      b.disabled=false;
+    });
+  };
+  /* Der neue Code, gross und genau einmal. Kein Speichern, kein zweites
+     Anzeigen, kein Log — wer ihn hier nicht notiert, würfelt neu. */
+  const zeigePin=(name,pin)=>{
+    const w=document.createElement("div");
+    w.className="pinzeig";
+    w.innerHTML=`<div class="pinzeig-karte" role="dialog" aria-modal="true"
+        aria-label="Neuer Code für ${esc(name)}">
+      <p class="pinzeig-wer">Neuer Code für <b>${esc(name)}</b></p>
+      <p class="pinzeig-zahl">${esc(pin)}</p>
+      <p class="pinzeig-warn">Nur jetzt zu sehen. Notiere ihn und gib ihn
+        weiter — er lässt sich nicht noch einmal anzeigen.</p>
+      <button class="b stark">Notiert</button></div>`;
+    w.querySelector("button").onclick=()=>w.remove();
+    document.body.appendChild(w);
+    w.querySelector("button").focus();
   };
   const hole=async()=>{
     try{
@@ -2634,7 +2690,7 @@ function vTeam(m){
   $("#nAdd").onclick=()=>{
     const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();
     if(!nm) return toast("Ohne Namen geht es nicht");
-    if(!/^\d{6,8}$/.test(code)) return toast("Der Code hat sechs bis acht Ziffern");
+    if(!/^\d{4}$/.test(code)) return toast("Der Code hat vier Ziffern");
     const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
     sende({id:da?da.id:undefined, name:nm, rolle:$("#nRolle").value, code, aktiv:1});
     $("#nName").value=""; $("#nCode").value="";

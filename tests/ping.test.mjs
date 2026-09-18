@@ -40,7 +40,7 @@ describe("/api/ping", () => {
     assert.equal(vorher.anlage, true, "mit ANLAGE_OFFEN meldet ping es auch");
 
     await worker.fetch(anfrage("/api/anlage", { method: "POST",
-      body: { name: "Ilse", rolle: "leitung", code: "400071" } }), env);
+      body: { name: "Ilse", rolle: "leitung", code: "4007" } }), env);
 
     const nachher = await (await worker.fetch(anfrage("/api/ping"), env)).json();
     assert.equal(nachher.personen, 1);

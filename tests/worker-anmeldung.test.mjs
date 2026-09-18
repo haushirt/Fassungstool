@@ -12,7 +12,7 @@ import { randomInt } from "node:crypto";
    keine erfundene Ziffernfolge je zufällig mit einem Code aus dem Haus
    zusammenfallen und für immer in der Geschichte stehen (Regel 9).
    `tests/durchstich.cjs` macht es seit Runde 3 so. */
-const wuerfel = (n = 6) => String(randomInt(10 ** (n - 1), 10 ** n));
+const wuerfel = (n = 4) => String(randomInt(10 ** (n - 1), 10 ** n));
 const CODE_LEITUNG = wuerfel();
 let CODE_SERVICE = wuerfel(); while (CODE_SERVICE === CODE_LEITUNG) CODE_SERVICE = wuerfel();
 /* Ein Code, den es nicht gibt — für die Fehlversuche. Sieben Ziffern
@@ -85,6 +85,52 @@ describe("Anmeldung", () => {
     assert.equal((await anmelden(env, CODE_LEITUNG)).status, 429);
     assert.equal((await anmelden(env, CODE_LEITUNG, "10.0.0.2")).status, 200,
       "ein zweites Haus, eine zweite IP, bleibt offen");
+  });
+
+  /* Runde 15 · Die Sperre staffelt. Seit der Code vier Stellen hat, ist sie
+     der einzige Schutz — zehntausend Möglichkeiten sind sonst an einem
+     Abend durch. Die ersten zehn Fehlversuche kosten eine Viertelstunde,
+     die nächsten zehn eine halbe, danach eine ganze. */
+  test("die zweite Sperre dauert doppelt so lang wie die erste", async () => {
+    const env = await haus();
+    for (let i = 0; i < 10; i++) await anmelden(env, CODE_FALSCH);
+    const erste = await (await anmelden(env, CODE_FALSCH)).json();
+    const dauerErste = erste.wartenBis - Date.now();
+    assert.ok(dauerErste > 14 * 60 * 1000 && dauerErste <= 15 * 60 * 1000 + 2000,
+      "die erste Sperre ist keine Viertelstunde: " + Math.round(dauerErste / 1000) + " s");
+
+    /* Zehn weitere Fehlversuche — die Sperre selbst zählt nicht mit, sie
+       antwortet ja mit 429, bevor irgendetwas gerechnet wird. Also direkt
+       in die Tabelle, so wie die Zeilen dort stünden. */
+    for (let i = 0; i < 10; i++)
+      env.DB.sql("INSERT INTO anmeldeversuch (ip, ts, ok) VALUES (?, ?, 0)",
+                 "10.0.0.1", Date.now());
+    const zweite = await (await anmelden(env, CODE_FALSCH)).json();
+    const dauerZweite = zweite.wartenBis - Date.now();
+    assert.ok(dauerZweite > 29 * 60 * 1000,
+      "die zweite Sperre ist keine halbe Stunde: " + Math.round(dauerZweite / 1000) + " s");
+  });
+
+  test("die dritte Stufe ist die letzte — eine Stunde, nicht mehr", async () => {
+    const env = await haus();
+    for (let i = 0; i < 100; i++)
+      env.DB.sql("INSERT INTO anmeldeversuch (ip, ts, ok) VALUES (?, ?, 0)",
+                 "10.0.0.1", Date.now());
+    const j = await (await anmelden(env, CODE_FALSCH)).json();
+    const dauer = j.wartenBis - Date.now();
+    assert.ok(dauer > 59 * 60 * 1000 && dauer <= 60 * 60 * 1000 + 2000,
+      "bei hundert Fehlversuchen ist die Sperre nicht eine Stunde: "
+      + Math.round(dauer / 1000) + " s");
+  });
+
+  test("alte Fehlversuche zählen nicht ewig mit", async () => {
+    const env = await haus();
+    /* Zwölf Fehlversuche, aber drei Stunden alt — ausserhalb des
+       Gedächtnisses. Wer heute davorsteht, kommt hinein. */
+    for (let i = 0; i < 12; i++)
+      env.DB.sql("INSERT INTO anmeldeversuch (ip, ts, ok) VALUES (?, ?, 0)",
+                 "10.0.0.1", Date.now() - 3 * 60 * 60 * 1000);
+    assert.equal((await anmelden(env, CODE_LEITUNG)).status, 200);
   });
 
   test("geglückte Anmeldung räumt die Fehlversuche ihrer IP weg", async () => {
@@ -170,53 +216,132 @@ describe("Codevergabe", () => {
   const anlegen = (env, code, name = "Neu") => worker.fetch(
     anfrage("/api/anlage", { method: "POST", body: { name, rolle: "service", code } }), env);
 
-  test("vier oder fünf Ziffern: 422 mit einem lesbaren Satz", async () => {
+  test("drei oder fünf Ziffern: 422 mit einem lesbaren Satz", async () => {
     const env = await haus();
-    for (const kurz of [wuerfel(4), wuerfel(5)]) {
-      const a = await anlegen(env, kurz);
-      assert.equal(a.status, 422, kurz);
-      assert.match((await a.json()).fehler, /sechs bis acht Ziffern/);
+    for (const falsch of [wuerfel(3), wuerfel(5)]) {
+      const a = await anlegen(env, falsch);
+      assert.equal(a.status, 422, falsch);
+      assert.match((await a.json()).fehler, /genau 4 Ziffern/);
     }
     assert.equal(env.DB.zeilen("person").length, 2, "keine Zeile dazugekommen");
   });
 
   test("Buchstaben oder Leerzeichen: 422, nicht 500", async () => {
     const env = await haus();
-    for (const falsch of ["abcdef", "12 34 56", wuerfel(9), ""]) {
+    for (const falsch of ["abcd", "1 23", wuerfel(9), ""]) {
       const a = await anlegen(env, falsch);
       assert.equal(a.status, 422, JSON.stringify(falsch));
     }
   });
 
-  test("sechs und acht Ziffern gehen — und melden sich danach an", async () => {
+  test("vier Ziffern gehen — und melden sich danach an", async () => {
     const env = await haus();
-    for (const [name, code] of [["Sechs", wuerfel(6)], ["Acht", wuerfel(8)]]) {
-      assert.equal((await anlegen(env, code, name)).status, 200, name);
-      const an = await anmelden(env, code, "10.0.0." + code.length);
-      assert.equal(an.status, 200, name + " kommt hinein");
-      assert.equal((await an.json()).name, name);
-    }
+    const code = wuerfel();
+    assert.equal((await anlegen(env, code, "Vier")).status, 200);
+    const an = await anmelden(env, code, "10.0.0.44");
+    assert.equal(an.status, 200, "kommt hinein");
+    assert.equal((await an.json()).name, "Vier");
   });
 
-  test("ein Code aus der Zeit davor kommt weiter hinein, bis er ersetzt ist",
-    async () => {
-      /* Sonst wäre die Umstellung eine geschlossene Tür: Wer die neuen
-         Codes vergeben will, muss sich vorher mit dem alten anmelden
-         können. Die Zeile wird deshalb an `personSchreiben` vorbei
-         gesetzt — genau so steht sie heute in der Live-D1. */
-      const alt = wuerfel(4);
-      const salt = Buffer.from("altes salz 16 B.").toString("base64");
-      const k = await crypto.subtle.importKey(
-        "raw", new TextEncoder().encode(alt), "PBKDF2", false, ["deriveBits"]);
-      const bits = await crypto.subtle.deriveBits(
-        { name: "PBKDF2", hash: "SHA-256", salt: Buffer.from(salt, "base64"),
-          iterations: 1000 }, k, 256);
-      const DB = d1Echt({ person: [{ id: "alt", name: "Vorher", rolle: "leitung",
-        code_hash: Buffer.from(bits).toString("base64"), salt, aktiv: 1,
-        angelegt: Date.now() }] });
-      const env = { DB, TOKEN_SECRET: "pruefgeheimnis" };
-      const a = await anmelden(env, alt);
-      assert.equal(a.status, 200, "der alte Code wird nicht mehr angenommen");
-      assert.equal((await a.json()).rolle, "leitung");
-    });
+  /* Runde 15 · Der Weg zurück von sechs auf vier Stellen.
+     Die Länge wird nur beim VERGEBEN geprüft. Wessen Prüfsumme zu einem
+     längeren Code gehört, kommt weiter hinein — sonst wäre die Umstellung
+     eine geschlossene Tür für genau die Person, die neue Codes vergeben
+     soll. Die Zeile wird deshalb an `personSchreiben` vorbei gesetzt,
+     genau so, wie sie heute in der Live-D1 steht. */
+  test("ein längerer Code von früher kommt weiter hinein", async () => {
+    const alt = wuerfel(6);
+    const salt = Buffer.from("altes salz 16 B.").toString("base64");
+    const k = await crypto.subtle.importKey(
+      "raw", new TextEncoder().encode(alt), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", hash: "SHA-256", salt: Buffer.from(salt, "base64"),
+        iterations: 1000 }, k, 256);
+    const DB = d1Echt({ person: [{ id: "alt", name: "Vorher", rolle: "leitung",
+      code_hash: Buffer.from(bits).toString("base64"), salt, aktiv: 1,
+      angelegt: Date.now() }] });
+    const env = { DB, TOKEN_SECRET: "pruefgeheimnis" };
+    const a = await anmelden(env, alt);
+    assert.equal(a.status, 200, "der längere Code wird nicht mehr angenommen");
+    assert.equal((await a.json()).rolle, "leitung");
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   Runde 15 · PIN zurücksetzen
+
+   Der neue Code wird vom Server gewürfelt, GENAU EINMAL zurückgegeben und
+   nur als Prüfsumme gespeichert. Diese Prüfungen halten den Wert nirgends
+   fest, sie prüfen die Form und die Wirkung (harte Regel 9).           */
+
+describe("PIN zurücksetzen", () => {
+  const zuruecksetzen = (env, id, keks) => worker.fetch(
+    anfrage("/api/person/pin", { method: "POST", body: { id }, keks }), env);
+
+  const alsLeitung = async env => keksAus(await anmelden(env, CODE_LEITUNG));
+
+  test("nur die Leitung darf", async () => {
+    const env = await haus();
+    const p = env.DB.zeilen("person").find(x => x.name === "Asad");
+    assert.equal((await zuruecksetzen(env, p.id)).status, 401, "ohne Anmeldung");
+    const service = keksAus(await anmelden(env, CODE_SERVICE, "10.0.0.9"));
+    assert.equal((await zuruecksetzen(env, p.id, service)).status, 403, "als Service");
+  });
+
+  test("gibt einen Code der richtigen Länge zurück, genau einmal", async () => {
+    const env = await haus();
+    const keks = await alsLeitung(env);
+    const p = env.DB.zeilen("person").find(x => x.name === "Asad");
+    const a = await zuruecksetzen(env, p.id, keks);
+    assert.equal(a.status, 200);
+    const j = await a.json();
+    assert.match(String(j.pin), /^\d{4}$/, "der neue Code hat nicht vier Ziffern");
+    assert.equal(j.name, "Asad");
+  });
+
+  test("gespeichert wird nur die Prüfsumme, und sie ist eine neue", async () => {
+    const env = await haus();
+    const keks = await alsLeitung(env);
+    const vorher = env.DB.zeilen("person").find(x => x.name === "Asad");
+    const j = await (await zuruecksetzen(env, vorher.id, keks)).json();
+    const nachher = env.DB.zeilen("person").find(x => x.name === "Asad");
+
+    assert.notEqual(nachher.code_hash, vorher.code_hash, "die Prüfsumme ist dieselbe");
+    assert.notEqual(nachher.salt, vorher.salt, "das Salz ist dasselbe");
+    /* Nirgends in der Zeile steht der Code im Klartext. */
+    assert.equal(JSON.stringify(nachher).includes(j.pin), false,
+      "der neue Code steht im Klartext in der Datenbank");
+  });
+
+  test("der neue Code kommt hinein, der alte nicht mehr", async () => {
+    const env = await haus();
+    const keks = await alsLeitung(env);
+    const p = env.DB.zeilen("person").find(x => x.name === "Asad");
+    const j = await (await zuruecksetzen(env, p.id, keks)).json();
+
+    const alt = await anmelden(env, CODE_SERVICE, "10.0.0.7");
+    assert.equal(alt.status, 401, "der alte Code kommt noch hinein");
+    const neu = await anmelden(env, j.pin, "10.0.0.8");
+    assert.equal(neu.status, 200, "der neue Code kommt nicht hinein");
+    assert.equal((await neu.json()).name, "Asad");
+  });
+
+  test("der gewürfelte Code kollidiert nicht mit einem anderen", async () => {
+    /* Beim Anmelden wird jeder Code gegen JEDE Person gerechnet. Zwei
+       Personen mit demselben Code hiessen: die erste gewinnt, und im
+       Protokoll steht der falsche Name. Bei vier Ziffern ist das kein
+       Gedankenspiel — geprüft wird, dass der Worker neu würfelt. */
+    const env = await haus();
+    const keks = await alsLeitung(env);
+    const p = env.DB.zeilen("person").find(x => x.name === "Asad");
+    const j = await (await zuruecksetzen(env, p.id, keks)).json();
+    assert.notEqual(j.pin, CODE_LEITUNG, "derselbe Code wie die Leitung");
+  });
+
+  test("eine unbekannte Person ist ein 404, kein 500", async () => {
+    const env = await haus();
+    const keks = await alsLeitung(env);
+    assert.equal((await zuruecksetzen(env, "gibtsnicht", keks)).status, 404);
+    assert.equal((await zuruecksetzen(env, "", keks)).status, 422);
+  });
 });

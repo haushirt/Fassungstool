@@ -37,9 +37,9 @@ function bruch(muster, meldung = "D1_ERROR: no such column: menge") {
 async function haus(db) {
   const env = { DB: db, TOKEN_SECRET: "pruefgeheimnis", ANLAGE_OFFEN: "1" };
   await worker.fetch(anfrage("/api/anlage",
-    { method: "POST", body: { name: "Asad", rolle: "leitung", code: "400071" } }), env);
+    { method: "POST", body: { name: "Asad", rolle: "leitung", code: "4007" } }), env);
   const a = await worker.fetch(anfrage("/api/anmelden",
-    { method: "POST", body: { code: "400071" } }), env);
+    { method: "POST", body: { code: "4007" } }), env);
   return { env, keks: keksAus(a) };
 }
 
@@ -87,7 +87,7 @@ describe("Datenbankfehler im Router", () => {
   test("/api/anmelden: ein Fehler sperrt niemanden aus, er wird gemeldet", async () => {
     const env = { DB: bruch(/FROM anmeldeversuch/), TOKEN_SECRET: "x", ANLAGE_OFFEN: "1" };
     const r = await worker.fetch(anfrage("/api/anmelden",
-      { method: "POST", body: { code: "000000" } }), env);
+      { method: "POST", body: { code: "0000" } }), env);
     assert.equal(r.status, 500);
     assert.match(logs.join("\n"), /\/api\/anmelden/);
   });

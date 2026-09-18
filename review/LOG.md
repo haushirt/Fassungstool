@@ -2635,3 +2635,16 @@ mit seinem persönlichen Code heraus.
 **Phase/Thema:** Oberfläche / Sonderentnahme, Startseite
 **Backlog:** elf Punkte aus beiden Agentenberichten eingetragen.
 **STATUS:** FERTIG
+
+### Runde 15 – PIN und Anmeldeseite
+**Kritik am Vorgänger:** Der Kommentar bei `MIN=4, MAX=8` (index.html) und die Prüfung `^\d{6,8}$` im Worker begründeten die Länge mit den vier ersten Codes des Hauses, die aus der Geschichte des Anhangs bekannt waren ✅ übernommen — die Begründung trug, die Bedienung nicht; jetzt vier Stellen und die Sperre als Gegengewicht. · Die Länge stand an sieben Stellen in drei Dateien ↩️ geändert: eine Konstante je Datei (`PIN_LAENGE`), die Prüfungen halten sie aufeinander. · `.login h1` und `.login .sub` aus dem alten Startbild hätten den neuen Kopf überschrieben (gleiche Spezifität, später in der Datei) ✅ gefunden und mit `.login .akopf h1` abgefangen.
+**Umgesetzt:**
+- PIN systemweit auf vier Stellen: App, Backoffice, Worker, Tests. Bestehende Prüfsummen bleiben gültig — geprüft wird die Länge nur beim Vergeben.
+- Anmeldeseite neu (Variante A): Kopf in der Hausfarbe, ein Satz statt drei, vier Felder, Tastatur (Ziffern, Rücktaste, Eingabetaste), Absenden nach der vierten Ziffer.
+- „PIN zurücksetzen" je Person im Backoffice: der Worker würfelt, speichert nur die Prüfsumme und gibt den Klartext genau einmal zurück; er wird gegen alle anderen Personen auf Dopplung geprüft.
+- Sperre gestaffelt: 10 Fehlversuche → 15 min, weitere 10 → 30, danach 60. Gedächtnis zwei Stunden, keine Schemaänderung.
+**Geprüft:** `npm test` 370/370 (25 in `worker-anmeldung`, davon 6 neu fürs Zurücksetzen, 3 für die Staffelung). `node tests/ui-nachjagd.cjs` 30/30 — die 7 neuen sind gegen den Stand davor nachweislich ROT (6 Felder statt 4, kein `PIN_LAENGE`, kein Kopf, Tastatur ohne Wirkung). `LAUF=runde15 node tests/ui-mass.cjs` zehn von zehn. Belege `review/screens/r15/` und `review/screens/geraete/r15/`, Mockup in `review/mockup/`, Bögen 18–22.
+**Für die Nächsten:** Die Sperre zählt weiter pro IP. Das Staffeln verlängert das Aussperren des Hauses, es verhindert es nicht — der Vorschlag (pro Gerät zählen, `geraetId()` gibt es schon) steht mit Priorität hoch im Backlog und braucht eine Migration.
+**Phase/Thema:** Anmeldung / PIN
+**Backlog:** ein Punkt hoch (Sperre pro Gerät), einer mittel (vier Stellen sind zehntausend Möglichkeiten — die Staffelung ist das Einzige, was dagegensteht).
+**STATUS:** FERTIG

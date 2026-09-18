@@ -53,7 +53,7 @@ const PORT = 8934;
    zusammenfallen, und es steht nichts Codeartiges in der Geschichte
    (Regel 9). Sechs Ziffern, wie sie der Worker seit dem 17.09. verlangt —
    mit vier lässt sich keine Person mehr anlegen. */
-const CODE = String(require("crypto").randomInt(100000, 1000000));
+const CODE = String(require("crypto").randomInt(1000, 10000));
 
 let fehler = 0, geprueft = 0;
 const ok = (satz, bedingung, dazu) => {

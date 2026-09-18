@@ -25,7 +25,7 @@ const RUNDE = process.env.RUNDE || "2";
    erfundene Ziffernfolge je zufällig mit einem Code aus dem Haus
    zusammenfallen und für immer in der Geschichte stehen (Regel 9).
    Sechs Ziffern, wie sie der Worker seit dem 17.09. verlangt. */
-const wuerfel = () => String(require("crypto").randomInt(100000, 1000000));
+const wuerfel = () => String(require("crypto").randomInt(1000, 10000));
 const CODE = wuerfel();
 let FALSCH = wuerfel(); while (FALSCH === CODE) FALSCH = wuerfel();
 

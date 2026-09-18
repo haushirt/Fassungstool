@@ -214,3 +214,7 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 - **niedrig** · `ringMasse()` deckelt die Ringspalte nicht. Bei einem Soll über 4 stünden feste Spalten breiter als das Fenster. Heute unerreichbar (höchstes Soll einer Zählzeile ist 3).
 - **niedrig** · `sw.js`: `activate` räumt den alten Vorrat auch dann, wenn `install` bei wackligem Netz nichts sammeln konnte.
 - **niedrig** · CLAUDE.md widerspricht sich: harte Regel 1 nennt `v2-review`, der Abschnitt „Arbeitsweise" sagt eigener Branch. Ein `v2-review` gibt es weder lokal noch auf origin. Entscheidung von Casimir.
+
+## Runde 15 (18.09.2026) · PIN
+- **hoch** · Die Anmeldesperre zählt pro IP (`src/index.js`, `cf-connecting-ip`). Im Haus-WLAN teilen sich alle Geräte eine — zehn Vertipper an der Bar sperren den Keller mit aus, auch jemanden, der seinen Code weiß. Vorschlag: pro GERÄT zählen (`geraetId()` in index.html führt längst eine dauerhafte Kennung, sie müsste bei der Anmeldung mitgeschickt werden), die IP nur als lockerer Deckel gegen Fremde. Braucht eine additive Spalte auf `anmeldeversuch`, also eine Migration.
+- **mittel** · Vier Stellen sind zehntausend Möglichkeiten, und jeder Code wird gegen jede Person gerechnet: bei zehn Personen trifft ein geratener Code rechnerisch einen von tausend Versuchen. Die gestaffelte Sperre ist das Einzige, was dagegensteht. Falls das Haus wächst, gehört die Anmeldung auf Name + PIN umgestellt — dann muss ein Code zu EINER Person passen.

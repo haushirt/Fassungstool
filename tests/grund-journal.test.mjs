@@ -24,7 +24,7 @@ import assert from "node:assert/strict";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
 import { d1Echt, SCHEMA_DA } from "./hilfe/d1-echt.mjs";
 
-const CODE = "418823";
+const CODE = "4188";
 let worker;
 before(async () => { worker = await ladeWorker(); });
 

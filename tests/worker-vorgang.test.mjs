@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
 import { d1Echt } from "./hilfe/d1-echt.mjs";
 
-const CODE = "551907";               /* nur in dieser Prüfung */
+const CODE = "5519";               /* nur in dieser Prüfung */
 let worker;
 before(async () => { worker = await ladeWorker(); });
 

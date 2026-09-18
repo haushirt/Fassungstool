@@ -20,7 +20,7 @@ import { lies } from "./hilfe/dateien.mjs";
 
 const TAG = "2026-09-16";
 const SCHLUESSEL = "ware_" + TAG;
-const CODE = "882014";                 /* nur in dieser Prüfung */
+const CODE = "8820";                 /* nur in dieser Prüfung */
 let worker;
 before(async () => { worker = await ladeWorker(); });
 
