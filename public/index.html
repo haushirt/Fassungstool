@@ -317,7 +317,13 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
   cursor:pointer;text-decoration:none;min-height:var(--tap-min);
   padding:0 var(--space-4);border-radius:var(--radius-md)}
 .adminlink:active,.explesser button:active,.wechseln:active{background:var(--surface-3)}
-.adminlink{display:block;margin:var(--space-7) auto 0}
+/* „Backoffice" ist seit F5 ein echter Link (<a>), kein Knopf: er fuehrt
+   auf eine andere Seite, und ein Link laesst sich halten, teilen und in
+   einem neuen Tab oeffnen. Die Form bleibt die der dritten Knopfstufe;
+   die Trefferflaeche haengt an min-height (44 px) und braucht dafuer
+   display:flex statt block — ein Inline-Element nimmt keine Hoehe an. */
+.adminlink{display:flex;align-items:center;justify-content:center;
+  margin:var(--space-7) auto 0;width:fit-content}
 .explesser button.del{color:var(--danger)}
 
 /* ═══════════════ Eingabefelder ═══════════════
@@ -342,7 +348,11 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .gq,.gnum,.fachn,.rhd i,td.r,th.r{font-variant-numeric:tabular-nums}
 
 /* ═══════════════ Menü ═══════════════ */
-.menu{padding:var(--space-6) var(--space-4) var(--space-8);max-width:var(--maxw);margin:0 auto}
+/* F6: Die Startseite hat keinen <header>; ihr Titel „Haus Hirt" stand
+   deshalb genauso unter der Statusleiste. Gleiches Polster, gleiche
+   Regel. */
+.menu{padding:calc(var(--space-6) + env(safe-area-inset-top)) var(--space-4) var(--space-8);
+  max-width:var(--maxw);margin:0 auto}
 .menu h1{font-size:var(--text-lg);margin:0 0 var(--space-1);letter-spacing:-.01em}
 .menu .sub{color:var(--fg-muted);font-size:var(--text-sm);margin:0 0 var(--space-6)}
 .mgrp{font-size:var(--text-xs);font-weight:var(--weight-medium);letter-spacing:var(--track-caps);
@@ -380,8 +390,15 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 
 /* ═══════════════ Kopf ═══════════════ */
 .topwrap{position:sticky;top:0;z-index:var(--z-top)}
+/* F6 (18.09.2026): Der Kopf lag unter Uhrzeit, Mobilfunk-, WLAN- und
+   Batteriesymbol. Die Seite laeuft als Web-App mit
+   `apple-mobile-web-app-status-bar-style=black-translucent`: die
+   Statusleiste liegt dann UEBER dem Inhalt, und ohne Polster steht der
+   Titel darunter. `viewport-fit=cover` im meta-Tag ist die Bedingung
+   dafuer, dass env() ueberhaupt eine Zahl liefert — ohne das ist es 0.
+   Auf einem Schirm ohne Notch bleibt es bei 12 px. */
 header{background:var(--accent);color:var(--fg-on-dark);
-  padding:var(--space-2) var(--space-4) 0}
+  padding:max(12px,env(safe-area-inset-top)) var(--space-4) 0}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3)}
 .hd h1{margin:0;font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
   letter-spacing:.01em}
@@ -471,6 +488,9 @@ header{background:var(--accent);color:var(--fg-on-dark);
 .bedien .hwb dd{margin:0;color:var(--fg-muted)}
 
 main{padding:0 var(--space-4) var(--space-8);position:relative}
+/* Traegt der Inhalt selbst schon eine Zurueck/Weiter-Leiste mit eigenem
+   Rand nach unten, braucht <main> kein zweites Polster von 40 px. */
+main:has(.navrow){padding-bottom:var(--space-3)}
 main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 
 /* ═══════════════ Sprungleiste ═══════════════ */
@@ -493,8 +513,15 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .lgt{font-size:var(--text-xs);font-weight:var(--weight-bold);letter-spacing:var(--track-caps);
   text-transform:uppercase;display:flex;align-items:center;gap:var(--space-2)}
 .lgs{font-size:var(--text-sm);color:var(--fg-muted);margin-top:var(--space-1)}
-.stat{display:flex;gap:var(--space-1);padding:var(--space-3) 0 var(--space-1)}
-.statb{flex:1;min-width:34px;height:var(--tap-min);border-radius:var(--radius-md);
+/* Die Stationsleiste (R · 1 … 6) traegt sieben Knoepfe. Bei 320 px blieben
+   davon 38 px je Knopf — unter den 44 px des Hauses, gemessen erst, seit
+   ui-mass.cjs auch 320 px prueft. Sie bricht deshalb um, statt zu
+   schrumpfen: zwei Zeilen sind kein Schoenheitsfehler, ein Fehlgriff im
+   Keller schon. */
+.stat{display:flex;flex-wrap:wrap;gap:var(--space-1);
+  padding:var(--space-3) 0 var(--space-1)}
+.statb{flex:1 1 var(--tap-min);min-width:var(--tap-min);height:var(--tap-min);
+  border-radius:var(--radius-md);
   border:1px solid var(--border-strong);background:var(--surface);font:inherit;
   font-size:var(--text-sm);font-weight:var(--weight-bold);color:var(--fg-subtle);cursor:pointer;
   transition:background var(--dur-fast) var(--ease),
@@ -535,14 +562,30 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .grpanchor{scroll-margin-top:calc(var(--topH) + var(--space-2))}
 
 /* ═══════════════ Zeile ═══════════════ */
-.w{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);
-  padding:var(--space-3) 0;display:flex;align-items:center;gap:var(--space-3);cursor:pointer;
+/* F3 · Die Zaehlringe fluchten.
+   --dotsp ist das Raster der Ringe: 26 px Ring + 20 px Abstand = 46 px
+   Trefferflaeche. Drei Ringe sind die groesste Zahl, die im Plan
+   nebeneinander vorkommt (3 x 26 + 2 x 20 = 118). Mehr bricht um — die
+   Spalte bleibt gleich breit, damit der erste Ring seine x-Position nie
+   verlaesst. */
+.w{--dotsp:118px;
+  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);
+  padding:var(--space-3) 0;cursor:pointer;
+  display:grid;grid-template-columns:minmax(0,1fr) var(--dotsp) 24px auto;
+  align-items:center;column-gap:var(--space-2);
   transition:background var(--dur-fast) var(--ease)}
 .w:active{background:var(--surface-3)}
+.wtx{display:flex;align-items:center;gap:11px;min-width:0}
 .w .tx{flex:1;min-width:0}
 /* Winzer als Vorzeile, Wein als Zeile. Vorher stand beides gleich gross
    nebeneinander und brach bei 390px in fast jeder Zeile um. */
-.nm{display:block;font-size:var(--text-base);line-height:1.32}
+/* Die Namensspalte ist seit F3 fest begrenzt (der Rest der Zeile gehoert
+   den Ringen). Bei 320 px bleiben ihr rund 78 px — „Carnuntum" ist breiter
+   als das. Getrennt wird deshalb automatisch, und was sich nicht trennen
+   laesst, bricht hart um. Ueber den Ring laufen darf der Name nie: an ihm
+   wird gezaehlt. */
+.nm{display:block;font-size:var(--text-base);line-height:1.32;
+  overflow-wrap:anywhere;hyphens:auto}
 .nm b{display:block;font-size:var(--text-xs);font-weight:var(--weight-medium);
   text-transform:uppercase;letter-spacing:var(--track-caps);color:var(--fg-muted);
   line-height:1.3}
@@ -584,12 +627,22 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
    sechste dazu, bricht die Reihe um (max-width), statt den Namen des
    Weins zu zerdruecken. Die Zeilen der Punkte liegen dann 20px
    auseinander, damit auch senkrecht kein Griff in den naechsten laeuft. */
-.dots{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:20px;
-  align-items:center;flex-shrink:0;max-width:210px;
+/* Linksbuendig, nicht mehr rechtsbuendig: „Die Ringe beginnen in JEDER
+   Zeile an derselben x-Position" heisst, dass der ERSTE Ring die Marke
+   setzt — bei einer Zeile mit einer Flasche genauso wie bei einer mit
+   dreien. */
+.dots{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:20px;
+  align-items:center;width:var(--dotsp);
   padding:var(--space-3) 0;cursor:pointer}
 /* Drei volle schwarze Kreise je Zeile waren die groesste optische Last der
    Liste und trugen die kleinste Information: alle sagten dasselbe. Als Ring
    bleibt die Aussage, das Gewicht geht weg. Geometrie unveraendert. */
+/* Bei 320 px (iPhone SE) blieben der Namensspalte neben drei Ringen nur
+   78 px — „GLATZER" brach dann mitten im Wort um. Dort stehen zwei Ringe
+   nebeneinander und der dritte eine Zeile tiefer: die Spalte wird schmaler,
+   die x-Position des ERSTEN Rings bleibt, und der Name behaelt seine
+   Zeilen. Das Raster von 46 px bleibt unangetastet. */
+@media (max-width:360px){ .w{--dotsp:72px} }
 .dot{position:relative;width:26px;height:26px;border-radius:50%;background:transparent;
   border:2px solid var(--accent);box-shadow:inset 0 0 0 20px var(--accent-ring)}
 /* inset rechnet gegen die POLSTERkante: der 2px-Rahmen faellt heraus.
@@ -603,7 +656,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .dot.fehlt,.w.miss .dot.off{border-color:var(--danger);border-style:dashed;
   box-shadow:inset 0 0 0 20px var(--danger-ring)}
 .miss-n{font-size:var(--text-sm);font-weight:var(--weight-bold);color:var(--danger-fg);
-  margin-left:var(--space-1);min-width:22px;text-align:right}
+  text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .chkbox{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
 .chk{width:var(--tap-min);height:var(--tap-min);border:2px solid var(--border-heavy);
   border-radius:var(--radius-md);display:grid;place-items:center;font-size:var(--text-lg);
@@ -870,7 +923,12 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
  padding:var(--space-2) var(--space-3)}
 .kisten b{font-weight:var(--weight-bold);color:var(--fg)}
 /* Navigation am Ende des Inhalts statt in einer festen Leiste */
-.navrow{display:flex;gap:var(--space-2);margin:var(--space-6) 0 var(--space-4)}
+/* F8 (18.09.2026): Zwischen Ladenkasten und „Ueberspringen" standen
+   24 px Rand plus 40 px Fusspolster von <main> plus die halbe Knopfhoehe —
+   auf dem iPhone mehrere Zentimeter nichts. Der Rand bleibt bei 24 px,
+   das Fusspolster faellt weg, wo die Leiste selbst schon eines mitbringt
+   (siehe main:has(.navrow) weiter unten). */
+.navrow{display:flex;gap:var(--space-2);margin:24px 0 var(--space-4)}
 .navrow .b{flex:1;min-height:var(--control-h-lg);background:var(--surface);
  border:1px solid var(--border-strong);color:var(--fg);
  border-radius:var(--radius-md);font:var(--weight-medium) var(--text-md)/1.2 var(--font);
@@ -903,7 +961,8 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .statb.on,.statb.on.offen,.statb.on.done{background:var(--accent);border-color:var(--accent);
  color:var(--fg-on-dark);box-shadow:none}
 /* P8 · Startbild */
-.login{padding:var(--space-8) var(--space-4);max-width:420px;margin:0 auto}
+.login{padding:calc(var(--space-8) + env(safe-area-inset-top)) var(--space-4) var(--space-8);
+  max-width:420px;margin:0 auto}
 .login h1{font-size:var(--text-lg);margin:0 0 var(--space-1);letter-spacing:-.01em}
 .login .sub{color:var(--fg-muted);font-size:var(--text-sm);margin:0 0 var(--space-4)}
 .loginhilfe{font-size:var(--text-sm);color:var(--fg-muted);
@@ -927,28 +986,10 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .zusatzsum{font-size:var(--text-sm);color:var(--fg-muted);margin:var(--space-2) 0}
 .zusatzq{margin:var(--space-3) 0}
 .cnt.zin{min-width:46px;text-align:center;padding:0;border-width:2px;border-color:var(--fg)}
-/* P10 · Fotos der Fassungsliste */
-.fotoblock{margin-top:var(--space-6)}
-.fotos{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-3)}
-.foto{position:relative;margin:0;width:72px}
-.foto img{width:72px;height:72px;object-fit:cover;border-radius:var(--radius-md);
-  background:var(--surface-3);display:block}
-.foto figcaption{font-size:var(--text-xs);color:var(--fg-muted);margin-top:var(--space-1);
-  text-align:center}
-.foto--gross{width:160px}
-.foto--gross img{width:160px;height:auto;max-height:220px;object-fit:contain}
-.fdel{position:absolute;top:-6px;right:-6px;width:28px;height:28px;
-  border-radius:50%;border:1px solid var(--border-strong);background:var(--surface);
-  color:var(--fg-muted);font-size:var(--text-sm);cursor:pointer;line-height:1}
-.fotobtn.leer{background:var(--accent);border-color:var(--accent);
-  color:var(--fg-on-dark);font-weight:var(--weight-medium)}
-.fotobtn{width:100%;min-height:var(--control-h-lg);
-  display:inline-flex;align-items:center;justify-content:center;
-  font:var(--weight-medium) var(--text-base)/1.2 var(--font);
-  border:1px solid var(--border-strong);border-radius:var(--radius-md);
-  background:var(--surface);color:var(--fg);cursor:pointer;
-  transition:background var(--dur-fast) var(--ease)}
-.fotobtn:active{background:var(--surface-3)}
+/* F4 (18.09.2026): Der Block „P10 · Fotos der Fassungsliste" stand hier.
+   Der Fotoschritt ist ersatzlos entfallen — siehe review/INPUT-TEAM.md F4.
+   Die Gestaltung der PRODUKTfotos in den Laden (.gshot) ist davon nicht
+   betroffen und bleibt. */
 
 /* ═══════════════ Mehrgerätebetrieb ═══════════════
    Der Übertragungszustand war eine 11px-Pille, absolut positioniert —
@@ -1062,6 +1103,34 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .sheetkopf h3{flex:1;margin:0;font-size:var(--text-base);
   font-weight:var(--weight-medium)}
 .sheetkoerper{padding:var(--space-4) var(--space-4) var(--space-8);overflow:auto}
+/* ── F9 · Begrüßung ──────────────────────────────────────────────────
+   Nicht bildschirmfüllend: die Karte ist so hoch wie ihr Inhalt. Unten
+   respektiert sie die Home-Leiste (safe-area-inset-bottom) — sonst liegt
+   „Passt" auf einem iPhone ohne Knopf halb darunter. */
+.gruss-sheet .sheetkarte{max-height:none;
+  padding-bottom:calc(var(--space-4) + env(safe-area-inset-bottom))}
+/* Der Griff sagt, dass sich das Fenster nach unten wegwischen lässt. */
+.sheetgriff{width:40px;height:4px;border-radius:2px;background:var(--border-heavy);
+  margin:var(--space-2) auto var(--space-1)}
+.grusskoerper{padding:var(--space-4) var(--space-4) var(--space-3);text-align:left}
+/* Klein und ruhig, aber nicht in Versalien: „FR., 18.09." liest sich wie
+   eine Warnung. Der Tag ist eine Auskunft, keine Ansage. */
+.grusstag{font-size:var(--text-md);font-weight:var(--weight-medium);
+  color:var(--fg-muted)}
+.grusshallo{font:var(--weight-medium) var(--text-lg)/1.2 var(--font-display);
+  margin-top:var(--space-1);color:var(--fg)}
+.grussstand{font-size:var(--text-md);color:var(--fg-muted);margin-top:var(--space-2);
+  line-height:var(--leading-normal)}
+.grussstand:empty{display:none}
+.grussknoepfe{display:flex;gap:var(--space-2);padding:0 var(--space-4) var(--space-4)}
+/* 52 px, nicht 46: die beiden Knöpfe sind das Letzte, was vor dem Keller
+   getroffen werden muss. Die Untergrenze des Auftrags ist 46. */
+.grussdatum,.grusspasst{flex:1;min-height:var(--control-h-lg);border-radius:var(--radius-md);
+  font:inherit;font-size:var(--text-md);font-weight:var(--weight-medium);cursor:pointer}
+.grussdatum{background:var(--surface);border:1px solid var(--border-strong);color:var(--fg)}
+.grussdatum:active{background:var(--surface-3)}
+.grusspasst{background:var(--accent);border:1px solid var(--accent);color:var(--fg-on-dark)}
+.grusspasst:active{background:var(--accent-dunkel)}
 .sheetkoerper .hp{margin:0;font-size:var(--text-md);line-height:var(--leading-normal)}
 .sheetkoerper .htip{margin:var(--space-3) 0 0;font-size:var(--text-md);
   color:var(--accent);line-height:var(--leading-normal)}
@@ -1137,7 +1206,7 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 /* ═══════════════ Druck ═══════════════ */
 @media print{
   header,.tools,.howto,.rail,.exprow,.explesser,
-  .netz,.fotoblock,.zusatzlink{display:none!important}
+  .netz,.zusatzlink{display:none!important}
   body{background:var(--surface)}
   .doc{padding:0}
   /* Rubriken starten eingeklappt — im Druck müssen sie offen sein. */
@@ -1206,15 +1275,49 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
  border-color:var(--danger-border);background:var(--danger-bg)}
 /* Der Griff versprach eine Ziehgeste, die es nicht gibt. */
 .drwh{display:none}
-.drwi{padding:var(--space-4) var(--space-3) var(--space-3);display:flex;
- gap:var(--space-2);justify-content:center;align-items:flex-end;
- touch-action:auto;overflow:hidden;
+/* F2 (18.09.2026) · Warum die Lade jetzt ein Raster ist.
+   Vorher: `display:flex; align-items:flex-end; overflow:hidden`. Drei
+   Folgen, alle drei im Keller gefaehrlich:
+     1. Unten buendig heisst: eine Spalte mit zweizeiligem Kuerzel
+        („Alm-dudler", „Weiss-bier afr.") wird hoeher und schiebt ihre
+        Flaschen samt Kopfzahl nach OBEN. In Lade 6 standen dadurch fuenf
+        Kopfzahlen auf fuenf verschiedenen Hoehen, und kein Name stand mehr
+        neben der Flasche, zu der er gehoert.
+     2. `overflow:hidden` verschluckte den Beweis: bei 390 px war der Inhalt
+        359 px breit in einem Kasten von 356 px — die achte Kachel wurde um
+        3 px beschnitten, und keine Messung sah es (siehe tests/ui-mass.cjs).
+     3. Passt eine Spalte nicht mehr, wurde sie schmaler gerechnet statt
+        umgebrochen; bei 320 px lag das Kuerzel „Gast. 0,25" 3 px
+        AUSSERHALB des Fensters.
+   Jetzt: gleich hohe Zellen in einem Raster, das umbricht. Jede Zelle
+   traegt genau einen Stapel in fester Reihenfolge — Kopfzahl, Zaehlpunkte,
+   Trennstrich, Flaschenbild, Name. Kein absolutes Positionieren, kein
+   Umfliessen, kein Beschnitt. */
+.drwi{padding:var(--space-4) var(--space-3) var(--space-3);
+ touch-action:auto;
  background:var(--surface-2);box-shadow:inset 0 1px 3px rgba(28,28,30,.06)}
-.drwi.top{align-items:flex-start}
-.gcol{display:flex;flex-direction:column;align-items:center;position:relative;flex-shrink:0}
+.drwi:not(.top){display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(72px,1fr));
+ gap:8px;align-items:start;justify-items:stretch}
+.drwi.top{display:flex;gap:var(--space-2);justify-content:center;align-items:flex-start}
+.gcol{display:flex;flex-direction:column;align-items:center;position:relative;
+ width:100%;min-width:0}
+/* Kopfzahlen aller Spalten auf EINER Linie — auch dort, wo zwei Sorten
+   uebereinander in derselben Spalte liegen (Lade 6: Red Ale ueber Pale
+   Ale). Die zweite Zahl stand vorher mitten in der Spalte, zwischen den
+   beiden Stapeln. */
+.gnums{display:flex;gap:var(--space-2);align-items:baseline;justify-content:center;
+ min-height:calc(var(--text-sm) * var(--leading-tight));margin-bottom:var(--space-2);
+ flex-wrap:nowrap}
+/* Gemeinsame Hoehe fuer alle Spalten einer Lade: damit stehen die
+   Trennstriche auf einer Linie, egal ob die Spalte zehn oder sieben
+   Flaschen fasst. Die Punkte haengen an der Standlinie unten, so wie die
+   Flaschen in der Lade stehen. Die Hoehe setzt gFit(). */
+.gstks{display:flex;flex-direction:column;align-items:center;
+ justify-content:flex-end;gap:5px;width:100%}
 .gnum{font-size:var(--text-sm);font-weight:var(--weight-bold);
  font-variant-numeric:tabular-nums;line-height:var(--leading-tight);
- letter-spacing:-.02em;margin-bottom:var(--space-2);color:var(--fg)}
+ letter-spacing:-.02em;color:var(--fg);white-space:nowrap}
 .gnum.low{color:var(--danger)}
 .gnum .tot{font-size:var(--text-xs);font-weight:var(--weight-medium);color:var(--fg-subtle);
  text-decoration:none}
@@ -1242,46 +1345,28 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
    --text-xs auf 15px steht, braucht die Zeile 15 x 1,25 = 18,75px — das
    Kuerzel wurde unten beschnitten, „Fritsch (Karl)" verlor die Klammern.
    Jetzt folgt die Hoehe der Zeile, nicht einer festen Zahl. */
-.gcap{font-size:var(--text-xs);line-height:var(--leading-tight);text-align:center;
+/* F2: Der Name gehoert unter SEINE Flasche und darf nie beschnitten
+   werden. Zwei Zeilen Platz (2,6 em) halten die Namen aller Spalten auf
+   einer Linie, auch wenn nur eine davon umbricht; getrennt wird
+   automatisch, und was sich nicht trennen laesst, bricht hart um, statt
+   in den Nachbarn zu laufen. */
+.gcap{font-size:var(--text-xs);line-height:1.2;text-align:center;
  color:var(--fg-secondary);margin-top:var(--space-1);padding:0 1px;
- height:calc(var(--text-xs) * var(--leading-tight));
- white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;max-width:100%}
-/* Nur in den Spaltenladen verschwindet ein leeres Kuerzel. Im Fach
-   haelt es die Grundlinie \u2014 sonst rutschen Saeulen ohne
-   Beschriftung gegenueber ihren Nachbarn nach unten. */
-.gcol .gcap:empty{display:none}
+ min-height:2.6em;
+ white-space:normal;overflow-wrap:anywhere;hyphens:auto;
+ width:100%;max-width:100%}
+/* Im Fach haelt ein leeres Kuerzel die Grundlinie \u2014 sonst rutschen
+   Saeulen ohne Beschriftung gegenueber ihren Nachbarn nach unten. In den
+   Spaltenladen hat seit F2 jede Flasche einen Namen; :empty kommt dort
+   nicht mehr vor und wuerde die Zellen sonst ungleich hoch machen. */
 .zgrp .gcap:empty{visibility:hidden}
-/* In den Fotoladen ist die Spalte schmal — dort darf das Kürzel umbrechen,
-   aber nur an Leerzeichen und weichen Trennzeichen. hyphens:auto zerlegte
-   „Ginger Ale" zu „Ginge / r Ale". Feste Höhe hält die Grundlinien bündig. */
-.drwi .gcol .gcap{white-space:normal;overflow:visible;height:auto;min-height:26px;
- line-height:1.2;overflow-wrap:normal;word-break:normal;hyphens:manual}
-/* Sehr schmale Spalten: Lade 4 · Mischgetränke hat acht Spalten und damit
-   34 px je Spalte. „Ginger", „Bitter", „Lemon" sind bei 15 px Schrift je
-   46–47 px breit — jedes Kürzel ragte beidseitig über seine Spalte und
-   überlappte den Nachbarn um 3–4 px (gemessen: Ginger Ale/Bitter Lemon 3,0,
-   Bitter Lemon/Tonic TH 3,9, Ginger Beer/Gast. 0,25 3,0). Auf dem Schirm
-   las sich das als „GingerBitter / LemonTH", und an genau dieser
-   Beschriftung wird gezählt. Kleiner setzen ist verboten (15 px ist die
-   Untergrenze im Service), „Ginge-r" zu trennen hilft niemandem.
-   Also Platz statt Schrumpfen: jede zweite Spalte schreibt eine Zeile
-   tiefer. Waagrechte Nachbarn stehen damit nie auf derselben Linie, und
-   jedem Kürzel stehen zwei Spaltenbreiten zur Verfügung. Beide Gruppen
-   reservieren gleich viel Höhe (Polster oben ODER unten) — die Standlinie
-   der Flaschen verschiebt sich nicht. Gesetzt wird die Marke `gversetzt`
-   in `gFit()`, und zwar nach der GEMESSENEN Spaltenbreite: die breiten
-   Laden 5 und 6 brauchen den Versatz nicht und bekommen ihn nicht. */
-/* Feste Hoehe, nicht min-height: bei border-box waere ein einzeiliges
-   Kuerzel sonst niedriger als ein zweizeiliges, und weil die Spalten unten
-   buendig stehen (align-items:flex-end), saenken die kurzen Spalten mitsamt
-   ihren Flaschen ab. Vier Zeilen: zwei fuer die eigene Gruppe, zwei als
-   Polster fuer die andere. */
-.drwi.gversetzt .gcol .gcap{width:200%;max-width:none;min-height:0;
- line-height:var(--leading-tight);
- height:calc(var(--text-xs) * var(--leading-tight) * 4);
- padding-bottom:calc(var(--text-xs) * var(--leading-tight) * 2)}
-.drwi.gversetzt .gcol:nth-child(even) .gcap{padding-bottom:0;
- padding-top:calc(var(--text-xs) * var(--leading-tight) * 2)}
+/* Der Versatz jeder zweiten Spalte — eine eigene Marke am Ladenkasten und
+   ein Kuerzel von doppelter Spaltenbreite — ist mit dem Raster
+   gegenstandslos geworden und ersatzlos entfallen: Er war die Antwort auf
+   zu schmale Spalten (Lade 4 bei 390 px: 34 px je Spalte, Kuerzel 46 px
+   breit). Das Raster gibt jeder Spalte mindestens 72 px und bricht sonst
+   um — die Kuerzel stehen damit wieder alle auf einer Linie, statt
+   abwechselnd eine Zeile tiefer. */
 
 /* Fächer in einer Lade: eigener Kasten, waagrechte Reihen. */
 .fach{margin:var(--space-3) var(--space-3) 0;border:1px solid var(--border-strong);
@@ -1326,9 +1411,8 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .gitem{display:flex;flex-direction:column;align-items:center;width:var(--gcell)}
 /* Auch im Rasterfach zweizeilig statt abgeschnitten: „Johannisbeere"
    wurde sonst zu „Johannisbee…". Gleiche Regel wie in den Fotoladen. */
-.gitem .gcap{margin-top:var(--space-1);min-height:26px;white-space:normal;
- overflow:visible;height:auto;line-height:1.2;overflow-wrap:normal;
- word-break:normal;hyphens:manual}
+.gitem .gcap{margin-top:var(--space-1);min-height:2.6em;white-space:normal;
+ overflow:visible;height:auto;line-height:1.2;overflow-wrap:anywhere;hyphens:auto}
 .gitem.gx .gcap{color:var(--danger)}
 /* Miniatur-Schleier: dieselbe Sprache wie die kontrollierte Spalte
    in den Fotoladen, nur auf Zellengroesse. */
@@ -1419,6 +1503,27 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   <h3 id="ovT"></h3><div id="ovBody"></div>
   <div class="row"><button id="ovNo">Abbrechen</button><button class="ok" id="ovOk">Ja</button></div>
 </div></div>
+<!-- F9 · Begrüßung beim Öffnen. Klein, von unten, nicht bildschirmfüllend.
+     Sie sagt zuerst den Betriebstag — deshalb kommt sie erst, seit der
+     Tag stimmt (F1). Ein Knopf, der den falschen Tag bestätigt, wäre
+     schlimmer als kein Knopf. -->
+<div class="sheet gruss-sheet" id="gruss" hidden role="dialog" aria-modal="true"
+     aria-labelledby="grussTag">
+  <div class="sheetgrund" data-gzu></div>
+  <div class="sheetkarte" id="grussKarte">
+    <div class="sheetgriff" aria-hidden="true"></div>
+    <div class="grusskoerper">
+      <div class="grusstag" id="grussTag"></div>
+      <div class="grusshallo" id="grussHallo"></div>
+      <div class="grussstand" id="grussStand"></div>
+    </div>
+    <div class="grussknoepfe">
+      <button type="button" class="grussdatum" id="grussDatum">Anderes Datum</button>
+      <button type="button" class="grusspasst" id="grussPasst">Passt</button>
+      <input type="date" id="grussSel" class="vh" aria-label="Anderen Betriebstag wählen">
+    </div>
+  </div>
+</div>
 <div class="sheet" id="hilfe" hidden role="dialog" aria-modal="true" aria-labelledby="hilfeT">
   <div class="sheetgrund" data-zu></div>
   <div class="sheetkarte">
@@ -1492,7 +1597,7 @@ const MODES={
     derselbe Gang nach unten, zwei Wörter. „Holen" ist die Tätigkeit und steht
     ohnehin überall sonst („Noch nicht alles geholt", „Holen und einräumen");
     „Keller" wäre dazu das dritte Wort neben Kellerzählung und Getränkelager. */
- tag:{t:"Tagesfassung",d:"Bar und Restaurant prüfen, aus dem Keller holen, Liste fotografieren.",ic:"tag",
+ tag:{t:"Tagesfassung",d:"Bar und Restaurant prüfen, aus dem Keller holen.",ic:"tag",
       steps:["Bar","Restaurant","Holen","Abschluss"]},
  /* Nur die Getränke der Bar \u2014 ohne Rotweine, ohne Backup, ohne Lade 3. */
  fuellen:{t:"Nachfüllen",d:"Nur die Getränke an der Bar prüfen und auffüllen.",ic:"fuellen",
@@ -1519,18 +1624,17 @@ function lastStep(){return steps().length-1;}
 
 const HOWTO={
  tag:[
-  {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach. Die Tagesfassung läuft immer auf den Vortag – das Datum im Kopf stimmt so.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
+  {t:"Bar prüfen",p:"Zuerst die Rotweine (nicht gekühlt), dann Lade 1 bis 6 der Reihe nach. Die Fassung läuft auf den heutigen Tag. Steht im Kopf ein anderer, lässt er sich dort ändern.",tip:"Jede Lade einzeln bestätigen – sonst fehlt sie im Protokoll."},
   /* Die Soll-Mengen standen hier als feste Zahlen im Fließtext. Sie stehen
      ohnehin bei jedem Wein auf dem Schirm („Soll 3") — und sobald die
      Leitung eines ändert, widerspricht die Hilfe dem, was danebensteht. */
   {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Das Soll steht bei jedem Wein — du tippst herunter auf das, was noch dasteht.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
   {t:"Holen und einräumen",p:"Diese Flaschen fehlen, sortiert nach Laufweg. Holen, einräumen, abhaken – die Zeile wandert nach unten zu Bar oder Restaurant.",tip:"Weg: Rot, Rosé, Weiss, Cuvée, Natural, Bubbles. Zusätzlich Entnommenes unten eintragen."},
-  /* Der Schritt heißt „Abschluss", die Hilfe hieß „Fassungsliste
-     fotografieren" — wer hier auf das Fragezeichen tippt, steht um
-     23 Uhr vor „Fertig – Protokoll erstellen" und will wissen, was der
-     Knopf auslöst, nicht wie man ein Foto macht. Das Foto bleibt ein
-     Satz, es ist ja noch da (Projektanleitung §8 C nimmt es heraus). */
-  {t:"Abschluss",p:"Oben steht, was noch offen ist – jede Zeile springt hin. „Fertig – Protokoll erstellen“ schließt die Fassung ab und schickt sie los; ohne Netz geht sie hinaus, sobald wieder Empfang da ist. Die Fassungsliste von der Rezeption abfotografieren, mehrere Seiten sind möglich.",tip:"Ist noch etwas offen, fragt das Tool nach. Freigeben geht mit deinem eigenen Code."}],
+  /* Der Schritt heißt „Abschluss" und die Hilfe sagt, was der Knopf
+     auslöst — wer hier um 23 Uhr auf das Fragezeichen tippt, will genau
+     das wissen. Vom Foto der Fassungsliste steht hier nichts mehr: der
+     Schritt ist am 18.09.2026 ersatzlos entfallen (F4). */
+  {t:"Abschluss",p:"Oben steht, was noch offen ist – jede Zeile springt hin. „Fertig – Protokoll erstellen“ schließt die Fassung ab und schickt sie los; ohne Netz geht sie hinaus, sobald wieder Empfang da ist.",tip:"Ist noch etwas offen, fragt das Tool nach. Freigeben geht mit deinem eigenen Code."}],
  fuellen:[
   {t:"Getränke an der Bar prüfen",p:"Nur die Getränkeladen – Wein bleibt außen vor.",tip:"Lade für Lade durchgehen und jede einzeln bestätigen."},
   {t:"Holen und einräumen",p:"Das Fehlende aus dem Getränkelager holen und einräumen. Abgehaktes wandert nach unten.",tip:"Oben steht, wie viele Kisten du brauchst."},
@@ -1565,13 +1669,58 @@ function saveCfg(c){try{localStorage.setItem(CFGKEY,JSON.stringify(c));}catch(e)
 let CFG=loadCfg()||{barrot:PLAN.barrot.map(x=>({...x})),bar:PLAN.bar.map(x=>({...x}))};
 function barSlots(k){return (CFG&&CFG[k])?CFG[k]:PLAN[k];}
 
-function yest(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);}
-function today(){return new Date().toISOString().slice(0,10);}
+/* ── Betriebstag ──────────────────────────────────────────────────────
+   F1 (18.09.2026): Der Tag wurde bis hierher aus `toISOString()` gelesen,
+   also in UTC. Zwischen Mitternacht und 02:00 Ortszeit (Sommerzeit) lieferte
+   das den VORTAG — und `blank()` zog fuer die Tagesfassung zusaetzlich einen
+   weiteren Tag ab. Am Freitag stand deshalb „Fuer Donnerstag" im Kopf,
+   waehrend die Kellerzaehlung daneben den Freitag schrieb: zwei Schluessel
+   fuer denselben Abend. Gerechnet wird jetzt in Europe/Vienna, an einer
+   Stelle, und die Tagesfassung laeuft auf den Tag, an dem sie gemacht wird.
+   Dieselbe Funktion steht in leitung.html — wer eine aendert, aendert beide. */
+function wienTag(d){
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Vienna",
+    year:"numeric",month:"2-digit",day:"2-digit"}).format(d||new Date());
+}
+/* Einen Betriebstag zurueck, ohne Zeitzonenfalle: Mittag UTC liegt von
+   jeder Sommer-/Winterzeitumstellung weit genug entfernt. */
+function tagMinus(iso,n){
+  const d=new Date(iso+"T12:00:00Z");d.setUTCDate(d.getUTCDate()-n);
+  return d.toISOString().slice(0,10);
+}
+function today(){return wienTag();}
+function yest(){return tagMinus(today(),1);}
+/* F9: Wer in der Begrüßung „Anderes Datum" wählt, verschiebt den Tag, den
+   ein NEUER Vorgang vorgeschlagen bekommt — nichts weiter. Bestehende
+   Vorgänge behalten ihren Schlüssel; das Datum im Kopf bleibt der Ort, an
+   dem ein laufender Vorgang umdatiert wird.
+   Die Wahl gilt nur für diese Sitzung und nur, solange sie zum heutigen
+   Kalendertag gehört: ein am Vorabend gewählter Tag darf am nächsten
+   Morgen nicht still weitergelten. */
+const TWKEY="hh_tagwahl";
+function tagWahl(){
+  try{
+    const r=JSON.parse(sessionStorage.getItem(TWKEY)||"null");
+    if(!r||!r.tag||!/^\d{4}-\d{2}-\d{2}$/.test(r.tag))return null;
+    if(r.am!==wienTag())return null;
+    return r.tag;
+  }catch(e){ return null; }
+}
+function setTagWahl(t){
+  try{
+    if(t)sessionStorage.setItem(TWKEY,JSON.stringify({tag:t,am:wienTag()}));
+    else sessionStorage.removeItem(TWKEY);
+  }catch(e){}
+}
+/* Der Tag, den ein neuer Vorgang vorgeschlagen bekommt. */
+function vorgabeTag(){ return tagWahl()||today(); }
 function blank(m){
-  const b={mode:m,tag:m==="tag"?yest():today(),name:whoAmI(),notiz:"",finished:false,ver:12};
+  /* F1: JEDER Modus schlaegt den heutigen Betriebstag vor — auch die
+     Tagesfassung. Wer einen anderen Tag braucht, aendert ihn im Kopf. */
+  const b={mode:m,tag:vorgabeTag(),name:whoAmI(),notiz:"",finished:false,ver:12};
   if(m==="tag")Object.assign(b,{rest:{},barrot:{},bar:{},backup:{},seen:{},holt:{},
     zusatz:{},gzusatz:{},gent:{},getr:{},gdone:{},gcheck:{},goffen:{},
-    gholt:{},gholtN:{},holtN:{},fotos:[]});
+    gholt:{},gholtN:{},holtN:{}});
   if(m==="keller")Object.assign(b,{reihen:{},einzel:{},zdone:{},getr:{},gdone:{}});
   if(m==="fuellen")Object.assign(b,{barrot:{},bar:{},backup:{},seen:{},
     getr:{},gdone:{},gcheck:{},goffen:{},gholt:{},gholtN:{},gzusatz:{}});
@@ -1593,11 +1742,7 @@ function archive(rec){
   const a=loadArch();
   a[rec.mode+"_"+rec.tag]=Object.assign({},rec,{archiviert:new Date().toISOString()});
   const ks=Object.keys(a).sort((x,y)=>(a[x].archiviert||"").localeCompare(a[y].archiviert||""));
-  /* Mit dem Eintrag gehen auch seine Bilder \u2013 sonst waechst der
-     Bildspeicher unbegrenzt weiter. */
-  while(ks.length>30){const weg=ks.shift();
-    ((a[weg]||{}).fotos||[]).forEach(x=>{try{fdel(x.k);}catch(e){}});
-    delete a[weg];}
+  while(ks.length>30){const weg=ks.shift();delete a[weg];}
   saveArch(a);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast("Speicher voll");}
   merkeAenderung();}
@@ -1616,6 +1761,35 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast(
    Zwei Leute am selben Vorgang sind kein Merge-Problem, sondern eine
    Frage an den Menschen — deshalb wird gefragt, nicht zusammengerechnet. */
 const API="/api";
+/* ── Rolle ───────────────────────────────────────────────────────────────
+   F5 (18.09.2026): Der Fuss der Startseite trug einen Knopf „Verwaltung"
+   und keinen einzigen Weg ins Backoffice. „Verwaltung" ist weg; an seiner
+   Stelle steht „Backoffice" — aber nur fuer die Leitung.
+   Woher die Rolle kommt: aus `GET /api/ich`, das der Worker schon hat
+   (src/index.js, „/api/ich" liefert {name, rolle}). Die Anmeldung selbst
+   wird dafuer NICHT angefasst — kein Code, kein Token, kein Speicher der
+   Anmeldung aendert sich. Ohne Netz bleibt die Rolle unbekannt und der
+   Link ungezeigt: lieber ein fehlender Link als einer, der ins Leere
+   fuehrt. Die Rolle liegt in der Sitzung, nicht dauerhaft — beim
+   Personenwechsel ist sie damit von selbst weg. */
+const RKEY="hh_rolle";
+function meineRolle(){try{return sessionStorage.getItem(RKEY)||"";}catch(e){return "";}}
+function setRolle(r){try{r?sessionStorage.setItem(RKEY,r):sessionStorage.removeItem(RKEY);}catch(e){}}
+async function zieheRolle(){
+  if(!whoAmI())return;
+  try{
+    const r=await fetch(API+"/ich",{credentials:"same-origin",
+      headers:{accept:"application/json"}});
+    if(!r.ok||!(r.headers.get("content-type")||"").includes("json"))return;
+    const j=await r.json();
+    const alt=meineRolle();
+    setRolle(j.rolle||"");
+    /* Erst der Server, dann der Link: die Startseite steht beim ersten
+       Aufbau schon da. Nur neu zeichnen, wenn sich wirklich etwas aendert
+       und man auch hinsieht. */
+    if((j.rolle||"")!==alt && !mode && $("#menu").style.display!=="none")renderMenu();
+  }catch(e){}
+}
 const K_AUSGANG="hh_ausgang_v1", K_GERAET="hh_geraet_v1",
       K_ZAEHL="hh_zaehlnr_v1", K_FERN="hh_fern_v1",
       K_UEBERHOLT="hh_ueberholt_v1";
@@ -1672,7 +1846,7 @@ function inDenAusgang(rec,status){
    denselben Stand wieder ab, und die Reihe dahinter stünde still. Der
    Eintrag muss also aus der Warteschlange heraus.
    Wegwerfen darf man ihn aber nicht (Regel 6): Wer eine Stunde gezählt
-   hat, hörte sonst als einzige Antwort „Nichts offen – alles übertragen".
+   hat, hörte sonst als einzige Antwort die grüne Zeile „alles übertragen".
    Er wandert deshalb ins Sackfach, bleibt im Gerät und bleibt sichtbar,
    bis ihn jemand zur Kenntnis genommen hat. */
 function ueberholtAlle(){ return jlese(K_UEBERHOLT,[]); }
@@ -1761,6 +1935,9 @@ async function zieheFern(){
     if(vorher!==nachher && !mode && whoAmI() && $("#menu").style.display!=="none"){
       renderMenu();
     }
+    /* Die Begrüßung steht schon, wenn der Server antwortet. Ihre dritte
+       Zeile wird dann nachgetragen statt zu fehlen. */
+    if(typeof grussFuellen==="function" && !$("#gruss").hidden)grussFuellen();
   }catch(e){ NETZ.zustand="offline"; }
   netzChip();
 }
@@ -1773,7 +1950,7 @@ function fernOffen(){
 }
 /* Gibt es zu diesem Modus einen neueren Stand woanders? */
 function fernNeuer(m){
-  const ziel=(m==="tag")?yest():today();
+  const ziel=today();
   const v=FERN[m+"_"+ziel];
   if(!v||v.geraet===GERAET)return null;
   const eigen=zaehlnr(m+"_"+ziel);
@@ -1838,21 +2015,28 @@ function netzChip(){
   const els=document.querySelectorAll(".netz"); if(!els.length)return;
   const z=NETZ.zustand, o=NETZ.offen;
   const weg=(navigator.onLine===false)||z==="offline";
+  /* F7 (18.09.2026): „offen" hiess in dieser Zeile „die Warteschlange ist
+     leer" und zwei Zeilen darueber „die Aufgabe ist unerledigt". Auf der
+     Startseite standen beide Bedeutungen uebereinander: der Satz zur
+     Tagesfassung („heute noch offen") und direkt darunter dieselbe
+     Vokabel fuer eine leere Warteschlange.
+     Diese Zeile spricht jetzt nur noch von der UEBERTRAGUNG; das Wort
+     „offen" gehoert der Aufgabe. */
   const viele=o===1?"1 Vorgang":o+" Vorgänge";
   const ueb=ueberholtOffen();
   let t="", k="", quittierbar=false;
   /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
      nichts hinaus. Gleich danach aber der überholte Stand — er darf nie
-     hinter „Nichts offen – alles übertragen" verschwinden. */
+     hinter der grünen Zeile „alles übertragen" verschwinden. */
   if(z==="kein-server"&&!ueb.length){ t=""; }
   else if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
   else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler"; quittierbar=true; }
-  else if(weg&&o>0){ t=viele+" warten – kein Netz"; k="wartet"; }
+  else if(weg&&o>0){ t=viele+" wartet – kein Netz"; k="wartet"; }
   else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
-  else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" warten"
+  else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele+" wartet"
                                     :"Server antwortet nicht"; k="fehler"; }
-  else if(o>0){ t=viele+" warten auf Übertragung"; k="wartet"; }
-  else if(z==="verbunden"){ t="Nichts offen – alles übertragen"; k="ok"; }
+  else if(o>0){ t=viele+" wartet"; k="wartet"; }
+  else if(z==="verbunden"){ t="Alles übertragen"; k="ok"; }
   els.forEach(el=>{
     if(!t){ el.style.display="none"; return; }
     el.style.display="";
@@ -1888,6 +2072,7 @@ function netzStart(){
   if(netzStart._an)return; netzStart._an=1;
   netzChip();
   zieheFern().then(schiebe);
+  zieheRolle();
   window.addEventListener("online",()=>{ NETZ.zustand="unbekannt"; schiebe(); zieheFern(); });
   window.addEventListener("offline",()=>{ NETZ.zustand="offline"; netzChip(); });
   setInterval(()=>{ sammle(); zwischenstand(); schiebe(); }, 45000);
@@ -2109,11 +2294,11 @@ function renderMenu(){
     <div class="mgrp">Service</div>${card("tag")}${card("fuellen")}
     <div class="mgrp">Außer der Reihe</div>${card("nach")}
     <div class="mgrp">Bestand</div>${card("keller")}${card("ware")}
-    <button class="adminlink" id="bAdmin">Verwaltung</button>
+    ${meineRolle()==="leitung"
+      ? `<a class="adminlink" id="bBackoffice" href="leitung.html">Backoffice</a>` : ""}
     <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>`;
   document.querySelectorAll(".mi").forEach(b=>b.onclick=()=>start(b.dataset.m));
   $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
-  $("#bAdmin").onclick=askPin;
   $("#bArch").onclick=openArchList;
   netzChip();
 }
@@ -2147,7 +2332,6 @@ function openArchDoc(k){
   box.innerHTML=(mode==="tag"?docTag():mode==="fuellen"?docFuellen():mode==="keller"?docKeller()
      :mode==="nach"?docNach():docWare());
   if(mode==="tag"||(mode==="keller"&&branch==="getr"))box.insertAdjacentHTML("beforeend",gDocSec());
-  fillFotos(box);
   box.querySelectorAll(".sec").forEach(sec=>{const h3=sec.querySelector("h3");if(!h3)return;
     sec.classList.add("collapsible","closed");
     const c=document.createElement("span");c.className="secarrow";c.textContent="\u203a";h3.appendChild(c);
@@ -2163,7 +2347,15 @@ function openArchDoc(k){
   $("#aCsv").onclick=expCsv;$("#aJson").onclick=expJson;
   $("#aBack").onclick=()=>{ARCHREC=null;openArchList();};
 }
-/* Der Verwaltungscode stand bis v12 als Konstante in dieser Datei — wer
+/* ── Verwaltung: ab F5 (18.09.2026) ohne Eingang in der App ──────────────
+   Der Knopf „Verwaltung" am Fuss der Startseite ist entfernt; an seiner
+   Stelle steht „Backoffice". `askPin`, `openAdmin` und `renderAdmin`
+   bleiben stehen, aber NICHTS in der Oberflaeche ruft sie mehr auf. So
+   war es in der Nacht auf den 18.09. entschieden (review/ENTSCHIEDEN-
+   NACHTS.md Nr. 2): Der Editor wird nicht geloescht, sondern verliert
+   seinen Zugang, bis die Verwaltungsseite im Backoffice steht. Wer ihn
+   dort wieder braucht, hat ihn unveraendert vorliegen.
+   Der Verwaltungscode stand bis v12 als Konstante in dieser Datei — wer
    die Seite aufrief, las ihn im Quelltext mit. Bis der Editor nach
    Projektanleitung §8 A ins Backoffice umzieht, gilt hier dieselbe Regel
    wie bei der Freigabe: Es zählt der persönliche Code, und zwar einer,
@@ -2275,8 +2467,7 @@ function renderAdmin(){
 }
 function hasData(k,d){
   if(k==="tag")return sum(d.rest)||sum(d.barrot)||sum(d.bar)||sum(d.backup)||sum(d.zusatz)
-    ||Object.keys(d.seen||{}).length||Object.keys(d.getr||{}).length||sum(d.gent)
-    ||(d.fotos||[]).length;
+    ||Object.keys(d.seen||{}).length||Object.keys(d.getr||{}).length||sum(d.gent);
   if(k==="keller")return Object.keys(d.zdone||{}).length||Object.keys(d.getr||{}).length;
   if(k==="fuellen")return Object.keys(d.getr||{}).length||Object.keys(d.gdone||{}).length
     ||Object.keys(d.gholt||{}).length||Object.keys(d.gcheck||{}).length||sum(d.gzusatz);
@@ -2332,7 +2523,7 @@ function start(m){
   }
   start._uebernommen=false;
   mode=m;branch=(m==="tag"||m==="fuellen")?"wein":null;
-  const ziel=(m==="tag")?yest():today();
+  const ziel=vorgabeTag();
   const cur=S[m];
 
   /* Zweiter Vorgang desselben Modus am selben Tag.
@@ -2475,6 +2666,96 @@ function fuelleHilfe(){
     `<h4>Wie funktioniert die Bedienung?</h4><dl>`+
     BEDIEN.map(x=>`<dt>${x[0]}</dt><dd>${x[1]}</dd>`).join("")+`</dl>`;
 }
+/* ══════ F9 · Begrüßung beim Öffnen ══════
+   Drei Zeilen: welcher Betriebstag, wer, was heute ansteht. Dazu zwei
+   Knöpfe: „Passt" schließt, „Anderes Datum" öffnet die Datumsauswahl.
+
+   Sie erscheint höchstens EINMAL je Gerät und Betriebstag. Gemerkt wird
+   das im localStorage (Gerät), nicht in der Sitzung — sonst käme sie nach
+   jedem Neuladen wieder, und im Keller wird oft neu geladen.
+
+   Sie blockiert nichts: Ohne Netz kennt das Gerät die Vorgänge des Tages
+   nicht. Dann bleibt die dritte Zeile einfach weg — ein erfundener
+   Tagesstand wäre schlimmer als gar keiner (dieselbe Regel wie in
+   `tagesSatz`).                                                        */
+const GRUSSKEY="hh_gruss_v1";
+function grussGesehen(){try{return localStorage.getItem(GRUSSKEY)||"";}catch(e){return "";}}
+function grussMerken(t){try{localStorage.setItem(GRUSSKEY,t);}catch(e){}}
+/* „Fr. 18.09." — kurz, wie es im Haus gesprochen wird. de-AT setzt bei
+   `weekday:"short"` ein Komma dazwischen („Fr., 18.09."); die beiden
+   Teile werden deshalb einzeln geholt und mit einem Leerzeichen
+   verbunden. */
+function grussDatumText(iso){
+  const d=new Date(iso+"T12:00");
+  const wt=d.toLocaleDateString("de-AT",{weekday:"short"}).replace(/[.,]+$/,"");
+  const dm=d.toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit"});
+  return wt+". "+dm;
+}
+function grussFuellen(){
+  const tag=vorgabeTag();
+  $("#grussTag").textContent=grussDatumText(tag);
+  $("#grussHallo").textContent="Hallo "+((whoAmI()||"").split(" ")[0]||"")+".";
+  /* Der Stand kommt aus den Vorgängen des Servers. Ohne Netz ist FERN
+     leer oder alt — dann steht hier nichts. */
+  const verbunden=NETZ.zustand==="verbunden";
+  const t=(verbunden&&tag===today())?tagesSatz():[];
+  $("#grussStand").textContent=t.join(" ");
+  const sel=$("#grussSel");if(sel)sel.value=tag;
+}
+function grussZeigen(){
+  grussFuellen();
+  $("#gruss").hidden=false;
+  document.body.style.overflow="hidden";
+  setTimeout(()=>{const k=$("#grussPasst");if(k)k.focus();},40);
+}
+function grussSchliessen(){
+  $("#gruss").hidden=true;document.body.style.overflow="";
+  grussMerken(today());
+}
+/* Einmal je Gerät und Betriebstag, und nur, wenn jemand angemeldet ist. */
+function grussVielleicht(){
+  if(!whoAmI()||mode)return;
+  if(grussGesehen()===today())return;
+  grussZeigen();
+}
+(function grussBinden(){
+  const sheet=$("#gruss");if(!sheet)return;
+  sheet.querySelectorAll("[data-gzu]").forEach(e=>e.onclick=grussSchliessen);
+  $("#grussPasst").onclick=grussSchliessen;
+  const sel=$("#grussSel");
+  $("#grussDatum").onclick=()=>{
+    /* showPicker() gibt es erst seit Safari 16. Ohne das öffnet ein
+       normaler Klick auf das Feld denselben Kalender. */
+    try{ if(sel.showPicker){sel.showPicker();return;} }catch(e){}
+    sel.click();
+  };
+  sel.onchange=()=>{
+    if(!sel.value)return;
+    setTagWahl(sel.value===today()?null:sel.value);
+    grussFuellen();
+  };
+  /* Nach unten wischen schließt. Nur die Karte hört zu, nicht der Grund —
+     sonst schließt jedes Wischen über dem dunklen Feld. */
+  const karte=$("#grussKarte");
+  let y0=null;
+  karte.addEventListener("touchstart",e=>{y0=e.touches[0].clientY;},{passive:true});
+  karte.addEventListener("touchmove",e=>{
+    if(y0===null)return;
+    const dy=e.touches[0].clientY-y0;
+    karte.style.transform=dy>0?"translateY("+dy+"px)":"";
+  },{passive:true});
+  const ende=()=>{
+    const m=/translateY\(([0-9.]+)px\)/.exec(karte.style.transform||"");
+    karte.style.transform="";
+    y0=null;
+    if(m&&parseFloat(m[1])>60)grussSchliessen();
+  };
+  karte.addEventListener("touchend",ende,{passive:true});
+  karte.addEventListener("touchcancel",ende,{passive:true});
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"&&!sheet.hidden)grussSchliessen();});
+})();
+
 function oeffneHilfe(){ fuelleHilfe();$("#hilfe").hidden=false;
   document.body.style.overflow="hidden";
   setTimeout(()=>{const z=$("#hilfeZu");if(z)z.focus();},40); }
@@ -2489,12 +2770,12 @@ function hilfeVielleicht(){
 }
 function render(){
   const d=D();$("#dSel").value=d.tag;
-  /* Die Tagesfassung läuft auf den Vortag — das ist der Tag, dessen
-     Verbrauch nachgefüllt wird und gegen dessen Z-Bericht später
-     verglichen wird. Stand hier nur ein Datum, sah es am Dienstagabend
-     nach einem Fehler aus, und wer es „richtigstellt", legt den Vorgang
-     auf den falschen Tag: doppelter Eintrag in der Leitung, Vergleich
-     mit dem falschen Z-Bericht. „Für" beantwortet das in einem Wort. */
+  /* Das Datum im Kopf ist der Betriebstag des Vorgangs, nicht nur eine
+     Anzeige: er ist die zweite Hälfte des Schlüssels <modus>_<tag>.
+     Vorgeschlagen wird seit F1 (18.09.2026) IMMER der heutige Tag in
+     Europe/Vienna — für jeden Modus derselbe, sonst liegt ein Abend unter
+     zwei Schlüsseln. „Für" sagt, dass die Zahl zum Vorgang gehört und
+     nicht die Uhr ist; „ändern" sagt, dass sie sich ändern lässt. */
   $("#datumTxt").textContent="Für "+deTag(d.tag)+" · ändern";
   const m=$("#main");m.innerHTML="";m.className="";
   if(mode!=="tag"&&branch===null){$("#tools").style.display="none";$("#howto").style.display="none";
@@ -2755,8 +3036,14 @@ function dotRow(w,bucket,soll,pos){
   const d=D();
   const key=bucket==="rest"?w.id:w.id+"_"+bucket;
   const b=document.createElement("div");b.className="w";
-  const tx=document.createElement("div");
-  tx.style.cssText="flex:1;min-width:0;display:flex;align-items:center;gap:11px";
+  /* F3 (18.09.2026): Die Zaehlringe hingen bis hierher IM Namensblock,
+     gleich hinter dem Namen. Weil die Namen verschieden lang sind, stand
+     der erste Ring in jeder Zeile woanders — beim Zaehlen wandert der
+     Blick, und bei 320 px lief der Name sogar unter den ersten Ring.
+     Jetzt traegt die Zeile ein Raster mit festen Spalten:
+     [Name/Winzer/Soll · 1fr] [Zaehlringe · fest] [Fehlmenge] [voll · fest].
+     Die Ringe beginnen damit in JEDER Zeile an derselben x-Position. */
+  const tx=document.createElement("div");tx.className="wtx";
   tx.innerHTML=`${pos?`<span class="pos">${pos}</span>`:""}
     <span class="tx"><span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
     <span class="mt">Soll ${soll}</span></span>`;
@@ -2766,8 +3053,7 @@ function dotRow(w,bucket,soll,pos){
     s.setAttribute("role","button");s.tabIndex=0;
     s.setAttribute("aria-label",`${w.wein}: noch ${i+1} von ${soll} da`);
     pts.push(s);dots.appendChild(s);}
-  const missN=document.createElement("span");missN.className="miss-n";dots.appendChild(missN);
-  tx.appendChild(dots);
+  const missN=document.createElement("span");missN.className="miss-n";
   const cbox=document.createElement("div");cbox.className="chkbox";
   const chk=document.createElement("button");chk.className="chk";
   const lbl=document.createElement("span");lbl.className="chk-lbl";lbl.textContent="voll";
@@ -2795,7 +3081,7 @@ function dotRow(w,bucket,soll,pos){
     if(f){delete d2[bucket][w.id];d2.seen[key]=1;}
     else if(d2.seen[key])delete d2.seen[key];else d2.seen[key]=1;
     save();upd();};
-  b.append(tx,cbox);upd();return b;
+  b.append(tx,dots,missN,cbox);upd();return b;
 }
 
 /* ── Keller holen ── */
@@ -3561,40 +3847,35 @@ function gFit(box,L){
     return;
   }
   const inner=box.querySelector(L.kind==="col"?".drwi":".rsec");if(!inner)return;
-  const cols=L.cols,k=cols.length;
-  const M=gMasse(cols,innenBreite(inner,k));
-  /* Passt das laengste WORT eines Kuerzels nicht mehr in die Spalte, ragt
-     es beidseitig hinaus und ueberlappt den Nachbarn (Lade 4: 34 px Spalte,
-     „Ginger"/„Bitter"/„Lemon" je 46-47 px). Dann schreiben die Kuerzel
-     versetzt, siehe `.drwi.gversetzt`. 40 px ist die gemessene Grenze:
-     Lade 5 und 6 haben 48 px und kommen ohne Versatz aus. */
-  inner.classList.toggle("gversetzt", Math.floor(innenBreite(inner,k)/k) < 40);
+  const cols=L.cols;
+  /* F2: Die Spaltenbreite kommt jetzt aus dem Raster, nicht mehr aus einer
+     Division der Gesamtbreite. Gemessen wird deshalb, was das Raster
+     tatsaechlich vergeben hat — und die Punktgroesse folgt daraus. */
+  const erste=inner.querySelector(".gcol");
+  const cb=erste?erste.clientWidth:72;
+  const maxPlatz=Math.max.apply(null,cols.map(colPlatz));
+  /* Zwei Deckel: die Spalte (ein Punkt darf nie breiter sein als seine
+     Zelle) und die Lade (bei zehn Flaschen uebereinander waere eine Lade
+     sonst hoeher als der Schirm; DHOCH ist die gemessene Grenze, bei der
+     Lade 4 auf einem iPhone noch als Ganzes lesbar bleibt). */
+  const DHOCH=320;
+  const dd=Math.max(18,Math.min(34,cb-6,
+    Math.floor((DHOCH-(maxPlatz-1)*GGAP)/maxPlatz)));
+  /* EINE Hoehe fuer alle Stapel der Lade: damit stehen die Trennstriche
+     auf einer Linie. Die Punkte haengen unten an der Standlinie. */
+  const H=maxPlatz*(dd+GGAP)-GGAP;
+  inner.querySelectorAll(".gstks").forEach(el=>{el.style.height=H+"px";});
   cols.forEach(c=>{
-    const teile=colTeile(c),ges=colSum(c),platz=colPlatz(c);
-    /* Obergrenze 34 statt 52: Lade 2 und 3 haben wenige, kurze Saeulen und
-       blaehten die Punkte deshalb auf das Doppelte der Nachbarladen auf.
-       Auf dem iPhone passte eine Lade dann nicht mehr auf den Schirm. */
-    const dd=Math.max(18,Math.min(34,Math.floor((M.H-(platz-1)*GGAP)/platz)));
-    let cv=null;
+    const teile=colTeile(c);
     teile.forEach(([id,n])=>{
       const st=box.querySelector('.gstk [data-gid="'+L.id+'/'+id+'"]');
       const stk=st&&st.parentNode;if(!stk)return;
-      stk.style.height=(c.platz?n*(dd+GGAP)-GGAP
-                       :Math.round(M.H*n/ges)-(teile.length>1?GGAP:0))+"px";
-      /* versetzt: 1 = eine halbe Flasche tiefer, -1 = eine halbe hoeher.
-         Beides setzt die Punkte in die Luecken der Nachbarspalte; das
-         Vorzeichen entscheidet, ob die Spalte oben oder unten uebersteht. */
-      /* Die Laden stehen auf einer Standlinie: die Spalten sind unten
-         buendig. Ein Versatz nach oben ist deshalb kein Rand oben,
-         sondern einer unten \u2014 sonst passiert sichtbar nichts. */
-      /* Die Spalten stehen unten buendig auf einer Standlinie. Ein Versatz
-         nach oben ist deshalb ein Abstand UNTER den Punkten: die Flasche
-         bleibt in der Reihe, die Punkte ruecken hoch. */
-      if(c.versetzt>0)stk.style.marginTop=Math.round((dd+GGAP)/2)+"px";
-      if(c.versetzt<0)stk.style.marginBottom=Math.round((dd+GGAP)/2)+"px";
+      stk.style.height=(n*(dd+GGAP)-GGAP)+"px";
+      stk.style.removeProperty("margin-top");
+      stk.style.removeProperty("margin-bottom");
       stk.querySelectorAll(".gpt").forEach(pt=>{pt.style.width=pt.style.height=dd+"px";});
-      cv=cv||stk.closest(".gcol");});
-    if(cv)cv.style.width=Math.max(dd,Math.floor(innenBreite(inner,k)/k))+"px";});
+      const cv=stk.closest(".gcol");
+      if(cv)cv.style.removeProperty("width");});});
 }
 
 function drwBox(L,ohneTitel){
@@ -3616,7 +3897,13 @@ function drwBox(L,ohneTitel){
         const i=(seen[id]=(seen[id]||0));seen[id]++;
         const c=gCell(k,i,null,L.leerOben);
         const cap=document.createElement("div");cap.className="gcap";
-        cap.textContent=(col[ci+1]!==id)?GKk(id):"";cap.title=GN(id);
+        /* F2: Bis hierher stand das Kuerzel nur unter der LETZTEN Flasche
+           einer Reihe gleicher Sorte. In Lade 1 liegen aber zwei Sorten
+           uebereinander in derselben Spalte (Holundersirup ueber Pfirsich):
+           die erste Flasche jeder Sorte stand ohne Namen da, der Name
+           darueber gehoerte zur Sorte davor. Im Keller wird so der Name der
+           falschen Flasche zugeordnet. Jetzt traegt jede Flasche ihren. */
+        cap.textContent=GKk(id);cap.title=GN(id);
         it.append(c,cap);it.classList.toggle("gx",c.classList.contains("gx"));
         const gk=L.id+"|"+id;it.dataset.gchk=gk;
         if(colGeprueft(gk))it.classList.add("gitem--geprueft");
@@ -3635,7 +3922,7 @@ function drwBox(L,ohneTitel){
             const it=document.createElement("div");it.className="gitem";
             const c=gCell(k,i,null,L.leerOben);
             const cap=document.createElement("div");cap.className="gcap";
-            cap.textContent=(i===n-1)?GKk(id):"";cap.title=GN(id);
+            cap.textContent=GKk(id);cap.title=GN(id);
             it.append(c,cap);it.classList.toggle("gx",c.classList.contains("gx"));
             const gk=L.id+"|"+id;it.dataset.gchk=gk;
             if(colGeprueft(gk))it.classList.add("gitem--geprueft");
@@ -3726,28 +4013,33 @@ function drwBox(L,ohneTitel){
        Säulen absurd aus — eine einzelne Flasche würde zum Riesenpunkt. Dort
        bleiben die Kugeln gleich groß und die Stapel unterschiedlich hoch, so
        wie die Flaschen tatsächlich in der Lade stehen. */
+    /* F2: Der erste Aufbau setzt nur eine brauchbare Punktgroesse; die
+       endgueltige rechnet gFit(), sobald das Raster seine Spaltenbreite
+       vergeben hat. `versetzt` und `platz` aus den Ladendaten werden nicht
+       mehr gelesen — im Raster haette ein Versatz genau den Schaden, den
+       F2 beschreibt (Kopfzahlen und Namen auf verschiedenen Linien). */
     const M=L.gleich?{H:0,fix:26}:gMasse(L.cols);
     L.cols.forEach(c=>{
       const teile=colTeile(c),ges=colSum(c),platz=colPlatz(c);
       const cv=document.createElement("div");cv.className="gcol";
       const ckey=colKey(L,teile);cv.dataset.colwrap=ckey;
       const dd=M.fix||Math.max(18,Math.min(52,Math.floor((M.H-(platz-1)*GGAP)/platz)));
-      if(!L.gleich)cv.style.width=dd+"px";
+      /* Kopfzeile und Stapelblock: zwei feste Zeilen der Zelle. Die
+         Kopfzahlen aller Spalten stehen damit auf einer Linie, auch wenn
+         eine Spalte zwei Sorten uebereinander traegt. */
+      const kopf=document.createElement("div");kopf.className="gnums";
+      const stks=document.createElement("div");stks.className="gstks";
       teile.forEach(([id,n])=>{
         const k=slotKey(L,id,(L.wein||bkt(L,id)!=="getr")?n:GSOLL[id]);
         const num=document.createElement("div");
         num.className="gnum"+(sIst(k)<n?" low":"");num.dataset.gnum=k;
         num.innerHTML=sIst(k)+'<span class="tot">/'+n+'</span>';
-        const hoehe=c.platz?n*(dd+GGAP)-GGAP
-                   :M.fix?n*(M.fix+GGAP)-GGAP
-                         :Math.round(M.H*n/ges)-(teile.length>1?GGAP:0);
+        num.title=GN(id);
+        const hoehe=n*((M.fix||dd)+GGAP)-GGAP;
         const stk=gStack(k,n,hoehe,L.leerOben);
-        /* Halbe Punkthoehe nach unten: die Spalte sitzt in den Luecken
-           der Nachbarspalte, nicht auf gleicher Hoehe. */
-        if(c.versetzt)stk.style.marginTop=
-          (c.versetzt<0?-1:1)*Math.round((dd+GGAP)/2)+"px";
         stk.querySelectorAll(".gpt").forEach(pt=>pt.dataset.col=ckey);
-        cv.append(num,stk);});
+        kopf.appendChild(num);stks.appendChild(stk);});
+      cv.append(kopf,stks);
       const b=document.createElement("div");b.className="gbase";cv.appendChild(b);
       if(L.photo){
         const s=document.createElement("div");s.className="gshot";
@@ -4102,7 +4394,6 @@ function rDoc(m){
     const cta=document.createElement("div");cta.className="done-cta";
     cta.innerHTML=`<div class="big">${big}</div><div class="lb">${lb}</div>`;
     m.appendChild(cta);
-    if(mode==="tag")rFotos(m);
     /* P14 · Nichts sperrt mehr. Der Knopf bleibt bedienbar, ist aber
        zurueckhaltend gestaltet, solange etwas offen ist, und nennt
        darueber vollstaendig, was offen ist. */
@@ -4170,7 +4461,6 @@ function rDoc(m){
 
   $("#fNotiz").oninput=e=>{d.notiz=e.target.value;save();};
   $("#bMail").onclick=doSenden;
-  fillFotos(box);
   $("#bView").onclick=openHtml;
   $("#bCsv").onclick=expCsv;
   $("#bJson").onclick=expJson;
@@ -4232,7 +4522,6 @@ function docUeber(){
 /* Zu welchem Schritt f\u00fchrt ein offener Punkt? Die Liste bleibt eine
    Liste von Texten \u2014 sie wandert so auch ins Protokoll. */
 function offenZiel(t){
-  if(t.indexOf("Fassungsliste noch nicht")===0)return null;
   if(t.indexOf("Noch nicht alles geholt")===0)return mode==="tag"?2:1;
   if(t.indexOf("Schrank")===0)return 1;
   if(t.indexOf("Nicht alle Positionen")===0)return 0;
@@ -4252,8 +4541,7 @@ function offenList(){
   /* Die Reihenfolge ist die Reihenfolge, in der ein offener Punkt im
      Betrieb wehtut — nicht die, in der die Schritte kommen. rDoc zeigt nur
      die ersten fünf offen an, der Rest liegt hinter „+N weitere". Was
-     morgen am Gast fehlt, muss unter den ersten fünf stehen; das Foto der
-     Fassungsliste ist Papier und hält keinen Service auf.
+     morgen am Gast fehlt, muss unter den ersten fünf stehen.
      Dazu die Anzahl: Ob noch ein Wein fehlt oder acht, entscheidet um
      23 Uhr darüber, ob jemand nochmal in den Keller geht. */
   if(mode==="tag"){
@@ -4261,7 +4549,6 @@ function offenList(){
     if(off)o.push("Noch nicht alles geholt – "+off+(off===1?" Wein":" Weine"));
     barUnits().forEach(u=>{if(!barDone(u))o.push(u.t+" nicht geprüft");});
     [1,2,3,4].forEach(n=>{if(!schrankFertig(n))o.push(SCHRANK[n].kurz+" nicht geprüft");});
-    if(!(d.fotos||[]).length)o.push("Fassungsliste noch nicht fotografiert");
   }
   if(mode==="fuellen"){
     const g2=gFehlt().filter(x=>!WEINLAGER.includes(x.id));
@@ -4277,97 +4564,18 @@ function offenList(){
   return o;
 }
 
-/* ══════ P10 · Fotos der Fassungsliste ══════
-   Bilder liegen in IndexedDB, niemals in localStorage \u2014 ein einziges
-   Foto sprengt dessen Grenze. Beim Import auf 1600px lange Kante und
-   JPEG 0.75 reduziert. */
-const FDB="hh_fotos",FST="bilder";
-function fdb(){return new Promise((res,rej)=>{
-  const r=indexedDB.open(FDB,1);
-  r.onupgradeneeded=()=>{const db=r.result;
-    if(!db.objectStoreNames.contains(FST))db.createObjectStore(FST);};
-  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-function fput(k,b){return fdb().then(db=>new Promise((res,rej)=>{
-  const t=db.transaction(FST,"readwrite");t.objectStore(FST).put(b,k);
-  t.oncomplete=()=>res();t.onerror=()=>rej(t.error);}));}
-function fget(k){return fdb().then(db=>new Promise((res,rej)=>{
-  const t=db.transaction(FST,"readonly"),q=t.objectStore(FST).get(k);
-  q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error);}));}
-function fdel(k){return fdb().then(db=>new Promise((res,rej)=>{
-  const t=db.transaction(FST,"readwrite");t.objectStore(FST).delete(k);
-  t.oncomplete=()=>res();t.onerror=()=>rej(t.error);}));}
-function fkeys(){return fdb().then(db=>new Promise((res,rej)=>{
-  const t=db.transaction(FST,"readonly"),q=t.objectStore(FST).getAllKeys();
-  q.onsuccess=()=>res(q.result||[]);q.onerror=()=>rej(q.error);}));}
-/* Einmal beim Start: Bilder ohne Vorgang wegraeumen. Fehler bleiben
-   still \u2013 das darf den Start nicht aufhalten. */
-function fclean(){
-  try{
-    const halten=new Set(),a=loadArch();
-    Object.keys(a).forEach(k=>((a[k]||{}).fotos||[]).forEach(x=>halten.add(x.k)));
-    Object.keys(S||{}).forEach(k=>((S[k]||{}).fotos||[]).forEach(x=>halten.add(x.k)));
-    fkeys().then(ks=>ks.forEach(k=>{if(!halten.has(k))fdel(k).catch(()=>{});}))
-      .catch(()=>{});
-  }catch(e){}
-}
-function fshrink(file){return new Promise((res,rej)=>{
-  const img=new Image(),url=URL.createObjectURL(file);
-  img.onload=()=>{const s=Math.min(1,1600/Math.max(img.width,img.height));
-    const c=document.createElement("canvas");
-    c.width=Math.max(1,Math.round(img.width*s));
-    c.height=Math.max(1,Math.round(img.height*s));
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-    URL.revokeObjectURL(url);
-    c.toBlob(b=>b?res(b):rej(new Error("leer")),"image/jpeg",0.75);};
-  img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("Bild"));};
-  img.src=url;});}
-function fillFotos(root){
-  (root||document).querySelectorAll("[data-foto] img").forEach(img=>{
-    const k=img.closest("[data-foto]").dataset.foto;
-    fget(k).then(b=>{if(b)img.src=URL.createObjectURL(b);}).catch(()=>{});});}
-function docFotos(){
-  const f=D().fotos||[];
-  if(!f.length)return "";
-  return '<div class="sec"><h3>Fassungsliste</h3><div class="fotos">'+
-    f.map(x=>'<figure class="foto foto--gross" data-foto="'+esc(x.k)+'"><img alt="Fassungsliste">'+
-      '<figcaption>Aufgenommen '+esc(x.zeit)+'</figcaption></figure>').join("")+
-    '</div></div>';}
-function rFotos(m){
-  const d=D();d.fotos=d.fotos||[];
-  const w=document.createElement("div");w.className="fotoblock";
-  w.innerHTML=`<div class="hd1" style="margin-bottom:var(--space-3)">Fassungsliste</div>
-    <div class="fotos"></div>
-    <button class="fotobtn${(D().fotos||[]).length?"":" leer"}" type="button">Foto aufnehmen</button>
-    <input type="file" accept="image/*" capture="environment" multiple class="vh" id="fIn">`;
-  const gal=w.querySelector(".fotos");
-  d.fotos.forEach((x,i)=>{
-    const fig=document.createElement("figure");fig.className="foto";
-    fig.dataset.foto=x.k;
-    fig.innerHTML='<img alt="Fassungsliste"><button class="fdel" aria-label="Foto entfernen">\u00d7</button>'+
-      '<figcaption>'+esc(x.zeit)+'</figcaption>';
-    fig.querySelector(".fdel").onclick=()=>{
-      fdel(x.k).catch(()=>{});d.fotos.splice(i,1);save();render();};
-    gal.appendChild(fig);});
-  const inp=w.querySelector("#fIn");
-  w.querySelector(".fotobtn").onclick=()=>inp.click();
-  inp.onchange=async()=>{
-    const files=[...inp.files];inp.value="";
-    if(!files.length)return;
-    toast(files.length===1?"Foto wird gesichert \u2026":files.length+" Fotos werden gesichert \u2026");
-    for(const f of files){
-      try{
-        const b=await fshrink(f);
-        const i=Date.now()+"_"+Math.round(Math.random()*1e4);
-        const k=mode+"_"+d.tag+"_"+i;
-        await fput(k,b);
-        d.fotos.push({k:k,zeit:new Date().toLocaleTimeString("de-AT",
-          {hour:"2-digit",minute:"2-digit"})});
-      }catch(e){toast("Ein Bild ließ sich nicht sichern");}
-    }
-    save();render();};
-  m.appendChild(w);
-  fillFotos(w);
-}
+/* ══════ F4 · Der Fotoschritt ist weg ══════
+   Hier stand „P10 · Fotos der Fassungsliste": eine IndexedDB `hh_fotos`,
+   Aufnahme, Verkleinern auf 1600 px, Galerie, Anhang an das Protokoll —
+   und in `offenList()` ein offener Punkt, der ein Bild der Liste
+   verlangte und eine vollständige Fassung in die Freigabe zwang.
+   Am 17.09.2026 entschieden, am 18.09.2026 ersatzlos entfernt: Schritt,
+   Knopf, Kacheltext, Hilfetext, der offene Punkt, das Fach `fotos` im
+   Vorgangspaket, die Anzeige im Backoffice und der Bildspeicher selbst.
+   `aufraeumenFotospeicher()` (weiter unten, beim Start) loescht die
+   IndexedDB EINMAL — sonst bliebe sie auf jedem Geraet liegen.
+   An seine Stelle kommt nichts. Der Vortagsabgleich ist eine eigene
+   Aufgabe und gehoert ins Backoffice, nicht in den Keller ohne Netz. */
 
 /* ── Dokument-Bausteine (Tabellen) ── */
 function tbl(head,rows,tot){return `<table><thead><tr>${head}</tr></thead><tbody>${rows}${tot||""}</tbody></table>`;}
@@ -4398,7 +4606,6 @@ function docTag(){
         `<tr class="tot"><td>Summe</td><td class="r">${sum(d.zusatz)}</td></tr>`)}</div>`;}
   h+=docGetrMenge(d.gent);
   h+=docGetrZusatz(d.gzusatz);
-  h+=docFotos();
   return h;
 }
 function docFuellen(){
@@ -4479,10 +4686,11 @@ function resultText(){
     return [g2.reduce((a,x)=>a+x.n,0)+" Getränke nachzufüllen.",
       offen?offen+" Position"+(offen===1?"":"en")+" noch offen.":"Alles geholt und eingeräumt."];}
   if(mode==="tag"){const fl=sum(d.rest)+sum(d.barrot)+sum(d.bar)+sum(d.backup);
-    const zu=sum(d.zusatz),n=(d.fotos||[]).length;
+    const zu=sum(d.zusatz);
+    const off=holList().filter(x=>!d.holt[x.w.id]).length;
     return [fl+" Flaschen aus dem Keller geholt"+(zu?", dazu "+zu+" zusätzlich entnommen.":"."),
-      n?(n===1?"Fassungsliste als Foto beigelegt.":n+" Fotos der Fassungsliste beigelegt."):
-        "Kein Foto der Fassungsliste."];}
+      off?off+(off===1?" Wein ist noch nicht geholt.":" Weine sind noch nicht geholt.")
+         :"Alles geholt und eingeräumt."];}
   if(mode==="keller"){const gez=WINES.filter(w=>d.zdone[w.id]).length;
     const tot=WINES.reduce((a,w)=>a+g(d.reihen,w.id)*6+g(d.einzel,w.id),0);
     return [gez+" von "+WINES.length+" Positionen gezählt, "+tot+" Flaschen.",
@@ -4571,7 +4779,8 @@ function openHtml(){
   w.document.write(fullHtml());w.document.close();
 }
 /* P11 · Das Protokoll geht als Datei mit, nicht als Fliesstext im
-   Mailkoerper. Fotos kommen in voller Groesse mit. */
+   Mailkoerper. Seit F4 (18.09.2026) haengt kein Foto der Fassungsliste
+   mehr daran. */
 async function protoDateien(){
   const d=D(),basis=mode+"_"+d.tag;
   const f=[];
@@ -4579,12 +4788,6 @@ async function protoDateien(){
   catch(e){console.error("HTML-Protokoll",e);}
   try{f.push(new File(["\ufeff"+csvText()],"protokoll_"+basis+".csv",{type:"text/csv"}));}
   catch(e){console.error("CSV-Protokoll",e);}
-  const fotos=d.fotos||[];
-  for(let i=0;i<fotos.length;i++){
-    try{const b=await fget(fotos[i].k);
-      if(b)f.push(new File([b],"fassungsliste_"+d.tag+"_"+(i+1)+".jpg",{type:"image/jpeg"}));
-    }catch(e){}
-  }
   return f;
 }
 async function doSenden(){
@@ -4715,7 +4918,31 @@ window.addEventListener("resize",()=>{measure();
   clearTimeout(rsz);rsz=setTimeout(()=>{if(document.querySelector(".drw"))render();},180);});
 
 /* 2.3 · Offline-Hinweis, kein Blocker. Die eigene Zeile ist entfallen —
-   der Zustand steht in der Statuszeile unter dem Kopf (netzChip). */
+/* F4 · Der Bildspeicher geht mit dem Schritt.
+   `hh_fotos` lag als eigene IndexedDB auf jedem Geraet; ein einziges Foto
+   sprengt den localStorage, deshalb war sie noetig. Ohne den Schritt
+   schreibt niemand mehr hinein — liegen bliebe sie trotzdem, auf jedem
+   iPhone, mit allen Bildern darin. Sie wird deshalb EINMAL geloescht und
+   das Fach `fotos` aus den gespeicherten Vorgaengen und dem Archiv
+   genommen. Was dabei verloren geht, steht im Morgenbrief: die Bilder, die
+   an bereits archivierten Protokollen hingen. Sie sind unwiederbringlich.
+   Fehler bleiben still — das darf den Start nicht aufhalten. */
+const FOTO_WEG="hh_fotos_geloescht_v1";
+function aufraeumenFotospeicher(){
+  try{
+    Object.keys(S||{}).forEach(k=>{ if(S[k]&&S[k].fotos){ delete S[k].fotos; } });
+    save();
+    const a=loadArch();let ge=false;
+    Object.keys(a).forEach(k=>{ if(a[k]&&a[k].fotos){ delete a[k].fotos; ge=true; } });
+    if(ge)saveArch(a);
+  }catch(e){}
+  try{
+    if(localStorage.getItem(FOTO_WEG))return;
+    localStorage.setItem(FOTO_WEG,"1");
+    if(window.indexedDB&&indexedDB.deleteDatabase)indexedDB.deleteDatabase("hh_fotos");
+  }catch(e){}
+}
+/* Der Zustand steht in der Statuszeile unter dem Kopf (netzChip). */
 function netState(){document.body.classList.toggle("off",navigator.onLine===false);
   if(typeof netzChip==="function")netzChip();}
 window.addEventListener("online",netState);window.addEventListener("offline",netState);
@@ -4724,8 +4951,12 @@ if("serviceWorker" in navigator){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
 
-(whoAmI()?renderMenu():renderLogin());measure();fclean();
+(whoAmI()?renderMenu():renderLogin());measure();aufraeumenFotospeicher();
 if(whoAmI())netzStart();
+/* F9: Die Begrüßung kommt nach dem ersten Aufbau. Steht sie schon, bevor
+   der Server geantwortet hat, fehlt ihr nur die dritte Zeile — das ist
+   gewollt (siehe `grussFuellen`), und `zieheFern` trägt sie nach. */
+grussVielleicht();
 </script>
 </body>
 </html>

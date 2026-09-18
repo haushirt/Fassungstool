@@ -2,7 +2,7 @@
 <html lang="de" data-dichte="maus">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#004947">
 <title>Leitung – Fassungstool · Haus Hirt</title>
 <style>
@@ -243,9 +243,15 @@ input,select,textarea{font:inherit;color:inherit}
 table{border-collapse:collapse;width:100%}
 
 /* ═══════════════ Kopf ═══════════════ */
+/* F6 (18.09.2026): Auch das Backoffice wird gelegentlich am iPad gelesen,
+   und dort lag der Kopf unter der Statusleiste. Das Polster oben ist
+   dasselbe wie in index.html; `viewport-fit=cover` steht seit heute auch
+   im meta-Tag dieser Datei — ohne das liefert env() 0.
+   height bleibt 56px fuer die Zeile selbst, das Polster kommt darueber. */
 .kopf{position:sticky;top:0;z-index:var(--z-top);background:var(--accent);
   color:var(--fg-on-dark);display:flex;align-items:center;gap:var(--space-4);
-  padding:0 var(--space-6);height:56px}
+  padding:max(12px,env(safe-area-inset-top)) var(--space-6) 0;
+  box-sizing:content-box;height:56px}
 .kopf h1{font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
   letter-spacing:.01em}
 .kopf .haus{font-size:var(--text-xs);text-transform:uppercase;
@@ -486,7 +492,7 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
    Das ist die Ansicht, die der Nachmittagsblick am Handy braucht. */
 @media(max-width:900px){
   .navknopf{display:grid}
-  .kopf{padding:0 var(--space-3);gap:var(--space-2)}
+  .kopf{padding:max(12px,env(safe-area-inset-top)) var(--space-3) 0;gap:var(--space-2)}
   .kopf .chip{display:none}
   /* Auf dem Handy traegt die Leiste die Marke, nicht den Seitentitel —
      der steht ohnehin als Ueberschrift direkt darunter. */
@@ -729,7 +735,11 @@ function normVorgang(v){
   if(!v || !v.mode) return null;
   const o={mode:v.mode, tag:v.tag||"", name:v.name||"", notiz:v.notiz||"",
            fertig:!!v.finished, ts:v.archiviert||"", wein:{}, getr:{},
-           zaehlung:null, gzaehlung:null, eingang:{}, fotos:(v.fotos||[]).length,
+           /* F4 (18.09.2026): `fotos` ist hier ersatzlos entfallen. Der
+              Fotoschritt der Fassungsliste gibt es in der App nicht mehr,
+              und eine Spalte, die ab heute immer 0 zaehlt, sagt der
+              Leitung nur, dass niemand mehr fotografiert. */
+           zaehlung:null, gzaehlung:null, eingang:{},
            roh:v};
   const zu=(t,id,n)=>{ n=+n||0; if(n) t[id]=(t[id]||0)+n; };
 
@@ -1180,10 +1190,23 @@ function minusGeteilt(B){
   return {minus, erklaert, echt:minus.filter(w=>erklaert.indexOf(w)<0)};
 }
 
+/* ── Betriebstag ──────────────────────────────────────────────────────
+   F1 (18.09.2026): Das Backoffice bildete „heute" und „gestern" mit
+   `toISOString()`, also in UTC — zwischen Mitternacht und 02:00 Ortszeit
+   war das der Vortag, und die Leitung rechnete gegen einen anderen Tag als
+   die App im Keller. Wortgleich mit `wienTag()` in index.html: wer eine
+   aendert, aendert beide. */
+function wienTag(d){
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Vienna",
+    year:"numeric",month:"2-digit",day:"2-digit"}).format(d||new Date());
+}
+function tagMinus(iso,n){
+  const d=new Date(iso+"T12:00:00Z");d.setUTCDate(d.getUTCDate()-n);
+  return d.toISOString().slice(0,10);
+}
 /* Verbrauch je Tag über das Fenster in EINST.tage */
 function verbrauch(){
-  const heute=new Date(), grenze=new Date(heute); grenze.setDate(grenze.getDate()-EINST.tage);
-  const g=grenze.toISOString().slice(0,10);
+  const g=tagMinus(wienTag(),EINST.tage);
   const w={}, gt={}; const tage=new Set();
   VORGAENGE.forEach(v=>{
     if((v.tag||"") < g) return;
@@ -1313,8 +1336,7 @@ const BEFUND = r => Math.abs(r.diff)<0.5
 
 function abgleich(tag, spanne){
   spanne = spanne || 1;
-  const bis=tag, von=(()=>{ const d=new Date(tag+"T12:00");
-    d.setDate(d.getDate()-(spanne-1)); return d.toISOString().slice(0,10); })();
+  const bis=tag, von=tagMinus(tag,spanne-1);
   const imFenster = t => t>=von && t<=bis;
 
   const verk={}, offen=[], ohneGroesse=[], berichte=[];
@@ -1489,8 +1511,7 @@ function zeichneNav(){
 
 function letzterTag(){
   /* Der Betriebstag, um den es geht: gestern, sofern es dazu etwas gibt */
-  const d=new Date(); d.setDate(d.getDate()-1);
-  const gestern=d.toISOString().slice(0,10);
+  const gestern=tagMinus(wienTag(),1);
   if(ZBER[gestern] || VORGAENGE.some(v=>v.tag===gestern)) return gestern;
   const tage=Array.from(new Set([...Object.keys(ZBER), ...VORGAENGE.map(v=>v.tag)])).filter(Boolean).sort();
   return tage[tage.length-1] || gestern;
@@ -2133,8 +2154,7 @@ function vVorgaenge(m){
       <td class="r">${v.flWein||'<span class="dim">—</span>'}</td>
       <td class="r">${v.flGetr||'<span class="dim">—</span>'}</td>
       <td>${v.fertig?'<span class="pill p-ok">abgeschlossen</span>':'<span class="pill p-warn">läuft</span>'}
-          ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}
-          ${v.fotos?` <span class="mini">${v.fotos} Foto${v.fotos>1?"s":""}</span>`:""}</td>
+          ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}</td>
       <td class="deutung">${esc(v.notiz||"")}</td></tr>`).join("")
       :`<tr><td colspan="7" class="leer">Keine Vorgänge in dieser Quelle.</td></tr>`}
     </tbody></table></div>`;
@@ -2369,8 +2389,7 @@ function vSpeicher(m){
         <td class="r">${v.flWein||'<span class="dim">—</span>'}</td>
         <td class="r">${v.flGetr||'<span class="dim">—</span>'}</td>
         <td>${v.fertig?'<span class="pill p-ok">fertig</span>':'<span class="pill p-warn">läuft</span>'}
-            ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}
-            ${v.fotos?` <span class="mini">${v.fotos} Foto${v.fotos>1?"s":""}</span>`:""}</td>
+            ${v.zaehlung?' <span class="pill p-neu">Zählung</span>':""}</td>
         <td class="r"><button class="b klein" data-oe="${alle.indexOf(v)}">Ansehen</button></td></tr>`).join("")
         :`<tr><td colspan="7" class="leer">Nichts gefunden.</td></tr>`}
       </tbody></table></div>`;

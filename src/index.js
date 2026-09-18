@@ -27,6 +27,18 @@ const SITZUNG = 12 * 60 * 60 * 1000;
    Kompromiss: immer noch eine Sperre, aber keine, die im Betrieb zuschnappt. */
 const SPERRE = { versuche: 10, fenster: 15 * 60 * 1000 };
 
+/* ── Betriebstag ────────────────────────────────────────────────────────
+   F1 (18.09.2026): Der Worker läuft in UTC. Wo er selbst einen Betriebstag
+   bildete (`notiz`, Wochenbrief), stand deshalb ab 22:00 Ortszeit der
+   Vortag — während die App im Keller schon den nächsten schrieb. Der Tag
+   eines VORGANGS kommt weiterhin ausschliesslich aus dem Paket der App
+   (`daten.tag`); der Worker rechnet keinen eigenen dagegen. Diese Funktion
+   ist nur für das, was der Worker selbst datiert, und sie rechnet in
+   derselben Zeitzone wie `wienTag()` in index.html und leitung.html. */
+const wienTag = (d) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Vienna", year: "numeric", month: "2-digit", day: "2-digit"
+}).format(d || new Date());
+
 const json = (o, s = 200, h = {}) =>
   new Response(JSON.stringify(o), {
     status: s,
@@ -725,7 +737,7 @@ export default {
   /* ── Wochenbrief ─────────────────────────────────────────────────── */
   async scheduled(event, env, ctx) {
     const bis = new Date(), von = new Date(); von.setDate(von.getDate() - 7);
-    const t = d => d.toISOString().slice(0, 10);
+    const t = d => wienTag(d);
     const { results: bew } = await env.DB.prepare(
       `SELECT artikel, SUM(menge) AS fl FROM ereignis
         WHERE art = 'entnahme' AND tag BETWEEN ?1 AND ?2
@@ -760,5 +772,5 @@ async function notiz(env, quelle, text) {
   await env.DB.prepare(
     `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer, notiz)
      VALUES (?1,?2,?3,'korrektur',?4,'','','',0,'System',?5)`
-  ).bind(crypto.randomUUID(), Date.now(), new Date().toISOString().slice(0, 10), quelle, text).run();
+  ).bind(crypto.randomUUID(), Date.now(), wienTag(), quelle, text).run();
 }
