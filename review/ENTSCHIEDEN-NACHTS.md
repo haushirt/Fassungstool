@@ -468,3 +468,35 @@ das ist schlechter.
 **Betrifft:** `public/leitung.html` (`abgleich`, `nichtRechenbar`)
 **Aufwand zum Zurückdrehen:** 10 Minuten.
 *vorläufig, revidierbar*
+
+---
+
+### 10 · Zählung und Lieferung am selben Betriebstag — wer zählt zuerst?
+
+**Entschieden:** Ein Wareneingang desselben Betriebstages wie die jüngste
+Kellerzählung wird **nicht** auf den gezählten Bestand addiert, und das
+Backoffice sagt es an der Zahl: „Am Zähltag wurden n Flaschen geliefert — ob
+die Zählung sie schon enthält, ist nicht feststellbar."
+
+**Warum:** Bei gleichem Betriebstag ist die Reihenfolge nicht feststellbar —
+`ts` ist die Ankunftszeit beim Server, nicht der Zeitpunkt im Keller (genau
+deshalb wurde sie in Entscheidung Nr. 8 verworfen). Die Zählung ist die härtere
+Tatsache: Sie hat die Flaschen gesehen. Damit ist die Zahl im Zweifel zu
+niedrig statt zu hoch — im Keller heißt das, jemand geht nachsehen, statt dass
+eine Bestellung ausbleibt. Und es entspricht der Linie des Hauses: lieber
+ausweisen als still falsch rechnen.
+
+**Vorgeschichte, damit sie nicht verlorengeht:** Entscheidung Nr. 8 („die
+Zählung gilt am selben Tag als Erstes") hat vier Fälle richtig gemacht und
+diesen einen verschlechtert — vor der Nacht fiel die Lieferung weg (zufällig
+richtig), nach Runde 10 zählte sie doppelt. Beides war falsch, nur in
+verschiedene Richtungen.
+
+**Sauber lösbar wäre es nur mit einem im Vorgang ERFASSTEN Zählzeitpunkt**
+statt der Ankunftszeit. `vorgang.begonnen` existiert live und `NOT NULL` — es
+ist der Zeitpunkt, an dem im Keller begonnen wurde. Ihn bis ins Journal zu
+führen, ist ein Umbau und gehört in den Morgenbrief, nicht in diese Nacht.
+
+**Betrifft:** `public/leitung.html` (`bestand`), `src/index.js` (`bestand`)
+**Aufwand zum Zurückdrehen:** 15 Minuten.
+*vorläufig, revidierbar*
