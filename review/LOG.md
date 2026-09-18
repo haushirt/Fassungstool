@@ -2623,3 +2623,15 @@ alle sauber. Er scheitert an einem Weg, den es im Haus jeden Tag gibt.
 **Rundenfazit:** Elf Commits, ein einziger echter Blocker — aber der steht
 mitten im Alltag: Wer Cola für die Küche holt, kommt aus dem Tool nur noch
 mit seinem persönlichen Code heraus.
+
+### Runde 15 – Oberfläche (die Funde der Agenten aus Runde 14)
+**Kritik am Vorgänger:** Mein eigener Runde-14-Eintrag sagt „Sonderentnahme verlangt einen Grund (fünf Knöpfe, Pflicht in `offenList`)" — im Zweig Getränke gab es die Knöpfe nicht, die Pflicht aber schon ✅ übernommen, behoben. · „Statusfeld als Knopf zur Begrüßung": dabei ist der Quittierknopf `.netzok` herausgefallen, ein Knopf im Knopf geht nicht ✅ übernommen, behoben. · Der neue Kopf nannte `today()`, der Vorgang lief auf `vorgabeTag()` ✅ übernommen, behoben. · „elf von elf Urteilen" war zweimal falsch, es sind zehn ✅ übernommen, richtiggestellt. · Die größeren Funde (der Grund erreicht die Leitung nie, `summaryBig` im Getränke-Zweig, Offline-Reihe bei dauerhaftem 4xx) ↩️ geändert: in den Backlog, nicht in diese Runde — sie gehören nicht in einen Merge, der schon drei Runden trägt.
+**Umgesetzt:**
+- `rGrund(m)` läuft auch in `rGetrMenge`, gebunden an `mode==="nach"` (der Wareneingang kennt keinen Grund).
+- Der Statusblock ist wieder ein `<div>` mit zwei echten Knöpfen: `.netzok` („Gesehen") und `.netzmehr` (›, öffnet die Begrüßung). `role="status"` sitzt wieder an der Textzeile, nicht im Knopf.
+- Kopf und `tagesStand()` fragen `vorgabeTag()`; ein gewählter Tag steht als „· gewählt" da, und nach der Wahl wird die Startseite neu gezeichnet.
+**Geprüft:** `npm test` 359/359 (9 neue Prüfungen). `node tests/ui-nachjagd.cjs` 23/23 — die 14 neuen Prüfungen sind gegen den Stand vor der Behebung nachweislich ROT (0 Grundknöpfe, Statusblock BUTTON ohne `.netzok`, Kopf bleibt „Freitag, 18.09." während `vorgabeTag()` schon auf gestern steht). `LAUF=runde15 node tests/ui-mass.cjs` zehn von zehn. Belege `review/screens/r15/` und `review/screens/geraete/r15/`, Bögen in `review/bogen/`.
+**Für die Nächsten:** software-engineer: der Grund muss im Protokoll und im Backoffice ankommen (`ereignis.notiz` wird von keiner Abfrage gelesen), und ein nachträglich geänderter Grund braucht eine Korrekturzeile. Danach `summaryBig()` für den Getränke-Zweig.
+**Phase/Thema:** Oberfläche / Sonderentnahme, Startseite
+**Backlog:** elf Punkte aus beiden Agentenberichten eingetragen.
+**STATUS:** FERTIG

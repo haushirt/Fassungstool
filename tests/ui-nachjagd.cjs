@@ -199,6 +199,114 @@ const hilfeWeg = async p => {
     await ctx.close();
   }
 
+  /* ── Runde 15 · Der Grund gilt auch im Zweig Getränke ──────────────── */
+  {
+    const { ctx, p, fehler } = await seite(b);
+    await grussWeg(p);
+    await p.evaluate(() => { start("nach"); });
+    await p.waitForTimeout(400);
+    const tor = p.locator(".gbtn.getr");
+    if (await tor.count()) { await tor.first().click(); await p.waitForTimeout(500); }
+    const zu = p.locator("#hilfeZu");
+    if (await zu.count() && await zu.isVisible()) { await zu.click(); await p.waitForTimeout(200); }
+    const vorher = await p.evaluate(() => ({
+      knoepfe: document.querySelectorAll(".grundb").length,
+      offen: (typeof offenList === "function" ? offenList() : [])
+    }));
+    urteil("R15 · Getränke-Sonderentnahme zeigt die fünf Gründe",
+           vorher.knoepfe === 5, vorher.knoepfe + " Knöpfe");
+    const kn = p.locator(".grundb").first();
+    if (await kn.count()) { await kn.click(); await p.waitForTimeout(350); }
+    const nachher = await p.evaluate(() => ({
+      grund: (typeof D === "function" ? (D().grund || "") : ""),
+      offen: (typeof offenList === "function" ? offenList() : [])
+    }));
+    urteil("R15 · der Grund lässt sich dort setzen", !!nachher.grund, nachher.grund);
+    urteil("R15 · danach steht kein unerfüllbarer Punkt mehr offen",
+           !nachher.offen.some(t => String(t).indexOf("Grund fehlt") === 0),
+           JSON.stringify(nachher.offen));
+    urteil("R15 · keine JS-Fehler dabei", fehler.length === 0, fehler[0] || "");
+    await ctx.close();
+  }
+
+  /* ── Runde 15 · Quittieren steht wieder auf der Startseite ─────────── */
+  {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await ctx.addInitScript(SAAT("Asad"));
+    /* Ein überholter Stand im Sackfach — genau der Fall, den Regel 6 vor
+       dem stillen Wegwerfen schützt. */
+    await ctx.addInitScript(`(()=>{ try{
+      localStorage.setItem("hh_ueberholt_v1", JSON.stringify([{
+        schluessel:"keller_2026-09-17", id:"x1",
+        daten:{mode:"keller", tag:"2026-09-17", zeit:"2026-09-17T20:10:00.000Z"},
+        zeit:"2026-09-17T20:10:00.000Z",
+        fremd:{name:"Ian", zeit:"2026-09-17T21:00:00.000Z"}}]));
+    }catch(e){} })();`);
+    const p = await ctx.newPage();
+    const fehler = [];
+    p.on("pageerror", e => fehler.push(e.message));
+    await p.goto("http://127.0.0.1:8991/index.html", { waitUntil: "load" });
+    await p.waitForTimeout(700);
+    await grussWeg(p);
+    await p.waitForTimeout(400);
+    const feld = await p.evaluate(() => {
+      const el = document.querySelector("#menu .netz--block");
+      if (!el) return { da: false };
+      const ok = el.querySelector(".netzok");
+      return { da: true, tag: el.tagName,
+               okDa: !!ok, okSichtbar: !!(ok && !ok.hidden),
+               mehrDa: !!el.querySelector(".netzmehr"),
+               offen: (typeof ueberholtOffen === "function" ? ueberholtOffen().length : -1) };
+    });
+    urteil("R15 · der Statusblock ist kein Knopf mehr",
+           feld.da && feld.tag === "DIV", feld.tag);
+    urteil("R15 · der Quittierknopf steht da und ist sichtbar",
+           feld.okDa && feld.okSichtbar, JSON.stringify(feld));
+    const g = p.locator("#menu .netzok");
+    if (await g.count()) { await g.click(); await p.waitForTimeout(400); }
+    const danach = await p.evaluate(() => ({
+      offen: (typeof ueberholtOffen === "function" ? ueberholtOffen().length : -1),
+      gruss: !document.querySelector("#gruss").hidden
+    }));
+    urteil("R15 · ein Tipp darauf quittiert den Stand",
+           danach.offen === 0, "offen: " + danach.offen);
+    urteil("R15 · und oeffnet dabei nicht die Begruessung", !danach.gruss);
+    urteil("R15 · keine JS-Fehler dabei", fehler.length === 0, fehler[0] || "");
+    await ctx.close();
+  }
+
+  /* ── Runde 15 · Startseite und Vorgang nennen denselben Tag ────────── */
+  {
+    const { ctx, p, fehler } = await seite(b);
+    await grussWeg(p);
+    await p.waitForTimeout(300);
+    const vorher = await p.evaluate(() => ({
+      kopf: (document.querySelector("#menu .subh") || {}).textContent || "",
+      vorgabe: typeof vorgabeTag === "function" ? vorgabeTag() : ""
+    }));
+    await p.evaluate(() => {
+      const g = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      setTagWahl(g); renderMenu();
+    });
+    await p.waitForTimeout(300);
+    const nachher = await p.evaluate(() => ({
+      kopf: (document.querySelector("#menu .subh") || {}).textContent || "",
+      vorgabe: typeof vorgabeTag === "function" ? vorgabeTag() : ""
+    }));
+    urteil("R15 · der Kopf nennt vor der Wahl den heutigen Tag",
+           vorher.kopf.indexOf("gewählt") < 0, vorher.kopf);
+    urteil("R15 · nach der Wahl steht ein anderer Tag im Kopf",
+           nachher.kopf !== vorher.kopf, vorher.kopf + " -> " + nachher.kopf);
+    urteil("R15 · und er ist als gewählt gekennzeichnet",
+           nachher.kopf.indexOf("gewählt") >= 0, nachher.kopf);
+    urteil("R15 · auch vorgabeTag() ist mitgewandert",
+           nachher.vorgabe !== vorher.vorgabe,
+           vorher.vorgabe + " -> " + nachher.vorgabe);
+    urteil("R15 · keine JS-Fehler dabei", fehler.length === 0, fehler[0] || "");
+    await ctx.close();
+  }
+
   await b.close(); srv.close();
   console.log(nein ? "\n" + nein + " Prüfung(en) NEIN." : "\nAlle Prüfungen ja.");
   process.exit(nein ? 1 : 0);

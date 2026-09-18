@@ -5,6 +5,83 @@ Phase gefüllt, nicht laufend.
 
 ---
 
+# Was mit diesem Merge live geht
+
+**Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v36.**
+Der Merge bringt **drei Runden zusammen** hinaus: Runde 13 (elf Befunde vom
+echten iPhone), Runde 14 (Oberfläche, Punkt für Punkt) und Runde 15 (die
+Funde von Jäger und qa-guardian). Elf Commits.
+
+**Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
+`wrangler.jsonc`, `package.json` unberührt, kein `ALTER`, kein `CREATE`.
+Die Spalten `schluessel`, `zaehlnr`, `geraet` sind nicht angefasst,
+`RUNDEN` unverändert — bestehende Anmeldungen bleiben gültig.
+
+**Was auf jedem Gerät einmalig passiert:** Der Fotoschritt der
+Fassungsliste ist entfallen (Runde 13, F4). Beim ersten Start nach dem
+Deploy löscht die App die IndexedDB `hh_fotos` — die dort liegenden Bilder
+sind danach weg und nicht wiederherstellbar. So bestellt; die Marke fällt
+erst nach erfolgreichem Löschen, ein abgebrochener Versuch wird beim
+nächsten Start wiederholt.
+
+## Die drei größten Änderungen für den Betrieb
+
+**1 · Der Betriebstag stimmt (Runde 13, F1).** Der Tag kommt aus
+`Europe/Vienna` statt aus UTC, und die Tagesfassung trägt den Tag, an dem
+sie gemacht wird — nicht mehr den Vortag. Startseite und Vorgang nennen
+seit Runde 15 denselben Tag; wer über die Begrüßung ein anderes Datum
+wählt, sieht das oben stehen („Donnerstag, 17.09. · gewählt").
+
+**2 · Die Sonderentnahme verlangt einen Grund.** Fünf Knöpfe — Küche,
+Personal, Bruch/Kork, Verkostung/Gast, Zimmer — in **beiden** Zweigen, Wein
+wie Getränke. Ohne Grund bleibt der Vorgang offen. Der Grund geht als
+`grund=<schlüssel>` in die bestehende Spalte `ereignis.notiz`; keine neue
+Spalte, keine Migration.
+
+**3 · Die Oberfläche ist für das iPhone neu gesetzt.** Startseite mit
+farbigem Kopf und Datum, Statusfeld als Einstieg in die Begrüßung, drei
+Gruppen statt einer Liste; die Laden zeigen jede Flasche mit Namen in einer
+Reihe; die Weinzeile hat kleinere Ringe ohne Umbruch und farbige
+Rebsortenüberschriften.
+
+## Stammdaten: eine Änderung
+
+**Gasteiner 0,25 l: Soll 7 → 8** (`src/stamm.json`, `public/index.html`,
+`public/leitung.html`). Von Casimir bestätigt. Das Soll geht über `gFehlt()`
+ins append-only Journal — stimmt es nicht mit dem Fach überein, bucht jedes
+Nachfüllen dauerhaft falsch.
+
+## Was vor dem Merge zu wissen ist
+
+**Der Abgleich im Backoffice paart dauerhaft um einen Tag versetzt.**
+Seit F1 trägt die Tagesfassung den Tag, an dem sie gemacht wird; der
+Z-Bericht eines Tages gehört aber zur Fassung des Folgetags.
+`abgleich()` paart weiter Z-Bericht(X) mit Vorgang(X). Das ist **kein**
+Übergangseffekt um den Merge herum, sondern gilt bis auf Weiteres, und im
+Backoffice steht nichts davon. Offen als A4 in `review/BACKLOG.md`.
+
+**Der Grund erreicht die Leitung noch nicht.** Er steht im Journal, wird
+aber von keiner Abfrage gelesen und weder im Protokoll noch im Backoffice
+angezeigt. Nächste Runde, `review/BACKLOG.md`.
+
+## Prüfstand
+
+`npm test` **359/359** · `node tests/ui-nachjagd.cjs` **23/23** ·
+`LAUF=runde15 node tests/ui-mass.cjs` **zehn von zehn Urteilen grün** über
+sechs Breiten und jeden Schritt jedes Modus · Z-Bericht-Prüfungen gegen
+`tests/fixtures/` grün · Worker-Durchstich für den Grund gegen
+`docs/live-schema.sql` in echtem SQLite.
+
+Belege: `review/screens/f1…f9/`, `review/screens/r14/`,
+`review/screens/r15/`, auf iPhone 16 / iPad mini / MacBook unter
+`review/screens/geraete/`, als Kontaktbögen in `review/bogen/`.
+
+**UNGEPRÜFT bleibt:** echtes Safari auf echtem iPhone und iPad — Notch,
+Safe-Area, Tastatur, Gummiband und der Wechsel des Service Workers von
+v31 auf v36. Ebenso VoiceOver und die Live-D1.
+
+---
+
 # Runde 13 · Dringende Fehlerbehebung, 18.09.2026
 
 **Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v32.**

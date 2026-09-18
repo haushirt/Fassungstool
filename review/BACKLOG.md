@@ -201,3 +201,16 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 - **mittel** · Kellerzählung: auf Wunsch aus Runde 14 herausgehalten, eigene Runde nötig (Schrittweite, Reihen/Einzelflaschen, Trefferflächen).
 - **niedrig** · Ringteilung liegt bei 45 px (32 Ring + 13 Luft). Der Griff ist auf die 44 px des Hauses gedeckelt; eine Teilung von genau 44 fällt beim Tasten an den Nachbarring.
 - **niedrig** · Die Ziffern auf den Zählpunkten stehen absichtlich leise bei 1,9 : 1 — Hinweis der Messung, kein Urteil. Entscheidung, ob das so bleibt, steht aus.
+
+## Runde 15 (18.09.2026) · aus den Berichten von Jäger und qa-guardian
+- **hoch** · Der Grund der Sonderentnahme erreicht die Leitung nicht: keine Abfrage liest `ereignis.notiz` (`src/index.js:337`, `:415`, `:756`), `docNach()` nennt ihn nicht, das Backoffice auch nicht.
+- **hoch** · Ein nachträglich geänderter Grund erzeugt keine Korrekturzeile — `ereignisseAbleiten()` vergleicht nur Mengen (`src/index.js:344–356`). Vorgang sagt „Küche", Journal sagt „Bruch".
+- **hoch** · A4: Die Abgleich-Paarung im Backoffice ist seit F1 dauerhaft um einen Tag versetzt und steht nirgends im Backoffice.
+- **mittel** · `summaryBig()` zeigt bei der Getränke-Sonderentnahme „0 Flaschen geholt" (liest `d.ent` statt `d.gent`). Steht wortgleich schon in `main`.
+- **mittel** · Die Offline-Reihe bleibt bei dauerhaftem 4xx ≠ 409 stehen, `versuche` wird nie erhöht (`public/index.html:2101`). Fund aus Jagd 6.
+- **mittel** · Zwei Listen für dieselben fünf Gründe: `GRUENDE` in der App, `GRUND_ERLAUBT` im Worker. Ein sechster Grund fiele still aus dem Journal.
+- **mittel** · `src/stamm.json` und die Kopie in `public/index.html` sind auseinandergelaufen (`versetzt`, 18 `kurz`-Einträge, `pic`). `/api/stamm` hat keinen Verbraucher. `gastklein` = 8 steht in allen drei Kopien.
+- **niedrig** · Veralteter Kommentar bei `.dot::after` — nennt 34 + 10 statt 32 + 13.
+- **niedrig** · `ringMasse()` deckelt die Ringspalte nicht. Bei einem Soll über 4 stünden feste Spalten breiter als das Fenster. Heute unerreichbar (höchstes Soll einer Zählzeile ist 3).
+- **niedrig** · `sw.js`: `activate` räumt den alten Vorrat auch dann, wenn `install` bei wackligem Netz nichts sammeln konnte.
+- **niedrig** · CLAUDE.md widerspricht sich: harte Regel 1 nennt `v2-review`, der Abschnitt „Arbeitsweise" sagt eigener Branch. Ein `v2-review` gibt es weder lokal noch auf origin. Entscheidung von Casimir.

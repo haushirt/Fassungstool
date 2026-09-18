@@ -95,6 +95,15 @@ const SAAT_LEITUNG = `(()=>{ try{
   localStorage.setItem("hh_bekannt_v1", '{"x":{"name":"Casimir","rolle":"leitung"}}');
 }catch(e){} })();`;
 
+/* Ein überholter Stand im Sackfach — sonst bleibt „Gesehen" verborgen. */
+const SAAT_UEBERHOLT = SAAT + `(()=>{ try{
+  localStorage.setItem("hh_ueberholt_v1", JSON.stringify([{
+    schluessel:"keller_2026-09-17", id:"x1",
+    daten:{mode:"keller", tag:"2026-09-17", zeit:"2026-09-17T20:10:00.000Z"},
+    zeit:"2026-09-17T20:10:00.000Z",
+    fremd:{name:"Ian", zeit:"2026-09-17T21:00:00.000Z"}}]));
+}catch(e){} })();`;
+
 const warte = (p, ms) => p.waitForTimeout(ms);
 
 async function hilfeZu(p) {
@@ -157,8 +166,18 @@ const SZENEN = {
         ["abschluss-knopf", async p => { await modus(p, "tag");
           await p.evaluate(() => go(lastStep())); await warte(p, 450); await hilfeZu(p); }],
         ["statusfeld-begruessung", async p => { await grussZu(p);
-          const s = p.locator(".netz--tipp");
-          if (await s.count()) { await s.click(); await warte(p, 400); } }]]
+          const s = p.locator(".netzmehr");
+          if (await s.count()) { await s.click(); await warte(p, 400); } }]],
+
+  /* Runde 15 · die drei Funde der Agenten, je eine Lage. */
+  r15: [["grund-im-getraenkezweig", async p => { await modus(p, "nach"); await zweig(p, "getr"); }],
+        ["startseite-gewaehlter-tag", async p => { await grussZu(p);
+          await p.evaluate(() => {
+            const g = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+            setTagWahl(g); renderMenu();
+          }); await warte(p, 350); }],
+        ["startseite-quittieren", async p => { await grussZu(p); await warte(p, 300); },
+         SAAT_UEBERHOLT]]
 };
 
 (async () => {

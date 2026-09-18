@@ -180,9 +180,11 @@ describe("Runde 14 · Startseite", () => {
     assert.ok(gruss < netz, "die Anrede muss vor dem Statusfeld kommen");
   });
 
-  test("das Statusfeld ist ein Knopf und öffnet die Begrüßung", () => {
+  /* Runde 15: Das Feld öffnet die Begrüßung weiterhin, ist aber kein
+     einzelner Knopf mehr — sonst passte „Gesehen" nicht hinein. */
+  test("das Statusfeld öffnet die Begrüßung", () => {
     assert.match(APP, /class="netz netz--block netz--tipp"/);
-    assert.match(APP, /nb\.onclick=\(\)=>grussZeigen\(\)/);
+    assert.match(APP, /nb\.onclick=e=>\{[^}]*grussZeigen\(\); \}/);
     assert.match(APP, /\.netz--tipp\{[^}]*cursor:pointer/);
     assert.match(APP, /\.netz--tipp\{[^}]*box-shadow/, "hebt sich vom Grund ab");
   });
@@ -270,6 +272,59 @@ describe("Runde 14 · die Zählzeile bleibt eine Zeile", () => {
   });
   test("die Zählzeile behält ihre vier Spalten", () => {
     assert.match(APP, /\.w--zaehl\{[^}]*grid-template-columns:minmax\(0,1fr\) var\(--dotsp\) 24px auto/);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   Runde 15 · die drei Funde der Agenten aus Runde 14                    */
+
+describe("Runde 15 · der Grund gilt in beiden Zweigen", () => {
+  test("auch der Getränke-Zweig zeigt die Grundknöpfe", () => {
+    /* rNach (Wein) und rGetrMenge (Getränke) rufen beide rGrund. */
+    const treffer = [...APP.matchAll(/\n  (?:if\(mode==="nach"\))?rGrund\(m\);/g)];
+    assert.equal(treffer.length, 2, "rNach und rGetrMenge");
+    assert.match(APP, /if\(mode==="nach"\)rGrund\(m\);/,
+      "im Getränke-Zweig nur für die Sonderentnahme, nicht für den Wareneingang");
+  });
+  test("die Pflicht bleibt für den ganzen Modus", () => {
+    assert.match(APP, /mode==="nach"&&!d\.grund/);
+  });
+});
+
+describe("Runde 15 · „Gesehen“ steht wieder auf der Startseite", () => {
+  test("der Statusblock ist kein Knopf mehr", () => {
+    assert.doesNotMatch(APP, /<button type="button" class="netz netz--block netz--tipp"/);
+    assert.match(APP, /<div class="netz netz--block netz--tipp"/);
+  });
+  test("er trägt den Quittierknopf und einen Knopf zur Begrüßung", () => {
+    const block = /<div class="netz netz--block netz--tipp"[\s\S]*?<\/div>/.exec(APP);
+    assert.ok(block, "Statusblock nicht gefunden");
+    assert.match(block[0], /class="netzok" hidden/);
+    assert.match(block[0], /class="netzmehr"/);
+  });
+  test("ein Tipp auf „Gesehen“ öffnet nicht die Begrüßung", () => {
+    assert.match(APP, /if\(e\.target\.closest\("\.netzok"\)\)return; grussZeigen\(\);/);
+  });
+  test("der Live-Bereich steckt nicht mehr im Knopf", () => {
+    assert.match(APP, /<span class="netztext" role="status">/);
+  });
+});
+
+describe("Runde 15 · Startseite und Vorgang nennen denselben Tag", () => {
+  test("Kopf und Tagesstand fragen vorgabeTag(), nicht today()", () => {
+    assert.match(APP, /deTagKurz\(vorgabeTag\(\)\)/);
+    assert.doesNotMatch(APP, /deTagKurz\(today\(\)\)/);
+    const f = /function tagesStand\(\)\{[\s\S]*?const heute=(\w+)\(\);/.exec(APP);
+    assert.ok(f, "tagesStand nicht gefunden");
+    assert.equal(f[1], "vorgabeTag");
+  });
+  test("ein gewählter Tag steht als gewählt da", () => {
+    assert.match(APP, /vorgabeTag\(\)===today\(\)\?"":" · gewählt"/);
+  });
+  test("nach der Tagwahl wird die Startseite neu gezeichnet", () => {
+    const f = /sel\.onchange=\(\)=>\{[\s\S]*?\n  \};/.exec(APP);
+    assert.ok(f, "sel.onchange nicht gefunden");
+    assert.match(f[0], /renderMenu\(\)/);
   });
 });
 

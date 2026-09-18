@@ -1186,15 +1186,21 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
    KNOPF: ein Tipp darauf öffnet die Begrüßung, in der ausführlich steht,
    was heute schon passiert ist. Damit ist das Fenster vom Anmelden nicht
    weg, sondern wohnt hier. */
-.netz--tipp{width:100%;text-align:left;font:inherit;cursor:pointer;
-  box-shadow:0 1px 3px rgba(28,28,30,.10)}
+.netz--tipp{cursor:pointer;box-shadow:0 1px 3px rgba(28,28,30,.10)}
 .netz--tipp:active{background:var(--surface-4)}
-.netz--tipp::after{content:"\203a";grid-column:3;grid-row:1;
-  font-size:var(--text-lg);line-height:1;opacity:.5;align-self:center}
+/* Das Winkelzeichen ist ein echter Knopf, kein ::after: sonst fuehrt zur
+   Begruessung nur eine Geste auf einem div, und mit Tastatur oder
+   Vorlesen kaeme man nicht hin. Sichtbar schmal, greifbar --tap-min. */
+.netzmehr{grid-column:4;grid-row:1;position:relative;align-self:center;
+  background:none;border:0;padding:0 var(--space-1);color:inherit;
+  font:var(--text-lg)/1 var(--font);opacity:.5;cursor:pointer}
+.netzmehr::after{content:"";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:var(--tap-min);height:var(--tap-min)}
 .netz--block{border:1px solid var(--border-strong);
   border-radius:var(--radius-md);margin-bottom:var(--space-5);
   padding:var(--space-4);
-  display:grid;grid-template-columns:auto 1fr auto;
+  display:grid;grid-template-columns:auto 1fr auto auto;
   column-gap:var(--space-2);row-gap:2px;align-items:start}
 /* Ohne Hauptzeile (kein Netz) rutscht die Übertragungszeile von selbst in
    die erste Reihe — deshalb wird nicht auf Zeilen gesetzt, sondern nur auf
@@ -2233,7 +2239,11 @@ function ueberholtSatz(l){
    `tagesSatz` und in der Begrüßung). */
 function tagesStand(){
   if(NETZ.zustand!=="verbunden")return {t:"",k:""};
-  const heute=today();
+  /* BERICHTIGUNG (Jagd 14, A/14-1): Hier stand `today()`. Der naechste
+     Vorgang laeuft aber auf `vorgabeTag()` — wer „Anderes Datum" waehlt,
+     bekam auf der Startseite weiter den Stand von heute zu sehen und legte
+     den Vorgang auf gestern. Es gilt der Tag, auf den gebucht wird. */
+  const heute=vorgabeTag();
   const alle=Object.values(FERN).filter(v=>v.tag===heute&&v.modus==="tag");
   const fertig=alle.find(v=>v.status==="fertig");
   if(fertig){
@@ -2568,13 +2578,14 @@ function renderMenu(){
   $("#menu").innerHTML=`<header class="mkopf">
       <div class="hd">
         <div><h1>Haus Hirt</h1>
-          <div class="subh">${esc(deTagKurz(today()))}</div></div>
+          <div class="subh">${esc(deTagKurz(vorgabeTag())+
+            (vorgabeTag()===today()?"":" · gewählt"))}</div></div>
         <div class="hdr-r"><button class="home" id="bWechseln">abmelden</button></div>
       </div>
     </header>
     <div class="minhalt">
     ${grussZeile()}
-    <button type="button" class="netz netz--block netz--tipp" style="display:none"><span class="netzhaupt"></span><span class="netztext" role="status"></span></button>
+    <div class="netz netz--block netz--tipp" style="display:none"><span class="netzhaupt"></span><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button><button type="button" class="netzmehr" aria-label="Was heute ansteht">›</button></div>
     ${fernZeile()}
     <div class="grp grp--service"><div class="mgrp">Service</div>${card("tag")}${card("fuellen")}</div>
     <div class="grp grp--ausser">${card("nach")}</div>
@@ -2584,10 +2595,20 @@ function renderMenu(){
     <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>
     </div>`;
   document.querySelectorAll(".mi").forEach(b=>b.onclick=()=>start(b.dataset.m));
-  /* Das Statusfeld ist der Knopf zur Begrüßung: dort steht ausführlich,
-     was heute schon passiert ist und was noch aussteht. */
+  /* Das Statusfeld führt zur Begrüßung: dort steht ausführlich, was heute
+     schon passiert ist und was noch aussteht. Ein Tipp irgendwo auf das
+     Feld genügt; für Tastatur und Vorlesen steht rechts ein echter Knopf.
+
+     BERICHTIGUNG (Jagd 14, B/14-4): In Runde 14 war das ganze Feld EIN
+     Knopf — damit fiel der Knopf „Gesehen" heraus, mit dem ein überholter
+     Stand quittiert wird (ein Knopf im Knopf geht nicht). Er steht wieder
+     da; sein Klick darf nicht zur Begrüßung durchschlagen. */
   const nb=$("#menu").querySelector(".netz--tipp");
-  if(nb)nb.onclick=()=>grussZeigen();
+  if(nb){
+    nb.onclick=e=>{ if(e.target.closest(".netzok"))return; grussZeigen(); };
+    const mehr=nb.querySelector(".netzmehr");
+    if(mehr)mehr.onclick=e=>{ e.stopPropagation(); grussZeigen(); };
+  }
   $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
   $("#bArch").onclick=openArchList;
   netzChip();
@@ -3049,6 +3070,10 @@ function grussVielleicht(){
     if(!sel.value)return;
     setTagWahl(sel.value===today()?null:sel.value);
     grussFuellen();
+    /* Die Startseite dahinter nennt Tag und Stand — beide haengen an der
+       Wahl. Ohne dieses Neuzeichnen stuende dort weiter der heutige Tag,
+       waehrend der naechste Vorgang schon auf den gewaehlten liefe. */
+    if(!mode && $("#menu") && $("#menu").style.display!=="none")renderMenu();
   };
   /* Nach unten wischen schließt. Nur die Karte hört zu, nicht der Grund —
      sonst schließt jedes Wischen über dem dunklen Feld. */
@@ -4879,6 +4904,14 @@ function getrRow(id,bucket){
 function ladeKurz(L){const t=L.t.split("\u00b7");return (t[1]||t[0]).trim();}
 function rGetrMenge(m){
   const d=D();d.gent=d.gent||{};
+  /* BERICHTIGUNG (Jagd 14, B/14-1 und die Schlusskontrolle): Der Grund war
+     Pflicht fuer den ganzen Modus `nach`, die fuenf Knoepfe standen aber
+     nur im Wein-Zweig (`rNach`). Wer Cola fuer die Kueche holte, konnte
+     den Pflichtpunkt nirgends erfuellen und landete zwingend in
+     „Trotzdem abschliessen?" mit persoenlichem Code. `rGetrMenge` bedient
+     auch den Wareneingang — der kennt keinen Grund, deshalb die Bindung
+     an den Modus. */
+  if(mode==="nach")rGrund(m);
   const q=$("#q").value.trim().toLowerCase();
   const chips=document.createElement("div");chips.className="fchips";
   ALLE_LADEN().forEach(L=>{
