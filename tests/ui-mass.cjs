@@ -78,11 +78,39 @@ function server(api) {
   });
 }
 
+/* Warum die Nacht „0 waagrechter Ueberlauf bei 390 px" meldete, waehrend
+   die achte Kachel rechts angeschnitten war — drei Gruende, alle drei hier
+   behoben. Der Verdacht aus dem Auftrag („misst gegen die Dokumentbreite")
+   traf NICHT zu: gemessen wurde schon immer gegen
+   `document.documentElement.clientWidth`, also die Fensterbreite. Die
+   wirklichen Gruende, am Stand vom 18.09. frueh nachgemessen:
+
+     1. Die Laden 1 bis 6 wurden nie GEMESSEN. `MESSE` lief nur auf dem
+        ERSTEN Schritt jedes Modus; die Laden liegen hinter den Knoepfen
+        „R 1 2 3 4 5 6". Der Ladenlauf weiter unten pruefte allein die
+        Kuerzel auf Ueberlappung. Lade 4 hat das Messgeraet nie gesehen.
+     2. Gemessen wurde nur gegen das FENSTER. `.drwi` traegt
+        `overflow:hidden`: bei 390 px ist der Inhalt 359 px breit in einem
+        Kasten von 356 px — das Kuerzel „Gast. 0,25" wird um 3 px
+        abgeschnitten, ohne je aus dem Fenster zu ragen. Der Beschnitt
+        durch einen VORFAHREN war kein Urteil.
+     3. Gemessen wurde erst ab 390 px. Bei 320 px liegt dieselbe
+        Beschriftung bei 323 px — 3 px ausserhalb des Fensters. Die Breite,
+        in der der Fehler sichtbar aus dem Bild laeuft, stand nicht in der
+        Liste.
+
+   Breiten jetzt: 320 (iPhone SE), 375 (iPhone 13 mini / SE 3), 390
+   (iPhone 14/15), 430 (Pro Max) — dazu 768 (iPad) und 1280 (MacBook). */
+const SCHMAL = {
+  userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+  deviceScaleFactor: 2, isMobile: true, hasTouch: true
+};
 const BREITEN = [
-  { name: "390",  viewport: { width: 390,  height: 844 }, deviceScaleFactor: 2,
-    isMobile: true, hasTouch: true,
-    userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
-      "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" },
+  { name: "320",  viewport: { width: 320,  height: 568 }, ...SCHMAL },
+  { name: "375",  viewport: { width: 375,  height: 812 }, ...SCHMAL },
+  { name: "390",  viewport: { width: 390,  height: 844 }, ...SCHMAL },
+  { name: "430",  viewport: { width: 430,  height: 932 }, ...SCHMAL },
   { name: "768",  viewport: { width: 768,  height: 1024 }, deviceScaleFactor: 2,
     isMobile: true, hasTouch: true },
   { name: "1280", viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 }
@@ -90,7 +118,18 @@ const BREITEN = [
 
 const SEITEN = ["heute", "abgleich", "import", "bestand", "bestellen", "getraenke",
   "zaehlliste", "speicher", "zuordnung", "rezepte", "team", "einst"];
+/* BERICHTIGUNG (Jagd 13): Bis hierher wurde je Modus nur der ERSTE Schritt
+   gemessen — und der Zweig „Getränke" (branch="getr") von keller, nach und
+   ware ueberhaupt nicht. Genau dort lag A1: in „Sonderentnahme · Getränke"
+   stand der Zaehlknopf 31 px ausserhalb des Fensters, und die Seite rollte
+   waagrecht. Eine Messung, die nur die Eingangstuer jedes Modus ansieht,
+   sagt ueber den Rest des Hauses nichts.
+   Jetzt wird jeder Schritt jedes Modus in beiden Zweigen gemessen. */
 const SCHRITTE = ["tag", "keller", "nach", "fuellen", "ware"];
+/* Welcher Modus hat welchen Zweig? `tag` und `fuellen` kennen nur Wein. */
+const ZWEIGE = { tag: [null], fuellen: [null],
+                 keller: ["wein", "getr"], nach: ["wein", "getr"],
+                 ware: ["wein", "getr"] };
 
 /* ── Das Messgerät. Läuft im Browser. ────────────────────────────────── */
 const MESSE = `(() => {
@@ -156,6 +195,56 @@ const MESSE = `(() => {
                    text: (e.textContent || "").trim().slice(0, 40) });
     }
   });
+  /* Beschnitt durch einen VORFAHREN.
+     Ein Kasten mit overflow:hidden schluckt jeden Beweis: Der Inhalt
+     steht dann zwar sichtbar abgeschnitten auf dem Schirm, ragt aber nie
+     aus dem FENSTER — und nur das Fenster wurde bis Runde 12 gemessen.
+     Genau so blieb Lade 4 grün, während die achte Kachel im Keller
+     angeschnitten dastand (.drwi, 359 px Inhalt in 356 px Kasten).
+     Gemessen wird der TINTENKASTEN des Textes (Range über den Inhalt) —
+     ein Wort, das über seine Spalte hinausragt, meldet sein Element
+     sonst nicht. Elemente OHNE Text werden über ihren eigenen Kasten
+     gemessen.
+     Nicht gezählt wird, was sich selbst beschneidet und dabei „…" setzt:
+     text-overflow:ellipsis ist eine Absicht, kein Fehler. */
+  const tinte = el => {
+    if ((el.textContent || "").trim()) {
+      const r = document.createRange(); r.selectNodeContents(el);
+      const rs = [...r.getClientRects()].filter(x => x.width > 0 && x.height > 0);
+      if (rs.length) return { li: Math.min(...rs.map(x => x.left)),
+                              re: Math.max(...rs.map(x => x.right)),
+                              ob: Math.min(...rs.map(x => x.top)),
+                              un: Math.max(...rs.map(x => x.bottom)) };
+    }
+    const b = el.getBoundingClientRect();
+    return { li: b.left, re: b.right, ob: b.top, un: b.bottom };
+  };
+  const schnitt = [];
+  document.querySelectorAll("*").forEach(e => {
+    if (!sicht(e)) return;
+    const eb = e.getBoundingClientRect();
+    if (eb.width < 1 || eb.height < 1) return;
+    if (e.children.length) return;            /* nur Blätter, sonst jeder Zweig doppelt */
+    const t = tinte(e);
+    let p = e.parentElement;
+    while (p) {
+      const ps = getComputedStyle(p);
+      const klemmt = ps.overflow === "hidden" || ps.overflowX === "hidden" ||
+                     ps.overflowY === "hidden" || ps.overflow === "clip";
+      if (klemmt) {
+        const r = p.getBoundingClientRect();
+        const m = Math.max(r.left - t.li, t.re - r.right, r.top - t.ob, t.un - r.bottom);
+        if (m > 1) schnitt.push({
+          was: e.tagName + "." + String(e.className || "").split(" ")[0],
+          von: p.tagName + "." + String(p.className || "").split(" ")[0],
+          px: Math.round(m * 10) / 10,
+          text: (e.textContent || "").trim().slice(0, 30) });
+        break;                                /* der erste Klemmkasten entscheidet */
+      }
+      p = p.parentElement;
+    }
+  });
+
   /* Trefferflächen: alles, was angetippt werden soll.
      Gemessen wird der GRIFF, nicht der Anstrich. Viele Knöpfe sind
      absichtlich kleiner gezeichnet und tragen ihre Fläche in einem
@@ -222,12 +311,19 @@ const MESSE = `(() => {
     while (p) { const c = rgb(getComputedStyle(p).backgroundColor);
       if (c && c.a > 0.5) return c; p = p.parentElement; }
     return { r: 255, g: 255, b: 255, a: 1 }; };
-  const schwach = []; let uebersprungen = 0;
+  const schwach = []; let uebersprungen = 0, leiseZiffern = 0;
   document.querySelectorAll("*").forEach(e => {
     if (!sicht(e)) return;
     const txt = [...e.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim())
                  .map(n => n.textContent.trim()).join(" ");
     if (!txt) return;
+    /* Die Ziffer auf einem Zählpunkt ist absichtlich leise: sie soll eine
+       Orientierung sein, kein Etikett, und wird in ziffernfarbe() auf
+       1,9:1 gemischt (index.html, ZIEL). Gezählt wird sie trotzdem — aber
+       als Hinweis, nicht als Urteil, sonst ertränkt sie jeden echten Fund.
+       Entschieden wurde das vor dieser Runde; wer es zurückdreht, ändert
+       die Gestaltung der Punkte, nicht die Messung. */
+    if (e.classList && e.classList.contains("gpt")) { leiseZiffern++; return; }
     const s = getComputedStyle(e);
     /* Schriftgrösse 0 heisst: das Zeichen steht da, aber niemand sieht es
        (die Pfeile im Menü tragen ihr Bild im Pseudo-Element). Kontrast an
@@ -244,12 +340,37 @@ const MESSE = `(() => {
       vg: s.color, hg: "rgb(" + hg.r + "," + hg.g + "," + hg.b + ")",
       text: txt.slice(0, 30) });
   });
+  /* Die Zaehlzeile muss EINE Zeile bleiben.
+
+     Am iPad ist das Kaestchen „voll" unter den Namen gerutscht, und keines
+     der bisherigen Urteile hat es bemerkt: nichts lief ueber, nichts war
+     beschnitten, jeder Griff hatte seine 44 px — die Zeile war nur
+     zweizeilig statt einzeilig. Gemessen wird deshalb die Lage der Kinder
+     zueinander: faengt eines unterhalb der Unterkante eines Geschwisters
+     an, ist die Zeile umgebrochen. Zwei Pixel Nachsicht, weil Raster und
+     Bildpunkte sich nicht immer auf ganze Zahlen einigen. */
+  const umbruch = [];
+  document.querySelectorAll(".w--zaehl").forEach(z => {
+    if (!sicht(z)) return;
+    const kinder = [...z.children].filter(k => sicht(k))
+      .map(k => k.getBoundingClientRect()).filter(r => r.width > 0 && r.height > 0);
+    if (kinder.length < 2) return;
+    const oben = Math.min(...kinder.map(r => r.top));
+    const tief = kinder.filter(r => r.top > oben + 2 &&
+      kinder.some(v => v !== r && r.top >= v.bottom - 2));
+    if (tief.length) umbruch.push({
+      was: "W--ZAEHL", b: Math.round(z.getBoundingClientRect().width),
+      h: Math.round(z.getBoundingClientRect().height),
+      text: (z.textContent || "").trim().slice(0, 30) });
+  });
   return { vw, scrollW: document.documentElement.scrollWidth,
+           umbruch: umbruch.slice(0, 12), umbruchN: umbruch.length,
            ueber: ueber.slice(0, 12), ueberN: ueber.length,
+           schnitt: schnitt.slice(0, 12), schnittN: schnitt.length,
            klein: klein.slice(0, 40), kleinN: klein.length,
            griff: griff.slice(0, 40), griffN: griff.length,
            schrift, schwach: schwach.slice(0, 12), schwachN: schwach.length,
-           kontrastUebersprungen: uebersprungen };
+           leiseZiffern, kontrastUebersprungen: uebersprungen };
 })()`;
 
 /* ── Die geteilte Gestaltungsschicht: wortgleich in beiden Dateien? ──── */
@@ -277,6 +398,13 @@ function gestaltung() {
            zeilenLeitung: ya.length };
 }
 
+/* Die Begrüßung (F9) kommt einmal je Gerät und Betriebstag und liegt dabei
+   über der Startseite. Für die Messung wird sie weggeklickt. */
+async function grussWeg(p) {
+  const k = p.locator("#grussPasst");
+  if (await k.count() && await k.isVisible()) { await k.click(); await p.waitForTimeout(250); }
+}
+
 /* ══════════════════════════════════════════════════════════════════════ */
 (async () => {
   const erg = { lauf: LAUF, zeit: new Date().toISOString(), seiten: {},
@@ -302,7 +430,14 @@ function gestaltung() {
   const b = await pw.chromium.launch();
 
   /* ── Backoffice ─────────────────────────────────────────────────────── */
-  for (const br of BREITEN) {
+  /* Die Leitung arbeitet am MacBook, gelegentlich am iPad. 320 und 375 px
+     sind iPhone-Breiten, in denen das Backoffice nicht bedient wird — die
+     Navigationsschublade („Fassungstool ›") ragt dort aus dem Bild. Das ist
+     ein echter Fund, aber keiner dieser Runde: er steht in review/BACKLOG.md
+     und nicht im Urteil, damit das Urteil den Service meint.
+     Der Service (index.html) wird in JEDER Breite gemessen. */
+  const BREITEN_LEITUNG = BREITEN.filter(b => b.viewport.width >= 390);
+  for (const br of BREITEN_LEITUNG) {
     for (const s of SEITEN) {
       const ctx = await b.newContext(br);
       const p = await ctx.newPage();
@@ -328,25 +463,54 @@ function gestaltung() {
   }catch(e){} })();`;
   for (const br of BREITEN) {
     for (const s of ["menu", ...SCHRITTE]) {
-      const ctx = await b.newContext(br);
-      await ctx.addInitScript(saat);
-      const p = await ctx.newPage();
-      const jsFehler = [];
-      p.on("pageerror", e => jsFehler.push(e.message));
-      await p.goto("http://127.0.0.1:8977/index.html", { waitUntil: "load" });
-      await p.waitForTimeout(500);
-      if (s !== "menu") {
+      for (const zweig of (s === "menu" ? [null] : ZWEIGE[s])) {
+        const ctx = await b.newContext(br);
+        await ctx.addInitScript(saat);
+        const p = await ctx.newPage();
+        const jsFehler = [];
+        p.on("pageerror", e => jsFehler.push(e.message));
+        await p.goto("http://127.0.0.1:8977/index.html", { waitUntil: "load" });
+        await p.waitForTimeout(500);
+        /* F9: Die Begrüßung liegt beim Öffnen über allem. Sie hat ihre
+           eigenen Belege (review/screens/f9/) — hier wird gemessen, was
+           dahinter steht, sonst misst das Messgerät einmal je Breite
+           dasselbe Fenster. */
+        await grussWeg(p);
+        if (s === "menu") {
+          const m = await p.evaluate(MESSE);
+          m.jsFehler = jsFehler;
+          erg.seiten["app/menu@" + br.name] = m;
+          await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-menu.png") });
+          await ctx.close();
+          continue;
+        }
         await p.evaluate(m => { if (typeof start === "function") start(m); }, s);
         await p.waitForTimeout(450);
+        if (zweig) {
+          /* keller/nach/ware fragen zuerst „Wein oder Getränke?". */
+          const tor = p.locator('.gbtn.' + zweig);
+          if (await tor.count()) { await tor.first().click(); await p.waitForTimeout(350); }
+          else await p.evaluate(z => { if (typeof branch !== "undefined") { branch = z; render(); } }, zweig);
+          await p.waitForTimeout(300);
+        }
         const zu = p.locator("#hilfeZu");
         if (await zu.count() && await zu.isVisible()) { await zu.click(); await p.waitForTimeout(250); }
+        /* Jeder Schritt, nicht nur der erste. */
+        const anzahl = await p.evaluate(() =>
+          (typeof steps === "function" ? steps().length : 1));
+        for (let i = 0; i < anzahl; i++) {
+          await p.evaluate(n => { if (typeof go === "function") go(n); }, i);
+          await p.waitForTimeout(350);
+          const zu2 = p.locator("#hilfeZu");
+          if (await zu2.count() && await zu2.isVisible()) { await zu2.click(); await p.waitForTimeout(200); }
+          const marke = s + (zweig ? "-" + zweig : "") + "-" + (i + 1);
+          const m = await p.evaluate(MESSE);
+          m.jsFehler = jsFehler.slice();
+          erg.seiten["app/" + marke + "@" + br.name] = m;
+          await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-" + marke + ".png") });
+        }
+        await ctx.close();
       }
-      const m = await p.evaluate(MESSE);
-      m.jsFehler = jsFehler;
-      erg.seiten["app/" + s + "@" + br.name] = m;
-      await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-" + s + ".png"),
-                           fullPage: false });
-      await ctx.close();
     }
   }
 
@@ -399,6 +563,7 @@ function gestaltung() {
     p.on("pageerror", e => jsFehler.push(e.message));
     await p.goto("http://127.0.0.1:8977/index.html", { waitUntil: "load" });
     await p.waitForTimeout(500);
+    await grussWeg(p);
     await p.evaluate(() => { if (typeof start === "function") start("tag"); });
     await p.waitForTimeout(450);
     const zu = p.locator("#hilfeZu");
@@ -411,8 +576,14 @@ function gestaltung() {
       const k = await p.evaluate(KUERZEL);
       k.jsFehler = jsFehler.slice();
       erg.laden["lade-" + nr + "@" + br.name] = k;
-      if (br.name === "390")
-        await p.screenshot({ path: path.join(OUT, "app-390-lade-" + nr + ".png") });
+      /* Bis Runde 12 endete der Ladenlauf hier. Die Laden gingen damit nie
+         durch das Messgerät — Überlauf, Beschnitt, Schrift, Kontrast und
+         Trefferflächen der sechs Laden waren ungemessen, obwohl genau dort
+         gezählt wird. */
+      const mm = await p.evaluate(MESSE);
+      mm.jsFehler = jsFehler.slice();
+      erg.seiten["app/lade-" + nr + "@" + br.name] = mm;
+      await p.screenshot({ path: path.join(OUT, "app-" + br.name + "-lade-" + nr + ".png") });
     }
     await ctx.close();
   }
@@ -422,18 +593,28 @@ function gestaltung() {
   /* ── Urteil ─────────────────────────────────────────────────────────── */
   console.log("\n─── Urteil ───");
   let ueberGes = 0, kleinGes = 0, kleinSvc = 0, griffGes = 0, griffSvc = 0,
-      schwachGes = 0, winzig = 0, fehlerGes = 0;
+      schwachGes = 0, winzig = 0, fehlerGes = 0, klemmSvc = 0, umbruchSvc = 0;
   Object.entries(erg.seiten).forEach(([k, m]) => {
     if (m.ueberN) { ueberGes += m.ueberN;
       console.log("  Überlauf " + k + ": " + m.ueberN + " → " +
         m.ueber.slice(0, 3).map(u => u.was + "(" + u.re + "px)").join(", ")); }
     if (m.scrollW > m.vw + 1) console.log("  Seite rollt waagrecht: " + k +
       " " + m.scrollW + " > " + m.vw);
+    /* Beschnitt zählt im SERVICE als Urteil. Im Backoffice sitzt die Maus
+       vor einem breiten Schirm; dort bleibt es ein Hinweis. */
+    if (m.schnittN && k.startsWith("app/")) { klemmSvc += m.schnittN;
+      console.log("  Beschnitten " + k + ": " + m.schnittN + " → " +
+        m.schnitt.slice(0, 3).map(u => u.von + " schneidet " + u.was +
+          " um " + u.px + "px" + (u.text ? " (" + u.text + ")" : "")).join(", ")); }
     kleinGes += m.kleinN;
     griffGes += m.griffN || 0;
     if (k.startsWith("app/")) { kleinSvc += m.kleinN; griffSvc += m.griffN || 0;
       if (m.griffN) console.log("  Griff unter 44px " + k + ": " +
         m.griff.map(g => g.was + "(" + g.b + "\u00d7" + g.h + ")").join(", ")); }
+    if (m.umbruchN && k.startsWith("app/")) { umbruchSvc += m.umbruchN;
+      console.log("  Zählzeile umgebrochen " + k + ": " + m.umbruchN + " → " +
+        m.umbruch.slice(0, 3).map(u => u.b + "\u00d7" + u.h +
+          (u.text ? " (" + u.text + ")" : "")).join(", ")); }
     schwachGes += m.schwachN;
     if (k.startsWith("app/"))
       Object.keys(m.schrift).map(Number).filter(px => px < 15)
@@ -442,12 +623,24 @@ function gestaltung() {
     if (m.jsFehler && m.jsFehler.length) { fehlerGes += m.jsFehler.length;
       console.log("  JS-FEHLER " + k + ": " + m.jsFehler[0]); }
   });
-  urteil("kein waagrechter Überlauf in 390/768/1280", ueberGes === 0, ueberGes + " Stellen");
+  urteil("kein waagrechter Überlauf in 320/375/390/430/768/1280",
+         ueberGes === 0, ueberGes + " Stellen");
+  urteil("nichts im Service wird von einem Kasten abgeschnitten",
+         klemmSvc === 0, klemmSvc + " Stellen");
   urteil("keine JS-Fehler", fehlerGes === 0, fehlerGes + " Fehler");
   urteil("Schrift im Service nie unter 15 px", winzig === 0, winzig + " Stellen");
   urteil("Trefferflächen mindestens 44 px (Service)", griffSvc === 0,
          griffSvc + " Knöpfe ohne Griff · " + kleinSvc + " sichtbar kleiner (erlaubt)");
   urteil("Kontrast mindestens 4,5:1", schwachGes === 0, schwachGes + " Stellen");
+  /* Am iPad ist „voll" unter den Namen gerutscht, und kein Urteil hat es
+     gesehen. Seit Runde 14 ist das eines. */
+  urteil("die Zählzeile bleibt eine Zeile", umbruchSvc === 0,
+         umbruchSvc + " umgebrochene Zeilen");
+  {
+    const leise = Object.values(erg.seiten).reduce((a, m) => a + (m.leiseZiffern || 0), 0);
+    if (leise) console.log("  (Ziffern auf Zählpunkten: " + leise +
+      " absichtlich leise bei 1,9:1 — Hinweis, kein Urteil)");
+  }
   let stossGes = 0, schnittGes = 0;
   Object.entries(erg.laden || {}).forEach(([k, v]) => {
     stossGes += v.stoss.length; schnittGes += v.schnitt.length;

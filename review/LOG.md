@@ -2455,3 +2455,183 @@ im Getränkefach 1 px vom Rand; Mittagsblick bei halb gedecktem Minus.
 
 **STATUS:** VERBESSERUNGEN — die drei Punkte sind erledigt und gemessen; offen
 bleibt der erfasste Zählzeitpunkt, ein Umbau über App und Worker.
+
+---
+
+### Runde 13 – Fehlerbehebung (18.09.2026, Tag)
+
+**Kritik am Vorgänger:** Die Nacht hat die Oberfläche vermessen und
+acht Urteile grün gemeldet, während auf dem echten iPhone die achte Kachel
+angeschnitten stand. Drei Punkte konkret:
+* ✅ übernommen — `tests/ui-mass.cjs:329 ff.`: `MESSE` lief nur auf dem
+  ERSTEN Schritt jedes Modus. Die Laden 1–6 wurden nie gemessen, der Zweig
+  `branch="getr"` gar nicht. Jetzt jeder Schritt, jeder Zweig, jede Lade.
+* ✅ übernommen — `tests/ui-mass.cjs:134`: gemessen wurde nur gegen das
+  Fenster. `.drwi` trug `overflow:hidden` und verschluckte den Beweis.
+  Beschnitt durch einen Vorfahren ist jetzt ein eigenes Urteil.
+* ✅ übernommen — `tests/ui-mass.cjs:81`: 320 px stand nicht in der Liste,
+  und genau dort lief das Kürzel aus dem Fenster.
+* ❌ abgelehnt — `review/ENTSCHIEDEN-NACHTS.md` Nr. 3 („Weg fällt die
+  Freigabe-Kopplung, nicht die Möglichkeit zu fotografieren"). Der Auftrag
+  von heute sagt „Restlos raus, an ALLEN Stellen" und nennt den
+  Zwischenspeicher ausdrücklich. Die Entscheidung stand unter „vorläufig,
+  revidierbar"; sie ist revidiert.
+* ↩️ geändert — `review/ENTSCHIEDEN-NACHTS.md` Nr. 5 rechnete den
+  Betriebstag richtig, ließ aber `blank()` unangetastet: dort zog die
+  Tagesfassung noch einen weiteren Tag ab (`public/index.html:1571`). Die
+  UTC-Rechnung war nur die halbe Ursache.
+
+**Umgesetzt:**
+1. F1 · Betriebstag in Europe/Vienna, an einer Stelle je Datei, in App,
+   Backoffice und Worker; die Tagesfassung läuft nicht mehr auf den Vortag.
+2. F2/F3 · Die Laden sind ein umbrechendes Raster (Kopfzahlen, Striche und
+   Namen je auf einer Linie, jede Flasche benannt), die Zählringe der
+   Weinzeile fluchten in jeder Zeile.
+3. F4–F9 · Fotoschritt restlos raus, „Backoffice" statt „Verwaltung",
+   Safe-Area in beiden Dateien, grünes Feld ohne das Wort „offen",
+   Begrüßung beim Öffnen.
+
+**Geprüft:** `npm test` 327 grün (vorher 286; neu: `betriebstag.test.mjs`,
+`oberflaeche-f.test.mjs`). `tests/ui-mass.cjs` in sechs Breiten
+(320/375/390/430/768/1280), jeder Schritt jedes Modus in beiden Zweigen,
+Laden 1–6 einzeln. Der reparierte Test ist gegen `50c1123` **rot**
+(`review/screens/beweis-alt/`). Belege je Befund in vier Breiten unter
+`review/screens/f1/` bis `f9/`. `tests/ui-nachjagd.cjs` stellt die vier
+A- und B-Funde der fünften Jagd nach — neun Prüfungen, alle ja.
+
+**Für die Nächsten:**
+* **An die Moderation:** `abgleich()` im Backoffice paart Z-Bericht(X) mit
+  Vorgang(X). Seit F1 trägt die Fassung den Tag, an dem sie gemacht wird —
+  die Paarung stimmt damit dauerhaft um einen Tag nicht mehr. Zwei Wege
+  stehen in `review/BACKLOG.md`; entscheiden muss es Casimir.
+* **An den Service:** Lade 4 ist bei 390 px von 608 auf 1040 px gewachsen,
+  bei 320 px auf 1499 px — acht Spalten stehen jetzt 4 über 4. Lieber
+  rollen oder lieber kleinere Punkte?
+* **An alle:** F10 und F11 stehen nicht im Auftrag. Sie sind nicht
+  erfunden worden.
+
+**Phase/Thema:** Dringende Fehlerbehebung / F1–F9 + Messung
+
+**Backlog:** vier neue Punkte unter „hoch" — verschobene Paarung im
+Abgleich (Entscheidung), gelöschter Bildspeicher (unwiederbringlich),
+Backoffice läuft bei 320/375 px aus dem Bild, Ladenhöhe nach F2; dazu die
+Stapelspalte „Red Ale / Pale Ale" mit zwei unbeschrifteten Kopfzahlen.
+
+**STATUS:** VERBESSERUNGEN — alle neun Befunde sind belegt und die vier
+A-Funde der Jagd behoben. Offen und nicht von mir zu entscheiden: die
+Paarung im Abgleich (A4), die Ladenhöhe (B4), F10/F11. **Echtes Safari
+bleibt ungeprüft** — deshalb kein Merge aus eigener Hand.
+
+### Runde 14 – Oberfläche
+**Kritik am Vorgänger:** Runde 13 hat mit `repeat(auto-fit,minmax(72px,1fr))` die Spaltenladen umbrechen lassen (public/index.html, `.drwi--umbruch`) — Lade 4 stand bei 390 px 4 über 4 statt in einer Reihe ↩️ geändert: eine Reihe, Punktgröße je Spalte, Umbruch nur noch unter 360 px. · Die Ringteilung von 46 px (34 + 12) war breiter als nötig ↩️ geändert auf 45 (32 + 13). · Die Statuszeile sagte „Alles übertragen", während darüber die Tagesfassung noch ausstand ✅ übernommen, neuer Wortlaut.
+**Umgesetzt:**
+- Startseite: farbiger Kopf mit Datum (ohne „Für", ohne Jahr), Anrede über dem Statusfeld, Statusfeld als Knopf zur Begrüßung, „Außer der Reihe" entfernt, neue Kacheltexte.
+- Sonderentnahme verlangt einen Grund (fünf Knöpfe, Pflicht in `offenList`, Journal über `ereignis.notiz` als `grund=<key>` — keine Migration).
+- Lade 1 gleich hohe Flaschenspalten, Gasteiner 0,25 auf 8, Ringe 32 px bei 13 px Luft, farbige Rebsortenköpfe, Abschlussknopf „Fertig – Speichern".
+**Geprüft:** `npm test` 343/343 grün (16 neue Prüfungen für Runde 14). `node tests/ui-nachjagd.cjs` 9/9. `LAUF=runde14 node tests/ui-mass.cjs` zehn von zehn Urteilen grün, sechs Breiten. Belege: `review/screens/f1…f9/` und neu `review/screens/r14/` in 320/375/390/430 px.
+**Für die Nächsten:** Drei Befunde kamen erst aus der Messung: (1) die farbigen Rebsortenköpfe lagen bei 2,0–3,0 : 1 — dieselben Töne, nur dunkler, jetzt ≥ 4,6 : 1; (2) die Grundknöpfe hatten gar kein CSS und waren 29 px hoch; (3) bei Teilung = Griffbreite fällt der Prüfpunkt (±21,5 px) an den Nachbarring — deshalb Teilung 45 bei Griff 44.
+**Phase/Thema:** Oberfläche / Startseite, Laden, Weinzeile, Sonderentnahme
+**Backlog:** Kellerzählung ausdrücklich nicht Teil dieser Runde (Priorität mittel). A4 (Abgleich-Paarung im Backoffice dauerhaft um einen Tag versetzt) weiter offen (hoch).
+**STATUS:** FERTIG
+
+
+---
+
+### Runde 15 – qa-guardian (Schlusskontrolle vor dem Merge)
+
+**Kritik am Vorgänger:**
+* ❌ abgelehnt — `public/index.html:5104` gegen `:3658`: Runde 14 macht den
+  Grund zur Pflicht für den ganzen Modus `nach`, baut die Knöpfe aber nur in
+  `rNach()`, also in den Wein-Zweig. Im Zweig „Getränke" (`RG.nach` →
+  `rGetrMenge`, `:3114`) gibt es keinen einzigen Grundknopf. Gemessen:
+  `offenList()` meldet dort dauerhaft „Grund fehlt", `offenZiel` springt auf
+  Schritt 0 und landet wieder ohne Knöpfe, und der Abschluss geht nur noch
+  über „Trotzdem abschließen?" mit persönlichem Code. Beleg:
+  `review/screens/qa15/390-sonderentnahme-getraenke-abschluss-code.png`.
+* ↩️ geändert — Commit `7a6bd39` und die Übergabe von Runde 14 melden
+  „elf von elf Urteilen grün" bzw. „zehn von zehn". `tests/ui-mass.cjs` hat
+  **zehn** `urteil(...)`-Aufrufe (`:626`–`:652`), alle grün. Die Zahl war
+  beide Male um eins zu hoch; das Ergebnis selbst stimmt.
+* ↩️ geändert — `src/stamm.json` (Gasteiner 0,25 von 7 auf 8): eine
+  Stammdatenzahl, begründet mit „gleich hohe Flaschenspalten". `GSOLL`
+  (`public/index.html:3955`) → `gFehlt()` → `gent` → append-only Journal:
+  stimmt die 8 nicht, bucht jedes Nachfüllen dauerhaft eine Flasche zu viel.
+  Nicht zurückgedreht (kein Umbau in dieser Runde), aber Merge-Bedingung.
+* ✅ übernommen — `aufraeumenFotospeicher()` (`:5479`) ist sauber gebaut: die
+  Marke fällt nur in `onsuccess`, `onblocked`/`onerror` lassen sie weg, das
+  Löschen braucht kein Netz. Nachgestellt und bestätigt.
+
+**Umgesetzt (nur Prüfwerkzeug, kein Produktcode angefasst):**
+1. `tests/grund-journal.test.mjs` — der Grund gegen das ECHTE Schema
+   (`docs/live-schema.sql` in node:sqlite): zehn Parameter halten, `notiz`
+   trägt `grund=bruch`, ein Paket von VOR dem Deploy (ohne Feld `grund`)
+   kommt an, die Korrektur danach trägt ihn ebenfalls, ein erfundener Grund
+   wird verworfen, andere Modi bleiben ohne Notiz. 5 Prüfungen.
+2. `tests/qa-schluss.cjs` — bedient statt gemessen: Zweig Getränke, alter
+   Vorgang ohne `grund`, Ausgang bei doppeltem Abschluss, Abbruch mitten in
+   der Eingabe, 401, Bildspeicher (auch offline und beim zweiten Start).
+3. `tests/persona-tagesfassung.cjs` — lief seit F9 nicht mehr durch: die
+   Begrüßung fängt nach dem Neuladen jeden Tipp ab. `grussWeg()` ergänzt,
+   die Stelle wird als Befund der Persona notiert.
+
+**Geprüft:**
+* `npm test` **350/350** (345 vorher + 5 neue) · `tests/ui-nachjagd.cjs`
+  **9/9** · `LAUF=qa14 node tests/ui-mass.cjs` **10/10 Urteile grün** in
+  320/375/390/430/768/1280 (nicht 11 — es gibt zehn).
+* `tests/qa-schluss.cjs`: **4 von 22 nein**, alle vier derselbe Fund
+  (Getränke-Zweig ohne Grund). Grün: alter Vorgang ohne `grund` läuft und
+  schliesst ab; `hh_ausgang_v1` hält je Schlüssel EINEN Eintrag, der jüngste
+  Stand gewinnt, online leert sich die Reihe; Abbruch mitten in der Eingabe
+  behält Grund und Menge; bei 401 bleibt der Stand liegen und die Zeile sagt
+  „Nicht angemeldet"; `hh_fotos` wird geräumt, die Marke fällt erst nach
+  `onsuccess`, offline genauso, zweiter Start ohne Fehler.
+* Persona (iPhone 390 px, neue Servicekraft, 22:40): kompletter Weg bis zum
+  Abschluss, keine JS-Fehler. Zwei Stellen zum Hängenbleiben: Hilfe-Blatt und
+  Begrüßung legen sich ungefragt über den Schirm.
+* Regeln 1–14: `wrangler.jsonc` unberührt, `RUNDEN` unberührt (1000), keine
+  `CREATE/ALTER/DROP`-Zeile im Diff, keine neue Migration nötig
+  (`ereignis.notiz` existiert live, `docs/live-schema.sql:76`), vier Dateien
+  in `public/`, Gestaltungsschicht wortgleich (Urteil in `ui-mass`),
+  `sw.js` v31 → v35, Regel 14 (`schluessel`/`zaehlnr`/`geraet`) unberührt,
+  `gnparse.js` nicht angefasst (Regel 7), keine Secrets im Diff.
+* **UNGEPRÜFT:** echtes Safari/iPad; die Live-D1 selbst — in dieser Sitzung
+  gibt es keinen Cloudflare-Zugang, geprüft wurde gegen `docs/live-schema.sql`
+  (Stand 17.09.) in echtem SQLite.
+
+**Für die Nächsten:**
+* An die **Oberfläche**: Der Grund gehört vor den Zweigschalter oder in beide
+  Zweige. Solange er nur im Wein-Zweig steht, ist jede Getränke-Entnahme eine
+  Freigabe mit Code — und im Backoffice eine rote Zeile ohne Anlass.
+* An **Casimir**: `CLAUDE.md` wird mit diesem Merge mitverändert
+  (`5629ea1`, Abschnitt „Arbeitsweise", von einem Agenten geschrieben) —
+  bitte bestätigen. `review/ERGEBNIS.md` beschreibt nur Runde 13 und nennt
+  v32; als PR-Text wäre sie falsch.
+
+**Phase/Thema:** Schlusskontrolle vor dem Livegang (Runde 13 + 14)
+
+**Backlog:** neu unter „hoch": Getränke-Zweig ohne Grund (Merge-Sperre),
+Gasteiner 0,25 von 7 auf 8 bestätigen lassen, ERGEBNIS.md als PR-Text
+unbrauchbar. Neu unter „mittel": `sw.js` räumt den alten Vorrat auch nach
+leerer Installation, der Grund steht im Journal aber nirgends im Backoffice,
+grosse „0" bei reiner Getränke-Sonderentnahme.
+
+**STATUS:** BLOCKER — **Veto gegen den Merge nach `main`.** Der Livegang
+scheitert nicht an der Technik: Fotolöschung, Offline-Reihe, Idempotenz,
+401, alte Pakete ohne `grund` und das Journal gegen das echte Schema sind
+alle sauber. Er scheitert an einem Weg, den es im Haus jeden Tag gibt.
+
+**Rundenfazit:** Elf Commits, ein einziger echter Blocker — aber der steht
+mitten im Alltag: Wer Cola für die Küche holt, kommt aus dem Tool nur noch
+mit seinem persönlichen Code heraus.
+
+### Runde 15 – Oberfläche (die Funde der Agenten aus Runde 14)
+**Kritik am Vorgänger:** Mein eigener Runde-14-Eintrag sagt „Sonderentnahme verlangt einen Grund (fünf Knöpfe, Pflicht in `offenList`)" — im Zweig Getränke gab es die Knöpfe nicht, die Pflicht aber schon ✅ übernommen, behoben. · „Statusfeld als Knopf zur Begrüßung": dabei ist der Quittierknopf `.netzok` herausgefallen, ein Knopf im Knopf geht nicht ✅ übernommen, behoben. · Der neue Kopf nannte `today()`, der Vorgang lief auf `vorgabeTag()` ✅ übernommen, behoben. · „elf von elf Urteilen" war zweimal falsch, es sind zehn ✅ übernommen, richtiggestellt. · Die größeren Funde (der Grund erreicht die Leitung nie, `summaryBig` im Getränke-Zweig, Offline-Reihe bei dauerhaftem 4xx) ↩️ geändert: in den Backlog, nicht in diese Runde — sie gehören nicht in einen Merge, der schon drei Runden trägt.
+**Umgesetzt:**
+- `rGrund(m)` läuft auch in `rGetrMenge`, gebunden an `mode==="nach"` (der Wareneingang kennt keinen Grund).
+- Der Statusblock ist wieder ein `<div>` mit zwei echten Knöpfen: `.netzok` („Gesehen") und `.netzmehr` (›, öffnet die Begrüßung). `role="status"` sitzt wieder an der Textzeile, nicht im Knopf.
+- Kopf und `tagesStand()` fragen `vorgabeTag()`; ein gewählter Tag steht als „· gewählt" da, und nach der Wahl wird die Startseite neu gezeichnet.
+**Geprüft:** `npm test` 359/359 (9 neue Prüfungen). `node tests/ui-nachjagd.cjs` 23/23 — die 14 neuen Prüfungen sind gegen den Stand vor der Behebung nachweislich ROT (0 Grundknöpfe, Statusblock BUTTON ohne `.netzok`, Kopf bleibt „Freitag, 18.09." während `vorgabeTag()` schon auf gestern steht). `LAUF=runde15 node tests/ui-mass.cjs` zehn von zehn. Belege `review/screens/r15/` und `review/screens/geraete/r15/`, Bögen in `review/bogen/`.
+**Für die Nächsten:** software-engineer: der Grund muss im Protokoll und im Backoffice ankommen (`ereignis.notiz` wird von keiner Abfrage gelesen), und ein nachträglich geänderter Grund braucht eine Korrekturzeile. Danach `summaryBig()` für den Getränke-Zweig.
+**Phase/Thema:** Oberfläche / Sonderentnahme, Startseite
+**Backlog:** elf Punkte aus beiden Agentenberichten eingetragen.
+**STATUS:** FERTIG

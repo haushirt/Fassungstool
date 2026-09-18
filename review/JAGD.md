@@ -784,3 +784,158 @@ keine Lieferung am Zähltag) und einmal mit dem Fall des Fundes: „10–11 à 1
   Service Workers von v30 auf v31 auf einem Gerät, das v30 im Speicher hat.
 * Die Live-D1 (kein Connector in dieser Sitzung).
 * Das Druck-Layout der Getränkeladen mit der neuen Kürzelhöhe.
+
+---
+
+# Fünfte Jagd · Runde 13
+
+Gejagt am 18.09.2026 auf `claude/fassungstool-befunde-beheben-guhmat`,
+Diff `50c1123..6abd9ff` (ein Commit) und Gesamtzustand. Gelesen:
+`review/INPUT-TEAM.md` (F1–F9 + M), der ganze Diff, `public/index.html`,
+`public/leitung.html`, `src/index.js`, `tests/ui-mass.cjs`,
+`tests/betriebstag.test.mjs`, `tests/oberflaeche-f.test.mjs`.
+
+Selbst ausgeführt: `npm test` (325 grün), `LAUF=jagd13 node tests/ui-mass.cjs`
+(alle zehn Urteile grün) — und danach fünf eigene Playwright-Läufe an den
+Stellen, die `ui-mass.cjs` **nicht** anfasst. Dort liegen die A-Funde.
+Zeilennummern beziehen sich auf `6abd9ff`.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgestellt / gerechnet | Nächste Rolle | Stand |
+|---|---|---|---|---|---|---|
+| A | 13 | **„Sonderentnahme · Getränke" ist zerrissen: der Zählknopf steht 31 px außerhalb des Fensters, die Seite rollt waagrecht.** `.w` ist seit F3 ein Raster mit vier festen Spalten, aber sechs andere Zeilentypen benutzen dieselbe Klasse. In `getrRow()` landet das Flaschenbild in der 1fr-Spalte, der NAME in der 118-px-Ringspalte und der Zählknopf in der 24-px-Spalte für die Fehlmenge. | `public/index.html:574` (`.w{display:grid…}`) · `:4325` (`getrRow`) | Chromium 390×844, „Sonderentnahme → Getränke → Säfte": `document.documentElement.scrollWidth` **421** bei `clientWidth` **390**. `BUTTON.cnt` liegt bei **375…421 px**, also 31 px draußen; bei 320 px genauso (305…351). Der Name „Tomate" steht bei x=216, sein Bild bei x=16. Beleg: `review/screens/jagd13/A1-sonderentnahme-getraenke-390.png` | software-engineer | offen |
+| A | 13 | **„Diesen Stand übernehmen?" → Ja → der übernommene Stand ist sofort weg.** `fernNeuer(m)` fragt nach `today()`, `start(m)` rechnet mit `vorgabeTag()`. Sobald in der Begrüßung (F9) ein anderer Tag gewählt wurde, laufen die beiden auseinander. | `public/index.html:1953` (`fernNeuer`) · `:2526` (`start`, `ziel=vorgabeTag()`) · `:2567` (`archive(cur)`) | Chromium: Tageswahl 17.09., fremder Stand `tag_2026-09-18` (Lena, `bar:{w001:1}`, zaehlnr 5). Dialog erscheint, „Übernehmen" geklickt. Danach `S.tag = {tag:"2026-09-17", bar:{}, seen:{}}`, Archiv `["tag_2026-09-18"]`, Kopf „Für Donnerstag, 17.09.2026". Lenas Stand ist aus `S` verschwunden — und `hh_zaehlnr_v1["tag_2026-09-18"]=5` ist gesetzt, der Dialog kommt also nie wieder. | software-engineer | offen |
+| A | 13 | **Ein laufender Vorgang wird durch „Anderes Datum" still archiviert und geleert.** Kein Dialog, keine Frage — obwohl beim zweiten Vorgang desselben Tages und beim Fremdgerät ausdrücklich gefragt wird. | `public/index.html:2567` (`if(cur&&(cur.finished\|\|cur.tag!==ziel)){archive(cur);S[m]=blank(m);}`) · `:2734` (`setTagWahl`) | Chromium: Tagesfassung 18.09. angefangen (`bar:{w001:2}`), zurück ins Menü, in der Begrüßung „Anderes Datum" → 17.09., Tagesfassung öffnen. Ergebnis: `tag:"2026-09-17"`, `bar:{}`, `dialogOffen:false`. Die Kachel „Angefangen" ist weg. | software-engineer | offen |
+| A | 13 | **Der Betriebstag der Tagesfassung wurde umgestellt, der Abgleich im Backoffice nicht.** `blank()` datiert `tag` nicht mehr auf `yest()`, sondern auf heute. `abgleich(tag)` paart aber unverändert den Z-Bericht von Tag X mit den Vorgängen von Tag X, und `letzterTag()` schlägt weiterhin „gestern" vor. Die Paarung verschiebt sich damit **dauerhaft** um einen Tag, nicht nur um den Merge herum. | `public/index.html:1720` (`blank`) · `public/leitung.html:1336` (`abgleich`), `:1511` (`letzterTag`) · gelöschter Kommentar `public/index.html:2779` | Der gestrichene Kommentar nannte die Regel selbst: „Die Tagesfassung läuft auf den Vortag — das ist der Tag, dessen Verbrauch nachgefüllt wird und gegen dessen Z-Bericht später verglichen wird." Genau diese Regel steht jetzt nur noch in `abgleich()`. `review/BACKLOG.md` nennt den Effekt „einmalig und sichtbar" — er ist ab sofort ständig. | Moderation (Entscheidung), dann software-engineer | offen |
+| B | 13 | **Vier weitere Zeilentypen stehen im falschen Raster.** Archivliste: das „›" sitzt 142 px vor dem rechten Rand statt daran. `countRow` (Zusätzlich entnommen): die Zählknöpfe 40 px vom Rand. `rEin` (Wareneingang einräumen): Haken bei x=32, Text erst bei x=200. `rJahr`: das 64-px-Jahrgangsfeld steckt in der 24-px-Spalte und reicht bis an die Fensterkante. | `public/index.html:574` · `:2318` (Archiv) · `:2846` (`countRow`) · `:3359` (`rJahr`) · `:3391` (`rEin`) | Chromium 390 px, Zeilen im Original nachgebaut: `SPAN.go[200..216]`, `DIV.knum[200..318]`, `SPAN.box2[32..68] \| SPAN.tx[200..318]`, `INPUT.zf[326..390]`. Beleg: `review/screens/jagd13/B1-w-zeilen-390.png` | software-engineer | offen |
+| B | 13 | **F6 macht die Navigationsschublade des Backoffice kaputt, genau auf den Geräten mit Notch.** `.kopf` wächst um `max(12px,env(safe-area-inset-top))` bei `box-sizing:content-box`; `nav.seite{top:56px}`, `body.navoffen::after{inset:56px 0 0}` und `.huelle{min-height:calc(100vh - 56px)}` blieben bei 56 px stehen. | `public/leitung.html:254` gegen `:289`, `:504`, `:509` | Chromium 390 px: ohne Notch `.kopf` 0…68, Schublade beginnt bei 56 → 12 px liegen dahinter. Mit simuliertem `padding-top:59px` (iPhone 14/15 Pro): `.kopf` 0…**115**, Schublade weiterhin bei 56 → die **obersten 59 px der Schublade stehen hinter dem Kopf**, der Dunkelschleier lässt dort Tipser durch. `.huelle` bleibt 788 px = 100vh − 56. | software-engineer | offen |
+| B | 13 | **Der Backoffice-Link hängt an einer Rolle, die nur einmal je Seitenaufruf geholt wird.** `zieheRolle()` läuft in `netzStart()`, das durch `netzStart._an` gegen jeden zweiten Aufruf gesperrt ist; `setUser("")` löscht `hh_rolle` nicht. | `public/index.html:1779` (`zieheRolle`) · `:2072` (`netzStart._an`) · `:1579` (`setUser`) · `:2297` (Link) | Chromium: Rolle `leitung` gesetzt, Link da. Dann `setUser("")` → `renderLogin()` → neue Anmeldung als Service → `meineRolle()` weiterhin `"leitung"`, Link weiterhin da, `netzStart._an === true`. Umgekehrt bekommt die Leitung, die nach einer Service-Person anmeldet, den Link gar nicht. `/api/vorgaenge` und `/api/bestand` prüfen keine Rolle — die Tür führt also wirklich hinein. | software-engineer | offen |
+| B | 13 | **Die Laden 4 und 6 passen nicht mehr auf einen iPhone-Schirm und brechen ihre acht physischen Spalten in 4+4 um.** | `public/index.html:1299` (`repeat(auto-fit,minmax(72px,1fr))`) · `:3861` (`DHOCH=320`) | Gemessen, alt gegen neu, `.drw`-Höhe in Chromium: Lade 4 @390 **608 → 1040 px**, @320 **608 → 1499 px**; Lade 6 @390 **638 → 1078 px**. Fenster 844 px. Der Kommentar bei `DHOCH` behauptet, das sei „die gemessene Grenze, bei der Lade 4 auf einem iPhone noch als Ganzes lesbar bleibt" — sie ist es nicht mehr. Dazu: die Lade hat physisch acht Spalten nebeneinander, der Schirm zeigt 4 über 4. | Moderation (ist der Umbruch gewollt?), dann software-engineer | offen |
+
+## Die Rechnung zu A1, im Klartext
+
+`.w` trug bis `50c1123` `display:flex`; die Kinder legten sich der Reihe
+nach von links nach rechts, das letzte an den rechten Rand. Seit
+`public/index.html:574` gilt
+
+```
+.w{--dotsp:118px; display:grid;
+   grid-template-columns:minmax(0,1fr) var(--dotsp) 24px auto; …}
+```
+
+Die vier Spuren sind für `dotRow()` gerechnet — Name, Ringe, Fehlmenge,
+Häkchen. `getrRow()` hängt aber drei ganz andere Kinder ein:
+`.gic` (Flaschenbild), `.tx` (Name), `.knum` (Zählknöpfe). Das Raster
+verteilt sie stur: Bild in 1fr, Name in die 118-px-Ringspalte, Zählknöpfe
+in die 24-px-Fehlmengenspalte. `.knum` ist 24 px breit, sein Inhalt
+(`.kminus` 25 px + Lücke + `.cnt` 46 px) läuft heraus; die vierte Spur
+(`auto`) ist 0 px breit, also läuft er aus der Zeile und aus dem Fenster:
+
+```
+Zeile   [16 … 358]
+.gic    [16 …  42]
+.tx     [216 … 334]      ← der Name, 174 px von seinem Bild entfernt
+.knum   [342 … 366]
+.cnt    [375 … 421]      ← Fensterbreite 390
+```
+
+Bei 320 px dasselbe Bild (`.cnt` 305…351). Betroffen sind
+„Sonderentnahme · Getränke" und „Wareneingang · Getränke"
+(`render()`, `RG={nach:[rGetrMenge,…], ware:[rGetrMenge,…]}`,
+`public/index.html:2798`).
+
+## Warum die reparierte Messung das nicht sieht
+
+`tests/ui-mass.cjs` misst je Modus nur den **ersten** Schritt
+(`for (const s of ["menu", ...SCHRITTE]) … start(m)`), dazu neu die sieben
+Ladenknöpfe der Tagesfassung. Ungemessen bleiben weiterhin:
+
+* der ganze Zweig `branch === "getr"` (`nach`, `ware`, `keller`, `fuellen`)
+  — dort liegt A1,
+* `tag`-Schritte 1 (Restaurant, die längsten Weinnamen — also genau der
+  Fall, für den F3 gebaut wurde), 2 (Holen) und 3 (Abschluss),
+* `ware`-Schritte 1 (`rJahr`) und 2 (`rEin`),
+* die Archivliste, das Anmeldebild,
+* die Begrüßung selbst (`grussWeg(p)` klickt sie in jedem Lauf weg).
+
+Die Behauptung aus `review/INPUT-TEAM.md`, das Messgerät habe die Laden
+„bis Runde 12 nie gesehen", stimmt — der Satz gilt unverändert für alles
+oben Aufgezählte.
+
+## Was an der Messung ehrlich ist
+
+Die Gegenprobe ist echt. Ich habe sie selbst gefahren: `50c1123` in einem
+eigenen Worktree, nur `tests/ui-mass.cjs` von heute daraufgelegt. Ergebnis:
+
+```
+✗ kein waagrechter Überlauf …            (1 Stelle)   DIV.gcap(323px) @320
+✗ nichts im Service wird abgeschnitten   (3 Stellen)  Lade 4 @320 / @430
+✗ Trefferflächen mindestens 44 px        (56 Knöpfe)  .statb 38×44 @320
+✗ Kürzel in den Laden überlappen nicht   (1 Stelle)   Cranberry/Ananas @320
+✗ kein Kürzel wird beschnitten           (4 Stellen)
+```
+
+Gegen `6abd9ff` sind dieselben Urteile grün. Der Test ist also gebaut, wie
+verlangt. Die beiden Rücknahmen halte ich für vertretbar: die 1212 leisen
+Ziffern auf den Zählpunkten sind eine dokumentierte Entscheidung und
+stehen als Hinweis mit Zahl im Protokoll, und die Breitengrenze fürs
+Backoffice steht samt Fund in `review/BACKLOG.md`. Das ist kein
+Wegreparieren. Der blinde Fleck ist nicht die Schwelle, sondern der
+Umfang — siehe oben.
+
+## C-Funde → `review/BACKLOG.md`
+
+1. „3 Vorgänge wartet" — der Plural ist verlorengegangen; dieselbe Form in
+   „Server antwortet nicht – 3 Vorgänge wartet" und „3 Vorgänge wartet –
+   kein Netz". `public/index.html:2034-2039` (`netzChip`); festgeschrieben in
+   `tests/oberflaeche-f.test.mjs:95`.
+2. `tests/oberflaeche-f.test.mjs` beweist nichts über Darstellung: 21 von
+   21 Prüfungen sind Textsuchen nach genau den Zeichenketten, die derselbe
+   Zug geschrieben hat (`assert.match(APP, /t="Alles übertragen"/)`).
+   Grün heißt hier nur: der Text steht noch da.
+3. `aufraeumenFotospeicher()` schreibt bei JEDEM Start den gesamten
+   Zustand neu (`save()`), auch wenn nichts zu löschen war; die Marke
+   `hh_fotos_geloescht_v1` wird VOR dem Löschen gesetzt — ein von einem
+   zweiten Tab blockiertes `deleteDatabase` wird nie wiederholt.
+   `public/index.html:4932-4947`.
+4. Die Ursachenerzählung zu M ist an einer Stelle unbelegt: „bei 390 px …
+   die achte Kachel um 3 px abgeschnitten, genau der Befund". Die eigene
+   Gegenprobe meldet Beschnitt in Lade 4 nur bei **320** und **430** px,
+   nicht bei 390.
+5. `wienTag()` steht jetzt dreimal im Repo (`public/index.html:1681`,
+   `public/leitung.html:1199`, `src/index.js:38`), `tagMinus()` zweimal —
+   zusammengehalten von einem Kommentar „wer eine ändert, ändert beide".
+6. `askPin`, `openAdmin`, `renderAdmin` (`public/index.html:2368-2466`)
+   haben seit F5 keinen Aufrufer mehr. Bewusst so, aber toter Code.
+7. `resultText()` mischt Einheiten: „N Flaschen aus dem Keller geholt"
+   (Flaschen) direkt neben „3 Weine sind noch nicht geholt" (Positionen).
+   `public/index.html:4689`.
+
+## Gesamtstand
+
+```
+npm test                       325 grün / 61 Suiten
+LAUF=jagd13 node ui-mass.cjs   alle 10 Urteile ✓ (siehe blinder Fleck oben)
+Gegenprobe gegen 50c1123       5 Urteile ✗ — der neue Test greift
+```
+
+Vier Dateien in `public/`, `sw.js` von v31 auf **v32** erhöht,
+Gestaltungsschicht wortgleich (von `ui-mass.cjs` geprüft: „wortgleich"),
+`schema.sql`, `migrations/`, `docs/`, `wrangler.jsonc`, `package.json`
+unberührt, `RUNDEN` unberührt, keine Änderung an Anmeldung, Token oder
+Codes (`zieheRolle()` liest nur `GET /api/ich`), keine Geheimnisse im
+Diff. Journal und Offline-Reihe sind im Diff nicht berührt; `zieheRolle()`
+fällt ohne Netz still durch und lässt `NETZ.zustand` unangetastet.
+
+## Ungeprüft geblieben
+
+* Echtes Safari auf echtem iPhone/iPad: Notch, Safe-Area, Tastatur,
+  Gummiband, der Wechsel des Service Workers v31 → v32.
+* Ob `sel.showPicker()` auf einem `.vh`-Input (`#grussSel`, 5×4 px,
+  `clip:rect(0,0,0,0)`) unter iOS-Safari den Kalender öffnet. In Chromium
+  wirft es nicht; die Rückfallebene `sel.click()` auf ein geclipptes
+  Eingabefeld ist dort nicht prüfbar. Der Weg „Anderes Datum" hängt daran.
+* Die Live-D1 (kein Connector in dieser Sitzung).
+* Der Vergleich Bericht 37 (145 Stück, 602,50 €) läuft über
+  `tests/zbericht-37.test.mjs` weiterhin auf; `src/gnparse.js` und
+  `src/gnmap.js` sind in dieser Runde nicht angefasst worden. `ml()` und
+  `mlAusText()` sind unverändert wortgleich.

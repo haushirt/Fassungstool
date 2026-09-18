@@ -27,6 +27,18 @@ const SITZUNG = 12 * 60 * 60 * 1000;
    Kompromiss: immer noch eine Sperre, aber keine, die im Betrieb zuschnappt. */
 const SPERRE = { versuche: 10, fenster: 15 * 60 * 1000 };
 
+/* ── Betriebstag ────────────────────────────────────────────────────────
+   F1 (18.09.2026): Der Worker läuft in UTC. Wo er selbst einen Betriebstag
+   bildete (`notiz`, Wochenbrief), stand deshalb ab 22:00 Ortszeit der
+   Vortag — während die App im Keller schon den nächsten schrieb. Der Tag
+   eines VORGANGS kommt weiterhin ausschliesslich aus dem Paket der App
+   (`daten.tag`); der Worker rechnet keinen eigenen dagegen. Diese Funktion
+   ist nur für das, was der Worker selbst datiert, und sie rechnet in
+   derselben Zeitzone wie `wienTag()` in index.html und leitung.html. */
+const wienTag = (d) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Vienna", year: "numeric", month: "2-digit", day: "2-digit"
+}).format(d || new Date());
+
 const json = (o, s = 200, h = {}) =>
   new Response(JSON.stringify(o), {
     status: s,
@@ -232,11 +244,23 @@ async function vorgangSchreiben(env, p, id, daten) {
    statt einer zusammengesetzten: SQL wird hier nie gebaut, immer
    gebunden. */
 const SQL_EREIGNIS =
-  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
-   VALUES (?1,?2,?3,?4,'vorgang',?5,?6,?7,?8,?9)`;
+  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer, notiz)
+   VALUES (?1,?2,?3,?4,'vorgang',?5,?6,?7,?8,?9,?10)`;
 const SQL_EREIGNIS_KORR =
-  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer)
-   VALUES (?1,?2,?3,?4,'vorgang-korrektur',?5,?6,?7,?8,?9)`;
+  `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer, notiz)
+   VALUES (?1,?2,?3,?4,'vorgang-korrektur',?5,?6,?7,?8,?9,?10)`;
+
+/* Runde 14 · Der Grund einer Sonderentnahme reist im Journal mit.
+   KEINE Migration: `ereignis.notiz` gibt es live (TEXT, frei), und für
+   abgeleitete Zeilen stand sie bisher leer. Damit das Backoffice sie
+   gruppieren kann, steht der Grund vorn und in fester Form —
+   `grund=bruch` — und erst danach dürfte je freier Text folgen. Eine
+   neue `ereignis.art` wäre eine Migration und kommt nicht in Frage: die
+   CHECK-Bedingung lässt nur zaehlung|entnahme|eingang|korrektur zu.
+   So am 17.09. entschieden, review/ENTSCHIEDEN-NACHTS.md Nr. 7. */
+const GRUND_ERLAUBT = ["kueche", "personal", "bruch", "verkostung", "zimmer"];
+const grundNotiz = (d) =>
+  (d.mode === "nach" && GRUND_ERLAUBT.includes(d.grund)) ? "grund=" + d.grund : "";
 
 /* Ereignisse aus dem Zustand eines abgeschlossenen Vorgangs ableiten.
 
@@ -325,8 +349,10 @@ async function ereignisseAbleiten(env, vid, d, p) {
        liegt die Korrektur notfalls eine Millisekunde nach der jüngsten
        Zeile, die schon da ist. */
     const jetzt = Math.max(Date.now(), alt.reduce((m, r) => Math.max(m, +r.ts || 0), 0) + 1);
+    const notiz = grundNotiz(d);
     return zn.map(z => stmt.bind(
-      crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge, d.name || p.name));
+      crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge,
+      d.name || p.name, notiz));
   };
 
   /* Erster Abschluss: nichts zu vergleichen, die Zeilen gehen so hinaus
@@ -725,7 +751,7 @@ export default {
   /* ── Wochenbrief ─────────────────────────────────────────────────── */
   async scheduled(event, env, ctx) {
     const bis = new Date(), von = new Date(); von.setDate(von.getDate() - 7);
-    const t = d => d.toISOString().slice(0, 10);
+    const t = d => wienTag(d);
     const { results: bew } = await env.DB.prepare(
       `SELECT artikel, SUM(menge) AS fl FROM ereignis
         WHERE art = 'entnahme' AND tag BETWEEN ?1 AND ?2
@@ -760,5 +786,5 @@ async function notiz(env, quelle, text) {
   await env.DB.prepare(
     `INSERT INTO ereignis (id, ts, tag, art, quelle, vorgang, artikel, ort, menge, wer, notiz)
      VALUES (?1,?2,?3,'korrektur',?4,'','','',0,'System',?5)`
-  ).bind(crypto.randomUUID(), Date.now(), new Date().toISOString().slice(0, 10), quelle, text).run();
+  ).bind(crypto.randomUUID(), Date.now(), wienTag(), quelle, text).run();
 }
