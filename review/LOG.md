@@ -1963,3 +1963,495 @@ Eingaben stimmen jetzt (drei Modi schrieben falsche oder keine Mengen), und
 das Backoffice zeigt und ändert jetzt wirklich das, was auf dem Server
 steht — mit Ausnahme der Stammdaten aus §8 A, die weiter nur im Quelltext
 stehen.
+
+---
+
+### Runde 6 – software-engineer (Nachtzyklus P0: Mengen, die heute falsch sind)
+
+**Kritik am Vorgänger:** Runde 5 hat den zweiten Z-Bericht-Leser aus
+`public/leitung.html` entfernt und dabei die Rechnung daneben stehen lassen,
+die aus demselben Bericht eine Menge macht.
+* ✅ übernommen: `flaschen()` (`public/leitung.html:973` im Stand v24) hatte
+  drei stille Annahmen — jeder Wein 750 ml (`GEBINDE`, `:604`), eine Position
+  ohne Größe im Namen eine ganze Flasche (`aus||750`), und alles Übrige „eine
+  Einheit = eine Flasche" (`return p.anzahl`). Am echten Bericht Nr. 37
+  gemessen: „Amaro Averna Siciliano 2 cl" × 3 wurde zu **3 Flaschen** statt
+  0,086; „Sanbitter Spritz 1 Glas" zu einer Flasche. Beides ging ungefragt in
+  die Differenz und sah dort aus wie Schwund.
+* ✅ übernommen: `mapping.gebinde_ml` existiert live, der Worker nimmt es
+  entgegen und liefert es aus (`src/index.js:490`, `:615`) — das Backoffice
+  hat es nie gelesen. Der einzige Wert, den je ein Mensch bestätigt hat, lag
+  ungenutzt in der Datenbank.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Eine Quelle für Gebindegrößen** (`gebindeGroesse`, `public/leitung.html:658`)
+   mit vier Stufen und klarer Auskunft, woher der Wert kommt: bestätigt für
+   diese Kassenposition → bestätigt für diesen Artikel → Vorschlag aus dem
+   Artikelnamen → Vorschlag „Standard Weinflasche 750 ml". Für Spirituosen und
+   Wasser wird **kein** Standard erfunden (`GEBINDE_STANDARD = { wein: 750 }`);
+   widersprechen sich zwei Bestätigungen desselben Artikels, gilt keine.
+2. **Der dritte Zustand.** `flaschen()` gibt `{ok:false, fehlt:"ausschank"|"gebinde"}`
+   zurück statt einer erfundenen Zahl. `abgleich()` führt `ohneGroesse` neben
+   `offen`; diese Positionen gehen weder in `verk` noch in die Differenz.
+3. **Sichtbar ausgewiesen** in „Verkauf ↔ Fassung" und im Mittagsblick:
+   „Größe fehlt" mit Menge, Grund, Vorschlag und einem Knopf „Übernehmen",
+   der `POST /api/mapping` mit `gebinde_ml` schickt. Bewusst nicht rot: hier
+   fehlt eine Angabe, keine Flasche.
+
+**Geprüft:** `npm test` 234 grün (vorher 211; neu `tests/gebinde.test.mjs`,
+das den ausgelieferten Ausschnitt aus `leitung.html` in einer eigenen Umgebung
+gegen die echten Zahlen aus `tests/fixtures/zbericht-37-extended.csv` rechnet,
+dazu `tests/ping.test.mjs`). `node tests/ui-leitung-echt.cjs` **30/30** — der
+ganze Weg durch die echte Oberfläche: „Größe fehlt" steht da, keine Zeile
+rechnet mit, Klick auf „Übernehmen", `mapping.gebinde_ml = 750` in der
+Datenbank, danach 4 × 125 ml aus 750 ml = 0,67 Flaschen.
+`LAUF=runde-6 node tests/ui-mass.cjs`: Überlauf 0 in 390/768/1280, keine
+JS-Fehler, Gestaltungsschicht wortgleich — unverändert gegenüber der
+Basislinie `review/screens/basis-live/`. `sw.js` v24 → v25.
+
+**Für die Nächsten:**
+* An die **Moderation** (dringend, mit Live-Beleg): In der Live-D1 haben
+  **alle 13** Zuordnungen `gebinde_ml = NULL` (am 18.09. lesend nachgesehen).
+  Ohne einen Sammelknopf „alle Vorschläge übernehmen" zeigt der Abgleich am
+  Morgen nichts als Lücken — das Werkzeug wäre dann ehrlicher, aber stiller.
+* An den **Jäger**: `kistenGr()` (`public/leitung.html:678`) liest `p.kg`; die
+  App legt `kistengr` ab (`public/index.html:2910`). Der Worker liest seit
+  Runde 5 beides, das Backoffice nur das Feld, das es nie gab — dieselbe
+  Lieferung ergibt im Journal 40 und auf dem Schirm 12 Flaschen.
+* An den **controller**: Der Befund B2 (zwei Vorgänge desselben Modus am
+  selben Tag teilen den Schlüssel) ist nachgelesen und bestätigt —
+  `public/index.html:2230` legt `blank(m)` mit demselben `tag` an,
+  `ereignisseAbleiten` (`src/index.js:262`) nimmt den ersten per Gegenbuchung
+  zurück. Live existiert bereits `ware_2026-09-16`.
+
+**Phase/Thema:** A / P0 — Mengen, die heute falsch sind
+
+**Backlog:** neu unter „hoch": Sammelbestätigung der Gebindegrößen fehlt;
+`kistenGr()` im Backoffice liest ein Feld, das es nie gab; zwei Vorgänge
+desselben Modus am selben Tag löschen einander.
+
+**STATUS:** VERBESSERUNGEN — keine Position wird mehr still geraten, aber
+ohne Sammelbestätigung ist der Abgleich am Morgen leer.
+
+---
+
+### Runde 7 – software-engineer (Nachtzyklus: die drei A-Funde aus Runde 6)
+
+**Kritik am Vorgänger (Runde 6):**
+* ✅ übernommen: `kistenGr()` (`public/leitung.html:678`, Stand v25) las `p.kg`
+  — ein Feld, das die App nie geschrieben hat — und fiel dann auf `PLAN.kiste`
+  zurück. Damit gab es DREI Fassungen derselben Zahl: App `+p.kistengr||6`,
+  Worker `+x.kistengr||+x.kg||6`, Backoffice `+p.kg||PLAN.kiste||6`. Zwei
+  Kisten à 20 Flaschen standen im Journal mit 40 und auf dem Schirm mit 12.
+* ✅ übernommen: Runde 6 hat richtig aufgehört zu raten, aber keinen Weg
+  gelassen, die 13 unbestätigten Größen in vertretbarer Zeit zu bestätigen.
+  Ohne Sammelweg wäre der Abgleich am Morgen leer gewesen.
+* ↩️ geändert (Fund A-6 der Jagd, während der Runde hereingereicht): Der Knopf
+  „Übernehmen" stand auch an **Rezeptzeilen**, wo `id` der BESTANDTEIL ist.
+  Ein Klick hätte `MAP[<Mischgetränk>] = <Bestandteil>` geschrieben, und der
+  Worker hätte das rückwirkend in alle gespeicherten Berichtszeilen getragen
+  (`UPDATE fassungszeile SET artikel …`) — ohne Papierkorb. Jetzt: kein Knopf
+  an solchen Zeilen, der Sammelknopf lässt sie aus, und beide Wege verweigern
+  sie zusätzlich von sich aus.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Sammelbestätigung der Gebindegrößen.** Erst die Liste (Kassenname ·
+   Menge · Artikel · was fehlt · Vorschlag samt Herkunft), dann ein Klick.
+   Jede Zeile geht einzeln über `POST /api/mapping`; gemerkt wird nur, was der
+   Server angenommen hat; beim ersten Fehlschlag Abbruch mit „n von m
+   bestätigt — der Rest steht noch da". Positionen ohne Vorschlag und
+   Rezeptzeilen bleiben unberührt.
+2. **`kistenGr()` auf die Rangfolge des Workers gebracht**
+   (`+p.kistengr || +p.kg || 6`). Dieselbe Lieferung ergibt jetzt überall
+   dieselbe Zahl.
+3. **Zweiter Vorgang desselben Modus am selben Tag wird gefragt, nicht
+   ersetzt** (`start()`, `public/index.html`): „Ergänzen" (Vorgabe) führt den
+   abgeschlossenen Vorgang fort, der Server bucht nur den Zuwachs;
+   „Trotzdem neu beginnen" bleibt möglich und sagt vorher, dass die erste
+   Lieferung zurückgenommen wird; „Abbrechen" führt ins Menü. Der Schlüssel
+   `<modus>_<tag>` bleibt unangetastet, keine Schemaänderung.
+
+**Geprüft:** `npm test` **252 grün** (vorher 234; neu `tests/kisten.test.mjs` 6,
+`tests/vorgang-zweimal.test.mjs` 6, `gebinde.test.mjs` von 15 auf 21).
+`node tests/durchstich.cjs` 35/35. `node tests/ui-leitung-echt.cjs` **40/40**
+(Abschnitt 8 neu: Sammelknopf am echten Bericht durch den echten Worker, drei
+Zeilen einzeln in `mapping`, Rezeptzeile ohne Knopf und vom Sammelklick nicht
+angefasst). `node tests/ui-zweiter-vorgang.cjs` **15/15** (neu, Chromium ohne
+Netz): die App fragt, nennt „1 Position · 40 Flaschen", Ergänzen schickt EIN
+Paket mit 64 Flaschen, ein anderer Tag wird weiter still archiviert.
+`tests/vorgang-zweimal.test.mjs` stellt den Schaden am echten Worker nach:
+ohne die Frage steht `eingang w003 −40` als Gegenbuchung im Journal.
+`LAUF=runde-7 node tests/ui-mass.cjs`: Überlauf 0, JS-Fehler 0,
+Gestaltungsschicht wortgleich, Messwerte Zeichen für Zeichen wie die
+Basislinie. `sw.js` v25 → v26.
+**Ungeprüft:** echtes iPhone/Safari, der Wechsel des Service Workers auf v26,
+und der Weg „Trotzdem neu beginnen" end-to-end gegen den Worker.
+
+**Für die Nächsten:**
+* An die **nächste Runde**, mit Beleg: `public/index.html:2238` — im Dialog
+  „Auf einem anderen Gerät weiter?" setzt der Abbrechen-Zweig
+  `start._uebernommen=false; start(m);`. `fernNeuer(m)` liefert danach denselben
+  fremden Stand, der Dialog öffnet sich sofort wieder: **ablehnen ist
+  unmöglich**. Die Berichtigung ist ein Wort.
+* An den **controller**: „Ergänzen" löst den Fall ohne Schemaänderung, aber es
+  gibt keine ausdrückliche Bedienung „diese Position war falsch" — korrigiert
+  wird durch Ändern im fortgeführten Vorgang.
+
+**Phase/Thema:** A / P0 — Abschluss Gebindegrößen, Kistengrößen, zweiter Vorgang
+
+**Backlog:** neu unter „hoch": Fremdgerät-Dialog, Abbrechen öffnet sich endlos
+neu. Neu unter „mittel": „Trotzdem neu beginnen" nimmt die erste Lieferung
+zurück; Rezepturen für „1 Glas"-Positionen fehlen.
+
+**STATUS:** VERBESSERUNGEN — die drei A-Funde sind behoben und belegt; der
+Fremdgerät-Dialog ist neu aufgetaucht und offen.
+
+---
+
+### Runde 8 – software-engineer (die drei A-Funde der Jagd)
+
+**Kritik am Vorgänger (Runde 6/7):**
+* ↩️ geändert: `tests/gebinde.test.mjs:204` prüfte `w001.diff === 1` — und
+  daneben stand der Kommentar „die Entnahme steht da, aber sie ist kein
+  Befund über den Verkauf". Der Kommentar sagte das Richtige, die Zusicherung
+  das Gegenteil: sie hat Fund A-5 festgeschrieben. Jetzt `diff === null` und
+  `unklar === "groesse"`.
+* ↩️ geändert: Der Hinweis „Kein Z-Bericht im Zeitraum" hing an `top.length` —
+  er wäre genau dann verschwunden, wenn die unklaren Zeilen aus `top` fallen,
+  also wenn er gebraucht wird. Hängt jetzt an `!a.berichte && a.zeilen.length`.
+* ✅ übernommen: `kistenGr()` aus Runde 7 ist wortgleich mit dem Worker,
+  `tests/kisten.test.mjs` hält es fest — nichts daran geändert.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **A-5 · „Größe fehlt" wirkt jetzt auch auf der Entnahmeseite.** Artikel,
+   deren Verkauf nicht bestimmbar ist, bekommen `diff: null` und ein
+   `unklar`-Feld mit Grund (`groesse` · `offen` · `keinbericht`). Sie zählen
+   nicht in die rote Zahl der Navigation und nicht in „Auffällige
+   Differenzen"; in der Tabelle stehen sie mit Entnahme, Strich statt
+   Differenz und dem Satz „kein Abgleich möglich — …"; in der CSV bleiben
+   Verkauf und Differenz leer (neue Spalte „Befund"). Bewusst vorsichtig:
+   unklar wird ein Artikel nur, wenn für ihn ÜBERHAUPT kein Verkauf
+   gerechnet wurde — echter Schwund bleibt ein Befund.
+2. **A-3 · Gelieferte Getränke sind Eingang, nicht Entnahme.** `gent` geht im
+   Modus `ware` nach `o.eingang`, sonst nach `o.getr` — dieselbe
+   Unterscheidung wie im Worker. Vorher standen 24 gelieferte Cola im
+   Abgleich als „Entnahme 24, Diff +24, Vorrat aufgebaut oder Schwund".
+3. **A-4 · Eine Reihenfolge.** `MODUSRANG` ist weg; sortiert wird nach
+   Betriebstag, bei Gleichstand nach Zeitstempel (Entscheidung Nr. 15 der
+   Nacht). „Danach" heißt `tag > Zähltag` ODER (`tag = Zähltag` UND
+   `ts > Zähl-ts`). Vorher: Backoffice 10, Worker 34 Flaschen.
+4. **Einzeiler:** Der Fremdgerät-Dialog ließ sich nicht ablehnen
+   (`start._uebernommen=false` statt `true`); er öffnete sich sofort wieder.
+
+**Geprüft:** Jede Zahl zuerst nachgestellt, dann berichtigt, dann erneut
+gemessen. `npm test` **270 grün** (vorher 252; neu `abgleich-unklar` 8,
+`reihenfolge` 6, `lieferung-getraenke` 4). `node tests/durchstich.cjs` 35/35 ·
+`node tests/ui-leitung-echt.cjs` 40/40 · `node tests/ui-zweiter-vorgang.cjs`
+15/15 · `node tests/ui-fremdgeraet.cjs` **10/10** (Gegenprobe mit
+zurückgedrehtem Wort: 3 von 10 rot). `tests/reihenfolge.test.mjs` rechnet
+jeden Fall doppelt — echter Worker über `/api/bestand` gegen `bestand()` aus
+der ausgelieferten Datei. `LAUF=runde-8 node tests/ui-mass.cjs`: Überlauf 0,
+JS-Fehler 0, Gestaltungsschicht wortgleich, Messwerte identisch mit der
+Basislinie. `sw.js` v26 → v27.
+**Ungeprüft:** echtes iPhone/Safari, der Wechsel des Service Workers auf v27,
+der Weg „Übernehmen" nach dem Ablehnen mit echtem Serverstand, und die CSV in
+einem Tabellenprogramm.
+
+**Für die Nächsten:**
+* An die **Worker-Seite**, mit Beleg: Entscheidung Nr. 15 ist jetzt im
+  Backoffice umgesetzt, im Worker NICHT. `src/index.js`, `bestand()`:
+  `if (basis != null && r.ts <= basis) return;` — reine Ankunftszeit,
+  `ereignis.tag` wird nicht gelesen. Solange Betriebstag und Ankunft
+  zusammenpassen (der Normalfall), liefern beide dieselbe Zahl; ein
+  nachgereichtes Paket lässt sie wieder auseinanderlaufen.
+* An den **Gestalter**: „kein Abgleich möglich — Größe fehlt" steht als
+  gedämpfter Text, nicht als Plakette. `p-grau` misst 4,43:1 und fällt durch
+  das eigene Maß in `tests/ui-mass.cjs`.
+
+**Phase/Thema:** A / Abgleich, Bestand, Offline-Dialoge
+
+**Backlog:** neu unter „hoch": Worker `bestand()` rechnet nach Ankunftszeit,
+das Backoffice nach Betriebstag. Neu unter „mittel": gleicher Zeitstempel in
+derselben Millisekunde; kein Feld für die Gebindegröße von Hand. Neu unter
+„niedrig": sechste CSV-Spalte „Befund"; `p-grau` mit 4,43:1.
+
+**STATUS:** VERBESSERUNGEN — die vier beauftragten Funde sind zu; offen bleibt
+Entscheidung Nr. 15 im Worker.
+
+---
+
+### Runde 9 – ui-designer (P1/P4: Oberfläche im Service)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen (Jäger, C-Fund): `sicht()` in `tests/ui-mass.cjs` prüfte „vh"
+  nur am Element selbst. Von den gemeldeten 96 zu kleinen Trefferflächen waren
+  **78 echt, 18 Geister** — die nie sichtbaren `#bBack`/`#bNext` aus einem
+  `vh`-Behälter.
+* ↩️ geändert: Das Messgerät maß den **Anstrich statt den Griff**. `.home`
+  (57 × 36) und `.hilfebtn` (36 × 36) tragen seit Runde 2 ein `::after` mit
+  `max(100%,44px)`, das `getBoundingClientRect()` nicht sieht. Jetzt tastet die
+  Messung zwölf Punkte auf einem 44-px-Kreis um die Mitte mit
+  `elementFromPoint`. Von den 78 waren damit **48 wirklich ohne Griff**.
+* ↩️ geändert: Runde 8 hat „kein Abgleich möglich" zu gedämpftem Text gemacht,
+  *weil* die Plakette `p-grau` mit 4,43:1 durchfiel. Die Plakette war nicht das
+  Problem, ihr Farbwert war es — `--fg-secondary` bringt 5,83:1.
+* ❌ abgelehnt: nichts.
+
+**Umgesetzt:**
+1. **Jeder Griff im Service ist 44 px** (46-px-Raster, ein Pixel Luft, damit ein
+   Druck auf die Naht eindeutig einem Knopf gehört): Schrittpunkte `.st`
+   (24 × 44 → 46 × 46, mit Linie dahinter), Zählpunkte `.dot` der Tagesfassung
+   (26 × 26 → 46 × 46 Griff, der Punkt bleibt 26), `.kminus`/`.kplus` 40 → 44.
+   `.home`/`.hilfebtn` blieben unangetastet — sie waren schon richtig.
+2. **Schrift im Service nie unter 15 px**, an einer Stelle gelöst:
+   `--text-xs`/`--text-sm` in der geteilten Tokenebene auf 15 px,
+   `[data-dichte="maus"]` holt sich 11/13 px zurück. Das Backoffice ist dadurch
+   Zeichen für Zeichen unverändert (36 von 36 Seiten gemessen).
+3. **Die drei rohen Bausteine gestaltet:** „Größe fehlt" ist ein Abschnitt mit
+   Überschrift und Zahl statt ein kopfloser Kasten; der Sammelknopf steht in
+   einer Handlungszeile statt mitten im Satz; „kein Abgleich" ist wieder eine
+   Plakette; „Trotzdem neu beginnen" ist ein Knopf über die ganze Breite mit
+   seiner Folge in der zweiten Zeile.
+
+**Geprüft:** `npm test` 270 grün · `durchstich` 35/35 · `ui-leitung-echt` 40/40 ·
+`ui-zweiter-vorgang` 15/15 · `ui-fremdgeraet` 10/10. `sw.js` v27 → v28.
+Messgerät vorher → nachher (`review/screens/runde-9-vorher/` →
+`review/screens/runde-9/`):
+
+| Urteil | vorher | nachher |
+|---|---|---|
+| waagrechter Überlauf | 0 ✓ | 0 ✓ |
+| JS-Fehler | 0 ✓ | 0 ✓ |
+| Schrift im Service < 15 px | 36 ✗ | **0 ✓** |
+| Trefferflächen ohne 44-px-Griff (Service) | 48 ✗ | **0 ✓** |
+| Kontrast < 4,5:1 (beide Oberflächen) | 117 ✗ | **0 ✓** |
+| Gestaltungsschicht wortgleich | ✓ | ✓ |
+
+Die 117 Kontrastfunde waren 99 × `nav.seite .zahl` (4,43:1) und 18 × `.gbtn .go2`,
+wo `font-size:var(--text-lg)` das `font-size:0` der Regel darüber aufhob und das
+Zeichen „›" zusätzlich zur Maskengrafik durchkam.
+Belege angesehen, nicht nur gelesen: `review/screens/runde-9/beleg-*.png`.
+**Ungeprüft:** echtes Safari, Bildschirmtastatur, Notch, Safe-Area, Gummiband,
+der Wechsel des Service Workers auf v28 — und ob iOS die `::after`-Griffe
+genauso trifft wie Chromium.
+
+**Für die Nächsten:**
+* An alle, die künftig messen: `ui-mass.cjs` urteilt jetzt über den **Griff**,
+  nicht über die gezeichnete Größe. Eine sichtbar kleine Fläche mit
+  44-px-`::after` ist ausdrücklich erlaubt.
+* An die nächste Gestaltungsrunde: Die Datumzeile im App-Kopf braucht 248 px,
+  die Spalte hat 240 — bei langen Wochentagen bricht sie seit der
+  Schriftanhebung um. Nicht die Schrift zurückdrehen.
+
+**Phase/Thema:** A / P1+P4 — Trefferflächen, Schriftgrade, Gestalt
+
+**Backlog:** neu unter „mittel": umbrechende Datumzeile; 46-px-Raster kostet
+Namensspalte. Neu unter „niedrig": Punktreihe bricht 5+1; `--text-xs` und
+`--text-sm` sind für den Finger gleich; Backoffice unter 900 px hat
+Fingergeometrie mit Mausschrift.
+
+**STATUS:** VERBESSERUNGEN — die vier Urteile für den Service stehen auf ✓;
+offen bleibt die umbrechende Datumzeile, vom Zug selbst verursacht.
+
+---
+
+### Runde 10 – software-engineer (die drei A-Funde der zweiten Jagd)
+
+**Kritik am Vorgänger (Runde 8):**
+* ✅ übernommen: `if(offen.length) nichtRechenbar(id,"offen")` prüfte nicht, OB
+  eine offene Position den Artikel überhaupt betreffen kann, sondern nur, ob
+  irgendwo eine offen ist. Mit Bericht 37 (30 offene Speisen) bekam damit jeder
+  Artikel ohne gerechneten Verkauf `diff: null`.
+* ↩️ geändert: Der Schutz `if(verk[id]>0) return` war bei `groesse` nicht
+  nachrüstbar — im Berichtslauf steht noch nicht fest, ob der Artikel an einer
+  späteren Position gerechnet wird. Deshalb wird jetzt gezählt und erst NACH
+  dem Lauf entschieden.
+* ↩️ geändert: Der in Runde 8 als „toter Code" entfernte `MODUSRANG` war im
+  Kern richtig; er kommt als zweistufiger `tagRang` zurück (Zählung = 0, alles
+  andere = 1). Für die Bewegungen untereinander weiß niemand die Reihenfolge,
+  und für die Summe ist sie gleichgültig.
+* ↩️ geändert: `src/index.js`, `bestand()` las `ereignis.tag` gar nicht, obwohl
+  die Spalte live `NOT NULL` ist.
+* ↩️ geändert: Drei Zusicherungen in `tests/reihenfolge.test.mjs` und
+  `tests/abgleich-unklar.test.mjs` schrieben die Funde fest. Jede ist mit
+  Begründung ersetzt, keine gelöscht.
+
+**Umgesetzt:**
+1. **A/8-1:** Der Grund „offen" ist als Stummschalter weg (Entscheidung Nr. 9
+   der Nacht). Der Hinweis über der Tabelle nennt die offenen Positionen
+   weiterhin.
+2. **A/8-2:** Größenlücken werden je Artikel gezählt und erst nach dem
+   Berichtslauf gewertet — wenigstens eine gerechnete Position heißt: die
+   Differenz bleibt, mit Vorbehalt „1 von 3 Positionen ohne Größe — die
+   Differenz ist unvollständig".
+3. **A/8-3:** Bei gleichem Betriebstag gilt die Kellerzählung als Erstes
+   (Entscheidung Nr. 8), in `public/leitung.html` UND in `src/index.js`.
+   `sw.js` v28 → v29.
+
+**Geprüft (Zahl gegen Zahl):**
+* A/8-1 · w002, 12 Flaschen entnommen, 0 verkauft, eine offene Speise im
+  Bericht: vorher „kein Abgleich möglich" und in keiner Liste gezählt —
+  nachher `diff +12`, Befund „prüfen", rote Zahl 0 → 2.
+* A/8-2 · Spritzerwein `verk 1,80`, Entnahme 9, dazu eine Rezeptzeile mit
+  Lücke: vorher `diff null` (7,2 Flaschen stumm) — nachher `diff +7,20` mit
+  Vorbehalt. Der Bestandteil, für den gar nichts gerechnet wurde, bleibt
+  „Größe fehlt".
+* A/8-3 · die sieben Fälle des Jägers, Backoffice und Worker gegeneinander:
+  Fall 2 (Zählung kommt am Folgetag) 10 → **4**; Fall 3 (gleicher Zeitstempel)
+  10 → **4**; Fall 4 (kein Zeitstempel) 10 → **4**; Fall 6 Backoffice 4 /
+  Worker 10 → **beide 4**. Fall 1 und 5 unverändert richtig.
+  **Fall 7 · Lieferung 08:00, Zählung 10:00 desselben Tages: 10 → 34.**
+  Das ist der in Kauf genommene Preis von Entscheidung Nr. 8 — siehe unten.
+* `npm test` **274 grün** (vorher 270) · `durchstich` 35/35 ·
+  `ui-leitung-echt` 40/40 · `ui-zweiter-vorgang` 15/15 · `ui-fremdgeraet` 10/10 ·
+  `LAUF=runde-10 node tests/ui-mass.cjs`: alle Urteile ✓.
+* **Ungeprüft:** echtes Safari/iPad; die Live-D1 in dieser Runde nicht
+  abgefragt; die neue Vorbehalt-Zeile nur als HTML geprüft, nicht als Bild.
+
+**Für die Nächsten:**
+* An die **Moderation**: Entscheidung Nr. 8 hat einen sichtbaren Preis (Fall 7).
+  Sauber lösbar ist er nur mit einem im Vorgang ERFASSTEN Zählzeitpunkt statt
+  der Ankunftszeit — `vorgang.begonnen` existiert live und wäre der Kandidat.
+* An den **ui-designer**: Die Befund-Spalte kann jetzt zweizeilig werden
+  (Plakette + Satz). Der Wortlaut ist gern zu verbessern, solange
+  „unvollständig" erhalten bleibt.
+
+**Phase/Thema:** A / Abgleich und Bestandsreihenfolge
+
+**Backlog:** neu unter „hoch": Lieferung vor der Zählung desselben Tages zählt
+seit v29 doppelt. Neu unter „mittel": `bestand()` gibt es weiter zweimal, beide
+rechnen jetzt nachweislich gleich — die Leitung sollte `/api/bestand` lesen.
+
+**STATUS:** VERBESSERUNGEN — die drei A-Funde sind zu, der Preis von
+Entscheidung Nr. 8 ist neu und gehört vor dem Livegang entschieden.
+
+---
+
+### Runde 11 – software-engineer (der Preis von Entscheidung Nr. 8)
+
+**Kritik am Vorgänger (Runde 10, dieselbe Rolle):**
+* ↩️ geändert: Entscheidung Nr. 8 („Zählung zuerst") wurde auch auf den
+  **Wareneingang** desselben Betriebstages angewandt. Damit wurde eine
+  Lieferung, die schon im Keller stand, als gezählt wurde, ein zweites Mal
+  addiert — gemessen 34 statt 10. Jetzt konservativ: nicht addieren, sondern
+  ausweisen (Entscheidung Nr. 10 der Nacht).
+* ❗ **Die Basislinie „274 grün" war nicht stabil.** `tests/modi.test.mjs:194`
+  („gleiche Millisekunde … BEKANNT") hing an der Uhr des Rechners und fiel in
+  zwei von sechs Läufen — ohne Zutun. Seit v29 war die Prüfung ohnehin
+  gegenstandslos. Ersetzt durch eine feste Zusicherung. **Damit ist auch meine
+  eigene Abnahme von Runde 10 zu korrigieren: „274 grün" war ein Wert, der
+  nicht jedes Mal herauskam.**
+* ✅ übernommen: Entnahmen desselben Tages zählen unverändert nach der
+  Zählung; die Fälle 1 bis 6 behalten ihre Zahlen, nachgemessen.
+
+**Umgesetzt:**
+1. Ein Wareneingang am Zähltag wird nicht mehr auf den gezählten Bestand
+   addiert, sondern je Artikel als `unklar` ausgewiesen — wortgleiche Regel in
+   `public/leitung.html` und `src/index.js`; `/api/bestand` gibt jetzt
+   `{bestand, gezaehlt, unklar}`.
+2. Das Backoffice sagt es an der Zahl: ein neutraler Satz über der Tabelle und
+   derselbe Satz mit seiner Menge in der Zeile jedes betroffenen Weins — „Am
+   Zähltag wurden 24 Flaschen … geliefert — ob die Zählung sie schon enthält,
+   ist nicht feststellbar. Sie sind im Bestand nicht mitgerechnet."
+3. `tests/reihenfolge.test.mjs` rechnet Worker und Backoffice auch für Fall 7
+   gegeneinander, dazu die Gegenprobe „Lieferung NACH dem Zähltag zählt ganz
+   normal". `sw.js` v29 → v30.
+
+**Die sieben Fälle, v29 → v30** (Worker / Backoffice):
+Fall 1 4/4 → 4/4 · Fall 2 4/4 → 4/4 · Fall 3 —/4 → —/4 · Fall 4 —/4 → —/4 ·
+Fall 5 10/10 → 10/10 · Fall 6 4/4 → 4/4 ·
+**Fall 7 34/34 → 10/10 mit `unklar {w003: 24}`** · Fall 7b ebenso.
+
+**Geprüft:** `npm test` **275 grün**, von mir **viermal hintereinander**
+nachgelaufen (wegen des Flackerns oben) — jedes Mal 275/0.
+`durchstich` 35/35 · `ui-leitung-echt` 40/40 · `ui-zweiter-vorgang` 15/15 ·
+`ui-fremdgeraet` 10/10 · `LAUF=runde-11 node tests/ui-mass.cjs` alle Urteile ✓.
+**Ungeprüft:** echtes Safari/iPad; die neuen Sätze nur als HTML geprüft, nicht
+als Bild; `bestellliste` und Mittagsblick wurden nicht angefasst — sie rechnen
+auf der niedrigeren Zahl und können eine Bestellung vorschlagen, die gerade
+geliefert wurde.
+
+**Für die Nächsten:**
+* **Berichtigung meiner eigenen Annahme aus Runde 10:** `vorgang.begonnen`
+  trägt **nicht** den echten Zählzeitpunkt. `src/index.js:205` bindet dort
+  `jetzt`, also die Ankunftszeit des ersten Pakets (`begonnen = geaendert`
+  beim INSERT); die App legt in `blank()` gar keinen Startzeitpunkt ab. Der
+  saubere Weg wäre zweiteilig — die App schreibt beim Anlegen einen
+  Gerätezeitpunkt in den Vorgang, der Worker führt ihn nach `begonnen` und ins
+  Journal. Erst dann ist Fall 7 entscheidbar statt ausweisbar. Umbau, gehört in
+  den Morgenbrief.
+
+**Phase/Thema:** A / Bestandsreihenfolge, Wareneingang am Zähltag
+
+**Backlog:** „Lieferung vor der Zählung zählt doppelt" ist mit v30 zu. Neu
+unter „mittel": Nachbestellen und Mittagsblick nennen die nicht gerechnete
+Menge nicht; erfasster Zählzeitpunkt statt Ankunftszeit.
+
+**STATUS:** VERBESSERUNGEN — Fall 7 ist entschärft und ausgewiesen; offen
+bleiben der erfasste Zählzeitpunkt und die Angabe in der Bestellliste.
+
+---
+
+### Runde 12 – software-engineer (der A-Fund der dritten Jagd)
+
+**Kritik am Vorgänger (Runde 11, dieselbe Rolle):**
+* ✅ übernommen: Die Selbstauskunft von Runde 11 („`bestellliste` und
+  Mittagsblick rechnen auf der niedrigeren Zahl") war richtig und untertrieben.
+  Nachgestellt: Die Bestellliste schlug **11 × 12 = 132 Flaschen** vor, während
+  16 im Keller standen; der Mittagsblick sagte „die Zählung ist überholt. Neu
+  zählen", obwohl die Zählung stimmte; die Zählliste gab Rang 0.
+* ↩️ geändert: Entscheidung Nr. 10 war nur in `bestand()` und `vBestand`
+  durchgezogen. Die Angabe steht jetzt an EINER Stelle (`unklarMenge`,
+  `unklarZeilenSatz`, `minusGeteilt`) und wird von vier Ansichten gelesen,
+  statt viermal neu formuliert zu werden.
+* ↩️ geändert: Eine Zeile mit Vorbehalt bekam bei `diff 0` die grüne Plakette
+  „stimmt". Der Befund kommt jetzt aus einer Funktion (`BEFUND`), die Tabelle
+  und die CSV lesen dieselbe.
+
+**Umgesetzt:**
+1. **Die nicht gerechnete Menge reist mit** — Bestellliste (Zeile, Spanne,
+   kopierter Zettel, zwei neue CSV-Spalten), Mittagsblick, Minus-Alarm
+   (getrennt in „neu zählen" und „kein Zählfehler"), Zählliste (erklärtes Minus
+   fällt von Rang 0 auf 1, halb gedecktes bleibt Rang 0 und nennt die Menge).
+2. **Keine grüne Plakette unter Vorbehalt** — bei `|diff| < 0,5` mit Vorbehalt
+   steht „unvollständig" statt „stimmt".
+3. **Kürzel im Getränkefach** — `.gcap` folgt der Zeilenhöhe statt 15 px;
+   schmale Spalten setzen die Kürzel versetzt, die Marke wird nach gemessener
+   Spaltenbreite gesetzt. Schrift bleibt 15 px. `tests/ui-mass.cjs` fährt jetzt
+   die Laden R/1–6 ab und urteilt über die Tintenkästen der Kürzel.
+   `sw.js` v30 → v31.
+
+**Vorher/Nachher, gemessen:** Bestellliste 132 Flaschen ohne ein Wort →
+120–132 mit „Am Zähltag 24 Flaschen geliefert … Vor dem Bestellen nachsehen".
+Mittagsblick „Zählung überholt, neu zählen" → „kein Zählfehler — im Keller
+nachsehen". Befund mit Vorbehalt bei diff 0: grün „stimmt" → grau
+„unvollständig". Lade 4 bei 390 px: 3 Überlappungen (3,0 / 3,9 / 3,0 px) → 0.
+Kürzelbeschnitt: 9 Kürzel um 2,0 px → 0.
+
+**Was sich anderswo bewegt (ausdrücklich genannt):** Die vorgeschlagene
+Kistenzahl sinkt nie, neu ist nur die Untergrenze. Die Zahl im roten Banner
+wird um die erklärten Positionen kleiner; sie stehen in einem eigenen,
+neutralen Satz. Die Zählliste sortiert anders, kein Bestand ändert sich.
+`bestellvorschlag.csv` hat zwei Spalten mehr, hinten angehängt.
+
+**Geprüft:** `npm test` **286 grün** (vorher 275), dreimal hintereinander und
+unter drei Zeitzonen. `durchstich` 35/35 · `ui-leitung-echt` 40/40 ·
+`ui-zweiter-vorgang` 15/15 · `ui-fremdgeraet` 10/10 ·
+`LAUF=runde-12 node tests/ui-mass.cjs` alle **8** Urteile ✓ (zwei neu). Die
+beiden neuen Urteile wurden gegen den vorigen Stand gegengeprüft: dort fallen
+sie — der Prüfstein beißt.
+**Ungeprüft:** echtes Safari/iPad; der kopierte Zettel der Zählliste trägt
+weiterhin keinen Grund; der Mittagsblick nennt bei nur teilweise gedecktem
+Minus die gelieferte Menge nicht; das Druck-Layout mit der neuen Kürzelhöhe.
+
+**Phase/Thema:** A / Auskunft der ausgewiesenen Lieferung, Befund mit
+Vorbehalt, Kürzel im Getränkefach
+
+**Backlog:** neu unter „niedrig": Zettel der Zählliste ohne Grund; Randspalte
+im Getränkefach 1 px vom Rand; Mittagsblick bei halb gedecktem Minus.
+
+**STATUS:** VERBESSERUNGEN — die drei Punkte sind erledigt und gemessen; offen
+bleibt der erfasste Zählzeitpunkt, ein Umbau über App und Worker.

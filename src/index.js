@@ -319,10 +319,11 @@ async function ereignisseAbleiten(env, vid, d, p) {
   const schreibe = (sql, zn) => {
     if (!zn.length) return [];
     const stmt = env.DB.prepare(sql);
-    /* `bestand()` entscheidet bei Zählungen über den Zeitstempel: die
-       jüngste gilt. Zwei Anfragen in derselben Millisekunde wären sonst
-       eine Münze — deshalb liegt die Korrektur notfalls eine
-       Millisekunde nach der jüngsten Zeile, die schon da ist. */
+    /* Innerhalb EINES Betriebstages entscheidet bei zwei Zählungen
+       weiterhin der Zeitstempel: die jüngste gilt (`bestand()`). Zwei
+       Anfragen in derselben Millisekunde wären sonst eine Münze — deshalb
+       liegt die Korrektur notfalls eine Millisekunde nach der jüngsten
+       Zeile, die schon da ist. */
     const jetzt = Math.max(Date.now(), alt.reduce((m, r) => Math.max(m, +r.ts || 0), 0) + 1);
     return zn.map(z => stmt.bind(
       crypto.randomUUID(), jetzt, d.tag, z.art, vid, z.artikel, z.ort, z.menge, d.name || p.name));
@@ -372,23 +373,51 @@ async function ereignisseAbleiten(env, vid, d, p) {
 /* ── Bestand ─────────────────────────────────────────────────────────── */
 async function bestand(env) {
   /* Notizzeilen stehen mit leerem Artikel im Journal (siehe `notiz()`)
-     und gehören nicht in den Bestand. */
+     und gehören nicht in den Bestand.
+
+     Sortiert wird nach dem BETRIEBSTAG, und innerhalb eines Betriebstages
+     steht die Kellerzählung immer vorn — sie ist der Anfangsbestand des
+     Tages (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 8). Bis v28 stand hier
+     `ORDER BY ts`, also die Ankunftszeit des Pakets; `ereignis.tag` wurde
+     gar nicht gelesen. Im Keller ist kein Netz: die Zählung vom Vormittag
+     kommt oft erst am nächsten Morgen herauf und war damit „jünger" als
+     die Tagesfassung desselben Tages — die ganze Entnahme fiel weg
+     (Fund A/8-3: 10 Flaschen statt 4). Der Zeitstempel ordnet nur noch
+     innerhalb desselben Tages und derselben Stufe, damit zwei Zählungen
+     an einem Tag eine feste Reihenfolge haben (die spätere gilt). */
   const { results } = await env.DB.prepare(
-    `SELECT artikel, ort, art, menge, ts FROM ereignis
-      WHERE artikel <> '' ORDER BY ts ASC`).all();
+    `SELECT artikel, ort, art, menge, ts, tag FROM ereignis
+      WHERE artikel <> ''
+      ORDER BY tag ASC, CASE WHEN art = 'zaehlung' THEN 0 ELSE 1 END ASC, ts ASC`).all();
 
-  const letzteZaehlung = {};
-  results.forEach(r => { if (r.art === "zaehlung") letzteZaehlung[r.artikel] = r.ts; });
-
-  const b = {};
+  /* Je Artikel der Betriebstag der geltenden Zählung (für die Rechnung)
+     und ihr Zeitstempel (nur als Auskunft in der Antwort). */
+  const zaehlTag = {}, gezaehlt = {};
   results.forEach(r => {
-    const basis = letzteZaehlung[r.artikel];
+    if (r.art === "zaehlung") { zaehlTag[r.artikel] = r.tag; gezaehlt[r.artikel] = r.ts; }
+  });
+
+  const b = {}, unklar = {};
+  results.forEach(r => {
     if (r.art === "zaehlung") { b[r.artikel] = r.menge; return; }
-    if (basis != null && r.ts <= basis) return;      // vor der Zählung zählt nicht
+    const basis = zaehlTag[r.artikel];
     if (basis == null) return;                        // ohne Zählung kein Bestand
+    if ((r.tag || "") < basis) return;                // vor dem Zähltag zählt nicht
+    /* Wareneingang AM Zähltag: nicht entscheidbar, ob die Zählung ihn schon
+       enthält — `ts` ist die Ankunftszeit beim Server, nicht der Zeitpunkt
+       im Keller. Bis v29 wurde er addiert und damit möglicherweise doppelt
+       gezählt. Seit v30 gilt die Zählung als die härtere Tatsache: nicht
+       addieren, sondern in `unklar` ausweisen (Menge je Artikel), damit das
+       Backoffice es an der Zahl sagen kann. Entnahmen desselben Tages
+       zählen unverändert nach der Zählung. Gleiche Regel in
+       `public/leitung.html`, `bestand()`. */
+    if (r.art === "eingang" && (r.tag || "") === basis) {
+      unklar[r.artikel] = (unklar[r.artikel] || 0) + r.menge;
+      return;
+    }
     b[r.artikel] = (b[r.artikel] || 0) + (r.art === "eingang" ? r.menge : -r.menge);
   });
-  return json({ bestand: b, gezaehlt: letzteZaehlung });
+  return json({ bestand: b, gezaehlt, unklar });
 }
 
 /* ── Fassungsliste ─────────────────────────────────────────────────────

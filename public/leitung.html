@@ -101,7 +101,13 @@
   --font:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px;
+  /* Im Keller wird nichts unter 15px gelesen — Kunstlicht, kalte Finger,
+     Flasche in der anderen Hand. Die beiden kleinen Grade sind deshalb
+     für den FINGER auf 15px gehoben; die Rangfolge macht dort Gewicht,
+     Farbe und Laufweite, nicht mehr die Größe. Am Schreibtisch
+     (data-dichte="maus") gelten weiter 11/13px — dort zählt Dichte, und
+     die Leitung sitzt vor einem MacBook, nicht im Keller. */
+  --text-xs:15px; --text-sm:15px; --text-md:15px; --text-base:16px;
   --text-lg:19px; --text-display:28px;
   --leading-tight:1.25; --leading-normal:1.45;
   --weight-regular:400; --weight-medium:600; --weight-bold:700;
@@ -130,7 +136,8 @@
 
 /* Maus statt Finger: dieselben Bauteile, engere Geometrie. */
 [data-dichte="maus"]{
-  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px
+  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px;
+  --text-xs:11px; --text-sm:13px
 }
 /* Auf schmalen Schirmen zählt wieder der Finger — auch im Backoffice. */
 @media(max-width:900px){
@@ -287,9 +294,12 @@ nav.seite button{display:flex;align-items:center;justify-content:space-between;
 nav.seite button:hover{background:var(--surface-4)}
 nav.seite button.on{background:var(--surface);color:var(--fg);
   font-weight:var(--weight-medium);box-shadow:inset 0 0 0 1px var(--border-strong)}
+/* --fg-muted auf --surface-4 sind 4,43:1 und damit unter dem Maß des
+   Hauses. Die Zahl in der Navigation sagt, wie viel offen ist — sie ist
+   keine Zierde. --fg-secondary bringt 5,83:1 auf demselben Grund. */
 nav.seite .zahl{font-size:var(--text-xs);font-weight:var(--weight-medium);
   padding:1px 7px;border-radius:var(--radius-pill);
-  background:var(--surface-4);color:var(--fg-muted);font-variant-numeric:tabular-nums}
+  background:var(--surface-4);color:var(--fg-secondary);font-variant-numeric:tabular-nums}
 nav.seite button.on .zahl{background:var(--surface-3)}
 nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
 main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
@@ -393,7 +403,33 @@ tbody tr:hover{background:var(--surface-2)}
 .p-warn{background:var(--warn-bg);color:var(--warn-fg)}
 .p-bad{background:var(--danger-bg);color:var(--danger-fg)}
 .p-neu{background:var(--warn-bg);color:var(--warn-fg)}   /* verlangt Bestaetigung */
-.p-grau{background:var(--surface-4);color:var(--fg-muted)}
+/* Die neutrale Plakette. Bis v27 stand hier --fg-muted: 4,43:1 auf
+   --surface-4, unter dem Maß des Hauses — deshalb war sie als Befund
+   nicht brauchbar. --fg-secondary bringt 5,83:1 auf demselben Grund,
+   bleibt aber ruhiger als jede farbige Plakette. */
+.p-grau{background:var(--surface-4);color:var(--fg-secondary)}
+/* Kopfzeile eines Abschnitts mit einer Handlung rechts. Bis v27 stand der
+   Sammelknopf mitten im Satz eines Hinweiskastens („… oder es ist ein
+   Mischgetränk. [Alle 2 Vorschläge übernehmen]") — er brach die Zeile und
+   war weder Text noch Werkzeugleiste. Hier steht der Satz links, die
+   Handlung rechts, und beide bleiben auf schmalem Schirm lesbar. */
+.abschnitt{display:flex;gap:var(--space-4);align-items:flex-start;
+  flex-wrap:wrap;margin-bottom:var(--space-3)}
+.abschnitt>div{flex:1 1 380px;min-width:0}
+.abschnitt h3{margin:0}
+.abschnitt .unter{margin-top:2px}
+.abschnitt .tat{flex:0 0 auto;margin-left:auto}
+/* Derselbe Aufbau als Hinweiskasten: Satz links, Handlung rechts, und der
+   Knopf sitzt auf der Mitte des Satzes statt an seiner ersten Zeile. */
+.hinweis.abschnitt{margin-top:var(--space-3);align-items:center}
+/* Vorschlag und Knopf in einer Tabellenzelle: der Knopf steht immer
+   rechts, egal wie lang der Vorschlag ist — sonst tanzt die Spalte. */
+.vorschlag{display:flex;gap:var(--space-3);align-items:center;
+  justify-content:space-between}
+.vorschlag .b{flex:0 0 auto}
+/* Befund ohne Abgleich: Plakette plus Grund. Die Plakette allein wäre nur
+   Farbe; der Grund steht daneben im Klartext. */
+.befund{display:flex;gap:var(--space-2);align-items:baseline;flex-wrap:wrap}
 
 /* ═══════════════ Knöpfe und Felder ═══════════════
    Namen bleiben, damit das JS unveraendert laeuft. Form kommt aus tokens.css.
@@ -549,6 +585,7 @@ function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
 const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
 /* Eigene Schlüssel der Leitung */
 const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
+const K_GEB="hh_gebinde_v1";        /* Abschrift von mapping.gebinde_ml */
 const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
 
 const lese = k => {try{const r=localStorage.getItem(k); return r?JSON.parse(r):null;}catch(e){return null;}};
@@ -556,6 +593,10 @@ const schreib = (k,v) => {try{localStorage.setItem(k,JSON.stringify(v));}catch(e
 
 let EINST = Object.assign({reichweite:14, tage:28}, lese(K_EINST)||{});
 let MAP   = lese(K_MAP) || {};      /* Kassenname → Artikel-Id oder "__ignoriert" */
+/* Kassenname → BESTÄTIGTE Gebindegröße in ml. Kommt aus mapping.gebinde_ml
+   und ist der einzige Wert, den ein Mensch je bestätigt hat — geraten wird
+   hier nichts (siehe `gebindeGroesse`). */
+let GEB_BEST = lese(K_GEB) || {};
 let ZBER  = lese(K_ZBER) || {};     /* Betriebstag → geparster Z-Bericht */
 let REZ   = lese(K_REZ) || {};      /* Kassenname → [{id, ml}] für Mischgetränke */
 const ROLLNAME={service:"Service", wirtschaft:"Wirtschaft", leitung:"Leitung"};
@@ -582,8 +623,10 @@ const GSOLL = (()=>{ const s={};
 const GIDS = Object.keys(GSOLL);
 const GN = id => (GETR.name||{})[id] || id;
 
-/* Gebindegröße in Millilitern. Steht im Namen — sonst 750 für Wein,
-   und für Getränke ohne Angabe zählt ein Verkauf als eine Flasche. */
+/* Millilitermenge aus einem Text. In einem KASSENNAMEN ist das die
+   Ausschankmenge je verkaufter Einheit („… 1/8 l"), in einem ARTIKELNAMEN
+   die Gebindegröße („Gasteiner 1 l"). Zwei verschiedene Dinge — diese
+   Funktion liest nur die Zahl und entscheidet nichts darüber. */
 function mlAusText(t){
   if(!t) return null;
   const s = String(t).toLowerCase();
@@ -600,10 +643,65 @@ function mlAusText(t){
   const v=parseFloat(letzte[3].replace(",","."));
   return letzte[4]==="ml"?v : letzte[4]==="cl"?v*10 : v*1000;
 }
-const GEBINDE = (()=>{ const g={};
-  WINES.forEach(w=>g[w.id]=750);
-  GIDS.forEach(id=>g[id]= mlAusText(GN(id)) || null);
-  return g; })();
+/* ════════════ 1b · Gebindegrößen: EINE Quelle, drei Zustände ════════════
+   Jede Mengenrechnung (Verkauf in Flaschen) braucht zwei Zahlen: die
+   Ausschankmenge aus dem Kassennamen und die Gebindegröße des Artikels.
+   Bis v24 stand die Gebindegröße an drei Stellen und war zweimal geraten:
+   jeder Wein fix 750 ml (Magnum und 0,375 rechneten falsch), und ein
+   Getränk ohne Größe im Namen zählte je verkaufter Einheit als ganze
+   Flasche — ein 2-cl-Stamperl wurde so zur Flasche.
+
+   Rangfolge, ab hier an genau einer Stelle:
+     1  BESTÄTIGT   `mapping.gebinde_ml` vom Server, zum Kassennamen
+     2  BESTÄTIGT   derselbe Artikel, an einem anderen Kassennamen bestätigt
+                    (widersprechen sich zwei, gilt der Artikel als offen)
+     3  VORSCHLAG   Größe im Artikelnamen („Gasteiner 1 l")
+     4  VORSCHLAG   Standard der Warenart, siehe GEBINDE_STANDARD
+     5  UNBEKANNT   nichts davon — dann wird NICHT gerechnet
+   Rückgabe immer {ml, quelle, woher}; quelle ist
+   "bestaetigt" | "vorschlag" | null.                                     */
+
+/* Standard-Gebindegrößen je Warenart, in Millilitern. NUR ein Vorschlag:
+   solange niemand bestätigt hat, rechnet damit keine Zeile.
+
+   Warum hier nur „wein" steht: eine Warenart ist aus den Stammdaten sonst
+   nicht ableitbar. `WINES` ist durchweg Flaschenwein (0,75 l ist die
+   Regel, Magnum und 0,375 die Ausnahme — deshalb Vorschlag, nicht
+   Wahrheit). `GETR` dagegen kennt keine Warenart, sondern nur die
+   Ladengeometrie: In Lade 6 liegen 0,33-l- und 0,5-l-Flaschen
+   nebeneinander (`st03` neben `hell`), die Lade sagt also nichts über die
+   Größe. Spirituosen kommen in den Stammdaten überhaupt nicht vor — für
+   „Amaro 2 cl" gibt es keinen Artikel und damit auch keinen Standard.
+   Ein Standard „Spirituose 700" wäre hier geraten; er fehlt mit Absicht. */
+const GEBINDE_STANDARD = { wein: 750 };
+
+const artName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein : GN(id); };
+
+/* Bestätigte Größen je Artikel, abgeleitet aus GEB_BEST über MAP.
+   Klein genug, um bei jedem Aufruf neu gerechnet zu werden (< 100 Namen);
+   ein Zwischenspeicher wäre eine zweite Wahrheit, die veralten kann. */
+function gebArtikelBestaetigt(){
+  const t={};
+  Object.keys(GEB_BEST).forEach(nm=>{
+    const id=MAP[nm], ml=+GEB_BEST[nm]||0;
+    if(!id || id==="__ignoriert" || !ml) return;
+    if(t[id]===undefined) t[id]=ml;
+    else if(t[id]!==ml) t[id]=null;        /* Widerspruch → lieber keine Zahl */
+  });
+  return t;
+}
+
+function gebindeGroesse(artId, kassenname){
+  if(!artId) return {ml:null, quelle:null, woher:"kein Artikel zugeordnet"};
+  const direkt = kassenname ? +GEB_BEST[kassenname]||0 : 0;
+  if(direkt>0) return {ml:direkt, quelle:"bestaetigt", woher:"bestätigt für diese Kassenposition"};
+  const ueberArtikel = gebArtikelBestaetigt()[artId];
+  if(ueberArtikel) return {ml:ueberArtikel, quelle:"bestaetigt", woher:"bestätigt für diesen Artikel"};
+  const imNamen = mlAusText(artName(artId));
+  if(imNamen) return {ml:imNamen, quelle:"vorschlag", woher:"Größe steht im Artikelnamen"};
+  if(byId(artId)) return {ml:GEBINDE_STANDARD.wein, quelle:"vorschlag", woher:"Standard Weinflasche"};
+  return {ml:null, quelle:null, woher:"für diesen Artikel ist keine Gebindegröße hinterlegt"};
+}
 
 /* ════════════ 2 · Vorgänge einlesen und vereinheitlichen ════════════
    Aus dem v11-Blob wird je Vorgang ein flaches Ergebnis:
@@ -613,7 +711,19 @@ const GEBINDE = (()=>{ const g={};
      eingang{id:n}  Wareneingang in Flaschen                            */
 const summe = o => Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
 
-function kistenGr(p){ if(p && p.kg) return +p.kg; return (PLAN.kiste||{})[p.id] || 6; }
+/* Flaschen je Kiste einer Wareneingangs-Position.
+   Die Rangfolge ist WORTGLEICH mit der des Workers (`src/index.js`,
+   `mode === "ware"`): `kistengr` schreibt die App (public/index.html:1350,
+   :2881, :2910), `kg` kommt nur aus alten Paketen der Offline-Reihe, 6 ist
+   der Standard (`KISTE_STD`).
+   Bis v25 stand hier zuerst `p.kg` — ein Feld, das die App NIE geschrieben
+   hat — und danach `PLAN.kiste`, das die App beim Rechnen ebenfalls nicht
+   befragt. Eine Lieferung mit 2 Kisten a 20 Flaschen stand deshalb im
+   Journal mit 40 und auf diesem Schirm mit 12. Wer eine der beiden
+   Fassungen ändert, ändert beide; `tests/kisten.test.mjs` schickt dieselbe
+   Lieferung durch den Worker UND durch `normVorgang` und wird rot, sobald
+   sie auseinanderlaufen. */
+function kistenGr(p){ return (p && (+p.kistengr || +p.kg)) || 6; }
 
 function normVorgang(v){
   if(!v || !v.mode) return null;
@@ -665,18 +775,70 @@ function normVorgang(v){
     });
   }
 
-  /* gent (Getränke zusätzlich entnommen) taucht in mehreren Modi auf */
-  Object.keys(v.gent||{}).forEach(id=>zu(o.getr,id,v.gent[id]));
+  /* `gent` heisst je nach Modus etwas ANDERES — dieselbe Unterscheidung
+     trifft der Worker in `ereignisseAbleiten` (src/index.js, `if (d.mode
+     === "ware") … else …`): im Wareneingang ist es die GELIEFERTE Anzahl
+     Flaschen („Was wurde geliefert — pro Position die gelieferte Anzahl
+     Flaschen", public/index.html), in jedem anderen Modus die zusätzlich
+     entnommene.
+     Bis v26 lief beides in `o.getr`. 24 gelieferte Cola standen damit in
+     „Verkauf ↔ Fassung" als Entnahme 24, Differenz +24, Deutung „Vorrat
+     aufgebaut oder Schwund", und in der Vorgangsliste unter „Getränke
+     Fl." — genau der Vorzeichenfehler, den der Worker in v22 abgestellt
+     hat, nur auf dem Schirm statt im Journal.
+     `tests/lieferung-getraenke.test.mjs` schickt dieselbe Lieferung durch
+     den Worker UND durch `normVorgang` und wird rot, sobald die beiden
+     Fassungen wieder auseinanderlaufen. */
+  const gentZiel = v.mode==="ware" ? o.eingang : o.getr;
+  Object.keys(v.gent||{}).forEach(id=>zu(gentZiel,id,v.gent[id]));
+  /* `gzusatz` ist in JEDEM Modus eine Entnahme — im Worker steht es
+     ausserhalb des `ware`-Zweigs. */
   Object.keys(v.gzusatz||{}).forEach(id=>zu(o.getr,id,v.gzusatz[id]));
 
   o.flWein=summe(o.wein); o.flGetr=summe(o.getr);
   return o;
 }
 
-/* Reihenfolge: Betriebstag, danach die natürliche Abfolge innerhalb eines Tages */
-const MODUSRANG={ware:0, keller:1, tag:2, fuellen:3, nach:4};
+/* Reihenfolge: erst der Betriebstag, dann die Kellerzählung, dann alles
+   andere. Das ist die Regel aus `review/ENTSCHIEDEN-NACHTS.md`, Punkt 8:
+   Bei gleichem Betriebstag gilt die Kellerzählung IMMER als Erstes — sie
+   ist der Anfangsbestand des Tages. Alle anderen Vorgänge desselben Tages
+   (ware, tag, fuellen, nach) zählen danach, untereinander in beliebiger
+   Reihenfolge, weil sie sich ohnehin summieren.
+
+   Die Ankunftszeit entscheidet innerhalb eines Betriebstages NICHTS mehr.
+   `ts` ist `archiviert`, also der Zeitpunkt, zu dem das Paket beim Server
+   ankommt (`vorgaengeLesen` in src/index.js gibt `geaendert` heraus) —
+   nicht der, zu dem im Keller gezählt wurde. Offline ist der Normalfall:
+   Das iPad zählt vormittags im Keller und bleibt unten, die Tagesfassung
+   geht abends vom iPhone hinaus, das iPad kommt am nächsten Morgen herauf.
+   Nach Ankunft gerechnet war die Zählung dann JÜNGER als die Entnahme
+   desselben Tages — 10 Flaschen statt 4, „Seither 0 Flaschen entnommen",
+   und die Bestellliste rechnet auf derselben Zahl (Fund A/8-3). Dasselbe
+   bei gleichem und bei fehlendem Zeitstempel.
+
+   Bewusst in Kauf genommen: Wird die Lieferung eines Tages VOR der
+   Zählung desselben Tages in den Keller gestellt, zählt sie trotzdem
+   obendrauf. Ein Tag mit Zählung UND Lieferung ist selten; ein Tag mit
+   Zählung, die spät hochkommt, ist der Normalfall.
+
+   Der Zeitstempel bleibt nur als letzte, feste Sortierung stehen — damit
+   die Liste bei zwei Vorgängen desselben Rangs nicht springt. Auf die
+   Rechnung hat er keinen Einfluss mehr. Ein Stand, der noch läuft, hat
+   keinen: MAX_SAFE_INTEGER statt Infinity, damit die Subtraktion im
+   Vergleich nicht NaN wird. */
+const tsZahl = v => { const t=Date.parse((v&&v.ts)||"");
+  return Number.isFinite(t) ? t : Number.MAX_SAFE_INTEGER; };
+/* Rang INNERHALB eines Betriebstages. Nicht der alte `MODUSRANG` mit fünf
+   Stufen: unterschieden wird nur „Zählung" gegen „alles andere". Wer die
+   Bewegungen untereinander ordnen wollte, müsste wissen, in welcher
+   Reihenfolge sie im Keller geschahen — das weiß niemand, und für die
+   Summe ist es gleichgültig. */
+const tagRang = v => (v && v.mode==="keller") ? 0 : 1;
 function nachZeit(a,b){
-  return (a.tag||"").localeCompare(b.tag||"") || ((MODUSRANG[a.mode]??9)-(MODUSRANG[b.mode]??9));
+  return (a.tag||"").localeCompare(b.tag||"")
+      || (tagRang(a)-tagRang(b))
+      || (tsZahl(a)-tsZahl(b));
 }
 
 /* ════════════ 3 · Quelle ════════════ */
@@ -760,21 +922,32 @@ async function ladeZuordnung(){
   try{
     const r=await fetch("/api/mapping",{headers:{Accept:"application/json"}});
     if(!r.ok) return false;
-    const j=await r.json(), neu={};
+    const j=await r.json(), neu={}, gb={};
     (j.mapping||[]).forEach(m=>{
       if(m.ignoriert) neu[m.kassenname]="__ignoriert";
       else if(m.artikel) neu[m.kassenname]=m.artikel;
+      /* Die bestätigte Gebindegröße liefert der Server seit je mit; bis v24
+         hat diese Seite sie weggeworfen und statt dessen geraten. */
+      if(+m.gebinde_ml>0) gb[m.kassenname]=+m.gebinde_ml;
     });
-    MAP=neu; schreib(K_MAP,MAP); return true;
+    MAP=neu; GEB_BEST=gb; schreib(K_MAP,MAP); schreib(K_GEB,GEB_BEST); return true;
   }catch(e){ return false; }
 }
 
 /* Eine Zuordnung geht sofort hinaus. Der Worker zieht die schon
-   eingelesenen Zeilen nach, die Zuordnung gilt also auch rückwirkend. */
-async function sendeZuordnung(name, wert){
+   eingelesenen Zeilen nach, die Zuordnung gilt also auch rückwirkend.
+
+   ACHTUNG: `POST /api/mapping` schreibt die Zeile als GANZES
+   (`ON CONFLICT … SET artikel=excluded.artikel, gebinde_ml=excluded.…`,
+   src/index.js). Wer nur ein Feld schickt, löscht die anderen. Artikel und
+   Gebindegröße gehen deshalb immer gemeinsam hinaus; `gebindeMl` ist
+   optional und heisst „unverändert lassen". */
+async function sendeZuordnung(name, wert, gebindeMl){
+  const ml = gebindeMl!==undefined ? gebindeMl : (+GEB_BEST[name]||null);
   const koerper={ kassenname:name,
     artikel: wert && wert!=="__ignoriert" ? wert : null,
-    ignoriert: wert==="__ignoriert" ? 1 : 0 };
+    ignoriert: wert==="__ignoriert" ? 1 : 0,
+    gebinde_ml: ml || null };
   try{
     const r=await fetch("/api/mapping",{method:"POST",
       headers:{"content-type":"application/json"}, body:JSON.stringify(koerper)});
@@ -782,6 +955,63 @@ async function sendeZuordnung(name, wert){
     toast(r.status===403 ? "Nur die Leitung darf zuordnen" : "Nicht gespeichert");
   }catch(e){ toast("Keine Verbindung — die Zuordnung ist nur auf diesem Gerät"); }
   return false;
+}
+
+/* Einen Vorschlag zur Gebindegröße annehmen. Nur von Hand, nur je Position:
+   der Vorschlag ist aus dem Namen gelesen, bestätigen kann ihn nur jemand,
+   der die Flasche kennt. Der Artikel geht mit hinaus (siehe oben) — damit
+   wird ein automatischer Weinvorschlag mit demselben Klick festgeschrieben,
+   deshalb steht er in der Zeile daneben. */
+async function bestaetigeGebinde(name, artId, ml){
+  ml=+ml||0; if(!name || !artId || !ml) return;
+  /* Zweiter Riegel neben der Ansicht: Für eine Kassenposition mit
+     Rezeptur ist `artId` ein BESTANDTEIL. `MAP[name]=artId` hiesse „Aperol
+     Spritz ist Prosecco", und der Worker schreibt das rückwirkend in jede
+     gespeicherte Berichtszeile. Es gibt keinen Papierkorb. */
+  if(REZ[name] && REZ[name].length)
+    return toast("Mischgetränk — die Größe wird beim Bestandteil bestätigt, nicht hier");
+  GEB_BEST[name]=ml; if(MAP[name]!==artId){ MAP[name]=artId; schreib(K_MAP,MAP); }
+  schreib(K_GEB,GEB_BEST);
+  const ok=await sendeZuordnung(name, artId, ml);
+  zeichne();
+  toast(ok ? "Gebinde bestätigt: "+ml+" ml"
+           : "Nur auf diesem Gerät gemerkt — der Server hat es nicht angenommen");
+}
+
+/* Dieselbe Bestätigung für eine ganze Liste. Der Anlass steht in der
+   Datenbank: alle Zuordnungen haben `gebinde_ml = NULL`. Seit v25 rechnet
+   keine Position ohne bestätigte Größe mehr mit — ohne einen Sammelweg
+   müsste die Leitung am ersten Morgen dreizehnmal einzeln klicken, nur um
+   überhaupt eine Zahl zu sehen.
+
+   Drei Eigenschaften, die hier wichtig sind:
+   1. Jede Zeile geht EINZELN über `POST /api/mapping` hinaus — es gibt
+      keinen Sammelendpunkt, und es soll auch keiner erfunden werden.
+   2. Gemerkt wird erst, was der Server angenommen hat. Anders als beim
+      einzelnen Klick (dort sieht der Mensch die Rückmeldung sofort und
+      kann es wiederholen) wäre eine halb übernommene Liste im Gerät sonst
+      eine zweite Wahrheit neben der Datenbank.
+   3. Scheitert eine Anfrage, wird ABGEBROCHEN, nicht weitergemacht: der
+      wahrscheinliche Grund ist kein Zufall, sondern fehlendes Netz oder
+      ein fehlendes Recht (403), und beides gilt für alle folgenden Zeilen
+      genauso. Was durchkam, steht; der Rest bleibt unangetastet in der
+      Liste stehen und kann später noch einmal. */
+async function bestaetigeAlleGebinde(liste){
+  const gueltig=(liste||[]).filter(o=>o && o.id && +o.ml>0
+    && !(REZ[o.name] && REZ[o.name].length));    /* nie eine Rezeptzeile, siehe oben */
+  if(!gueltig.length) return {bestaetigt:0, gesamt:0};
+  let n=0, abbruch=false;
+  for(const o of gueltig){
+    const ok=await sendeZuordnung(o.name, o.id, +o.ml);
+    if(!ok){ abbruch=true; break; }
+    GEB_BEST[o.name]=+o.ml; MAP[o.name]=o.id; n++;
+  }
+  schreib(K_GEB,GEB_BEST); schreib(K_MAP,MAP);
+  zeichne();
+  toast(abbruch
+    ? n+" von "+gueltig.length+" Größen bestätigt — der Rest steht noch da"
+    : n+" Größen bestätigt");
+  return {bestaetigt:n, gesamt:gueltig.length};
 }
 
 function dateiLaden(){
@@ -881,25 +1111,73 @@ function bestand(){
      eingegangen". Der Worker rechnet es seit jeher richtig
      (`bestand()` in src/index.js führt `letzteZaehlung` je Artikel);
      die Leitung sah den falschen der beiden Wege. */
-  const zuletzt={};                 /* Artikel → Index des letzten Zählvorgangs */
+  const zuletzt={};                 /* Artikel → der Vorgang, dessen Zählung gilt */
   let basis=null;
-  VORGAENGE.forEach((v,i)=>{
+  VORGAENGE.forEach(v=>{
     if(!v.zaehlung) return;
     basis=v;                        /* die jüngste Zählung trägt die Zeile im Banner */
-    Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=i; });
+    Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=v; });
   });
-  const b={}, seit={ein:{}, raus:{}};
-  VORGAENGE.forEach((v,i)=>{
+  const b={}, seit={ein:{}, raus:{}}, unklar={};
+  VORGAENGE.forEach(v=>{
     if(v.zaehlung) Object.keys(v.zaehlung).forEach(id=>{
-      if(v.zaehlung[id]!=null && zuletzt[id]===i) b[id]=v.zaehlung[id];
+      if(v.zaehlung[id]!=null && zuletzt[id]===v) b[id]=v.zaehlung[id];
     });
-    const nach=id=>zuletzt[id]!=null && i>zuletzt[id];
-    Object.keys(v.eingang).forEach(id=>{ if(!nach(id)) return;
+    /* ENTNAHMEN: „danach" heisst `tag > Zähltag` ODER (`tag = Zähltag` UND
+       es ist keine Zählung). `tag > Zähltag` allein wäre falsch — am
+       Morgen gezählt, am Abend desselben Tages gefasst: diese Entnahme
+       fiele sonst unter den Tisch. Der Zeitstempel stand hier bis v28 und
+       ist fort: er sagt, wann das Paket ANKAM, nicht wann gezählt wurde
+       (siehe `nachZeit`). Dieselbe Regel rechnet der Worker
+       (`bestand()` in src/index.js, `ORDER BY tag, Zählung zuerst`). */
+    const nach=id=>{ const z=zuletzt[id]; if(!z) return false;
+      return (v.tag||"")>(z.tag||"") ||
+             ((v.tag||"")===(z.tag||"") && tagRang(v)>tagRang(z)); };
+    /* WARENEINGANG am Zähltag SELBST ist der eine Fall, den keine
+       Reihenfolge entscheiden kann: stand die Lieferung schon im Keller,
+       als gezählt wurde, oder kam sie danach? `ts` sagt es nicht — er ist
+       die Ankunftszeit des Pakets beim Server (deshalb rechnet seit v29
+       niemand mehr mit ihm). Bis v29 wurde sie addiert und damit doppelt
+       gezählt (10 gezählte + 24 gelieferte = 34, obwohl die 24 in den 10
+       schon drin sein können).
+
+       Seit v30: NICHT addieren, sondern ausweisen (`unklar`). Die Zählung
+       ist die härtere Tatsache — sie hat die Flaschen gesehen. Die Zahl
+       ist damit im Zweifel zu niedrig statt zu hoch: jemand geht nachsehen,
+       statt dass eine Bestellung ausbleibt. Derselbe Schnitt im Worker. */
+    /* Dieselben drei Wächter in derselben Reihenfolge wie im Worker. */
+    Object.keys(v.eingang).forEach(id=>{
+      const z=zuletzt[id];
+      if(!z) return;                                   /* ohne Zählung kein Bestand */
+      if((v.tag||"")<(z.tag||"")) return;              /* vor dem Zähltag zählt nicht */
+      if((v.tag||"")===(z.tag||"")){                   /* am Zähltag: ausweisen */
+        unklar[id]=(unklar[id]||0)+v.eingang[id]; return; }
       b[id]=(b[id]||0)+v.eingang[id]; seit.ein[id]=(seit.ein[id]||0)+v.eingang[id]; });
     Object.keys(v.wein).forEach(id=>{ if(!nach(id)) return;
       b[id]=(b[id]||0)-v.wein[id]; seit.raus[id]=(seit.raus[id]||0)+v.wein[id]; });
   });
-  return {basis, b, seit, hat:!!basis};
+  return {basis, b, seit, unklar, hat:!!basis};
+}
+
+/* Die am Zähltag gelieferte, NICHT mitgerechnete Menge ist keine Fußnote
+   der Bestandsansicht: JEDE Zahl, die auf `bestand()` aufsetzt, ist um sie
+   zu niedrig — die Bestellliste, der Minus-Alarm, die Zählliste. Bis v30
+   stand der erklärende Satz nur unter „Kellerbestand", gerechnet wurde
+   überall. Damit die Angabe mitreist, stehen die drei Fragen hier an EINER
+   Stelle. Die Zahlen selbst bleiben, wie sie sind (Entscheidung Nr. 10). */
+const unklarMenge = (B,id) => (B.unklar||{})[id]||0;
+const unklarZeilenSatz = u =>
+  "Am Zähltag "+num(u)+" Flaschen geliefert — ob die Zählung sie schon "+
+  "enthält, ist nicht feststellbar. Nicht mitgerechnet.";
+/* Ein Bestand unter null, der sich vollständig aus dieser Menge erklärt,
+   ist KEIN überholter Zählstand: dieselbe Zählung plus die ausgewiesene
+   Lieferung ergäbe eine Zahl ≥ 0. „Neu zählen" wäre dort die falsche
+   Maßnahme — nachsehen, ob die Lieferung schon in der Zählung steckte,
+   ist die richtige. Getrennt wird deshalb, nicht zusammengezählt. */
+function minusGeteilt(B){
+  const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
+  const erklaert=minus.filter(w=>B.b[w.id]+unklarMenge(B,w.id)>=0);
+  return {minus, erklaert, echt:minus.filter(w=>erklaert.indexOf(w)<0)};
 }
 
 /* Verbrauch je Tag über das Fenster in EINST.tage */
@@ -970,13 +1248,16 @@ function autoWein(name){
   return null;
 }
 
-/* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml */
+/* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml.
+   Fehlt eine der beiden Zahlen, wird KEINE erfunden — die Position bleibt
+   aus der Rechnung heraus und wird als „Größe fehlt" ausgewiesen.
+   Rückgabe: {ok:true, fl} oder {ok:false, fehlt:"ausschank"|"gebinde"}. */
 function flaschen(p, artId){
-  const aus = mlAusText(p.name);
-  const geb = artId ? GEBINDE[artId] : null;
-  if(aus && geb) return p.anzahl*aus/geb;
-  if(artId && byId(artId)) return p.anzahl*(aus||750)/750;
-  return p.anzahl;                                   /* eine Einheit = eine Flasche */
+  const aus = mlAusText(p.name);          /* Ausschank je verkaufter Einheit */
+  const geb = gebindeGroesse(artId, p.name);
+  if(!aus)                    return {ok:false, fehlt:"ausschank", aus:null, geb};
+  if(geb.quelle!=="bestaetigt") return {ok:false, fehlt:"gebinde", aus, geb};
+  return {ok:true, fl:(+p.anzahl||0)*aus/geb.ml, aus, geb};
 }
 
 function zuordnung(pos){
@@ -990,28 +1271,124 @@ function zuordnung(pos){
 }
 
 /* ════════════ 6 · Abgleich Verkauf ↔ Fassung ════════════ */
+/* Warum eine Zeile keinen Befund bekommt — an einer Stelle, damit
+   Tabelle, Mittagsblick und CSV denselben Satz sagen. */
+const UNKLAR_GRUND={
+  groesse:     "Größe fehlt",
+  keinbericht: "kein Z-Bericht im Zeitraum"
+};
+const unklarSatz = g => "kein Abgleich möglich — " + (UNKLAR_GRUND[g] || "Verkauf nicht bestimmbar");
+/* Der Grund „offen" stand hier bis v28 und ist seit v29 fort
+   (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9): eine nicht zugeordnete
+   Kassenposition betrifft per Definition KEINEN bestimmten Artikel und
+   darf deshalb auch keinem Artikel den Befund nehmen. In Bericht 37 sind
+   dreißig der offenen Namen Speisen (Schnittlauch, Käse, HP Omelett) —
+   eine einzige davon schaltete den Schwund für ALLE Artikel ohne
+   gerechneten Verkauf ab: 12 Flaschen aus dem Keller, 0 verkauft,
+   „kein Abgleich möglich". Was offen ist, sagt der Hinweis über der
+   Tabelle („n Kassenpositionen ohne Zuordnung"). */
+
+/* Ein Teil der Positionen eines Artikels konnte nicht gerechnet werden,
+   ein anderer schon: dann bleibt die Differenz stehen — mit Vorbehalt.
+   Eine halbe Wahrheit, die sich als ganze ausgibt, ist der teuerste Fall;
+   eine Differenz MIT Vorbehalt ist besser als gar keine. */
+const vorbehaltSatz = v =>
+  v.ohne+" von "+v.gesamt+" Positionen ohne Größe — die Differenz ist unvollständig";
+
+/* Der Befund einer GERECHNETEN Zeile — an einer Stelle für Tabelle und CSV.
+   Warum die Fallunterscheidung: Eine Zeile mit Vorbehalt sagte bis v30 bei
+   `diff 0` „stimmt" in Grün. Sie stimmt aber nicht — ein Teil des Verkaufs
+   steckt gar nicht in der Rechnung (2 gerechnete + 3 ohne Größe, 2
+   entnommen → diff 0 bei einem Drittel fehlender Rechnung). Die Null ist
+   dort keine geprüfte Null, sondern eine halbe Rechnung. Deshalb dieselbe
+   neutrale Plakette wie bei „kein Abgleich"; der Satz daneben
+   (`vorbehaltSatz`) sagt, wie viel fehlt.
+   Ab einer Differenz von 0,5 Flaschen bleibt der Befund, wie er war:
+   „kleine Abweichung"/„prüfen" behauptet nichts über Vollständigkeit,
+   sondern nennt eine Untergrenze — und die gilt mit Vorbehalt erst recht. */
+const BEFUND = r => Math.abs(r.diff)<0.5
+  ? (r.vorbehalt ? {w:"unvollständig", k:"p-grau"} : {w:"stimmt", k:"p-ok"})
+  : Math.abs(r.diff)<2 ? {w:"kleine Abweichung", k:"p-warn"}
+  : {w:"prüfen", k:"p-bad"};
+
 function abgleich(tag, spanne){
   spanne = spanne || 1;
   const bis=tag, von=(()=>{ const d=new Date(tag+"T12:00");
     d.setDate(d.getDate()-(spanne-1)); return d.toISOString().slice(0,10); })();
   const imFenster = t => t>=von && t<=bis;
 
-  const verk={}, offen=[], berichte=[];
+  const verk={}, offen=[], ohneGroesse=[], berichte=[];
+  /* Artikel, deren VERKAUF in diesem Zeitraum nicht bestimmbar ist.
+     Für sie gibt es keine Differenz und keine Deutung — die Entnahme
+     steht da, weil sie bekannt ist, aber ohne Urteil.
+     Bis v26 fehlte diese Karte, und das war der teuerste Fehler des
+     Schirms: `ids` entsteht aus `keys(verk) ∪ keys(ent)`. Eine Position
+     ohne bestätigte Größe fällt aus `verk` heraus, steht aber über die
+     Tagesfassung in `ent` — sie wurde damit zur VOLLEN Abweichung mit
+     der Deutung „mehr geholt als verkauft — Vorrat aufgebaut oder
+     Schwund", während der Hinweis darüber wörtlich sagte, sie zähle
+     „weder als Verkauf noch als Abweichung". Mit dem Mapping, wie es in
+     der Live-D1 steht (keine einzige bestätigte Gebindegröße), war `verk`
+     leer und JEDE Zeile stand als „prüfen" da. */
+  const unklar={};
+  const nichtRechenbar=(id,grund)=>{ if(id && !unklar[id]) unklar[id]=grund; };
+  /* Je Artikel: wie viele Kassenpositionen ihn betreffen und wie viele
+     davon mangels Größe draußen blieben. Gezählt wird WÄHREND des Laufs,
+     entschieden erst DANACH — im Lauf selbst weiß niemand, ob derselbe
+     Artikel an einer späteren Position noch eine gerechnete Zahl bekommt.
+     Genau daran scheiterte v28: `nichtRechenbar(id,"groesse")` wurde
+     sofort gesetzt und löschte rückwirkend einen schon gerechneten
+     Verkauf (Spritzerwein: 1,80 Fl. gerechnet, Entnahme 9 → die Zeile
+     sagte „kein Abgleich möglich" statt +7,2). */
+  const posZahl={}, posOhne={};
+  const zaehlePos=(id,gerechnet)=>{ if(!id) return;
+    posZahl[id]=(posZahl[id]||0)+1;
+    if(!gerechnet) posOhne[id]=(posOhne[id]||0)+1; };
+  /* Dritter Zustand neben „zugeordnet" und „offen": zugeordnet, aber die
+     Größe ist nicht bestätigt. Solche Positionen gehen weder in `verk`
+     noch in die Differenz ein — sonst sähe eine fehlende Zahl aus wie
+     Schwund. Mehrere Kassenzeilen desselben Namens (Bar/Restaurant,
+     Regel 7) werden hier zusammengezählt. */
+  const merkeOhneGroesse=(p, artId, r, rezept)=>{
+    const da=ohneGroesse.find(o=>o.name===p.name);
+    if(da){ da.anzahl+=(+p.anzahl||0); return; }
+    /* `rezept` ist wichtiger, als es aussieht: bei einem zerlegten
+       Mischgetränk ist `id` NICHT der Artikel der Kassenposition, sondern
+       der BESTANDTEIL, dem die Größe fehlt. Wer daraus eine Zuordnung
+       macht, schreibt „Aperol Spritz = Prosecco" — und der Worker zieht
+       damit rückwirkend alle gespeicherten Berichtszeilen nach
+       (src/index.js, `UPDATE fassungszeile SET artikel …`). Diese Zeilen
+       bekommen deshalb keinen Bestätigungsknopf. */
+    ohneGroesse.push({name:p.name, anzahl:(+p.anzahl||0), id:artId,
+      fehlt:r.fehlt, aus:r.aus, geb:r.geb, rezept:!!rezept});
+  };
   Object.keys(ZBER).filter(imFenster).sort().forEach(t=>{
     const z=ZBER[t]; berichte.push(z);
     z.positionen.forEach(p=>{
       const r=REZ[p.name];
       if(r && r.length){                       /* zerlegtes Mischgetränk */
-        r.forEach(t=>{
-          const geb=GEBINDE[t.id]||null;
-          verk[t.id]=(verk[t.id]||0)+(geb ? p.anzahl*t.ml/geb : p.anzahl);
-        });
+        /* Auch hier gilt: ohne bestätigtes Gebinde keine Flaschenzahl.
+           Fehlt sie bei einem Bestandteil, bleibt die ganze Position
+           draußen — ein halb gerechnetes Rezept wäre die schlimmere Zahl. */
+        const gebs=r.map(x=>gebindeGroesse(x.id, null));
+        const luecke=gebs.findIndex(g=>g.quelle!=="bestaetigt");
+        if(luecke>=0){
+          merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]}, true);
+          /* Die ganze Position bleibt draußen — also fehlt der Verkauf
+             JEDES Bestandteils, nicht nur der des einen mit der Lücke. */
+          r.forEach(x=>zaehlePos(x.id,false));
+          return;
+        }
+        r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
+          zaehlePos(x.id,true); });
         return;
       }
       const zu=zuordnung(p);
       if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
       if(zu.status==="ignoriert") return;
-      verk[zu.id]=(verk[zu.id]||0)+flaschen(p, zu.id);
+      const f=flaschen(p, zu.id);
+      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false); return; }
+      verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
     });
   });
   const z=berichte.length?berichte[berichte.length-1]:null;
@@ -1023,15 +1400,39 @@ function abgleich(tag, spanne){
     Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
   });
 
+  /* Jetzt erst, mit dem vollständigen Lauf im Rücken: keine einzige
+     Position gerechnet → kein Befund; wenigstens eine gerechnet → Befund
+     mit Vorbehalt. */
+  const vorbehalt={};
+  Object.keys(posOhne).forEach(id=>{
+    if((posZahl[id]||0)>posOhne[id]) vorbehalt[id]={ohne:posOhne[id], gesamt:posZahl[id]};
+    else nichtRechenbar(id,"groesse");
+  });
+  /* Ohne Z-Bericht ist die Verkaufsseite nicht leer, sondern unbekannt —
+     der einzige verbliebene Grund, der einen Artikel ganz stumm stellt.
+     Er betrifft nur Artikel ohne gerechneten Verkauf; wer eine gerechnete
+     Zahl hat, behält seine Differenz. */
+  if(!berichte.length) Object.keys(ent).forEach(id=>{
+    if(!(verk[id]>0)) nichtRechenbar(id,"keinbericht");
+  });
+
   const ids=Array.from(new Set([...Object.keys(verk), ...Object.keys(ent)]));
   const zeilen=ids.map(id=>{
     const w=byId(id);
-    const v=verk[id]||0, e=ent[id]||0;
+    const v=verk[id]||0, e=ent[id]||0, u=unklar[id]||null;
+    /* `diff` ist bei einer unklaren Zeile ausdrücklich `null`, nicht 0:
+       eine 0 hieße „stimmt". Alle Leser filtern über `Math.abs(r.diff)`,
+       und `Math.abs(null)` ist 0 — die Zeile fällt damit aus jeder
+       Auffälligkeitsliste heraus, auch wenn eine Stelle die Prüfung auf
+       `r.unklar` vergessen sollte. */
     return {id, name: w ? (w.winzer+" · "+w.wein) : GN(id), art: w?"Wein":"Getränk",
-            verkauf:v, entnahme:e, diff:e-v};
-  }).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
+            verkauf:v, entnahme:e, diff: u?null:e-v, unklar:u,
+            vorbehalt: u?null:(vorbehalt[id]||null)};
+  }).sort((a,b)=>(a.unklar?1:0)-(b.unklar?1:0)
+                 || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
-  return {z, zeilen, offen, verk, ent, von, bis, spanne, berichte:berichte.length};
+  return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, von, bis, spanne,
+          berichte:berichte.length};
 }
 
 /* ════════════ 7 · Ansichten ════════════ */
@@ -1062,7 +1463,10 @@ function zaehler(id){
        Eine rote Zahl in der Navigation behauptete dann einen Befund, den
        die Ansicht daneben selbst als „noch kein Abgleich" bezeichnet. */
     if(!a.berichte) return null;
-    return a.zeilen.filter(r=>Math.abs(r.diff)>=1).length||null; }
+    /* Eine Zeile ohne bestimmbaren Verkauf ist kein Befund. Sie zählt
+       deshalb nicht in die rote Zahl — sonst stünde dort die Menge der
+       fehlenden ANGABEN und läse sich wie die Menge fehlender Flaschen. */
+    return a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1).length||null; }
   return null;
 }
 
@@ -1103,8 +1507,9 @@ function vHeute(m){
   const heutigeVorg=VORGAENGE.filter(v=>v.tag===tag);
   const fassung=heutigeVorg.find(v=>v.mode==="tag");
   const best=bestellliste();
-  const grob=a.zeilen.filter(r=>Math.abs(r.diff)>=2);
-  const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
+  const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
+  const ohneUrteil=a.zeilen.filter(r=>r.unklar).length;
+  const minus=minusGeteilt(B);
 
   m.innerHTML=`<section>
     <h2>Mittagsblick</h2>
@@ -1131,11 +1536,18 @@ function vHeute(m){
        die Bestellliste KANN dann nichts finden. Am ersten Tag nach dem
        Livegang stand hier zweimal Grün über einer leeren Datenbank.
        Fehlt die Grundlage, steht ein Strich da, kein Haken. */
+    /* Eine grüne Null darf nur dastehen, wenn auch wirklich verglichen
+       wurde. Sind alle Zeilen ohne bestimmbaren Verkauf, ist nichts
+       geprüft — das steht dann da, statt „decken sich". */
     kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
       a.berichte
-        ?(grob.length?"über "+SPANNE+" Tage nicht ausgeglichen":"Verkauf und Entnahme decken sich")
+        ?(grob.length
+          ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
+          :ohneUrteil
+            ?(ohneUrteil+" Positionen ohne Abgleich — Größe fehlt oder Position nicht zugeordnet")
+            :"Verkauf und Entnahme decken sich")
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
-      a.berichte?(grob.length>4?"bad":grob.length?"warn":"ok"):"")+
+      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
     kachel("Nachbestellen", B.hat?best.length:"—",
       B.hat
         ?(best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle")
@@ -1149,8 +1561,23 @@ function vHeute(m){
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
   if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
+  /* „Größe fehlt" ist kein Befund, sondern eine offene Angabe. Deshalb
+     steht die Zahl hier und nicht bei den Abweichungen. */
+  if(a.ohneGroesse.length) fehlt.push("Größe fehlt: "+a.ohneGroesse.length
+    +" zugeordnete Kassenpositionen ("+num(a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0))
+    +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
+    +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
-  else if(minus.length) fehlt.push(minus.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
+  else {
+    /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
+       Bestand, der nur deshalb unter null steht, weil die Lieferung des
+       Zähltags bewusst nicht mitgerechnet wird. Die Zählung ist dann in
+       Ordnung; es fehlt eine Angabe, keine Zählung. Deshalb zwei Sätze. */
+    if(minus.echt.length) fehlt.push(minus.echt.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
+    if(minus.erklaert.length) fehlt.push(minus.erklaert.length+" Position"+(minus.erklaert.length===1?" steht":"en stehen")
+      +" nur deshalb unter null, weil am Zähltag "+num(minus.erklaert.reduce((x,w)=>x+unklarMenge(B,w.id),0))
+      +" Flaschen geliefert wurden, die nicht mitgerechnet sind. Das ist kein Zählfehler — im Keller nachsehen.");
+  }
   if(fehlt.length){
     const s=document.createElement("section");
     s.innerHTML=`<h3>Was noch fehlt</h3><div class="hinweis warn">${fehlt.map(esc).join("<br>")}</div>`;
@@ -1159,33 +1586,50 @@ function vHeute(m){
 
   /* Die größten Ausreißer */
   const s2=document.createElement("section");
-  const top=a.zeilen.filter(r=>Math.abs(r.diff)>=1).slice(0,10);
+  const top=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1).slice(0,10);
   s2.innerHTML=`<h3>Größte Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
-    /* Ohne Z-Bericht ist die Spalte „Verkauf" durchgehend 0 — jede Entnahme
-       erscheint dann als Schwund. Dieselbe Warnung steht in „Verkauf ↔
-       Fassung"; hier fehlte sie, und der Mittagsblick ist der Schirm, den
-       die Leitung morgens zuerst sieht. */
-    (a.berichte||!top.length?"":`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
-      Kein Z-Bericht im Zeitraum. „Verkauf“ bleibt darum 0 und die Differenz ist
-      die reine Entnahme — das ist noch kein Abgleich.</div>`)+
+    /* Ohne Z-Bericht ist der Verkauf nicht 0, sondern unbekannt. Dieselbe
+       Warnung steht in „Verkauf ↔ Fassung"; hier fehlte sie, und der
+       Mittagsblick ist der Schirm, den die Leitung morgens zuerst sieht.
+       Sie hing bis v26 an `top.length` — seit die Zeilen ohne bestimmbaren
+       Verkauf aus `top` herausfallen, wäre sie genau dann verschwunden,
+       wenn sie gebraucht wird. */
+    (!a.berichte&&a.zeilen.length?`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
+      Kein Z-Bericht im Zeitraum. Der Verkauf ist damit unbekannt — die Entnahme steht
+      unter „Verkauf ↔ Fassung“ ohne Urteil. Das ist noch kein Abgleich.</div>`:"")+
+    (a.berichte&&ohneUrteil?`<div class="hinweis" style="margin-bottom:var(--space-4)">
+      ${ohneUrteil} Position${ohneUrteil===1?"":"en"} stehen hier nicht: für sie ist der Verkauf
+      nicht bestimmbar (keine bestätigte Größe oder kein Z-Bericht). Ihre Entnahme ist
+      weder Abweichung noch Schwund — nachzulesen unter „Verkauf ↔ Fassung“.</div>`:"")+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
       </tr></thead><tbody>${top.map(r=>`<tr>
         <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}</td>
+        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}${
+          /* Auch hier gesagt: der Mittagsblick ist der Schirm, den die
+             Leitung morgens zuerst sieht, und eine Differenz aus halb
+             gerechnetem Verkauf darf dort nicht als ganze dastehen. */
+          r.vorbehalt?"<br><span class=\"dim\">"+esc(vorbehaltSatz(r.vorbehalt))+"</span>":""}</td>
       </tr>`).join("")}</tbody></table></div>`
-    : `<div class="karte leer">${a.zeilen.length
+    /* Drei verschiedene Lagen, die bis v26 alle „Keine Abweichung über
+       einer Flasche" sagten — auch dann, wenn gar nichts vergleichbar war. */
+    : `<div class="karte leer">${!a.zeilen.length
+        ?"Weder Verkauf noch Entnahme in diesem Zeitraum — es gibt noch nichts zu vergleichen."
+        :a.zeilen.some(r=>!r.unklar)
         ?"Keine Abweichung über einer Flasche."
-        :"Weder Verkauf noch Entnahme in diesem Zeitraum — es gibt noch nichts zu vergleichen."}</div>`);
+        :"Für keine Position ist der Verkauf bestimmbar — es gibt noch nichts zu vergleichen."}</div>`);
   /* Der Bestellvorschlag darunter hat „Alle ansehen" — gleiche Stelle,
-     also auch hier ein Weg in die volle Ansicht. */
-  if(top.length)s2.insertAdjacentHTML("beforeend",
+     also auch hier ein Weg in die volle Ansicht. Der Weg muss auch dann
+     dastehen, wenn KEINE Abweichung übrig ist, aber Zeilen ohne Urteil:
+     drüben stehen sie samt Grund und samt Sammelbestätigung. */
+  const wegDorthin = top.length || ohneUrteil;
+  if(wegDorthin)s2.insertAdjacentHTML("beforeend",
     `<div class="reihe" style="margin-top:12px">
        <button class="b leise" id="bAlleAbw">Zum vollständigen Abgleich</button></div>`);
   m.appendChild(s2);
-  if(top.length)$("#bAlleAbw").onclick=()=>{ SEITE="abgleich"; zeichne(); window.scrollTo(0,0); };
+  if(wegDorthin)$("#bAlleAbw").onclick=()=>{ SEITE="abgleich"; zeichne(); window.scrollTo(0,0); };
 
   /* Bestellvorschlag kompakt */
   if(best.length){
@@ -1193,10 +1637,11 @@ function vHeute(m){
     s3.innerHTML=`<h3>Bestellvorschlag</h3><div class="tabhuelle"><table><thead><tr>
       <th>Wein</th><th class="r">Bestand</th><th class="r">Pro Tag</th><th class="r">Reicht</th><th class="r">Kisten</th>
       </tr></thead><tbody>${best.slice(0,8).map(r=>`<tr>
-        <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}</td>
+        <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}
+          ${r.unklar?`<div class="mini">${esc(unklarZeilenSatz(r.unklar))}</div>`:""}</td>
         <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
         <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${r.reichweite===Infinity?"—":Math.floor(r.reichweite)+" T"}</span></td>
-        <td class="r"><b>${r.kisten}</b> × ${r.kg}</td></tr>`).join("")}</tbody></table></div>
+        <td class="r"><b>${esc(bestellSpanne(r))}</b> × ${r.kg}</td></tr>`).join("")}</tbody></table></div>
       <div class="reihe" style="margin-top:12px"><button class="b" id="bMehr">Alle ansehen</button></div>`;
     m.appendChild(s3);
     $("#bMehr").onclick=()=>{ SEITE="bestellen"; zeichne(); };
@@ -1247,17 +1692,98 @@ function vAbgleich(m){
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
   }
+  /* Der dritte Zustand: zugeordnet, aber die Größe ist nicht bestätigt.
+     Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
+     Angabe, es fehlt keine Flasche. */
+  if(a.ohneGroesse.length){
+    const stk=a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0);
+    const s=document.createElement("section");
+    /* Ein eigener Abschnitt mit Überschrift, nicht ein Hinweiskasten ohne
+       Kopf: Er steht zwischen der Filterzeile und der Abgleichtabelle, und
+       ohne Überschrift war nicht zu sehen, wo er anfängt und wo er aufhört.
+       Die Zahl gehört in die Überschrift — sie ist das Maß der Arbeit, die
+       hier liegt. */
+    s.innerHTML=`<div class="abschnitt"><div>
+      <h3>Größe fehlt · ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}</h3>
+      <div class="unter">${num(stk)} verkaufte Einheiten sind zugeordnet, ihre Größe aber nicht
+      bestätigt — sie bleiben aus der Mengenrechnung heraus, als fehlende Angabe und nicht als
+      Abweichung</div></div></div>
+      <div class="tabhuelle"><table><thead><tr>
+        <th>Kassenname</th><th class="r">Menge</th><th>Artikel</th><th>Was fehlt</th><th>Vorschlag</th>
+      </tr></thead><tbody>${a.ohneGroesse.map(o=>`<tr>
+        <td>${esc(o.name)}</td><td class="r">${num(o.anzahl)}</td>
+        <td>${o.rezept ? "Mischgetränk · Bestandteil "+esc(artName(o.id)) : esc(artName(o.id))}</td>
+        <td>${o.rezept
+          ? "Für "+esc(artName(o.id))+" fehlt die Flaschengröße"
+          : o.fehlt==="ausschank"
+          ? "Die Ausschankmenge steht nicht im Kassennamen"
+          : "Die Gebindegröße des Artikels ist nicht bestätigt"}</td>
+        <td>${o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
+          : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
+          : o.geb.ml
+            ? `<span class="vorschlag"><span>${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span></span>
+               <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
+                 data-ml="${o.geb.ml}">Übernehmen</button></span>`
+            : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
+      </tr>`).join("")}</tbody></table></div>`;
+    m.appendChild(s);
+    s.querySelectorAll("button[data-geb]").forEach(b=>b.onclick=()=>
+      bestaetigeGebinde(b.dataset.geb, b.dataset.art, +b.dataset.ml));
+
+    /* Der Sammelweg. Er steht bewusst UNTER der Tabelle: erst die Liste
+       lesen (Kassenname, Artikel, Vorschlag, Herkunft), dann bestätigen.
+       Angefasst wird nur, was einen Vorschlag hat — Positionen, bei denen
+       die Ausschankmenge im Kassennamen fehlt, kann niemand vorschlagen,
+       und ein Sammelknopf darf sie nicht stillschweigend mitnehmen. */
+    const vorschlaege=a.ohneGroesse
+      .filter(o=>o.fehlt==="gebinde" && !o.rezept && o.id && o.geb && +o.geb.ml>0)
+      .map(o=>({name:o.name, id:o.id, ml:+o.geb.ml}));
+    const ohneVorschlag=a.ohneGroesse.length-vorschlaege.length;
+    if(vorschlaege.length){
+      const z=document.createElement("div");
+      z.className="hinweis abschnitt";
+      z.innerHTML=`<div>Für ${vorschlaege.length} dieser Positionen steht oben ein Vorschlag samt Herkunft.
+        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt: dort fehlt die Ausschankmenge im Kassennamen, oder es ist ein Mischgetränk." : ""}</div>
+        <button class="b tat" id="bGebAlle">Alle ${vorschlaege.length} Vorschläge übernehmen</button>`;
+      s.appendChild(z);
+      const bAlle=z.querySelector("#bGebAlle");
+      bAlle.onclick=async()=>{
+        bAlle.disabled=true; bAlle.textContent="Wird bestätigt …";
+        await bestaetigeAlleGebinde(vorschlaege);   /* zeichnet danach neu */
+      };
+    }
+  }
 
   const s=document.createElement("section");
   const wein=a.zeilen.filter(r=>r.art==="Wein"), getr=a.zeilen.filter(r=>r.art!=="Wein");
+  /* Eine Zeile ohne bestimmbaren Verkauf bekommt KEINE Differenz und
+     keine Deutung. Die Entnahme bleibt stehen — sie ist bekannt —, in der
+     Differenzspalte steht ein Strich, und der Befund sagt, woran es
+     liegt. Seit v28 wieder als Plakette: `p-grau` hatte mit 4,43:1 keinen
+     tragfähigen Farbwert und war deshalb keine Plakette wert — mit
+     --fg-secondary sind es 5,83:1 auf demselben Grund. Die Plakette sagt
+     „kein Abgleich", der Grund steht im Klartext daneben; so trägt die
+     Spalte in jeder Zeile dieselbe Form, und die unklaren Zeilen
+     verschwinden nicht mehr zwischen den Pillen der anderen. */
   const zeile=r=>`<tr>
     <td>${esc(r.name)}</td>
-    <td class="r">${num(r.verkauf)}</td>
+    <td class="r">${r.unklar?"—":num(r.verkauf)}</td>
     <td class="r">${num(r.entnahme)}</td>
-    <td class="r ${Math.abs(r.diff)<0.5?"dim":(r.diff>0?"diff-plus":"diff-minus")}">${r.diff>0?"+":""}${num(r.diff)}</td>
-    <td>${Math.abs(r.diff)<0.5?'<span class="pill p-ok">stimmt</span>'
-        :Math.abs(r.diff)<2?'<span class="pill p-warn">kleine Abweichung</span>'
-        :'<span class="pill p-bad">prüfen</span>'}</td></tr>`;
+    <td class="r ${r.unklar||Math.abs(r.diff)<0.5?"dim":(r.diff>0?"diff-plus":"diff-minus")}">${
+      r.unklar?"—":(r.diff>0?"+":"")+num(r.diff)}</td>
+    <td>${r.unklar?'<span class="befund"><span class="pill p-grau">kein Abgleich</span>'
+        +'<span class="dim">'+esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")+'</span></span>'
+        /* Mit Vorbehalt: der Satz daneben sagt, dass ein Teil des Verkaufs
+           fehlt. Die Differenz ist damit eine Untergrenze — verschwiegen
+           wäre sie eine Behauptung. Welche Plakette dazugehört, entscheidet
+           `BEFUND`: bei Differenz 0 die neutrale, nie die grüne. Die Hülle
+           `.befund` bekommt nur diese Zeile; eine Zeile ohne Vorbehalt
+           sieht aus wie bisher. */
+        :(pill=>r.vorbehalt
+          ? '<span class="befund">'+pill
+            +'<span class="dim">'+esc(vorbehaltSatz(r.vorbehalt))+'</span></span>'
+          : pill)(
+           (b=>'<span class="pill '+b.k+'">'+esc(b.w)+'</span>')(BEFUND(r)))}</td></tr>`;
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf Fl.</th><th class="r">Entnahme Fl.</th><th class="r">Differenz</th><th>Befund</th>
     </tr></thead><tbody>
@@ -1272,10 +1798,27 @@ function csvAbgleich(tag,a){
   const e=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
   const L=[["Abgleich Verkauf gegen Fassung"].map(e).join(";"),
            ["Betriebstag",tag].map(e).join(";"),"",
-           ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz"].map(e).join(";")];
-  a.zeilen.forEach(r=>L.push([r.name,r.art,num(r.verkauf),num(r.entnahme),num(r.diff)].map(e).join(";")));
+           ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
+  /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
+     Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
+     7 entnommen" ist genau die Behauptung, die hier niemand belegen kann. */
+  a.zeilen.forEach(r=>L.push([r.name,r.art,
+    r.unklar?"":num(r.verkauf), num(r.entnahme), r.unklar?"":num(r.diff),
+    r.unklar?unklarSatz(r.unklar)
+      :BEFUND(r).w                                  /* dasselbe Wort wie in der Tabelle */
+       +(r.vorbehalt?" · "+vorbehaltSatz(r.vorbehalt):"")
+    ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
+  /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
+     des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
+  if(a.ohneGroesse.length){ L.push("",["Größe nicht bestätigt — nicht gerechnet"].map(e).join(";"),
+    ["Kassenname","Anzahl","Artikel","Was fehlt","Vorschlag ml"].map(e).join(";"));
+    a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,
+      (o.rezept?"Bestandteil ":"")+artName(o.id),
+      o.rezept?"Gebindegröße des Bestandteils"
+        :o.fehlt==="ausschank"?"Ausschankmenge im Kassennamen":"Gebindegröße des Artikels",
+      o.rezept?"":(o.geb.ml||"")].map(e).join(";"))); }
   hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
 }
 function hol(name, inhalt, typ){
@@ -1340,7 +1883,8 @@ function vImport(m){
           :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${zu.status==="auto"?"p-neu":"p-ok"}">${zu.status==="auto"?"automatisch":"bestätigt"}</span>`;
         return `<tr><td>${esc(p.name)}</td>
           <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
-          <td>${nm}</td><td class="r">${zu.id?num(flaschen(p,zu.id)):"—"}</td></tr>`;
+          <td>${nm}</td><td class="r">${(f=>!zu.id?"—":f.ok?num(f.fl)
+            :`<span class="dim">Größe fehlt</span>`)(zu.id?flaschen(p,zu.id):null)}</td></tr>`;
       }).join("")}</tbody></table></div>`;
   }
   roh.oninput=pruefe;
@@ -1403,11 +1947,32 @@ function vBestand(m){
     m.insertAdjacentHTML("beforeend",
       `<section><div class="hinweis">Basis ist die Zählung vom ${esc(deTag(B.basis.tag))}${B.basis.name?" durch "+esc(B.basis.name):""}.
        Seither ${summe(B.seit.ein)} Flaschen eingegangen, ${summe(B.seit.raus)} entnommen.</div></section>`);
-    const minus=WINES.filter(w=>B.b[w.id]!=null && B.b[w.id]<0);
-    if(minus.length) m.insertAdjacentHTML("beforeend",
-      `<section><div class="hinweis bad">${minus.length} Positionen stehen rechnerisch unter null.
+    /* Lieferung am Zähltag selbst: weder Fehler noch Warnung, sondern eine
+       Angabe — deshalb `hinweis` ohne `warn`/`bad`. Ein Artikel wird beim
+       Namen genannt, mehrere nur gezählt (der Satz bliebe sonst unlesbar);
+       die Einzelmenge steht ohnehin in der Zeile des Artikels. */
+    const uIds=Object.keys(B.unklar||{}).filter(id=>B.unklar[id]>0);
+    if(uIds.length){
+      const w0=byId(uIds[0]);
+      const wer=uIds.length===1
+        ?`${num(B.unklar[uIds[0]])} Flaschen ${w0?w0.winzer+" · "+w0.wein:uIds[0]}`
+        :`${num(summe(B.unklar))} Flaschen zu ${uIds.length} Artikeln`;
+      m.insertAdjacentHTML("beforeend",
+        `<section><div class="hinweis">Am Zähltag wurden ${esc(wer)} geliefert — ob die Zählung
+         sie schon enthält, ist nicht feststellbar. Sie sind im Bestand nicht mitgerechnet;
+         der Bestand ist insoweit eher zu niedrig als zu hoch.</div></section>`);
+    }
+    /* Zwei verschiedene Lagen, zwei verschiedene Maßnahmen — siehe
+       `minusGeteilt`. Die erklärte Lage ist eine Angabe, keine Warnung. */
+    const M=minusGeteilt(B);
+    if(M.echt.length) m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis bad">${M.echt.length} Positionen stehen rechnerisch unter null.
        Entweder wurde ohne Vorgang aus dem Keller geholt, oder die Zählung ist zu alt.
        Beides löst dieselbe Maßnahme aus: neu zählen.</div></section>`);
+    if(M.erklaert.length) m.insertAdjacentHTML("beforeend",
+      `<section><div class="hinweis">${M.erklaert.length} weitere Position${M.erklaert.length===1?"":"en"}
+       ${M.erklaert.length===1?"steht":"stehen"} nur deshalb unter null, weil die Lieferung vom Zähltag
+       nicht mitgerechnet ist. Das ist kein Zählfehler — im Keller nachsehen genügt.</div></section>`);
   }
 
   const zonen={};
@@ -1417,11 +1982,13 @@ function vBestand(m){
     reihen.push(`<tr class="zwt"><td colspan="7">${esc((PLAN.zonen[z]||{}).t||("Zone "+z))} · ${esc((PLAN.zonen[z]||{}).s||"")}</td></tr>`);
     zonen[z].sort((a,b)=>(PLAN.restorder[a.id]??999)-(PLAN.restorder[b.id]??999)).forEach(w=>{
       const b=B.b[w.id], pt=V.proTag[w.id]||0;
+      const u=unklarMenge(B,w.id);               /* am Zähltag geliefert, nicht mitgerechnet */
       const rw = b==null||!pt ? Infinity : (b<=0 ? 0 : b/pt);
       const soll=PLAN.soll[w.id]||0;
       const anteil=b!=null&&soll?Math.min(100,Math.round(b/(soll*4)*100)):0;
       reihen.push(`<tr>
-        <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span></td>
+        <td><b>${esc(w.winzer)}</b> · ${esc(w.wein)} <span class="mini">${esc(w.jg)}</span>
+          ${u?`<div class="mini">${esc(unklarZeilenSatz(u))}</div>`:""}</td>
         <td class="mini">${esc(w.reb)}</td>
         <td class="r">${b==null?'<span class="dim">—</span>'
           :b<0?`<b class="neg">${num(b)}</b>`:`<b>${num(b)}</b>`}</td>
@@ -1454,10 +2021,23 @@ function bestellliste(){
     const kg=(PLAN.kiste||{})[w.id]||6;
     const ziel=Math.ceil(pt*EINST.reichweite*1.5);        /* auf anderthalb Fenster auffüllen */
     const kisten=Math.max(1, Math.ceil(Math.max(0,ziel-Math.max(0,b))/kg));
-    out.push({w, bestand:b, proTag:pt, reichweite:rw, kg, kisten});
+    /* Am Zähltag geliefert und deshalb nicht im Bestand (Entscheidung
+       Nr. 10): dieselbe Formel ein zweites Mal, mit der oberen statt der
+       unteren Zahl. Keine neue Regel — dieselbe Regel auf beide Enden
+       angewandt. Ergibt sie weniger Kisten, ist der Vorschlag eine Spanne
+       statt einer Zahl, und die Zeile sagt warum. Ohne das schlug die
+       Liste für einen Wein 11 × 12 Flaschen vor, während 16 im Keller
+       standen (Zählung 10, Lieferung 24 am selben Tag, dreimal 6 gefasst). */
+    const u=unklarMenge(B,w.id);
+    const kistenMin = u ? Math.ceil(Math.max(0,ziel-Math.max(0,b+u))/kg) : kisten;
+    out.push({w, bestand:b, proTag:pt, reichweite:rw, kg, kisten, unklar:u,
+              kistenMin:Math.min(kistenMin,kisten)});
   });
   return out.sort((a,b)=>a.reichweite-b.reichweite);
 }
+/* „5–11" statt „11", sobald die beiden Enden auseinanderfallen. */
+const bestellSpanne = (r,fl) => (x=>r.kistenMin===r.kisten
+  ? String(x(r.kisten)) : x(r.kistenMin)+"–"+x(r.kisten))(k=>fl?k*r.kg:k);
 function vBestellen(m){
   const L=bestellliste();
   m.innerHTML=`<section><h2>Nachbestellen</h2>
@@ -1472,26 +2052,35 @@ function vBestellen(m){
     <th>Wein</th><th>Winzer</th><th class="r">Bestand</th><th class="r">Pro Tag</th>
     <th class="r">Reicht</th><th class="r">Kisten</th><th class="r">Flaschen</th>
     </tr></thead><tbody>${L.map(r=>`<tr>
-      <td><b>${esc(r.w.wein)}</b> <span class="mini">${esc(r.w.jg)}</span></td>
+      <td><b>${esc(r.w.wein)}</b> <span class="mini">${esc(r.w.jg)}</span>
+        ${r.unklar?`<div class="mini">${esc(unklarZeilenSatz(r.unklar))} Vor dem Bestellen nachsehen.</div>`:""}</td>
       <td>${esc(r.w.winzer)}</td>
       <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
       <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${Math.floor(r.reichweite)} T</span></td>
-      <td class="r"><b>${r.kisten}</b> <span class="mini">à ${r.kg}</span></td>
-      <td class="r">${r.kisten*r.kg}</td></tr>`).join("")}</tbody></table></div>
+      <td class="r"><b>${esc(bestellSpanne(r))}</b> <span class="mini">à ${r.kg}</span></td>
+      <td class="r">${esc(bestellSpanne(r,true))}</td></tr>`).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:16px">
       <button class="b stark" id="bKop">Als Text kopieren</button>
       <button class="b" id="bCsv2">Als CSV</button></div>`;
   m.appendChild(s);
   $("#bKop").onclick=()=>{
+    /* Der kopierte Zettel ist das, was tatsächlich bestellt wird — die
+       Angabe muss deshalb genau hier mitreisen, nicht nur auf dem Schirm. */
     const t="Bestellvorschlag Haus Hirt · "+new Date().toLocaleDateString("de-AT")+"\n\n"+
-      L.map(r=>`${r.kisten} × ${r.kg}er  ${r.w.winzer}, ${r.w.wein} ${r.w.jg}`).join("\n");
+      L.map(r=>`${bestellSpanne(r)} × ${r.kg}er  ${r.w.winzer}, ${r.w.wein} ${r.w.jg}`
+        +(r.unklar?`\n    (${unklarZeilenSatz(r.unklar)} Vor dem Bestellen nachsehen.)`:"")).join("\n");
     navigator.clipboard.writeText(t).then(()=>toast("In die Zwischenablage kopiert"),()=>toast("Kopieren nicht möglich"));
   };
   $("#bCsv2").onclick=()=>{
     const e=s2=>'"'+String(s2??"").replace(/"/g,'""')+'"';
-    const R=[["Winzer","Wein","Jahrgang","Bestand","Verbrauch/Tag","Reichweite","Kisten","Kistengröße","Flaschen"].map(e).join(";")];
+    /* Die bisherigen Spalten bleiben, wo sie waren und was sie waren —
+       eine Spanne in der Spalte „Kisten" wäre keine Zahl mehr. Die beiden
+       neuen Spalten stehen hinten dran. */
+    const R=[["Winzer","Wein","Jahrgang","Bestand","Verbrauch/Tag","Reichweite","Kisten","Kistengröße","Flaschen",
+              "Am Zähltag geliefert (nicht mitgerechnet)","Kisten mindestens"].map(e).join(";")];
     L.forEach(r=>R.push([r.w.winzer,r.w.wein,r.w.jg,num(r.bestand),num(r.proTag),
-      Math.floor(r.reichweite),r.kisten,r.kg,r.kisten*r.kg].map(e).join(";")));
+      Math.floor(r.reichweite),r.kisten,r.kg,r.kisten*r.kg,
+      r.unklar||"",r.kistenMin].map(e).join(";")));
     hol("bestellvorschlag.csv","\uFEFF"+R.join("\r\n"),"text/csv");
   };
 }
@@ -1520,7 +2109,8 @@ function vGetraenke(m){
         <td class="r">${r.ist==null?'<span class="dim">—</span>':r.ist}</td>
         <td class="r">${r.fehlt?`<b>${r.fehlt}</b>`:'<span class="dim">—</span>'}</td>
         <td class="r">${r.pt?num(r.pt):'<span class="dim">—</span>'}</td>
-        <td class="r mini">${GEBINDE[r.id]?GEBINDE[r.id]+" ml":"—"}</td></tr>`).join("")}
+        <td class="r mini">${(g=>g.ml?g.ml+" ml"+(g.quelle==="vorschlag"?" (Vorschlag)":"")
+          :"nicht hinterlegt")(gebindeGroesse(r.id, null))}</td></tr>`).join("")}
     </tbody></table></div>`;
   m.appendChild(s);
 }
@@ -1595,9 +2185,13 @@ function vZuordnung(m){
     const nm=sel.dataset.name, z=zuordnung({name:nm});
     sel.value = MAP[nm] ? MAP[nm] : (z.status==="auto" ? z.id : "");
     sel.onchange=async()=>{
-      const wert=sel.value;
+      const wert=sel.value, vorher=MAP[nm];
       if(wert) MAP[nm]=wert; else delete MAP[nm];
       schreib(K_MAP,MAP);
+      /* Die bestätigte Gebindegröße gehörte zum bisherigen Artikel. Nach
+         einem Wechsel ist sie nicht mehr bestätigt — sonst rechnet die
+         neue Zuordnung mit der Flasche der alten. */
+      if(GEB_BEST[nm]!=null && wert!==vorher){ delete GEB_BEST[nm]; schreib(K_GEB,GEB_BEST); }
       const ok=await sendeZuordnung(nm, wert);
       zeichne();
       if(ok) toast("Zuordnung gespeichert");
@@ -1667,13 +2261,25 @@ function zaehlliste(){
   const dif={}; A.zeilen.forEach(r=>dif[r.id]=r.diff);
   const out=[];
   WINES.forEach(w=>{
-    const b=B.b[w.id], d=dif[w.id]||0, pt=V.proTag[w.id]||0;
+    const b=B.b[w.id], d=dif[w.id]||0, pt=V.proTag[w.id]||0, u=unklarMenge(B,w.id);
     let grund=null, rang=9;
-    if(b!=null && b<0){ grund="rechnerisch unter null"; rang=0; }
+    /* Zählen ist hier genau die richtige Maßnahme — sie beendet die
+       Ungewissheit über die Lieferung vom Zähltag. Der Grund muss sie aber
+       beim Namen nennen: „rechnerisch unter null" allein liest sich wie
+       Schwund, und Rang 0 (rot) stellte den Wein vor die echten Minusse.
+       Die Zahl selbst bleibt unverändert (Entscheidung Nr. 10). */
+    if(b!=null && b<0){
+      const satz=u?" — am Zähltag "+num(u)+" Fl. geliefert, nicht mitgerechnet":"";
+      /* Deckt die ausgewiesene Lieferung das Minus ganz, ist es keins;
+         deckt sie es nur teilweise, bleibt Rang 0 — die Angabe reist
+         trotzdem mit. */
+      if(u && b+u>=0){ grund=satz.replace(" — ",""); rang=1; }
+      else { grund="rechnerisch unter null"+satz; rang=0; }
+    }
     else if(Math.abs(d)>=3){ grund="Verkauf und Entnahme "+num(Math.abs(d))+" Fl. auseinander"; rang=1; }
     else if(b!=null && b<6 && pt>0){ grund="unter einer Reihe"; rang=2; }
     if(!grund) return;
-    out.push({w, bestand:b, diff:d, grund, rang});
+    out.push({w, bestand:b, diff:d, grund, rang, unklar:u});
   });
   return out.sort((a,b)=>a.rang-b.rang || Math.abs(b.diff)-Math.abs(a.diff));
 }

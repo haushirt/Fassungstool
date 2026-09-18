@@ -104,7 +104,13 @@
   --font:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-  --text-xs:11px; --text-sm:13px; --text-md:15px; --text-base:16px;
+  /* Im Keller wird nichts unter 15px gelesen — Kunstlicht, kalte Finger,
+     Flasche in der anderen Hand. Die beiden kleinen Grade sind deshalb
+     für den FINGER auf 15px gehoben; die Rangfolge macht dort Gewicht,
+     Farbe und Laufweite, nicht mehr die Größe. Am Schreibtisch
+     (data-dichte="maus") gelten weiter 11/13px — dort zählt Dichte, und
+     die Leitung sitzt vor einem MacBook, nicht im Keller. */
+  --text-xs:15px; --text-sm:15px; --text-md:15px; --text-base:16px;
   --text-lg:19px; --text-display:28px;
   --leading-tight:1.25; --leading-normal:1.45;
   --weight-regular:400; --weight-medium:600; --weight-bold:700;
@@ -133,7 +139,8 @@
 
 /* Maus statt Finger: dieselben Bauteile, engere Geometrie. */
 [data-dichte="maus"]{
-  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px
+  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px;
+  --text-xs:11px; --text-sm:13px
 }
 /* Auf schmalen Schirmen zählt wieder der Finger — auch im Backoffice. */
 @media(max-width:900px){
@@ -405,16 +412,28 @@ header{background:var(--accent);color:var(--fg-on-dark);
    und wurden rechts abgeschnitten. Punkte skalieren, Text sagt wo man ist. */
 .steps{display:flex;align-items:center;gap:var(--space-3);
   margin-top:var(--space-2);height:36px}
-.stpts{display:flex;gap:6px;flex-shrink:0}
-.st{width:10px;height:10px;padding:0;border:0;border-radius:50%;
+/* Bis v27 lagen die Punkte 6px auseinander; die Trefferflaeche war
+   24x44 und die der Nachbarn lag darin — wer im Keller Schritt 3 wollte,
+   traf Schritt 2. Jetzt steht jeder Punkt in einer eigenen Zelle
+   (Rand 18px links und rechts, Abstand 0). Die Linie dahinter haelt die
+   Punkte optisch zusammen und zeigt den Weg durch die Schritte. */
+.stpts{display:flex;gap:0;flex-shrink:0;position:relative}
+.stpts::before{content:"";position:absolute;left:23px;right:23px;top:50%;
+  height:2px;margin-top:-1px;border-radius:1px;
+  background:var(--border-on-dark)}
+.st{width:10px;height:10px;padding:0;border:0;border-radius:50%;margin:0 18px;
   background:var(--surface-on-dark);cursor:pointer;flex-shrink:0;
   transition:background var(--dur-fast) var(--ease),box-shadow var(--dur-fast) var(--ease)}
 .st.done{background:var(--success-on-dark)}
 .st[aria-selected="true"]{background:var(--fg-on-dark);
   box-shadow:0 0 0 3px var(--border-on-dark)}
-/* Trefferflaeche bleibt 44px, der Punkt bleibt klein. */
-.stpts .st{position:relative}
-.stpts .st::after{content:"";position:absolute;inset:-17px -7px}
+/* Trefferflaeche 46x46, der Punkt bleibt klein. Warum 46 und nicht 44:
+   Die Zellen stossen aneinander. Bei genau 44 liegt der Rand des einen
+   Griffs auf dem Rand des naechsten, und ein Druck genau auf die Naht
+   gehoert rechnerisch beiden — ein Pixel Luft macht die Zuordnung
+   eindeutig, auch fuer die Messung. */
+.stpts .st{position:relative;z-index:1}
+.stpts .st::after{content:"";position:absolute;inset:-18px}
 .stlbl{font-size:var(--text-sm);font-weight:var(--weight-medium);
   color:var(--fg-on-dark-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -544,7 +563,7 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 
 /* Konsum-Zähler */
 .knum{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
-.kminus,.kplus{width:40px;height:var(--tap-min);border:1px solid var(--border-strong);
+.kminus,.kplus{width:var(--tap-min);height:var(--tap-min);border:1px solid var(--border-strong);
   border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-lg);
   color:var(--fg-muted);cursor:pointer;line-height:1;
   transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
@@ -557,13 +576,26 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .cnt.on{border-color:var(--fg);color:var(--fg);background:var(--surface-3)}
 
 /* Punkte und Häkchen */
-.dots{display:flex;gap:var(--space-2);align-items:center;flex-shrink:0;
+/* Der Abstand zwischen den Punkten ist hier keine Zierde, sondern die
+   Trefferflaeche: 26px Punkt + 20px Abstand = 46px Raster. Jeder Punkt
+   traegt seinen Griff in einem ::after, die Griffe stossen aneinander und
+   ueberlappen nicht — ein Fehlgriff faellt also nicht auf den Nachbarn.
+   Im Plan hat keine Position mehr als drei Flaschen; kaeme je eine
+   sechste dazu, bricht die Reihe um (max-width), statt den Namen des
+   Weins zu zerdruecken. Die Zeilen der Punkte liegen dann 20px
+   auseinander, damit auch senkrecht kein Griff in den naechsten laeuft. */
+.dots{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:20px;
+  align-items:center;flex-shrink:0;max-width:210px;
   padding:var(--space-3) 0;cursor:pointer}
 /* Drei volle schwarze Kreise je Zeile waren die groesste optische Last der
    Liste und trugen die kleinste Information: alle sagten dasselbe. Als Ring
    bleibt die Aussage, das Gewicht geht weg. Geometrie unveraendert. */
-.dot{width:26px;height:26px;border-radius:50%;background:transparent;
+.dot{position:relative;width:26px;height:26px;border-radius:50%;background:transparent;
   border:2px solid var(--accent);box-shadow:inset 0 0 0 20px var(--accent-ring)}
+/* inset rechnet gegen die POLSTERkante: der 2px-Rahmen faellt heraus.
+   -12px auf 22px Polsterkasten ergeben 46px Griff — die 44px des Hauses
+   und ein Pixel Luft zum Nachbarn. */
+.dot::after{content:"";position:absolute;inset:-12px}
 .dot.off{background:none;border:2px dashed var(--border-heavy);box-shadow:none}
 /* Rot wird nur, was fehlt. Die vorhandenen Flaschen derselben Zeile
    bleiben ruhig — sonst schreit die ganze Zeile, obwohl nur eine
@@ -991,6 +1023,24 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   font-size:var(--text-md);line-height:var(--leading-normal)}
 .fernzeile b{display:block;font-weight:var(--weight-medium);margin-bottom:2px}
 
+/* Die dritte Wahl in einer Frage — „Trotzdem neu beginnen“ — stand bis v27
+   als graue Kleinschrift mitten im Textkoerper: 36px hoch, ohne Rahmen,
+   ohne Flaeche. Sie sah aus wie eine Bildunterschrift und nicht wie etwas,
+   das man druecken kann; ihre Folge stand drei Zeilen darueber in einem
+   eigenen Absatz. Jetzt ist sie ein Knopf ueber die ganze Breite, traegt
+   ihre Folge in der zweiten Zeile und hat denselben 44px-Griff wie jeder
+   andere Knopf im Keller. Der Name ist NICHT `.wahl` — das ist in der
+   geteilten Gestaltungsschicht das Auswahlfeld. */
+.andererweg{display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  width:100%;min-height:var(--tap-min);margin:var(--space-5) 0 0;
+  padding:var(--space-3) var(--space-4);text-align:left;cursor:pointer;
+  background:var(--surface-2);border:1px solid var(--border-strong);
+  border-radius:var(--radius-ctl);color:var(--fg);font:inherit}
+.andererweg b{font-weight:var(--weight-medium);font-size:var(--text-md)}
+.andererweg span{font-size:var(--text-sm);color:var(--fg-muted);
+  line-height:var(--leading-normal)}
+.andererweg:active{background:var(--surface-3)}
+
 /* ═══════════════ Hilfe-Sheet ═══════════════
    Ersetzt die zwei Dauerzeilen über dem Inhalt. Beides steht jetzt an
    einer Stelle, und die Liste beginnt rund 180px weiter oben. */
@@ -1134,7 +1184,11 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .gbtn b{display:block;font-size:var(--text-base);font-weight:var(--weight-medium)}
 .gbtn.getr b{font-size:var(--text-md)}
 .gbtn span.s{display:block;font-size:var(--text-sm);color:var(--fg-muted);margin-top:2px}
-.gbtn .go2{margin-left:auto;color:var(--fg-subtle);font-size:var(--text-lg)}
+/* Kein font-size hier: das Zeichen › traegt sein Bild im Mask-Bild der
+   Regel oben, die dafuer font-size:0 setzt. Stand hier eine Groesse, kam
+   das Textzeichen zusaetzlich zur Grafik durch — in eigener Farbe auf
+   eigenem Grund, also mit 1:1 Kontrast. */
+.gbtn .go2{margin-left:auto;color:var(--fg-subtle)}
 
 /* ── Lade ── */
 .drw{margin:var(--space-4) 0 0;border:1px solid var(--border-heavy);
@@ -1184,8 +1238,13 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 /* Eine Zeile, abgeschnitten. Das Bild sagt ohnehin, was in der Flasche ist. */
 /* Je Stapel steht das Kuerzel nur unter der untersten Flasche. Die leeren
    Kuerzel darueber reservierten trotzdem Hoehe und zogen den Stapel auf. */
+/* Die Hoehe war mit 15px an die alte Schriftgroesse geheftet. Seit
+   --text-xs auf 15px steht, braucht die Zeile 15 x 1,25 = 18,75px — das
+   Kuerzel wurde unten beschnitten, „Fritsch (Karl)" verlor die Klammern.
+   Jetzt folgt die Hoehe der Zeile, nicht einer festen Zahl. */
 .gcap{font-size:var(--text-xs);line-height:var(--leading-tight);text-align:center;
- color:var(--fg-secondary);margin-top:var(--space-1);height:15px;padding:0 1px;
+ color:var(--fg-secondary);margin-top:var(--space-1);padding:0 1px;
+ height:calc(var(--text-xs) * var(--leading-tight));
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;max-width:100%}
 /* Nur in den Spaltenladen verschwindet ein leeres Kuerzel. Im Fach
    haelt es die Grundlinie \u2014 sonst rutschen Saeulen ohne
@@ -1197,6 +1256,32 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
    „Ginger Ale" zu „Ginge / r Ale". Feste Höhe hält die Grundlinien bündig. */
 .drwi .gcol .gcap{white-space:normal;overflow:visible;height:auto;min-height:26px;
  line-height:1.2;overflow-wrap:normal;word-break:normal;hyphens:manual}
+/* Sehr schmale Spalten: Lade 4 · Mischgetränke hat acht Spalten und damit
+   34 px je Spalte. „Ginger", „Bitter", „Lemon" sind bei 15 px Schrift je
+   46–47 px breit — jedes Kürzel ragte beidseitig über seine Spalte und
+   überlappte den Nachbarn um 3–4 px (gemessen: Ginger Ale/Bitter Lemon 3,0,
+   Bitter Lemon/Tonic TH 3,9, Ginger Beer/Gast. 0,25 3,0). Auf dem Schirm
+   las sich das als „GingerBitter / LemonTH", und an genau dieser
+   Beschriftung wird gezählt. Kleiner setzen ist verboten (15 px ist die
+   Untergrenze im Service), „Ginge-r" zu trennen hilft niemandem.
+   Also Platz statt Schrumpfen: jede zweite Spalte schreibt eine Zeile
+   tiefer. Waagrechte Nachbarn stehen damit nie auf derselben Linie, und
+   jedem Kürzel stehen zwei Spaltenbreiten zur Verfügung. Beide Gruppen
+   reservieren gleich viel Höhe (Polster oben ODER unten) — die Standlinie
+   der Flaschen verschiebt sich nicht. Gesetzt wird die Marke `gversetzt`
+   in `gFit()`, und zwar nach der GEMESSENEN Spaltenbreite: die breiten
+   Laden 5 und 6 brauchen den Versatz nicht und bekommen ihn nicht. */
+/* Feste Hoehe, nicht min-height: bei border-box waere ein einzeiliges
+   Kuerzel sonst niedriger als ein zweizeiliges, und weil die Spalten unten
+   buendig stehen (align-items:flex-end), saenken die kurzen Spalten mitsamt
+   ihren Flaschen ab. Vier Zeilen: zwei fuer die eigene Gruppe, zwei als
+   Polster fuer die andere. */
+.drwi.gversetzt .gcol .gcap{width:200%;max-width:none;min-height:0;
+ line-height:var(--leading-tight);
+ height:calc(var(--text-xs) * var(--leading-tight) * 4);
+ padding-bottom:calc(var(--text-xs) * var(--leading-tight) * 2)}
+.drwi.gversetzt .gcol:nth-child(even) .gcap{padding-bottom:0;
+ padding-top:calc(var(--text-xs) * var(--leading-tight) * 2)}
 
 /* Fächer in einer Lade: eigener Kasten, waagrechte Reihen. */
 .fach{margin:var(--space-3) var(--space-3) 0;border:1px solid var(--border-strong);
@@ -2198,6 +2283,21 @@ function hasData(k,d){
   if(k==="nach")return sum(d.ent)||sum(d.gent)||sum(d.gzusatz);
   if(k==="ware")return (d.pos||[]).length||sum(d.gent);
 }
+/* Ein Satz über den Inhalt eines Vorgangs – für die Frage „steht schon".
+   Bewusst ohne `D()`/`summaryBig()`: die beiden lesen den GERADE offenen
+   Vorgang über globale Zustände, hier ist der bisherige gemeint. */
+function kurzInhalt(m,d){
+  if(!d) return "";
+  if(m==="ware"){
+    const pos=(d.pos||[]).filter(p=>p.id&&+p.kisten>0);
+    return pos.length+(pos.length===1?" Position":" Positionen")+" · "+
+      pos.reduce((a,p)=>a+(+p.kisten||0)*kg(p),0)+" Flaschen";
+  }
+  if(m==="nach")    return (sum(d.ent)+sum(d.gent))+" Flaschen entnommen";
+  if(m==="keller")  return Object.keys(d.zdone||{}).length+" Weine gezählt";
+  if(m==="fuellen") return sum(d.gent)+" Getränke nachgefüllt";
+  return (sum(d.rest)+sum(d.barrot)+sum(d.bar)+sum(d.backup))+" Flaschen aus dem Keller";
+}
 function start(m){
   /* Läuft derselbe Vorgang schon auf einem anderen Gerät, wird gefragt
      statt zusammengerechnet. Zwei Leute an derselben Fassung sind ein
@@ -2219,14 +2319,60 @@ function start(m){
       const z=jlese(K_ZAEHL,{}); z[m+"_"+S[m].tag]=fremd.zaehlnr||0; jschreib(K_ZAEHL,z);
       save();$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
       start._uebernommen=false;start(m);};
+    /* Ablehnen heisst ablehnen. Bis v26 stand hier `=false`: `start(m)`
+       fragte `fernNeuer(m)` erneut, bekam denselben fremden Stand und
+       öffnete den Dialog sofort wieder — der Weg „Abbrechen" war eine
+       Schleife, aus der nur „Übernehmen" herausführte. Mit `=true` läuft
+       `start(m)` an der Frage vorbei; die Zeile darunter setzt die Marke
+       wieder zurück, damit beim nächsten bewussten Öffnen des Vorgangs
+       erneut gefragt wird. */
     $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
-      $("#ovOk").textContent="Ja";start._uebernommen=false;start(m); };
+      $("#ovOk").textContent="Ja";start._uebernommen=true;start(m); };
     return;
   }
   start._uebernommen=false;
   mode=m;branch=(m==="tag"||m==="fuellen")?"wein":null;
   const ziel=(m==="tag")?yest():today();
   const cur=S[m];
+
+  /* Zweiter Vorgang desselben Modus am selben Tag.
+     Ein Vorgang ist ein VOLLSTÄNDIGER Zustand unter dem Schlüssel
+     <modus>_<tag>. Wer nach einer abgeschlossenen Lieferung noch einmal
+     „Wareneingang" öffnete, bekam bis v25 ein leeres Formular mit
+     DEMSELBEN Schlüssel: der Server leitet die Ereignisse aus der
+     Differenz ab (src/index.js, `ereignisseAbleiten`) und nahm die erste
+     Lieferung per Gegenbuchung zurück. Zwei Lieferungen oder zwei
+     Sonderentnahmen an einem Tag sind im Haus normal — der Bestand ging
+     dabei still verloren.
+     Deshalb wird gefragt statt ersetzt, wie beim zweiten Gerät:
+     „Ergänzen" führt den bestehenden Vorgang fort (beide Lieferungen in
+     einem Zustand, der Server bucht nur den Zuwachs), „Neu beginnen"
+     bleibt möglich, sagt aber vorher, was es kostet. Der Schlüssel selbst
+     bleibt unangetastet. */
+  if(cur&&cur.finished&&cur.tag===ziel&&hasData(m,cur)&&!start._zweiter){
+    const weiter=()=>{ $("#ov").classList.remove("on"); $("#ovOk").textContent="Ja";
+      start._zweiter=true; start(m); start._zweiter=false; };
+    $("#ovT").textContent=MODES[m].t+" für "+deTag(cur.tag)+" steht schon";
+    /* Drei Wege, drei Bedienelemente — und jedes sagt seine Folge selbst.
+       Die Folge des zweiten Weges stand vorher als eigener Absatz weit
+       über dem Knopf; wer den Knopf las, las sie nicht mehr. */
+    $("#ovBody").innerHTML=`<p>Für diesen Tag ist ${esc(MODES[m].t)} bereits
+      abgeschlossen – ${esc(kurzInhalt(m,cur))}.</p>
+      <p><b>Ergänzen</b> führt ihn fort. Was du jetzt dazunimmst, kommt
+      dazu; der Tag behält einen Vorgang, und nichts geht verloren.</p>
+      <button class="andererweg" id="ovNeu"><b>Trotzdem neu beginnen</b>
+      <span>Der zweite, leere Vorgang ersetzt den ersten – seine Flaschen
+      wären danach aus dem Bestand zurückgenommen.</span></button>`;
+    $("#ov").classList.add("on");
+    $("#ovOk").textContent="Ergänzen";
+    $("#ovOk").onclick=()=>{ cur.finished=false; save(); weiter(); };
+    $("#ovBody").querySelector("#ovNeu").onclick=()=>{
+      archive(cur); S[m]=blank(m); save(); weiter(); };
+    $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
+      $("#ovOk").textContent="Ja"; mode=null; renderMenu(); };
+    return;
+  }
+
   if(cur&&(cur.finished||cur.tag!==ziel)){archive(cur);S[m]=blank(m);}
   else if(!cur)S[m]=blank(m);
   if(!S[m].name)S[m].name=whoAmI();
@@ -2245,8 +2391,12 @@ function buildSteps(){
     '<span class="stpts">'+L.map((t,i)=>
       `<button class="st" role="tab" aria-controls="main" data-s="${i}" title="${esc(t)}"`+
       ` aria-label="Schritt ${i+1}: ${esc(t)}"${i===step?' aria-selected="true"':""}></button>`).join("")+
-    '</span><span class="stlbl">Schritt '+(step+1)+' von '+L.length+
-    ' \u00b7 '+esc(L[step]||"")+'</span>';
+    /* Der NAME des Schritts steht vorn. Die Punkte daneben sagen bereits,
+       der wievielte von wie vielen es ist; stand das Wort \u201eSchritt\u201c noch
+       einmal davor, blieb bei 390px f\u00fcr \u201eRestaurant\u201c nur \u201eRes\u2026\u201c \u00fcbrig.
+       F\u00fcr die Vorlesefunktion bleibt der volle Satz erhalten. */
+    '</span><span class="stlbl"><span class="vh">Schritt </span>'+
+    esc(L[step]||"")+' \u00b7 '+(step+1)+' von '+L.length+'</span>';
   document.querySelectorAll(".st").forEach(b=>b.onclick=()=>go(+b.dataset.s));
 }
 function go(s){step=s;render();window.scrollTo(0,0);}
@@ -3413,6 +3563,12 @@ function gFit(box,L){
   const inner=box.querySelector(L.kind==="col"?".drwi":".rsec");if(!inner)return;
   const cols=L.cols,k=cols.length;
   const M=gMasse(cols,innenBreite(inner,k));
+  /* Passt das laengste WORT eines Kuerzels nicht mehr in die Spalte, ragt
+     es beidseitig hinaus und ueberlappt den Nachbarn (Lade 4: 34 px Spalte,
+     „Ginger"/„Bitter"/„Lemon" je 46-47 px). Dann schreiben die Kuerzel
+     versetzt, siehe `.drwi.gversetzt`. 40 px ist die gemessene Grenze:
+     Lade 5 und 6 haben 48 px und kommen ohne Versatz aus. */
+  inner.classList.toggle("gversetzt", Math.floor(innenBreite(inner,k)/k) < 40);
   cols.forEach(c=>{
     const teile=colTeile(c),ges=colSum(c),platz=colPlatz(c);
     /* Obergrenze 34 statt 52: Lade 2 und 3 haben wenige, kurze Saeulen und

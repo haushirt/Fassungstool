@@ -256,6 +256,131 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      /nicht mehr herein|einzige freigegebene/.test(zustand.meldung), zustand.meldung);
   ok("die Person ist weiter freigegeben", zustand.aktiv === 1);
 
+  /* ── 7 · „Größe fehlt" statt einer erfundenen Menge ─────────────────── */
+  console.log("\n7 · Verkauf ↔ Fassung: unbestätigte Gebindegrößen");
+  await ctx.close();
+  ({ ctx, p } = await sitzung());
+  await offen(p, "abgleich");
+  const lage = await p.evaluate(() => {
+    vAbgleich.tag = "2026-09-16"; SPANNE = 1; zeichne();
+    const a = abgleich("2026-09-16", 1);
+    return { ohne: a.ohneGroesse.length, verk: Object.keys(a.verk).length,
+             gv: (a.ohneGroesse.find(o => /GV Leindl/.test(o.name)) || {}),
+             text: document.querySelector("main").textContent };
+  });
+  ok("die Ansicht weist „Größe fehlt“ aus", /Größe fehlt/.test(lage.text));
+  ok("die Achtel-Position steht dort mit ihrer echten Menge",
+     lage.gv.anzahl === 4 && lage.gv.fehlt === "gebinde", JSON.stringify(lage.gv.anzahl));
+  ok("solange nichts bestätigt ist, rechnet keine Zeile mit",
+     lage.verk === 0, lage.verk + " Artikel in der Mengenrechnung");
+  /* Bis v27 stand in jeder Zelle noch einmal das Wort „Vorschlag:" — das
+     steht seit v28 nur in der Spaltenüberschrift, der Knopf daneben ist
+     rechtsbündig. Geprüft wird beides: die Überschrift und der Wert. */
+  ok("der Vorschlag steht sichtbar daneben",
+     /750 ml/.test(lage.text) && /Vorschlag/.test(lage.text));
+
+  /* Der Klick, der aus dem Vorschlag eine Bestätigung macht. */
+  const geklickt = await p.evaluate(async () => {
+    const b = [...document.querySelectorAll("button[data-geb]")]
+      .find(x => /GV Leindl/.test(x.dataset.geb));
+    if (!b) return null;
+    const d = { name: b.dataset.geb, art: b.dataset.art, ml: b.dataset.ml };
+    b.click(); await new Promise(r => setTimeout(r, 800));
+    const a = abgleich("2026-09-16", 1);
+    return Object.assign(d, { verkauf: a.verk.w001,
+      nochOffen: a.ohneGroesse.some(o => /GV Leindl/.test(o.name)) });
+  });
+  ok("es gibt einen Knopf „Übernehmen“ an der Zeile", !!geklickt, geklickt && geklickt.name);
+  const zeileDb = DB.zeilen("mapping").find(r => /GV Leindl/.test(r.fremd)) || {};
+  ok("die bestätigte Größe steht in der Datenbank `mapping`",
+     zeileDb.gebinde_ml === 750, JSON.stringify(zeileDb));
+  ok("der Artikel geht dabei nicht verloren", zeileDb.artikel === "w001", zeileDb.artikel);
+  ok("danach ist die Position gerechnet: 4 × 125 ml aus 750 ml = 0,67 Flaschen",
+     geklickt && Math.abs(geklickt.verkauf - 4 * 125 / 750) < 0.001 && !geklickt.nochOffen,
+     geklickt && String(geklickt.verkauf));
+
+  /* ── 8 · Alle Vorschläge auf einmal ─────────────────────────────────
+     In der Live-Datenbank hat KEINE Zuordnung eine bestätigte
+     Gebindegröße. Einzeln wären das dreizehn Klicks, bevor der Abgleich
+     am Morgen überhaupt eine Zahl zeigt. */
+  console.log("\n8 · Sammelbestätigung der Gebindegrößen");
+  /* Eine Position, für die es keinen Vorschlag geben KANN: im Kassennamen
+     steht „1 Glas", keine Ausschankmenge. Sie muss in der Liste stehen
+     bleiben, und der Sammelknopf darf sie nicht mitnehmen. */
+  await p.evaluate(async () => {
+    MAP["Sanbitter Spritz 1 Glas"] = "sanbitter"; schreib(K_MAP, MAP);
+    await sendeZuordnung("Sanbitter Spritz 1 Glas", "sanbitter");
+    /* Und eine Rezeptzeile: hier ist die Id, die in der Liste steht, ein
+       BESTANDTEIL. Würde der Sammelknopf sie anfassen, stünde danach
+       „dieses Mischgetränk = dieser Wein" in `mapping` — rückwirkend für
+       jede gespeicherte Berichtszeile. */
+    REZ["Amaro Averna Siciliano 2 cl"] = [{ id: "w020", ml: 20 }];
+    schreib(K_REZ, REZ);
+    zeichne();
+  });
+  await p.waitForTimeout(500);
+
+  const vorher = await p.evaluate(() => {
+    const a = abgleich("2026-09-16", 1);
+    /* Dieselbe Bedingung wie im Sammelknopf: Rezeptzeilen gehören NICHT
+       dazu (ihre Id ist ein Bestandteil, siehe unten). */
+    const mit = a.ohneGroesse.filter(o =>
+      o.fehlt === "gebinde" && !o.rezept && o.id && o.geb && o.geb.ml);
+    const b = document.getElementById("bGebAlle");
+    return { offen: a.ohneGroesse.length, mitVorschlag: mit.length,
+             ohneVorschlag: a.ohneGroesse.length - mit.length,
+             knopf: b ? b.textContent.trim() : null };
+  });
+  ok("es gibt einen Sammelknopf mit der Zahl darin",
+     !!vorher.knopf && vorher.knopf.includes(String(vorher.mitVorschlag)), vorher.knopf);
+  ok("es gibt überhaupt etwas zu bestätigen", vorher.mitVorschlag > 0,
+     vorher.mitVorschlag + " mit Vorschlag, " + vorher.ohneVorschlag + " ohne");
+
+  const mapVorher = DB.zeilen("mapping").filter(r => r.gebinde_ml).length;
+  const nachher = await p.evaluate(async () => {
+    document.getElementById("bGebAlle").click();
+    await new Promise(r => setTimeout(r, 1500));
+    const a = abgleich("2026-09-16", 1);
+    return { offen: a.ohneGroesse.length,
+             mitVorschlag: a.ohneGroesse.filter(o =>
+               o.fehlt === "gebinde" && !o.rezept && o.geb && o.geb.ml).length,
+             gerechnet: Object.keys(a.verk).length,
+             meldung: (document.getElementById("toast") || {}).textContent || "" };
+  });
+  const mapNachher = DB.zeilen("mapping").filter(r => r.gebinde_ml).length;
+  ok("jede bestätigte Größe steht einzeln in der Datenbank `mapping`",
+     mapNachher - mapVorher === vorher.mitVorschlag,
+     (mapNachher - mapVorher) + " neue Zeilen mit gebinde_ml");
+  ok("die Rückmeldung nennt die Zahl",
+     new RegExp(vorher.mitVorschlag + " Größen bestätigt").test(nachher.meldung), nachher.meldung);
+  ok("danach steht keine Position mehr mit einem offenen Vorschlag da",
+     nachher.mitVorschlag === 0, nachher.mitVorschlag);
+  ok("was keinen Vorschlag hat, bleibt unangetastet",
+     nachher.offen === vorher.ohneVorschlag, nachher.offen + " bleiben");
+  ok("jetzt rechnen die Positionen mit", nachher.gerechnet > 0,
+     nachher.gerechnet + " Artikel in der Mengenrechnung");
+
+  /* Der Fund A-6: eine Rezeptzeile trägt den Bestandteil als Id. Weder der
+     Sammelknopf noch der Knopf an der Zeile darf daraus eine Zuordnung
+     machen — es gibt keinen Papierkorb. */
+  const rezeptZeile = await p.evaluate(async () => {
+    const a = abgleich("2026-09-16", 1);
+    const o = a.ohneGroesse.find(x => x.name === "Amaro Averna Siciliano 2 cl") || {};
+    const knopf = [...document.querySelectorAll("button[data-geb]")]
+      .some(b => b.dataset.geb === "Amaro Averna Siciliano 2 cl");
+    /* Und der Weg von Hand, falls ihn doch jemand aufruft: */
+    await bestaetigeGebinde("Amaro Averna Siciliano 2 cl", "w020", 750);
+    await new Promise(r => setTimeout(r, 400));
+    return { rezept: !!o.rezept, id: o.id, knopf, map: MAP["Amaro Averna Siciliano 2 cl"] };
+  });
+  ok("die Rezeptzeile steht als Mischgetränk da, mit dem Bestandteil benannt",
+     rezeptZeile.rezept && rezeptZeile.id === "w020", JSON.stringify(rezeptZeile));
+  ok("an einer Rezeptzeile gibt es keinen Übernehmen-Knopf", !rezeptZeile.knopf);
+  ok("auch der Sammelklick hat sie nicht angefasst",
+     rezeptZeile.map === undefined &&
+     !DB.zeilen("mapping").some(r => r.fremd === "Amaro Averna Siciliano 2 cl"),
+     "mapping-Zeilen: " + DB.zeilen("mapping").length);
+
   /* ── Ergebnis ───────────────────────────────────────────────────────── */
   await browser.close(); srv.close();
   console.log("\n══ Ergebnis ══");
