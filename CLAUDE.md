@@ -4,6 +4,17 @@ Kontext
 
 Keller- und Getränkemanagement für das Alpine Spa Hotel Haus Hirt, Bad Gastein. Service (iPhone/iPad) erfasst Fassungen im Keller, die Leitung (MacBook) arbeitet im Backoffice. Maßgebliche Doku: `PROJEKTANLEITUNG-Fassungstool.md` (Stand 16.09.2026) und `UEBERGABE-TECHNISCH.md` (Stand 17.09.2026, die lange Fassung für die Werkbank) – beide vor jeder Arbeit lesen. Dazu, falls vorhanden: `WORKER-ANPASSUNG.md`, `ANMELDESPERRE.md`.
 
+Arbeitsweise
+
+* Updates während der Arbeit: nur Stichworte, kurz.
+* „Review" = knappes Feedback, nur das Wichtigste.
+* Ablauf jeder Aufgabe:
+  1. Ziel feststellen + was konkret zu tun ist
+  2. Mockup zeigen → auf Freigabe warten
+  3. Nach Freigabe bauen, Agents drüberlaufen lassen
+  4. Ergebnis mit Ziel abgleichen → nicht erfüllt: neue Runde
+  5. Erfüllt: „Erledigt – bereit zum Review"
+
 Stack
 
 * Worker `src/index.js` (Endpunkte, Rechte, Anmeldung, Mailempfang), D1-Datenbank `fassung`
