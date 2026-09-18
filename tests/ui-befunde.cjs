@@ -24,8 +24,31 @@ const SCREENS = path.join(__dirname, "..", "review", "screens");
 const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
                 ".png": "image/png", ".json": "application/json" };
 
-const BREITEN = [320, 375, 390, 430];
-const HOEHE = { 320: 568, 375: 812, 390: 844, 430: 932 };
+/* Zwei Sätze von Ansichten.
+
+   Standard sind die vier Breiten aus dem Auftrag vom 18.09.2026 — sie
+   spannen den Bereich auf, in dem die Gestaltung halten muss.
+
+   Mit GERAETE=1 laufen stattdessen die drei Geräte, auf denen wirklich
+   gearbeitet wird: iPhone 16 im Keller, iPad mini an der Bar, MacBook im
+   Backoffice. Die Bilder landen dann unter review/screens/geraete/. */
+const ANSICHT_BREITEN = [
+  { name: "320", w: 320, h: 568 }, { name: "375", w: 375, h: 812 },
+  { name: "390", w: 390, h: 844 }, { name: "430", w: 430, h: 932 }
+];
+const UA_IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
+  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+const UA_IPAD = "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) " +
+  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+const UA_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
+const ANSICHT_GERAETE = [
+  { name: "iphone16", w: 393, h: 852,  dpr: 3, ua: UA_IPHONE, mobil: true },
+  { name: "ipadmini", w: 744, h: 1133, dpr: 2, ua: UA_IPAD,   mobil: true },
+  { name: "macbook",  w: 1440, h: 900, dpr: 2, ua: UA_MAC,    mobil: false }
+];
+const ANSICHTEN = process.env.GERAETE ? ANSICHT_GERAETE : ANSICHT_BREITEN;
+const UNTER = process.env.GERAETE ? "geraete" : null;
 
 /* Der Server antwortet auf /api/ wie der echte: angemeldet, ein paar
    Vorgänge des Tages, sonst leer. Ohne /api/ zeigt die Startseite keine
@@ -147,15 +170,15 @@ const SZENEN = {
   let n = 0;
 
   for (const f of liste) {
-    const OUT = path.join(SCREENS, f);
+    const OUT = UNTER ? path.join(SCREENS, UNTER, f) : path.join(SCREENS, f);
     fs.mkdirSync(OUT, { recursive: true });
     for (const [name, vorbereiten, saat] of SZENEN[f]) {
-      for (const w of BREITEN) {
+      for (const a of ANSICHTEN) {
+        const w = a.name;
         const ctx = await b.newContext({
-          viewport: { width: w, height: HOEHE[w] }, deviceScaleFactor: 2,
-          isMobile: true, hasTouch: true,
-          userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
-            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+          viewport: { width: a.w, height: a.h }, deviceScaleFactor: a.dpr || 2,
+          isMobile: a.mobil !== false, hasTouch: a.mobil !== false,
+          userAgent: a.ua || UA_IPHONE
         });
         if (saat === SAAT_LEITUNG) { ROLLE = "leitung"; WER = "Casimir"; }
         else { ROLLE = "service"; WER = "Asad"; }
