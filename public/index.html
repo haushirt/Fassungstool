@@ -362,6 +362,11 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
   font-weight:var(--weight-bold);min-width:44px;text-align:right}
 .abglz .df.plus{color:var(--warn-fg)}
 .abglz .df.minus{color:var(--danger)}
+/* Eine Zahl mit Vorbehalt ist eine Untergrenze, keine gepruefte Zahl —
+   sie traegt deshalb keinen Warnton, sondern den ruhigen. */
+.abglz .df.unklar{color:var(--fg-secondary)}
+.abglz .vorb{display:block;font-size:var(--text-sm);color:var(--fg-secondary);
+  margin-top:2px}
 .abglfuss{margin:var(--space-3) 0 0;font-size:var(--text-sm);color:var(--fg-muted)}
 /* Der Notweg am Fuss der Startseite: da, aber leise. */
 .notweg{margin-top:var(--space-7);padding-top:var(--space-4);
@@ -2248,8 +2253,12 @@ async function holeKurz(pfad,opt,ms){
     /* Der Leib wird hier gelesen, nicht beim Aufrufer — sonst endet die
        Frist am Kopf. `text()` statt `json()`, damit eine kaputte Antwort
        nicht als Netzfehler durchgeht. */
-    let text="";
-    try{ text=await r.text(); }catch(e){ text=""; }
+    /* `text()` NICHT abfangen: Bricht die Frist mitten im Leib ab, wirft
+       es — und genau das soll es. Die frueher hier stehende Falle machte
+       aus einem halben Leib ohne JSON-Kopf eine geglueckte Antwort
+       (vierte Jagd Runde 16 · C). Eine leere Antwort wirft nicht, die
+       gibt "" zurueck. */
+    const text=await r.text();
     let daten=null;
     if(typ.includes("json")){ try{ daten=JSON.parse(text); }catch(e){} }
     /* Eine halb gelesene Antwort ist keine Antwort. Bricht die Frist
@@ -2262,6 +2271,9 @@ async function holeKurz(pfad,opt,ms){
     return {ok:r.ok, status:r.status, json:typ.includes("json"), daten};
   })();
   try{
+    /* `nachFrist()` NUR im Zweig ohne Abbrecher anlegen — ein unbedingt
+       erzeugtes Versprechen wird 8 s nach jedem Aufruf abgelehnt, auch
+       nach einem geglueckten. */
     return ab ? await lauf : await Promise.race([lauf, nachFrist(frist)]);
   } finally { if(uhr)clearTimeout(uhr); }
 }
@@ -2406,7 +2418,13 @@ async function schiebe(){
         r=await holeKurz(API+"/vorgang/"+encodeURIComponent(e.schluessel),
           {method:"PUT",headers:{"content-type":"application/json"},
            body:JSON.stringify(e.daten)}, 20000);
-      }catch(err){ NETZ.zustand="offline"; break; }
+      }catch(err){
+        /* Eine abgelaufene Frist ist nicht dasselbe wie „kein Netz": Der
+           Server ist erreichbar und schweigt. Beides haelt die Reihe an,
+           aber die Zeile darueber soll nicht das Falsche sagen. */
+        NETZ.zustand=(err&&(err.name==="AbortError"||err.message==="Frist"))
+          ? "serverfehler" : "offline";
+        break; }
       if(r.status===401){ NETZ.zustand="abgemeldet"; break; }
       if(r.status>=500||r.status===429){ NETZ.zustand="serverfehler"; break; }
       if(!r.ok && r.status!==409){ NETZ.zustand="serverfehler"; break; }
@@ -5668,7 +5686,9 @@ function abgleichZeilen(d,z,groessen){
      tun). Der Kopf des Fensters schickte daraufhin auch dann ins
      Backoffice, wenn dort nichts zu holen war. Jetzt getrennt. */
   let ohneZuordnung=0, ohneMenge=0, ohneGebinde=0;
-  const fehltGroesse={};
+  /* Je Artikel: wie viele seiner Kassenzeilen gerechnet werden konnten
+     und wie viele nicht. Daraus entsteht der VORBEHALT — siehe unten. */
+  const zeilenJe={}, ohneJe={};
   /* `groessen === null` heisst: die Groessen konnten nicht geholt werden
      (Serverfehler, Frist abgelaufen). Das ist etwas anderes als „keine
      bestaetigt" und wird auch anders gesagt. */
@@ -5676,28 +5696,46 @@ function abgleichZeilen(d,z,groessen){
   const gr = geholt ? groessen : {};
   (z.positionen||[]).forEach(p=>{
     if(!p.artikel){ ohneZuordnung++; return; }
-    if(!(+p.ausschankMl>0)){ ohneMenge++; fehltGroesse[p.artikel]=1; return; }
+    zeilenJe[p.artikel]=(zeilenJe[p.artikel]||0)+1;
+    if(!(+p.ausschankMl>0)){ ohneMenge++; ohneJe[p.artikel]=(ohneJe[p.artikel]||0)+1; return; }
     const fl=verkaufteFlaschen(p,gr);
-    if(fl===null){ ohneGebinde++; fehltGroesse[p.artikel]=1; return; }
+    if(fl===null){ ohneGebinde++; ohneJe[p.artikel]=(ohneJe[p.artikel]||0)+1; return; }
     verk[p.artikel]=(verk[p.artikel]||0)+fl;
   });
   const rund=n=>Math.round((+n||0)*10)/10;
   const ids=Object.keys(gef).concat(Object.keys(verk))
     .filter((x,i,a)=>a.indexOf(x)===i);
   const zeilen=[];
-  let geprueft=0;
+  let geprueft=0, mitVorbehalt=0;
   ids.forEach(id=>{
-    /* Ein Artikel, von dem eine Position nicht umrechenbar ist, ist als
-       Ganzes nicht vergleichbar: Sein Verkauf waere nur teilweise
-       gezaehlt, und die Differenz saehe aus wie Schwund. */
-    if(fehltGroesse[id])return;
+    const ganz=zeilenJe[id]||0, ohne=ohneJe[id]||0;
+    /* BERICHTIGUNG (vierte Jagd Runde 16 · A): Hier fiel ein Artikel
+       GANZ aus der Liste, sobald EINE seiner Kassenzeilen nicht
+       gerechnet werden konnte. Am echten Bericht 37 gemessen: „Prosecco
+       0,1l" (6 × 100 ÷ 750 = 0,8 Fl., rechenbar) und „Aperol Spritz 1
+       Glas" (keine Menge im Namen) zeigen auf denselben Artikel; gefasst
+       waren 9 Flaschen. Das Fenster meldete daraufhin in Gruen „Keine
+       Abweichung. 1 Artikel verglichen." — bei 8,2 Flaschen Luecke.
+
+       Das Backoffice macht seit Runde 10 das Gegenteil, mit
+       ausgeschriebener Begruendung (`vorbehaltSatz` in leitung.html):
+       „Eine halbe Wahrheit, die sich als ganze ausgibt, ist der teuerste
+       Fall; eine Differenz MIT Vorbehalt ist besser als gar keine."
+       Genau so jetzt auch hier: Konnte KEINE Zeile gerechnet werden,
+       bleibt der Artikel stumm. Konnte wenigstens eine, steht die
+       Differenz da — als Untergrenze, sichtbar gekennzeichnet. */
+    if(ganz>0 && ohne>=ganz)return;       /* gar nichts rechenbar */
     geprueft++;
+    const vorbehalt = ohne>0;
+    if(vorbehalt)mitVorbehalt++;
     const a=rund(gef[id]), b=rund(verk[id]);
-    if(Math.abs(a-b)<0.05)return;
-    zeilen.push({id, gefasst:a, verkauft:b, diff:rund(a-b)});
+    if(Math.abs(a-b)<0.05 && !vorbehalt)return;
+    zeilen.push({id, gefasst:a, verkauft:b, diff:rund(a-b),
+                 vorbehalt, ohne, ganz});
   });
   zeilen.sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
-  return {zeilen, geprueft, ohneMenge, ohneGebinde, ohneZuordnung, geholt};
+  return {zeilen, geprueft, mitVorbehalt, ohneMenge, ohneGebinde,
+          ohneZuordnung, geholt};
 }
 
 /* Abschliessen — an EINER Stelle, damit der gewoehnliche Weg und die
@@ -5727,8 +5765,14 @@ async function abschlussSchritt(d){
      abgeglichen wird, wenn Empfang da ist. */
   let z=null, groessen={};
   if(d.mode==="tag"||d.mode==="fuellen"){
-    z=await holeZBericht(vortagVon(d.tag));
-    if(z)groessen=await holeGebindeGroessen();
+    /* Nebeneinander, nicht nacheinander: Schweigen beide Wege, stand der
+       Knopf sonst 8 s + 8 s = 16 s auf „speichert …" (vierte Jagd
+       Runde 16 · C). Die Groessen werden nur gebraucht, wenn ein Bericht
+       da ist — geholt werden sie trotzdem gleich mit; sie kosten nichts,
+       wenn der Bericht fehlt, und sparen die halbe Wartezeit, wenn nicht. */
+    const [zz,gg]=await Promise.all([
+      holeZBericht(vortagVon(d.tag)), holeGebindeGroessen()]);
+    z=zz; groessen=gg;
   }
   laeuftAbschluss=false;
   if(fb){ fb.textContent=wort; fb.disabled=false; }
@@ -5743,10 +5787,16 @@ function popupAbgleich(d,z,groessen){
   const a=abgleichZeilen(d,z,groessen);
   $("#ovT").textContent="Abgleich";
   const zeile=x=>{
-    const v=x.diff>0?"plus":"minus";
-    return `<div class="abglz"><span class="nm">${esc(GN(x.id))}</span>`
+    const v=x.vorbehalt?"unklar":(x.diff>0?"plus":"minus");
+    /* Eine Zeile mit Vorbehalt nennt keine geprueften Zahlen, sondern
+       eine Untergrenze — deshalb „mind." und ein neutraler Ton statt
+       Rot/Gelb. Derselbe Gedanke wie `BEFUND` in leitung.html. */
+    return `<div class="abglz"><span class="nm">${esc(GN(x.id))}`
+      +(x.vorbehalt?`<span class="vorb">${x.ohne} von ${x.ganz} Kassenzeilen `
+        +`nicht rechenbar \u2014 unvollst\u00e4ndig</span>`:"")+`</span>`
       +`<span class="za">gefasst ${x.gefasst} \u00b7 verkauft ${x.verkauft}</span>`
-      +`<span class="df ${v}">${x.diff>0?"+":""}${x.diff}</span></div>`;
+      +`<span class="df ${v}">${x.vorbehalt?"mind. ":""}`
+      +`${x.diff>0?"+":""}${x.diff}</span></div>`;
   };
   /* BERICHTIGUNG (Jagd Runde 16 · A2): Hier stand „Keine Abweichung",
      sobald die Liste leer war — auch dann, wenn gar nichts verglichen
@@ -5794,6 +5844,10 @@ function popupAbgleich(d,z,groessen){
       : `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}</p>`
         +`<div class="box good" style="margin-top:0"><b>Keine Abweichung.</b><br>`
         +(a.geprueft===1?"Ein Artikel verglichen.":a.geprueft+" Artikel verglichen.")+`</div>`;
+  /* Die gruene Plakette steht nur ueber einer VOLLSTAENDIGEN Rechnung.
+     Ist auch nur ein Artikel mit Vorbehalt dabei, hat er eine eigene
+     Zeile (siehe abgleichZeilen) — `a.zeilen.length` ist dann nicht 0,
+     und dieser Zweig kommt gar nicht erst dran. */
   /* Der Fuss nennt nur, was DIESES Fenster nicht rechnen konnte.
 
      BERICHTIGUNG (qa-guardian, Gegenprobe Runde 16): Die unzugeordneten
@@ -5811,7 +5865,13 @@ function popupAbgleich(d,z,groessen){
   const fuss=[];
   if(!a.geholt)fuss.push("Die Gebindegr\u00f6\u00dfen konnten nicht geholt werden \u2014 "
     +"gerechnet wurde ohne sie.");
-  if(a.ohneGebinde)fuss.push(a.ohneGebinde===1
+  /* BERICHTIGUNG (vierte Jagd Runde 16 · B): Die Zeile darunter lief
+     auch dann, wenn die Groessen gar nicht geholt werden konnten — dann
+     stand „N Kassenpositionen haben keine bestaetigte Gebindegroesse"
+     neben „konnten nicht geholt werden". Das erste weiss niemand; sie
+     koennen laengst bestaetigt sein. Genau die Falschzuweisung, die im
+     Kopf schon beseitigt war. */
+  if(a.geholt&&a.ohneGebinde)fuss.push(a.ohneGebinde===1
     ? "Eine Kassenposition hat keine best\u00e4tigte Gebindegr\u00f6\u00dfe und bleibt "
       +"aus der Rechnung."
     : a.ohneGebinde+" Kassenpositionen haben keine best\u00e4tigte Gebindegr\u00f6\u00dfe "
@@ -5820,7 +5880,12 @@ function popupAbgleich(d,z,groessen){
     ? "Eine Kassenposition hat keine Menge im Namen und bleibt aus der Rechnung."
     : a.ohneMenge+" Kassenpositionen haben keine Menge im Namen und bleiben "
       +"aus der Rechnung.");
-  if(a.ohneZuordnung&&a.zeilen.length)fuss.push(a.ohneZuordnung
+  /* Sobald das Fenster ueberhaupt etwas ueber Vollstaendigkeit sagt —
+     eine Abweichungsliste ODER die gruene Plakette —, gehoeren die
+     unzugeordneten Positionen dazu. Frueher hingen sie an
+     `a.zeilen.length`, und neben der gruenen Plakette standen 45
+     ungenannte Kassenzeilen (vierte Jagd Runde 16 · C). */
+  if(a.ohneZuordnung&&a.geprueft)fuss.push(a.ohneZuordnung
     +(a.ohneZuordnung===1?" Kassenposition ist":" Kassenpositionen sind")
     +" keinem Artikel zugeordnet \u2014 was darunter verkauft wurde, fehlt "
     +"oben. Das ordnet die Leitung im Backoffice zu.");

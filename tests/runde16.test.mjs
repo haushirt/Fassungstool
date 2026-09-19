@@ -610,7 +610,8 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
   test("nur, was auseinandergeht — hier eine Zeile", () => {
     const a = rechne.abgleichZeilen(vorgang, zBericht, groessen);
     assert.equal(a.zeilen.length, 1, JSON.stringify(a.zeilen));
-    assert.deepEqual(a.zeilen[0], { id: "w1", gefasst: 2, verkauft: 1, diff: 1 });
+    assert.deepEqual(a.zeilen[0], { id: "w1", gefasst: 2, verkauft: 1, diff: 1,
+      vorbehalt: false, ohne: 0, ganz: 1 });
     assert.equal(a.geprueft, 3, "nicht alle vergleichbaren Artikel gezählt");
   });
 
@@ -685,7 +686,11 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
        Ohne die Zahl im Fuss ist das eine Falschaussage. Geprüft wird
        deshalb nicht mehr das Schweigen, sondern die Bedingung: genannt
        wird sie nur, wenn es eine Abweichung gibt, die sie erklärt. */
-    assert.match(fenster, /a\.ohneZuordnung&&a\.zeilen\.length/,
+    /* NACHGEZOGEN (vierte Jagd Runde 16 · C): Die Bedingung hing an
+       `a.zeilen.length` — neben der grünen Plakette standen damit 45
+       ungenannte Kassenzeilen. Sobald das Fenster überhaupt etwas über
+       Vollständigkeit sagt, gehört die Zahl dazu; das ist `a.geprueft`. */
+    assert.match(fenster, /a\.ohneZuordnung&&a\.geprueft/,
       "die unzugeordneten Kassenpositionen werden gar nicht oder immer genannt");
     assert.match(fenster, /keinem Artikel zugeordnet/);
   });
@@ -702,7 +707,61 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     ]};
     const a = rechne.abgleichZeilen(v, z, {});
     assert.equal(a.ohneZuordnung, 1);
-    assert.deepEqual(a.zeilen, [{ id: "g7", gefasst: 6, verkauft: 0, diff: 6 }]);
+    assert.deepEqual(a.zeilen, [{ id: "g7", gefasst: 6, verkauft: 0, diff: 6,
+      vorbehalt: false, ohne: 0, ganz: 0 }]);
+  });
+
+  /* ── Vierte Jagd · die halbe Rechnung ────────────────────────────────
+     Gemessen am echten Bericht 37: „Prosecco 0,1l" (rechenbar) und
+     „Aperol Spritz 1 Glas" (keine Menge im Namen) zeigen auf denselben
+     Artikel. Bis zur vierten Jagd fiel der Artikel damit GANZ heraus und
+     das Fenster meldete in Grün „Keine Abweichung" — bei 8,2 Flaschen
+     Lücke. Das Backoffice antwortet auf dieselbe Lage seit Runde 10 mit
+     einer Differenz MIT VORBEHALT (`vorbehaltSatz` in leitung.html). */
+  test("ein Artikel mit halb rechenbarem Verkauf fällt nicht heraus", () => {
+    const v = { mode: "tag", barrot: {}, bar: {}, backup: {}, rest: { w1: 9 },
+                holtN: {}, zusatz: {}, gent: {}, gzusatz: {} };
+    const z = { positionen: [
+      { rohbez: "Prosecco 0,1 l",     artikel: "w1", anzahl: 6, ausschankMl: 100 },
+      { rohbez: "Aperol Spritz 1 Glas", artikel: "w1", anzahl: 6, ausschankMl: null }
+    ]};
+    const a = rechne.abgleichZeilen(v, z, { "Prosecco 0,1 l": 750 });
+    assert.equal(a.zeilen.length, 1, "der Artikel fällt wieder ganz heraus: "
+      + JSON.stringify(a));
+    const r = a.zeilen[0];
+    assert.equal(r.id, "w1");
+    assert.equal(r.vorbehalt, true, "die Zeile trägt keinen Vorbehalt");
+    assert.equal(r.ohne, 1);
+    assert.equal(r.ganz, 2);
+    assert.equal(r.gefasst, 9);
+    assert.equal(r.verkauft, 0.8, "6 × 100 ÷ 750 = 0,8 Flaschen");
+    assert.equal(r.diff, 8.2, "8,2 Flaschen Luecke statt keiner Abweichung");
+    assert.equal(a.mitVorbehalt, 1);
+  });
+
+  test("ein Artikel, von dem KEINE Zeile rechenbar ist, bleibt stumm", () => {
+    const v = { mode: "tag", barrot: {}, bar: {}, backup: {}, rest: { w1: 9 },
+                holtN: {}, zusatz: {}, gent: {}, gzusatz: {} };
+    const z = { positionen: [
+      { rohbez: "Aperol Spritz 1 Glas", artikel: "w1", anzahl: 6, ausschankMl: null }
+    ]};
+    const a = rechne.abgleichZeilen(v, z, {});
+    assert.equal(a.zeilen.length, 0);
+    assert.equal(a.geprueft, 0);
+    assert.equal(a.ohneMenge, 1);
+  });
+
+  test("die grüne Plakette steht nie über einer halben Rechnung", () => {
+    const fenster = APP.slice(APP.indexOf("function popupAbgleich"),
+                              APP.indexOf("function popupFertig"));
+    /* Eine Zeile mit Vorbehalt wird IMMER gezeigt, auch bei diff 0 —
+       damit kommt der Zweig mit der grünen Plakette gar nicht erst dran. */
+    const rechnung = APP.slice(APP.indexOf("function abgleichZeilen"),
+                               APP.indexOf("function vorgangFestschreiben"));
+    assert.match(rechnung, /if\(Math\.abs\(a-b\)<0\.05 && !vorbehalt\)return;/,
+      "eine Zeile mit Vorbehalt verschwindet bei diff 0 und die Plakette wird grün");
+    assert.match(fenster, /mind\. /, "die Untergrenze ist nicht als solche gekennzeichnet");
+    assert.match(fenster, /unvollst/, "der Vorbehalt steht nicht an der Zeile");
   });
 });
 

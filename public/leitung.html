@@ -946,8 +946,12 @@ async function kurz(pfad,opt,ms){
     const r=await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
       ab?{signal:ab.signal}:{}));
     const typ=r.headers.get("content-type")||"";
-    let text="";
-    try{ text=await r.text(); }catch(e){ text=""; }
+    /* `text()` NICHT abfangen: Bricht die Frist mitten im Leib ab, wirft
+       es — und genau das soll es. Die frueher hier stehende Falle machte
+       aus einem halben Leib ohne JSON-Kopf eine geglueckte Antwort
+       (vierte Jagd Runde 16 · C). Eine leere Antwort wirft nicht, die
+       gibt "" zurueck. */
+    const text=await r.text();
     let daten=null;
     if(typ.includes("json")){ try{ daten=JSON.parse(text); }catch(e){} }
     /* Eine halb gelesene Antwort ist keine Antwort. Bricht die Frist
@@ -959,9 +963,15 @@ async function kurz(pfad,opt,ms){
       throw new Error("unvollständige Antwort");
     return {ok:r.ok, status:r.status, json:typ.includes("json"), daten};
   })();
-  const frisch=new Promise((_,weg)=>setTimeout(()=>weg(new Error("Frist")),frist));
+  /* Das Versprechen NUR anlegen, wenn es gebraucht wird. Unbedingt
+     erzeugt wurde es 8 s nach JEDEM Aufruf abgelehnt — auch nach einem
+     geglueckten — und stand als unbehandelte Ablehnung in der Konsole,
+     samt Zeitgeber, der die Seite so lange wachhielt (vierte Jagd
+     Runde 16 · C). `holeKurz()` in index.html macht es lazy; hier stand
+     es eine Zeile zu frueh. */
   try{
-    return ab ? await lauf : await Promise.race([lauf,frisch]);
+    return ab ? await lauf : await Promise.race([lauf,
+      new Promise((_,weg)=>setTimeout(()=>weg(new Error("Frist")),frist))]);
   } finally { if(uhr)clearTimeout(uhr); }
 }
 
@@ -2814,22 +2824,38 @@ function vTeam(m){
     }catch(e){ $("#teamL").innerHTML=
       `<div class="hinweis warn">Keine Verbindung zum Server.</div>`; }
   };
+  /* BERICHTIGUNG (vierte Jagd Runde 16 · B): Der dritte schreibende Weg
+     des Backoffice hatte weder Frist noch Rueckmeldung — nacktes `fetch`
+     und danach `await r.json()`. Schweigt der Server, passierte gar
+     nichts Sichtbares: kein Toast, kein gesperrter Knopf, und die Felder
+     waren beim Aufrufer schon geleert. Wer daraufhin noch einmal tippt,
+     schickt OHNE `id`; der Worker blockt nur denselben Code (409) — mit
+     einem anderen entsteht die Person ZWEIMAL. Jetzt mit Frist, und der
+     Aufrufer erfaehrt, ob es geklappt hat. */
   const sende=async(body)=>{
     try{
-      const r=await fetch("/api/personen",{method:"POST",
+      const r=await kurz("/api/personen",{method:"POST",
         headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-      const j=await r.json();
-      if(!r.ok)return toast(j.fehler||"Nicht gespeichert");
-      toast("Gespeichert"); hole();
-    }catch(e){ toast("Keine Verbindung"); }
+      const j=r.daten||{};
+      if(!r.ok){ toast(j.fehler||"Nicht gespeichert"); return false; }
+      toast("Gespeichert"); hole(); return true;
+    }catch(e){ toast("Keine Verbindung — bitte noch einmal versuchen"); return false; }
   };
-  $("#nAdd").onclick=()=>{
+  $("#nAdd").onclick=async()=>{
     const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();
     if(!nm) return toast("Ohne Namen geht es nicht");
     if(!PIN_MUSTER.test(code)) return toast("Der Code hat "+PIN_LAENGE+" Ziffern");
     const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
-    sende({id:da?da.id:undefined, name:nm, rolle:$("#nRolle").value, code, aktiv:1});
-    $("#nName").value=""; $("#nCode").value="";
+    /* Die Felder erst leeren, wenn es angekommen ist — sonst steht nach
+       einem stummen Server ein leeres Blatt da und niemand weiss, ob die
+       Person angelegt wurde. Der Knopf sperrt derweil, damit kein
+       zweiter Griff eine zweite Person erzeugt. */
+    const b=$("#nAdd"); b.disabled=true; const wort=b.textContent;
+    b.textContent="speichert \u2026";
+    const gut=await sende({id:da?da.id:undefined, name:nm,
+      rolle:$("#nRolle").value, code, aktiv:1});
+    b.disabled=false; b.textContent=wort;
+    if(gut){ $("#nName").value=""; $("#nCode").value=""; }
   };
   hole();
 }
