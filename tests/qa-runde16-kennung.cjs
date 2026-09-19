@@ -44,7 +44,7 @@ const BELEG = path.join(__dirname, "..", "review", "screens", "qa16");
    der Server dagegen mit 200, ist die Zeile bestaetigt — ein zweiter
    Versuch ist dann ein Ueberschreiben und wird abgewiesen. */
 const LAGE = { personenStumm: true, postStumm: false, pakete: [],
-               personen: [], absage: null };
+               zeilen: {}, personen: [], absage: null };
 
 const srv = http.createServer((q, a) => {
   let u = q.url.split("?")[0];
@@ -57,7 +57,15 @@ const srv = http.createServer((q, a) => {
       if (q.method === "POST") {
         let leib = ""; q.on("data", c => leib += c);
         return q.on("end", () => {
-          try { LAGE.pakete.push(JSON.parse(leib)); } catch (e) {}
+          let b = null;
+          try { b = JSON.parse(leib); LAGE.pakete.push(b); } catch (e) {}
+          /* Pakete zaehlen genuegt nicht: „kein zweiter Eintrag" und
+             „dieselbe Zeile still ueberschrieben" sehen an einem
+             Paketzaehler gleich aus — genau daran ist der A-Fund der
+             zwoelften Jagd durch zehn gruene Urteile gelaufen. Der
+             Pruefserver fuehrt deshalb Zeilen wie der Worker:
+             `ON CONFLICT(id) DO UPDATE`. */
+          if (b && b.id) LAGE.zeilen[b.id] = Object.assign({}, LAGE.zeilen[b.id], b);
           if (LAGE.postStumm) return;          /* angekommen, nie beantwortet */
           /* `absage` spielt die 409-Antwort des Namenswaechters. */
           if (LAGE.absage) { a.writeHead(409, kopf);
@@ -462,7 +470,7 @@ const speicherAbzug = p => p.evaluate(() => {
     {
       LAGE.personenStumm = false;      /* erster Anlauf glueckt */
       LAGE.personen = [];
-      LAGE.pakete = [];
+      LAGE.pakete = []; LAGE.zeilen = {};
       const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
       const p = await ctx.newPage();
       const fehler = [];
@@ -486,10 +494,16 @@ const speicherAbzug = p => p.evaluate(() => {
         !/Asad Karakiri/.test(await p.locator("#teamL").innerText()),
         (await p.locator("#teamL").innerText()).slice(0, 50));
 
+      /* Die Zeile, wie sie am „Server" steht — daran wird gemessen. */
+      const meineId = LAGE.pakete[0] && LAGE.pakete[0].id;
+      const vorher = JSON.stringify(LAGE.zeilen[meineId]);
       await anlegen(p, "Asad Karakiri", rnd());
       urteil("K9 · der bestaetigte Mensch wird NICHT ueberschrieben",
         LAGE.pakete.length === 1,
         "Pakete: " + JSON.stringify(LAGE.pakete.slice(1)));
+      urteil("K9 · und die Zeile am Server ist unveraendert",
+        JSON.stringify(LAGE.zeilen[meineId]) === vorher,
+        "vorher " + vorher + " · nachher " + JSON.stringify(LAGE.zeilen[meineId]));
       const f = await p.locator("#nFehler").innerText().catch(() => "");
       urteil("K9 · und es steht da, warum", /schon angelegt/.test(f), f.slice(0, 80));
       urteil("K9 · der Satz sagt auch, warum die Zeile oben fehlt",
@@ -525,6 +539,76 @@ const speicherAbzug = p => p.evaluate(() => {
         "Pakete: " + LAGE.pakete.length + " · Kennungen: " + k.size);
       urteil("K10 · keine JS-Fehler", fehler.length === 0, fehler[0]);
       await ctx.close();
+    }
+
+    /* ── K11 · Die Falle heilt, sobald die Liste den Menschen zeigt ─ */
+    /* Zwoelfte Jagd Runde 16 · A: `ok:false` wurde NIE fortgeschrieben.
+       Erster Anlauf: Paket kommt an, Antwort geht verloren — die Zeile
+       steht am Server, das Gedaechtnis sagt „unbestaetigt". Danach kommt
+       die Liste EINMAL durch und zeigt den Menschen; ab da ist bewiesen,
+       dass die Zeile da ist. Schweigt die Liste spaeter wieder und tippt
+       jemand denselben Namen mit anderer Rolle, ging bis eben dieselbe
+       Kennung mit dem NEUEN Inhalt hinaus und schrieb die Zeile um:
+       Rolle „Service", Pruefsumme neu, Sperre aufgehoben, Toast
+       „Gespeichert". Gemessen wird an der ZEILE, nicht am Paket. */
+    {
+      LAGE.zeilen = {}; LAGE.pakete = [];
+      LAGE.personenStumm = true; LAGE.postStumm = true;
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+
+      /* Anlauf 1: Rolle „Leitung", Antwort geht verloren. */
+      await p.selectOption("#nRolle", "leitung").catch(() => {});
+      await anlegen(p, "Eva Lang", rnd());
+      await warte(p, 9200);
+      const id1 = LAGE.pakete[0] && LAGE.pakete[0].id;
+      urteil("K11 · die Zeile steht am Server, obwohl die Antwort verloren ging",
+        !!id1 && LAGE.zeilen[id1] && LAGE.zeilen[id1].rolle === "leitung",
+        JSON.stringify(LAGE.zeilen));
+
+      /* Jetzt kommt die Liste EINMAL durch und zeigt Eva. */
+      LAGE.personen = [{ id: id1, name: "Eva Lang", rolle: "leitung", aktiv: 1 }];
+      LAGE.personenStumm = false;
+      await p.click("#bNeu"); await warte(p, 900);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 700);
+      urteil("K11 · die Liste zeigt sie",
+        /Eva Lang/.test(await p.locator("#teamL").innerText()));
+      urteil("K11 · und das Gedaechtnis ist damit geheilt",
+        await p.evaluate(() => {
+          try { return JSON.parse(localStorage.getItem("hh_nkennung_v1") || "{}")["eva lang"].ok === true; }
+          catch (e) { return false; }
+        }));
+
+      /* Danach schweigt die Liste wieder — und jemand tippt denselben
+         Namen mit anderer Rolle. */
+      LAGE.personenStumm = true;
+      LAGE.personen = [];
+      await p.reload({ waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      const vorher = JSON.stringify(LAGE.zeilen);
+      const vorherPakete = LAGE.pakete.length;
+      await anlegen(p, "Eva Lang", rnd());
+      urteil("K11 · es geht kein Paket mehr hinaus",
+        LAGE.pakete.length === vorherPakete,
+        "Pakete: " + JSON.stringify(LAGE.pakete.slice(vorherPakete)));
+      urteil("K11 · die Zeile behaelt ihre Rolle und ihren Code",
+        JSON.stringify(LAGE.zeilen) === vorher,
+        "vorher " + vorher + " · nachher " + JSON.stringify(LAGE.zeilen));
+      urteil("K11 · und es steht da, warum",
+        /schon angelegt/.test(await p.locator("#nFehler").innerText().catch(() => "")),
+        (await p.locator("#nFehler").innerText().catch(() => "")).slice(0, 70));
+      urteil("K11 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.postStumm = false; LAGE.personenStumm = true; LAGE.zeilen = {};
     }
 
   } finally {

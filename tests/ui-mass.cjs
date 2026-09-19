@@ -623,7 +623,13 @@ async function grussWeg(p) {
     if (m.jsFehler && m.jsFehler.length) { fehlerGes += m.jsFehler.length;
       console.log("  JS-FEHLER " + k + ": " + m.jsFehler[0]); }
   });
-  urteil("kein waagrechter Überlauf in 320/375/390/430/768/1280",
+  /* BERICHTIGT (zwölfte Jagd Runde 16 · C): Der Satz nannte alle sechs
+     Breiten, gemessen wurde das Backoffice aber erst ab 390 px
+     (`BREITEN_LEITUNG`) — der bekannte Überlauf bei 320 px in
+     `.kopf button.k` (336 statt 320) lag damit unter einem Urteil, das
+     ihn scheinbar ausschloss. Das Urteil nennt jetzt, was es misst. */
+  urteil("kein waagrechter Überlauf — Service 320/375/390/430/768/1280, "
+         + "Backoffice ab 390",
          ueberGes === 0, ueberGes + " Stellen");
   urteil("nichts im Service wird von einem Kasten abgeschnitten",
          klemmSvc === 0, klemmSvc + " Stellen");

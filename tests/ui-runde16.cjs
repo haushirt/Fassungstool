@@ -701,10 +701,15 @@ async function tagesfassungBisAbschluss(p) {
          schweigt. Vorher ging genau hier das Ueberschreiben durch. */
       LAGE.postStumm = false;
       await anlegen("7890");
-      urteil("A/11 · bestaetigt: derselbe Mensch wird nicht überschrieben",
+      /* Dieser Anlauf DARF noch hinaus — er wiederholt den unbestaetigten
+         von vorhin, und diesmal antwortet der Server. Das Urteil sagt
+         genau das; die frueherer Fassung behauptete an dieser Stelle „wird
+         nicht ueberschrieben" und mass, dass ein fuenftes Paket hinausging
+         (zwoelfte Jagd Runde 16 · C). */
+      urteil("A/11 · der unbestaetigte Anlauf darf noch einmal hinaus",
         LAGE.pakete.length === 5, "Pakete: " + LAGE.pakete.length);
       await anlegen("2468");
-      urteil("A/11 · und danach geht gar nichts mehr hinaus",
+      urteil("A/11 · aber sobald der Server geantwortet hat, nicht mehr",
         LAGE.pakete.length === 5,
         "Pakete: " + LAGE.pakete.length + " · "
         + JSON.stringify(LAGE.pakete.slice(5)));

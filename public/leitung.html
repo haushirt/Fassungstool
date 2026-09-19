@@ -1043,16 +1043,46 @@ const nKennung=(function(){
     return (o && typeof o==="object" && !Array.isArray(o))?o:{};
   }catch(e){ return {}; }
 })();
-function kennungMerken(schl,id,bestaetigt){
-  nKennung[schl]={id:id, ok:!!bestaetigt};
+/* Ein unbestaetigter Anlauf ist eine Falle auf Zeit: Solange `ok` false
+   bleibt, darf dieselbe Kennung wieder hinaus — mit dem INHALT, der
+   gerade im Formular steht. Das ist richtig, solange es wirklich die
+   Wiederholung desselben Anlaufs ist, und falsch, sobald Wochen
+   vergangen sind. Zwei Dinge halten die Falle deshalb kurz:
+
+   · `kennungHeilen()` setzt `ok`, sobald die Liste den Menschen zeigt —
+     dann ist bewiesen, dass die Zeile am Server steht. Das war die
+     Luecke der zwoelften Jagd: `ok:false` wurde NIE fortgeschrieben,
+     auch nicht, nachdem die Liste den Menschen laengst fuehrte.
+   · `FRIST_UNBESTAETIGT` laesst einen unbestaetigten Anlauf nach einer
+     halben Stunde verfallen. Danach gilt er als unbekannt: Es geht eine
+     NEUE Kennung hinaus, und der Namenswaechter im Worker antwortet 409,
+     statt still zu ueberschreiben. Aus einer Falle wird eine Absage. */
+const FRIST_UNBESTAETIGT=30*60*1000;
+function kennungSchreiben(){
   try{ localStorage.setItem(K_KENNUNG,JSON.stringify(nKennung)); }catch(e){}
+}
+function kennungMerken(schl,id,bestaetigt){
+  nKennung[schl]={id:id, ok:!!bestaetigt, t:Date.now()};
+  kennungSchreiben();
   return id;
 }
 function kennungLesen(schl){
   const v=nKennung[schl];
   if(!v)return null;
   if(typeof v==="string")return {id:v, ok:true};   /* Altbestand */
+  if(!v.ok && (!v.t || Date.now()-v.t>FRIST_UNBESTAETIGT))return null;
   return {id:v.id, ok:!!v.ok};
+}
+/* Die Liste ist der Beweis: Steht der Mensch darin, ist seine Zeile am
+   Server — und dieses Fenster darf sie nicht mehr ueberschreiben. */
+function kennungHeilen(leute){
+  let wandel=false;
+  (leute||[]).forEach(pp=>{
+    const k=String(pp && pp.name || "").toLowerCase();
+    const v=nKennung[k];
+    if(v && typeof v==="object" && !v.ok){ v.ok=true; v.t=Date.now(); wandel=true; }
+  });
+  if(wandel)kennungSchreiben();
 }
 function kennungRaeumen(){
   Object.keys(nKennung).forEach(k=>{ delete nKennung[k]; });
@@ -1821,7 +1851,14 @@ function teileOhneGroesse(liste){
    dasselbe sagen (elfte Jagd Runde 16 · B). */
 function alleKassennamen(){
   const namen={};
-  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
+  /* `(z.positionen||[])`: Diese Schleife laeuft seit der elften Runde
+     bei JEDEM Neuzeichnen ueber alle bis zu 60 Tage — vorher lag sie
+     nur in den Ansichten. Ein Eintrag ohne `positionen` wuerde damit
+     mitten in `zeichneNav()` werfen und die halbe Navigation stehen
+     lassen. `vomServer()` legt so etwas zwar nicht an; eine Schleife,
+     die alles traegt, darf trotzdem nicht an einem fehlenden Feld
+     zerbrechen (zwoelfte Jagd Runde 16 · C). */
+  Object.values(ZBER).forEach(z=>(z&&z.positionen||[]).forEach(p=>{
     if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0, tage:0};
     namen[p.name].anzahl+=p.anzahl; namen[p.name].tage++;
   }));
@@ -2016,9 +2053,13 @@ function vHeute(m){
   /* Auch das sind KASSENNAMEN, nicht Kassenzeilen — `abgleich()` führt
      denselben Namen über alle Tage des Fensters als eine Zeile (neunte
      Jagd · C: bei sieben Berichten 44 Namen gegen 308 Kassenzeilen). */
+  /* „im Zeitraum" gehoert dazu: Die Zahl neben dem Menuepunkt „Zuordnung"
+     zaehlt ALLE geladenen Berichte, diese hier nur das Fenster. Beide
+     sind richtig, und ohne Zeitangabe sehen sie wie ein Widerspruch aus
+     (zwoelfte Jagd Runde 16 · C: 45 gegen 44). */
   if(a.offen.length) fehlt.push(a.offen.length
     +(a.offen.length===1?" Kassenname ist":" Kassennamen sind")
-    +" keinem Artikel zugeordnet — der Verkauf fehlt im Abgleich.");
+    +" im Zeitraum keinem Artikel zugeordnet — der Verkauf fehlt im Abgleich.");
   /* Das ist kein Befund, sondern eine offene Angabe. Deshalb steht die
      Zahl hier und nicht bei den Abweichungen — und getrennt nach dem,
      was zu TUN ist. Ein Satz, der alle ins Backoffice schickt, schickt
@@ -2165,7 +2206,8 @@ function vAbgleich(m){
   }
   if(a.offen.length){
     const s=document.createElement("section");
-    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenname${a.offen.length===1?"":"n"} ohne Zuordnung —
+    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenname${a.offen.length===1?"":"n"} ohne Zuordnung
+      im Zeitraum ${a.von} bis ${a.bis} —
       ${a.offen.length===1?"sein":"ihr"} Verkauf fehlt in dieser Rechnung.
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
@@ -3188,7 +3230,7 @@ function vTeam(m){
       if(!r.ok){ $("#teamL").innerHTML=
         `<div class="hinweis warn">Der Server antwortet nicht. Mitarbeiter lassen sich
          nur mit Verbindung pflegen.</div>`; return; }
-      LEUTE=((r.daten||{}).personen)||[]; male();
+      LEUTE=((r.daten||{}).personen)||[]; kennungHeilen(LEUTE); male();
     }catch(e){
       /* Steht schon eine Liste, bleibt sie stehen: Nach einem geglueckten
          Speichern lief `hole()` in die Frist und ueberschrieb die Liste

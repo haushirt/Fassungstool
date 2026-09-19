@@ -4074,3 +4074,66 @@ dieser Runde eben **kein** unbestätigter Anlauf mehr.
 **Backlog:** vier C-Funde der elften Jagd (siehe `review/BACKLOG.md`).
 
 **STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – software-engineer (dreizehnte Runde, nach der zwölften Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A**: Meine Behebung war nicht behoben, sondern **halbiert**.
+  Die bestätigte Hälfte war zu, die unbestätigte offen — und sie ist die, für
+  die der ganze Mechanismus gebaut wurde. `ok:false` wurde **nie**
+  fortgeschrieben: auch nicht, nachdem die Liste den Menschen längst zeigte.
+  Damit war die Reichweite nicht „ein Mensch, den dieses Fenster gerade angelegt
+  hat", sondern „jeder Mensch, dessen erster Anlauf aus diesem Browser je eine
+  Antwort verloren hat" — unbegrenzt lange. Am echten Worker gemessen: Rolle
+  `leitung` → `service`, Prüfsumme neu (alter Code 401), `aktiv:1`, Toast
+  „Gespeichert".
+* ✅ übernommen — **C**: Mein Urteil `A/11 · bestaetigt: derselbe Mensch wird
+  nicht überschrieben` maß `pakete.length === 5`, also dass ein fünftes Paket
+  hinausging. Der Satz sagte das Gegenteil dessen, was dastand.
+* ✅ übernommen — **C**: Die Prüfszenen zählten **Pakete, nie Zeilen**. „Kein
+  zweiter Eintrag" und „dieselbe Zeile still überschrieben" sehen an einem
+  Paketzähler gleich aus — genau daran ist der A durch zehn grüne Urteile
+  gelaufen.
+* ✅ übernommen — **C**: Navigation 45 gegen Mittagsblick/Abgleich 44 im selben
+  Augenblick; beide Skalen richtig, beide unbenannt.
+* ✅ übernommen — **C**: `alleKassennamen()` läuft seit der elften Runde bei
+  jedem Neuzeichnen über alle 60 Tage und war ungesichert.
+* ✅ übernommen — **C**: Das Urteil von `ui-mass` nannte 320 px, maß das
+  Backoffice aber erst ab 390 — der bekannte Überlauf dort lag unter einem
+  Urteil, das ihn scheinbar ausschloss.
+* ✅ zur Kenntnis — der eine nicht reproduzierbare `fail 1` in 15 Läufen. Ich
+  habe ihn nicht gesehen; er steht hier, damit er nicht verloren geht.
+
+**Umgesetzt:**
+1. **`kennungHeilen()`** setzt `ok`, sobald die Liste den Menschen zeigt — dann
+   ist bewiesen, dass die Zeile am Server steht. Läuft in `hole()`, direkt nach
+   dem Übernehmen von `LEUTE`.
+2. **`FRIST_UNBESTAETIGT`**: Ein unbestätigter Anlauf verfällt nach einer halben
+   Stunde. Danach geht eine NEUE Kennung hinaus, und der Namenswächter im Worker
+   antwortet 409, statt still zu überschreiben. Aus einer Falle wird eine
+   Absage.
+3. **Der Prüfserver führt Zeilen wie der Worker** (`ON CONFLICT(id) DO UPDATE`).
+   K9 und das neue **K11** messen an der ZEILE, nicht am Paket.
+4. Die vier weiteren C-Funde: `(z&&z.positionen||[])`, „im Zeitraum" in beiden
+   Sätzen, der berichtigte A/11-Urteilstext, und das `ui-mass`-Urteil nennt
+   jetzt, was es misst.
+
+**Geprüft:** `npm test` **440/440**. **K11** stellt die Lage der zwölften Jagd
+Schritt für Schritt nach — Anlauf mit Rolle „Leitung", Antwort verloren, Liste
+kommt einmal durch, Liste schweigt wieder, derselbe Name mit anderer Rolle. Auf
+`379f2e5` viermal rot, mit genau dem gemessenen Schaden (`rolle: leitung` →
+`service`, neuer Code); jetzt grün, und die Zeile am Server ist Zeichen für
+Zeichen unverändert.
+
+`sw.js` v54 → **v55**.
+
+**Für die Nächsten:**
+* An den **Jäger**: Der Hinweis „zählt Pakete, nie Zeilen" war der wertvollste
+  der Nacht — er erklärt, warum zwei Runden lang grüne Urteile über demselben
+  Fund standen. Die beiden Prüfserver führen jetzt Zeilen.
+
+**Phase/Thema:** Runde 16 / dreizehnte Runde, vor dem Livegang
+
+**STATUS:** VERBESSERUNGEN

@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
 
-**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v54.**
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v55.**
 Er bringt die A- und B-Funde der fünften Jagd und die vier Punkte der
 Runde 16 hinaus — und die Funde der sechsten Jagd, die auf diese Runde
 folgte.
