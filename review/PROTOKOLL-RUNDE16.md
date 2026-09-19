@@ -279,7 +279,7 @@ bleibt nach Textlänge stehen statt 2,2 Sekunden.
 | **Neuer Endpunkt** | `POST /api/code` — fragt, wer zu einem Code gehört, ohne Sitzungswechsel, an derselben Sperre |
 | **Neuer Browserspeicher** | `hh_nkennung_v1` (nur `leitung.html`): Name → `{id, ok, t}`. **Keine Codes.** Wird von „abmelden" geräumt |
 | **`sw.js`** | v38 → **v56** |
-| **Prüfungen** | `npm test` **440/440** in 81 Suiten (vorher 211). Neu: `tests/runde16.test.mjs` (1099 Z.), `tests/ui-runde16.cjs` (751), `tests/qa-runde16-kennung.cjs` (646), `qa-runde16-schluss` (286), `qa-runde16-gegenprobe` (303), `qa-runde16-stumme-anmeldung` (122), `qa-runde16-stummer-leib` (159). Erweitert: `abgleich-unklar`, `gebinde`, `ui-leitung-echt` (44/44), `ui-mass`, `durchstich` (wieder **35/35**) |
+| **Prüfungen** | `npm test` **440/440** in 81 Suiten (live: 370 in 71 Suiten — **+70 Prüfungen**). Neu: `tests/runde16.test.mjs` (1099 Z.), `tests/ui-runde16.cjs` (751), `tests/qa-runde16-kennung.cjs` (646), `qa-runde16-schluss` (286), `qa-runde16-gegenprobe` (303), `qa-runde16-stumme-anmeldung` (122), `qa-runde16-stummer-leib` (159). Erweitert: `abgleich-unklar`, `gebinde`, `ui-leitung-echt` (44/44), `ui-mass`, `durchstich` (wieder **35/35**) |
 | **Belege** | `review/screens/lauf/`, `review/screens/runde16/` |
 
 ---
