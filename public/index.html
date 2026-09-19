@@ -353,7 +353,12 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 /* Der Abgleich im Abschlussfenster: eine Zeile je Artikel, die Zahlen
    rechts und untereinander lesbar. */
 .abgl{margin:var(--space-3) 0 0;border-top:1px solid var(--border)}
-.abglz{display:flex;align-items:baseline;gap:var(--space-3);
+/* Umbrechend, damit der Vorbehalt eine EIGENE, volle Zeile bekommt.
+   Vorher stand er in `.nm` und damit in der Flexreihe: `.za` und `.df`
+   sind `nowrap`, `.nm` blieb bei 390 px strukturell 55 px breit, und der
+   Satz wurde zur Wortleiter mit Trennung mitten im Wort („Kassen/zeilen",
+   „unvollst/ändig"), 158 px hoch (fuenfte Jagd Runde 16 · B, gemessen). */
+.abglz{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);
   padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
 .abglz .nm{flex:1;min-width:0}
 .abglz .za{font-variant-numeric:tabular-nums;white-space:nowrap;
@@ -365,7 +370,7 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 /* Eine Zahl mit Vorbehalt ist eine Untergrenze, keine gepruefte Zahl —
    sie traegt deshalb keinen Warnton, sondern den ruhigen. */
 .abglz .df.unklar{color:var(--fg-secondary)}
-.abglz .vorb{display:block;font-size:var(--text-sm);color:var(--fg-secondary);
+.abglz .vorb{flex-basis:100%;font-size:var(--text-sm);color:var(--fg-secondary);
   margin-top:2px}
 .abglfuss{margin:var(--space-3) 0 0;font-size:var(--text-sm);color:var(--fg-muted)}
 /* Der Notweg am Fuss der Startseite: da, aber leise. */
@@ -2698,9 +2703,16 @@ function finishNetz(){
   /* Der Grund muss der richtige sein. Eine abgelaufene Sitzung ist keine
      fehlende Verbindung — wer daraufhin das WLAN sucht, sucht am
      falschen Ort. */
+  /* Derselbe Zustand, dieselbe Auskunft: Seit der vierten Jagd meldet
+     eine abgelaufene Frist `serverfehler` statt `offline` — der Chip
+     sagt dann „Server antwortet nicht", und der Hinweis darunter sagte
+     weiter „Keine Verbindung". Zwei Saetze zur selben Lage auf einem
+     Schirm (fuenfte Jagd Runde 16 · C). */
   h.textContent = NETZ.zustand==="abgemeldet"
     ? "Nicht angemeldet – der Vorgang wartet im Gerät"
-    : "Keine Verbindung – der Abgleich kommt nach";
+    : NETZ.zustand==="serverfehler"
+      ? "Server antwortet nicht – der Abgleich kommt nach"
+      : "Keine Verbindung – der Abgleich kommt nach";
 }
 
 /* Fertige und laufende Vorgänge einsammeln, die noch nicht draußen sind. */
@@ -5786,17 +5798,35 @@ async function abschlussSchritt(d){
 function popupAbgleich(d,z,groessen){
   const a=abgleichZeilen(d,z,groessen);
   $("#ovT").textContent="Abgleich";
+  /* Zahlen deutsch: „0,8" und „+8,2", nicht „0.8". Dasselbe tut `num()`
+     im Backoffice (leitung.html). Zwei Fassungen derselben Zahl auf zwei
+     Schirmen des Hauses wollen wir nicht. */
+  const zahl=n=>(+n||0).toLocaleString("de-AT",{maximumFractionDigits:1});
+  const mitZeichen=n=>(n>0?"+":n<0?"\u2212":"")+zahl(Math.abs(n));
   const zeile=x=>{
     const v=x.vorbehalt?"unklar":(x.diff>0?"plus":"minus");
-    /* Eine Zeile mit Vorbehalt nennt keine geprueften Zahlen, sondern
-       eine Untergrenze — deshalb „mind." und ein neutraler Ton statt
-       Rot/Gelb. Derselbe Gedanke wie `BEFUND` in leitung.html. */
-    return `<div class="abglz"><span class="nm">${esc(GN(x.id))}`
+    /* BERICHTIGUNG (fuenfte Jagd Runde 16 · A): Hier stand „mind." vor
+       der Zahl. Das ist die falsche Richtung. `diff = gefasst \u2212
+       verkauft`; eine nicht rechenbare Kassenzeile ist ein VERKAUF, den
+       wir nicht kennen. Wuerde sie mitgerechnet, stiege `verkauft` und
+       SAENKE `diff`. Die gezeigte Zahl ist also die OBERGRENZE der
+       Abweichung, nie die Untergrenze — gemessen an Bericht 37: gezeigt
+       „mind. +2,4", wahr +0,4. Das behauptete sechsmal so viel Schwund
+       wie hoechstens da war, gegenueber jemandem, der gerade gezaehlt
+       hat. (Derselbe Denkfehler steht im Kommentar bei `BEFUND` in
+       leitung.html und ist dort mitberichtigt.)
+
+       Statt eines Quantors vor der Zahl sagt der Satz daneben jetzt, in
+       welche Richtung die Unsicherheit zeigt — das ist praeziser und
+       liest sich im Keller schneller als „hoechstens". */
+    const wohin = x.diff>0 ? "die echte L\u00fccke ist kleiner"
+                : x.diff<0 ? "die echte L\u00fccke ist gr\u00f6\u00dfer"
+                : "unvollst\u00e4ndig";
+    return `<div class="abglz"><span class="nm">${esc(GN(x.id))}</span>`
+      +`<span class="za">gefasst ${zahl(x.gefasst)} \u00b7 verkauft ${zahl(x.verkauft)}</span>`
+      +`<span class="df ${v}">${mitZeichen(x.diff)}</span>`
       +(x.vorbehalt?`<span class="vorb">${x.ohne} von ${x.ganz} Kassenzeilen `
-        +`nicht rechenbar \u2014 unvollst\u00e4ndig</span>`:"")+`</span>`
-      +`<span class="za">gefasst ${x.gefasst} \u00b7 verkauft ${x.verkauft}</span>`
-      +`<span class="df ${v}">${x.vorbehalt?"mind. ":""}`
-      +`${x.diff>0?"+":""}${x.diff}</span></div>`;
+        +`nicht rechenbar \u2014 ${wohin}</span>`:"")+`</div>`;
   };
   /* BERICHTIGUNG (Jagd Runde 16 · A2): Hier stand „Keine Abweichung",
      sobald die Liste leer war — auch dann, wenn gar nichts verglichen
@@ -5840,7 +5870,10 @@ function popupAbgleich(d,z,groessen){
       +esc(warum)+`</div>`
     : a.zeilen.length
       ? `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))} `
-        +`Nur die Abweichungen:</p><div class="abgl">${a.zeilen.map(zeile).join("")}</div>`
+        +(a.mitVorbehalt
+          ? `Abweichungen und unvollst\u00e4ndige Zeilen:</p>`
+          : `Nur die Abweichungen:</p>`)
+        +`<div class="abgl">${a.zeilen.map(zeile).join("")}</div>`
       : `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}</p>`
         +`<div class="box good" style="margin-top:0"><b>Keine Abweichung.</b><br>`
         +(a.geprueft===1?"Ein Artikel verglichen.":a.geprueft+" Artikel verglichen.")+`</div>`;

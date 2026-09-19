@@ -938,6 +938,15 @@ function wuerfelPin(){
    mehr herein, und niemand kennt ihren Code.
 
    Diese Fassung liest den Leib INNERHALB der Frist, wie `holeKurz()`. */
+/* Eine Kennung, die der Client vergibt. `crypto.randomUUID` gibt es
+   erst ab Safari 15.4; der Rueckfall muss nicht kryptografisch sein, er
+   muss nur eindeutig sein. Dieselbe Rueckfallebene wie `uuid()` in
+   index.html. */
+function uuid(){
+  try{ if(crypto.randomUUID)return crypto.randomUUID(); }catch(e){}
+  return "u"+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+}
+
 async function kurz(pfad,opt,ms){
   const frist=+ms>0?+ms:8000;
   const ab=(typeof AbortController!=="undefined")?new AbortController():null;
@@ -1448,8 +1457,18 @@ const vorbehaltSatz = v =>
    neutrale Plakette wie bei „kein Abgleich"; der Satz daneben
    (`vorbehaltSatz`) sagt, wie viel fehlt.
    Ab einer Differenz von 0,5 Flaschen bleibt der Befund, wie er war:
-   „kleine Abweichung"/„prüfen" behauptet nichts über Vollständigkeit,
-   sondern nennt eine Untergrenze — und die gilt mit Vorbehalt erst recht. */
+   „kleine Abweichung"/„prüfen" behauptet nichts über Vollständigkeit.
+
+   BERICHTIGUNG (fünfte Jagd Runde 16): Hier stand „sondern nennt eine
+   Untergrenze — und die gilt mit Vorbehalt erst recht." Das ist für die
+   Schwund-Richtung verdreht. `diff = entnommen − verkauft`; eine nicht
+   gerechnete Position ist ein VERKAUF. Käme sie dazu, stiege `verkauft`
+   und SÄNKE `diff`. Bei positiver Differenz ist die gezeigte Zahl damit
+   eine OBER-, keine Untergrenze — die echte Lücke ist kleiner. Das
+   Backoffice druckt hier kein Wort dazu, also blieb der Fehler folgenlos;
+   die App hat ihn übernommen und als „mind." ausgegeben, und dort tat er
+   weh. Der Satz steht berichtigt, damit ihn niemand ein zweites Mal
+   abschreibt. */
 const BEFUND = r => Math.abs(r.diff)<0.5
   ? (r.vorbehalt ? {w:"unvollständig", k:"p-grau"} : {w:"stimmt", k:"p-ok"})
   : Math.abs(r.diff)<2 ? {w:"kleine Abweichung", k:"p-warn"}
@@ -2710,6 +2729,9 @@ function vTeam(m){
   $("#nWuerfel").onclick=()=>{ $("#nCode").value=wuerfelPin(); };
 
   let LEUTE=[];
+  /* Der laufende Anlauf am Formular „Aufnehmen oder Code neu setzen" —
+     siehe die Berichtigung weiter unten bei `#nAdd`. */
+  let nAnlauf=null;
   const male=()=>{
     $("#teamL").innerHTML=LEUTE.length?`<div class="tabhuelle"><table><thead><tr>
       <th>Name</th><th style="width:200px">Rolle</th><th>Sieht</th><th style="width:120px">Zustand</th>
@@ -2807,7 +2829,7 @@ function vTeam(m){
   };
   const hole=async()=>{
     try{
-      const r=await fetch("/api/personen");
+      const r=await kurz("/api/personen");
       if(r.status===403){ $("#teamL").innerHTML=
         `<div class="hinweis warn">Nur die Leitung darf Mitarbeiter verwalten.</div>`; return; }
       /* 401 ist keine ausbleibende Antwort, sondern eine Antwort: die
@@ -2820,7 +2842,7 @@ function vTeam(m){
       if(!r.ok){ $("#teamL").innerHTML=
         `<div class="hinweis warn">Der Server antwortet nicht. Mitarbeiter lassen sich
          nur mit Verbindung pflegen.</div>`; return; }
-      LEUTE=(await r.json()).personen||[]; male();
+      LEUTE=((r.daten||{}).personen)||[]; male();
     }catch(e){ $("#teamL").innerHTML=
       `<div class="hinweis warn">Keine Verbindung zum Server.</div>`; }
   };
@@ -2846,16 +2868,31 @@ function vTeam(m){
     if(!nm) return toast("Ohne Namen geht es nicht");
     if(!PIN_MUSTER.test(code)) return toast("Der Code hat "+PIN_LAENGE+" Ziffern");
     const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
-    /* Die Felder erst leeren, wenn es angekommen ist — sonst steht nach
-       einem stummen Server ein leeres Blatt da und niemand weiss, ob die
-       Person angelegt wurde. Der Knopf sperrt derweil, damit kein
-       zweiter Griff eine zweite Person erzeugt. */
+    const rolle=$("#nRolle").value;
+    /* BERICHTIGUNG (fuenfte Jagd Runde 16 · B): Der zweite Griff nach
+       einer abgelaufenen Frist legte die Person ein ZWEITES Mal an.
+       Gemessen: Der erste Ruf kam beim Server an, die Antwort erreichte
+       das Backoffice nicht; `hole()` lief nicht, `LEUTE` blieb alt, also
+       fand `find()` nichts und `id` blieb `undefined` — und
+       `personSchreiben()` bindet `id || crypto.randomUUID()`. Am echten
+       Worker durchgespielt: zweimal „Asad Hussain", beide aktiv. Es gibt
+       kein Loeschen, nur „aktiv" umschalten, und keine Sicherung
+       (Projektanleitung Paragraf 8). Die 8-s-Frist aus der vierten Jagd
+       machte das Fenster dafuer weiter auf, nicht schmaler.
+
+       Der Client bringt jetzt seine eigene Kennung mit — derselbe
+       Gedanke wie beim Vorgang (`<modus>_<tag>` in index.html): Zweimal
+       dasselbe Paket schreibt dieselbe Zeile, weil
+       `ON CONFLICT(id) DO UPDATE` greift. Die Kennung bleibt liegen,
+       solange derselbe Mensch mit demselben Code gemeint ist, und faellt
+       erst, wenn es angekommen ist. */
+    if(!nAnlauf || nAnlauf.name!==nm || nAnlauf.code!==code || nAnlauf.rolle!==rolle)
+      nAnlauf={name:nm, code, rolle, id:(da?da.id:uuid())};
     const b=$("#nAdd"); b.disabled=true; const wort=b.textContent;
     b.textContent="speichert \u2026";
-    const gut=await sende({id:da?da.id:undefined, name:nm,
-      rolle:$("#nRolle").value, code, aktiv:1});
+    const gut=await sende({id:nAnlauf.id, name:nm, rolle, code, aktiv:1});
     b.disabled=false; b.textContent=wort;
-    if(gut){ $("#nName").value=""; $("#nCode").value=""; }
+    if(gut){ nAnlauf=null; $("#nName").value=""; $("#nCode").value=""; }
   };
   hole();
 }

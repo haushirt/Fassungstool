@@ -107,6 +107,24 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
        900 px kein Platz mehr und die Leiste lief aus dem Fenster. */
     assert.match(BO, /nav\.seite button\.ausgang\{/);
   });
+
+  /* Fünfte Jagd Runde 16 · B: Der zweite Griff am Team-Formular legte
+     die Person ein ZWEITES Mal an — `hole()` lief nach dem Fehlschlag
+     nicht, `LEUTE` blieb alt, `find()` fand nichts, `id` blieb
+     undefined, und `personSchreiben()` bindet `id ||
+     crypto.randomUUID()`. Es gibt kein Löschen und keine Sicherung.
+     Der Client bringt jetzt seine eigene Kennung mit; zweimal dasselbe
+     Paket schreibt dieselbe Zeile (`ON CONFLICT(id) DO UPDATE`). */
+  test("der zweite Anlauf am Team-Formular wiederholt dieselbe Anfrage", () => {
+    assert.match(BO, /let nAnlauf=null;/);
+    assert.match(BO, /nAnlauf=\{name:nm, code, rolle, id:\(da\?da\.id:uuid\(\)\)\};/,
+      "die Kennung wird nicht einmal vergeben und festgehalten");
+    assert.match(BO, /sende\(\{id:nAnlauf\.id,/,
+      "der Anlauf schickt seine Kennung nicht mit");
+    assert.match(BO, /if\(gut\)\{ nAnlauf=null;/,
+      "die Kennung faellt nicht, wenn es angekommen ist");
+    assert.match(BO, /function uuid\(\)/);
+  });
 });
 
 /* ═════ A2 · Zwei Personen dürfen nicht denselben Code haben ═══════════
@@ -749,6 +767,49 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     assert.equal(a.zeilen.length, 0);
     assert.equal(a.geprueft, 0);
     assert.equal(a.ohneMenge, 1);
+  });
+
+  /* ── Fünfte Jagd · der Quantor zeigte in die falsche Richtung ───────
+     `diff = gefasst − verkauft`. Eine nicht rechenbare Kassenzeile ist
+     ein VERKAUF; käme sie dazu, stiege `verkauft` und SÄNKE `diff`. Die
+     gezeigte Zahl ist damit die OBERgrenze der Abweichung. „mind." hat
+     das Gegenteil behauptet — an Bericht 37 gemessen: gezeigt „mind.
+     +2,4", wahr +0,4. */
+  test("die Zeile mit Vorbehalt behauptet keine Untergrenze", () => {
+    const fenster = APP.slice(APP.indexOf("function popupAbgleich"),
+                              APP.indexOf("function popupFertig"));
+    /* Nur im CODE, nicht im Kommentar daneben — der erklaert den Fehler. */
+    assert.doesNotMatch(fenster, /vorbehalt\?"mind\. "/,
+      "der Quantor steht wieder vor der Zahl und zeigt in die falsche Richtung");
+    /* Im Quelltext stehen die Umlaute als \u-Fluchten — hier wird der
+       Quelltext gelesen, nicht das gerenderte Fenster. */
+    assert.ok(fenster.includes("die echte L\\u00fccke ist kleiner"),
+      "bei positiver Differenz fehlt die Richtung der Unsicherheit");
+    assert.ok(fenster.includes("die echte L\\u00fccke ist gr\\u00f6\\u00dfer"),
+      "bei negativer Differenz fehlt die Richtung der Unsicherheit");
+  });
+
+  test("die Zahlen im Fenster sind deutsch", () => {
+    const fenster = APP.slice(APP.indexOf("function popupAbgleich"),
+                              APP.indexOf("function popupFertig"));
+    assert.match(fenster, /toLocaleString\("de-AT"/,
+      "Punkt statt Komma — das Backoffice schreibt seit je deutsch");
+  });
+
+  /* Der Vorbehalt bekommt eine eigene, volle Zeile. In der Flexreihe
+     blieb `.nm` bei 390 px strukturell 55 px breit (`.za` und `.df` sind
+     `nowrap`) und der Satz wurde zur Wortleiter mit Trennung mitten im
+     Wort (fünfte Jagd Runde 16 · B, in Chromium gemessen). */
+  test("der Vorbehalt steht nicht in der Flexreihe", () => {
+    assert.match(APP, /\.abglz\{display:flex;flex-wrap:wrap;/,
+      "die Zeile bricht nicht um");
+    assert.match(APP, /\.abglz \.vorb\{flex-basis:100%;/,
+      "der Vorbehalt teilt sich die Zeile weiter mit den Zahlen");
+    /* Und er hängt nicht mehr im Namensfeld. */
+    const fenster = APP.slice(APP.indexOf("function popupAbgleich"),
+                              APP.indexOf("function popupFertig"));
+    assert.doesNotMatch(fenster, /class="nm">\$\{esc\(GN\(x\.id\)\)\}`\s*\+\(x\.vorbehalt/,
+      "der Vorbehalt steckt wieder im Namensfeld");
   });
 
   test("die grüne Plakette steht nie über einer halben Rechnung", () => {
