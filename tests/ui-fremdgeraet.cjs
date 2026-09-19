@@ -13,7 +13,12 @@
    fragte `fernNeuer(m)` erneut, bekam denselben fremden Stand und öffnete
    den Dialog sofort wieder — „Abbrechen" war eine Schleife, aus der nur
    „Übernehmen" herausführte. Diese Prüfung wird rot, sobald der Dialog
-   nach dem Ablehnen wiederkommt.                                        */
+   nach dem Ablehnen wiederkommt.
+
+   Runde 17: Der Abbrechen-Zweig startete danach trotzdem einen eigenen
+   Vorgang (`start._uebernommen=true; start(m)`). Jetzt führt er ins
+   Menü zurück, ohne etwas anzufangen — die Prüfung darunter ist
+   entsprechend nachgezogen.                                            */
 
 const ORTE = ["playwright", "/opt/node22/lib/node_modules/playwright",
               "/usr/lib/node_modules/playwright"];
@@ -109,7 +114,12 @@ const zustand = p => p.evaluate(() => ({
   ok("der Dialog kommt nach dem Ablehnen NICHT wieder", !z.ov, z.titel);
   ok("der eigene Stand steht unverändert da",
      z.pos.join(",") === "w003×2", z.pos.join(","));
-  ok("gearbeitet wird weiter am eigenen Vorgang", z.imFormular && !z.menu);
+  /* RUNDE 17 · Hier stand bis v56 `z.imFormular && !z.menu`: Ablehnen
+     warf einen zwar nicht in die Schleife zurück, startete aber trotzdem
+     einen eigenen Vorgang — gerade bei der Tagesfassung, die es je Tag
+     genau einmal gibt, war das der falsche Ausgang. Abbrechen heißt
+     jetzt: zurück ins Menü, nichts angefangen. */
+  ok("nach dem Ablehnen steht man wieder im Menü", z.menu && !z.imFormular);
 
   /* Ein zweiter Klick auf denselben Knopf darf nichts anderes tun —
      die Marke `start._uebernommen` darf nicht hängenbleiben. */
