@@ -4181,3 +4181,31 @@ Zeile (sonst fiele ein geänderter Code nicht auf), gedruckt die geschwärzte.
 **Phase/Thema:** Runde 16 / vierzehnte Runde, vor dem Livegang
 
 **STATUS:** FERTIG — aus meiner Rolle nichts mit Priorität hoch/mittel offen.
+
+---
+
+### Runde 16 – software-engineer (fünfzehnte Runde, nach der vierten Schlusskontrolle)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **`tests/durchstich.cjs` war tot**, und `review/ERGEBNIS.md`
+  nannte es „35 von 35 … vor jedem Livegang laufen lassen". Zwei Gründe: der
+  Klick auf `[data-ok]` lief seit Runde 15 in den Timeout (die vierte Ziffer
+  sendet von selbst), und der Filter suchte den Abschlussknopf nach „Protokoll
+  erstellen|melden" — Wörter, die diese Runde abgeschafft hat. Beides
+  berichtigt, **35 von 35**. Das einzige Tor, das die Unterlagen selbst
+  benennen, ist wieder offen.
+* ✅ übernommen — die vier Reibungspunkte in den Morgenbrief, vor allem: **in
+  der eigenen Zeile nichts anfassen.** Der Rollenkasten hat keine Rückfrage,
+  und der Brief schickt genau dorthin.
+* ✅ zur Kenntnis — das dritte `ui-mass`-Urteil („keine JS-Fehler") nennt
+  seinen Umfang nicht und sieht das Abgleich-Fenster nie. Der qa-guardian hat
+  die Messung selbst nachgeholt (320/375/390/430 px, sauber). Backlog.
+
+**Umgesetzt:** `durchstich.cjs` wiederbelebt, die falsche Zeile in `ERGEBNIS.md`
+berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
+
+**Geprüft:** `npm test` 440/440, `node tests/durchstich.cjs` **35/35**.
+
+**Phase/Thema:** Runde 16 / letzte Runde vor dem Livegang
+
+**STATUS:** FERTIG

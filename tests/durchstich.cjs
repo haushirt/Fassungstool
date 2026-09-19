@@ -159,8 +159,12 @@ const ok = (satz, bedingung, dazu) => {
   const vorOk = await p.evaluate(() =>
     getComputedStyle(document.getElementById("menu")).display !== "none");
   ok("ohne Bestätigung wird nichts abgeschickt", !vorOk);
-  await p.locator("[data-ok]").click();
-  await p.waitForTimeout(700);
+  /* BERICHTIGT (qa-guardian, vierte Schlusskontrolle): Seit Runde 15
+     sendet die vierte Ziffer von selbst; `[data-ok]` ist danach
+     unsichtbar, und `click()` lief 30 s in den Timeout — der Lauf starb
+     nach 4 von 35 Punkten. Das Gerueest galt in `review/ERGEBNIS.md`
+     als Tor vor dem Livegang und war seit `42076b8` tot. */
+  await p.waitForTimeout(900);
   const imMenu = await p.evaluate(() =>
     getComputedStyle(document.getElementById("menu")).display !== "none");
   ok("mit gültigem Code im Menü", imMenu);
@@ -249,8 +253,11 @@ const ok = (satz, bedingung, dazu) => {
      offenNachher.length === 0, JSON.stringify(offenNachher));
   /* Nicht `#aDone` — so heisst der Knopf „Fertig" in der Verwaltung, der
      nur ins Menü zurückführt. Gemeint ist der Abschlussknopf. */
+  /* BERICHTIGT (Runde 16): Der Abschluss hat nur noch EINEN Knopf,
+     „Fertig – Speichern". „Protokoll erstellen" und „melden" gibt es im
+     Frontoffice nicht mehr — dieser Filter fand deshalb nichts. */
   const fertigKnopf = p.locator("button.finishbtn")
-    .filter({ hasText: /Protokoll erstellen|melden/ });
+    .filter({ hasText: /Fertig/ });
   ok("der Abschlussknopf ist da", (await fertigKnopf.count()) > 0);
   if (await fertigKnopf.count()) { await fertigKnopf.first().click(); await p.waitForTimeout(800); }
   await p.evaluate(() => { if (typeof schiebe === "function") return schiebe(); });

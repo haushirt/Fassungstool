@@ -767,7 +767,7 @@ eintippen. Die D1-Konsole wird dafür **nicht** gebraucht.
 | `tests/ui-leitung-echt.cjs` | 22 Punkte: das Backoffice in Chromium (1440×900) gegen den echten Worker, die echte Datenbank und den echten Z-Bericht. Eingelesen über die Oberfläche, Zuordnung landet in `mapping`, ein zweites Gerät mit leerem Browserspeicher sieht beides, ein nur per Mail eingelieferter Bericht ist sichtbar, eine Teilzählung lässt alle 57 Weine stehen. |
 | `tests/modi.test.mjs` | 16 Prüfungen: alle fünf Modi bis ins Journal (Vorzeichen, Ort, Kistengröße), die Zuordnung in beide Richtungen, die Absenderprüfung des Postfachs. |
 | `tests/zbericht-37.test.mjs` | 24 Prüfungen am echten Bericht Nr. 37: Kopf, Blockwahl, die vier Eigenheiten mit ihren Zahlen, Rabatt und Storno, und der ganze Weg durch den Worker bis in `fassungszeile` (48 Zeilen, 145 Stück, 602,50 €, `ausschankMl` 125 für das Achtel). |
-| `node tests/durchstich.cjs` | 35 von 35 Punkten. Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. **Vor jedem Livegang laufen lassen.** |
+| `node tests/durchstich.cjs` | Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. *(Der Lauf war seit Runde 15 tot — die vierte Ziffer sendet seither von selbst, der Klick auf den Bestätigungsknopf lief in den Timeout. In Runde 16 berichtigt.)* |
 | `node tests/persona-tagesfassung.cjs` | Anmeldung mit vierstelligem Code, Tagesfassung bis zum Abschluss, Abbruch, Offline, doppeltes Absenden, abgelaufene Sitzung — durchgelaufen. |
 | Anmeldung am iPhone-Maß (Chromium) | Vier Felder; Ziffern kommen vom Ziffernblock UND von der Tastatur, Rücktaste nimmt die letzte weg, die vierte Ziffer sendet von selbst. |
 
