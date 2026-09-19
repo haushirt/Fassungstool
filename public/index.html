@@ -2252,6 +2252,13 @@ async function holeKurz(pfad,opt,ms){
     try{ text=await r.text(); }catch(e){ text=""; }
     let daten=null;
     if(typ.includes("json")){ try{ daten=JSON.parse(text); }catch(e){} }
+    /* Eine halb gelesene Antwort ist keine Antwort. Bricht die Frist
+       mitten im Leib ab, kam hier `{json:true, daten:null}` zurueck —
+       der Aufrufer hielt das fuer einen geglueckten Ruf ohne Inhalt und
+       zeigte eine leere Auskunft statt seiner Rueckfallebene. Jetzt
+       wirft es, und der `catch` des Aufrufers greift, wie er soll. */
+    if(typ.includes("json") && daten===null)
+      throw new Error("unvollständige Antwort");
     return {ok:r.ok, status:r.status, json:typ.includes("json"), daten};
   })();
   try{

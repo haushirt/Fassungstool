@@ -921,17 +921,47 @@ function wuerfelPin(){
 }
 
 /* Ein `fetch` mit Frist — fuer die beiden Wege, bei denen ein Haengen
-   wehtut: Abmelden (am geteilten iPad) und „PIN zuruecksetzen" (der
-   Knopf bliebe sonst fuer immer gesperrt). Das Backoffice laeuft sonst
-   am MacBook mit stabiler Leitung; die uebrigen Aufrufe holen nur
-   Zahlen und duerfen warten. Dieselbe Rechnung wie `holeKurz()` in
-   index.html (dritte Jagd Runde 16). */
+   wehtut: Abmelden (am geteilten iPad) und „PIN zuruecksetzen". Das
+   Backoffice laeuft sonst am MacBook mit stabiler Leitung; die uebrigen
+   Aufrufe holen nur Zahlen und duerfen warten.
+
+   BERICHTIGUNG (qa-guardian, dritte Gegenprobe): Die erste Fassung gab
+   die `Response` zurueck und raeumte die Uhr im `finally` — also sobald
+   der KOPF da war. Genau der Fehler, den `holeKurz()` in index.html eine
+   Stunde vorher abgestellt hatte, und der Kommentar hier behauptete,
+   es sei „dieselbe Rechnung". Gemessen: `kurz()` kam nach 3 ms zurueck,
+   `await r.json()` beim Aufrufer hing danach unbegrenzt. Bei „PIN
+   zuruecksetzen" heisst das: Der Knopf bleibt tot (`b.disabled=false`
+   wird nie erreicht), es kommt weder Dialog noch Hinweis, und der
+   Ersatzcode im `catch` greift nicht, weil nichts wirft — waehrend der
+   neue Code am Server laengst stehen kann. Dann kommt die Person nicht
+   mehr herein, und niemand kennt ihren Code.
+
+   Diese Fassung liest den Leib INNERHALB der Frist, wie `holeKurz()`. */
 async function kurz(pfad,opt,ms){
+  const frist=+ms>0?+ms:8000;
   const ab=(typeof AbortController!=="undefined")?new AbortController():null;
-  const uhr=ab?setTimeout(()=>ab.abort(),+ms>0?+ms:8000):0;
-  try{
-    return await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
+  const uhr=ab?setTimeout(()=>ab.abort(),frist):0;
+  const lauf=(async()=>{
+    const r=await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
       ab?{signal:ab.signal}:{}));
+    const typ=r.headers.get("content-type")||"";
+    let text="";
+    try{ text=await r.text(); }catch(e){ text=""; }
+    let daten=null;
+    if(typ.includes("json")){ try{ daten=JSON.parse(text); }catch(e){} }
+    /* Eine halb gelesene Antwort ist keine Antwort. Bricht die Frist
+       mitten im Leib ab, kam hier `{json:true, daten:null}` zurueck —
+       der Aufrufer hielt das fuer einen geglueckten Ruf ohne Inhalt und
+       zeigte eine leere Auskunft statt seiner Rueckfallebene. Jetzt
+       wirft es, und der `catch` des Aufrufers greift, wie er soll. */
+    if(typ.includes("json") && daten===null)
+      throw new Error("unvollständige Antwort");
+    return {ok:r.ok, status:r.status, json:typ.includes("json"), daten};
+  })();
+  const frisch=new Promise((_,weg)=>setTimeout(()=>weg(new Error("Frist")),frist));
+  try{
+    return ab ? await lauf : await Promise.race([lauf,frisch]);
   } finally { if(uhr)clearTimeout(uhr); }
 }
 
@@ -1614,8 +1644,7 @@ async function abmelden(){
   const b=$("#bAb"); if(b)b.disabled=true;
   let weg=false;
   try{
-    const r=await kurz("/api/abmelden",{method:"POST"});
-    weg=r.ok;
+    weg=(await kurz("/api/abmelden",{method:"POST"})).ok;
   }catch(e){}
   if(!weg){ if(b)b.disabled=false;
     return toast("Keine Verbindung — die Anmeldung gilt weiter. Bitte mit Netz noch einmal."); }
@@ -2738,9 +2767,9 @@ function vTeam(m){
         const r=await kurz("/api/person/pin",{method:"POST",
           headers:{"content-type":"application/json"},
           body:JSON.stringify(vorschlag?{id:p.id,code:vorschlag}:{id:p.id})});
-        const j=await r.json();
+        const j=r.daten||{};
         if(!r.ok){ b.disabled=false; return toast(j.fehler||"Nicht zurückgesetzt"); }
-        zeigePin(p.name, j.pin);
+        zeigePin(p.name, j.pin||vorschlag);
       }catch(e){
         if(vorschlag) zeigePin(p.name, vorschlag,
           "Die Verbindung brach ab. Ist der Code angekommen, ist es DIESER. "

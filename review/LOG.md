@@ -3359,3 +3359,78 @@ Z-Bericht(T)) — das ist die alte Entscheidung, die Casimir treffen muss.
 **Rundenfazit:** Zweimal dieselbe Vorsicht an der einen Stelle gebaut und
 an der anderen vergessen. Beide Male hat es nicht der gefunden, der es
 gebaut hat.
+
+---
+
+### Runde 16 – qa-guardian (Gegenprobe zum zweiten Veto)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — `public/index.html:5573` `verkaufteFlaschen()`: `if(!aus||!geb)return null;`
+  steht da, der tote Zweig `p.kassenname||p.rohbez` ist auf `p.rohbez`
+  gekürzt. Unabhängig nachgerechnet gegen `tests/fixtures/zbericht-37-extended.csv`
+  mit dem ausgeschnittenen Originalcode, nicht mit einem Nachbau: 26 von
+  48 Positionen ohne Menge im Namen; „HP Omelett 1 Portion" ×11 mit
+  bestätigter Größe 700 ml ergibt `null` statt 11 Flaschen. `ml()` in
+  `gnparse.js:48` und `mlAusText()` in `leitung.html:683` sind wortgleich,
+  `GEB_BEST[kassenname]` und `groessen[p.rohbez]` sind dieselbe Quelle
+  (`mapping.fremd` → `kassenname`, `src/index.js:930`). Der Keller rechnet
+  strikt konservativer als das Backoffice — das ist die sichere Richtung.
+* ↩️ geändert — Punkt 2 (Zeitgrenze) war auf `fdb2e44` **nicht** behoben,
+  sondern halb: `holeKurz()` gab die `Response` zurück und räumte die Uhr
+  im `finally` weg. Das `finally` läuft, sobald der KOPF da ist — `await
+  r.json()` beim Aufrufer lief ohne jede Frist. Dazu hatte `POST
+  /api/anmelden` (`index.html:2804`) gar keine Frist. Selbst gemessen
+  (`tests/qa-runde16-stumme-anmeldung.cjs`): schweigender Server, nach
+  12 s kein Fehlertext, kein zweiter Ruf, Rückfallebene `bekannterCode()`
+  nie erreicht. Die dritte Jagd (`79d8bc7`) hat beides behoben, während
+  ich prüfte; auf diesem Stand ist es gemessen dicht.
+* ❌ abgelehnt — nichts.
+
+**Umgesetzt:**
+1. `tests/qa-runde16-stumme-anmeldung.cjs` — Anmeldung gegen einen Server,
+   der annimmt und schweigt. Rot auf `fdb2e44`, grün auf `79d8bc7`.
+2. `tests/qa-runde16-stummer-leib.cjs` — der halb durchgekommene Leib
+   (Kopf ja, Leib nie). Belegt die Behebung in `index.html` und den
+   verbliebenen Fund in `leitung.html`.
+3. Rechenprobe gegen Bericht 37 mit dem Originalcode aus `index.html`.
+
+**Geprüft:** Auf `79d8bc7`: `npm test` **426/426**; `qa-runde16-schluss`,
+`qa-runde16-gegenprobe`, `ui-runde16`, `ui-nachjagd`, `qa-schluss` alle ja;
+`ui-mass.cjs` alle zehn Urteile grün, Gestaltungsschicht wortgleich;
+Persona-Lauf 390 px nur die zwei alten Stellen (Hilfe-Blatt, Begrüßung),
+keine JS-Fehler. Messung: `holeKurz()` kommt bei zurückgehaltenem Leib nach
+8001 ms zurück; `kurz()` in `leitung.html` nach 3 ms (Kopf) und der
+Aufrufer hängt danach unbegrenzt. Genau EIN `fetch(` in `index.html`, im
+Helfer; kein `.json()` mehr beim Aufrufer. Vier Dateien in `public/`,
+`sw.js` v43 → v44. SQL: alle acht Tabellen des Codes stehen in
+`docs/live-schema.sql`, keine unbekannte; `idem`/`zbericht` weiter nicht da.
+Regeln 2,3,5,7,8,9,11,12,14 zwischen `fdb2e44` und `79d8bc7` unberührt
+(`RUNDEN = 1000`, `wrangler.jsonc`/`schema.sql`/`migrations/` ohne Diff).
+Regel 1 weiter gebrochen: Branch `claude/runde16` statt `v2-review` —
+alt bekannt, nicht von mir zu lösen.
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, die Live-D1 selbst.
+
+**Für die Nächsten:**
+* An den **software-engineer**: `kurz()` in `public/leitung.html:927` ist
+  NICHT „dieselbe Rechnung wie `holeKurz()`", wie der Kommentar dort sagt —
+  es gibt die `Response` zurück, und `leitung.html:2741` ruft danach
+  `await r.json()`. Bei „PIN zurücksetzen" heißt das: `b.disabled=false`
+  am Ende wird nie erreicht, der Knopf bleibt tot, keine Meldung, kein
+  Ersatzcode — während der neue Code am Server womöglich schon steht.
+  Derselbe Bau wie in `holeKurz()` (Leib in der Frist lesen) behebt es.
+* An **Casimir**: Was ich freigebe, ist `79d8bc7`, nicht `fdb2e44`.
+
+**Phase/Thema:** Runde 16 / dritte Gegenprobe, vor dem Livegang
+
+**Backlog:** neu unter „mittel": `kurz()` in `leitung.html` sichert nur den
+Kopf, „PIN zurücksetzen" hängt bei halb durchgekommener Antwort unbegrenzt.
+Neu unter „niedrig": `warum`-Zweig „gibt es nichts, was zu dieser Fassung
+passt" in `popupAbgleich()` ist unerreichbar; `zahl()` in `gnparse.js` lässt
+negative Stückzahlen durch (App und Backoffice gleich, deshalb harmlos).
+
+**STATUS:** FERTIG — **FREI** für `79d8bc7`.
+
+**Rundenfazit:** Die zwei Punkte meines Vetos sind behoben, einer davon
+erst durch die dritte Jagd; geblieben ist dieselbe halbe Frist eine Datei
+weiter — zum dritten Mal dieselbe Vorsicht an einer Stelle gebaut und an
+der anderen vergessen.
