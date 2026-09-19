@@ -42,7 +42,7 @@ const LAGE = {
      Genau die Lage, in der die Kennung gebraucht wird: geschrieben ist
      geschrieben, aber die Liste kommt nicht zurueck, also kann der
      Client aus `LEUTE` nicht mehr ablesen, ob er schon geschrieben hat. */
-  personen: [], personenStumm: false, pakete: []
+  personen: [], personenStumm: false, postStumm: false, pakete: []
 };
 
 const srv = http.createServer((q, a) => {
@@ -73,6 +73,10 @@ const srv = http.createServer((q, a) => {
         let leib = ""; q.on("data", c => leib += c);
         return q.on("end", () => {
           try { LAGE.pakete.push(JSON.parse(leib)); } catch (e) {}
+          /* Das Paket KOMMT AN, die Antwort geht verloren — der Fall der
+             fuenften Jagd. Nur so bleibt der Anlauf unbestaetigt, und nur
+             dann darf dieselbe Kennung noch einmal hinaus (elfte Jagd). */
+          if (LAGE.postStumm) return;
           a.writeHead(200, kopf); a.end(JSON.stringify({ ok: true }));
         });
       }
@@ -617,7 +621,7 @@ async function tagesfassungBisAbschluss(p) {
        Live-D1 zwei aktive Zeilen mit zwei gültigen Anmeldecodes — und es
        gibt kein Löschen und keine Sicherung (Projektanleitung §8). */
     {
-      LAGE.personenStumm = true; LAGE.pakete = [];
+      LAGE.personenStumm = true; LAGE.postStumm = true; LAGE.pakete = [];
       const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
       const p = await ctx.newPage();
       const fehler = []; p.on("pageerror", e => fehler.push(String(e)));
@@ -652,7 +656,12 @@ async function tagesfassungBisAbschluss(p) {
       await anlegen("5678");
 
       const kennungen = new Set(LAGE.pakete.map(x => x.id));
-      urteil("A/7 · zweimal derselbe Mensch → EINE Kennung, auch nach „Aktualisieren“",
+      /* Seit der elften Jagd gilt das nur fuer den UNBESTAETIGTEN Anlauf:
+         Das Paket ist angekommen, die Antwort nicht — dann darf derselbe
+         Anlauf wiederholt werden, und zwar mit derselben Kennung. Hat der
+         Server dagegen geantwortet, ist die Zeile da, und ein zweiter
+         Versuch waere ein Ueberschreiben (siehe unten). */
+      urteil("A/7 · unbestaetigt: zweimal derselbe Mensch → EINE Kennung, auch nach „Aktualisieren“",
         LAGE.pakete.length === 2 && kennungen.size === 1,
         "Pakete: " + LAGE.pakete.length + " · Kennungen: " + kennungen.size);
       /* Der Schlüssel zu LESEN beweist nur, dass er dasteht — nicht, dass
@@ -686,16 +695,33 @@ async function tagesfassungBisAbschluss(p) {
         "Pakete: " + LAGE.pakete.length + " · Kennungen: " + zweiTabs.size);
       await p2.close();
 
+      /* Und die andere Haelfte (elfte Jagd · A): Sobald der Server
+         EINMAL geantwortet hat, ist der Mensch angelegt — dann schreibt
+         dieses Formular nichts mehr, auch wenn die Liste weiter
+         schweigt. Vorher ging genau hier das Ueberschreiben durch. */
+      LAGE.postStumm = false;
+      await anlegen("7890");
+      urteil("A/11 · bestaetigt: derselbe Mensch wird nicht überschrieben",
+        LAGE.pakete.length === 5, "Pakete: " + LAGE.pakete.length);
+      await anlegen("2468");
+      urteil("A/11 · und danach geht gar nichts mehr hinaus",
+        LAGE.pakete.length === 5,
+        "Pakete: " + LAGE.pakete.length + " · "
+        + JSON.stringify(LAGE.pakete.slice(5)));
+      urteil("A/11 · und es steht da, warum",
+        /schon angelegt/.test(await p.locator("#nFehler").innerText().catch(() => "")),
+        (await p.locator("#nFehler").innerText().catch(() => "")).slice(0, 70));
+
       urteil("Regel 9 · im Gedaechtnis steht kein Code",
         await p.evaluate(() => {
           try {
             const roh = localStorage.getItem("hh_nkennung_v1") || "";
-            return !/1234|5678|9012|3456/.test(roh);
+            return !/1234|5678|9012|3456|7890|2468/.test(roh);
           } catch (e) { return false; }
         }));
       urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
       await ctx.close();
-      LAGE.personenStumm = false;
+      LAGE.personenStumm = false; LAGE.postStumm = false;
     }
 
   } finally {
