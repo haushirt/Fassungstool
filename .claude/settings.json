@@ -1,8 +1,27 @@
 {
-  "extraKnownMarketplaces": {
-    "casimir": {
-      "source": { "source": "github", "repo": "haushirt/casimir-claude" }
-    }
-  },
-  "enabledPlugins": { "c@casimir": true }
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/scripts/regeln.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/scripts/fertig-check.sh\"",
+            "timeout": 240
+          }
+        ]
+      }
+    ]
+  }
 }
