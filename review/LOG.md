@@ -3713,7 +3713,10 @@ hoch/mittel offen; die neunte Jagd entscheidet.
 * **`ANLAGE_OFFEN`.** Der qa-guardian hat bemerkt, dass der Wächter nebenbei
   ein altes Loch schließt: Solange `ANLAGE_OFFEN` gesetzt ist, konnte ein
   unangemeldeter `POST /api/anlage` eine zweite Zeile „Casimir" mit
-  `rolle: leitung` anlegen. Das ist jetzt 409. Ob die Variable live noch
+  `rolle: leitung` anlegen. Das ist jetzt 409. **Berichtigt von der zehnten
+  Jagd:** Das ist kein Schutz. Der Körper bestimmt die Rolle selbst, jeder
+  Name legt eine `leitung`-Zeile an, und der Wächter sperrt nur die exakte
+  Wiederholung — „Casimir." genügt. Ob die Variable live noch
   gesetzt ist, steht im Dashboard und ist für mich nicht erreichbar —
   Aufgabe im Morgenbrief.
 
@@ -3734,3 +3737,97 @@ Klick-Durchgang live (Egress-Proxy weist die Adresse ab, siehe Morgenbrief).
 
 **STATUS:** VERBESSERUNGEN — aus meiner Rolle nichts mit Priorität hoch/mittel
 offen.
+
+---
+
+### Runde 16 – software-engineer (zehnte Runde, nach der zehnten Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A**: Der Namenswächter, den ich in der achten Runde gebaut
+  habe, **feuert auf dem normalen Weg nie.** `#nAdd` suchte den Namen in
+  `LEUTE` und schickte die gefundene `id` mit; im Worker ist
+  `namensgleich.some(r => r.id === id)` damit wahr, der 409 fällt aus, und
+  `ON CONFLICT(id) DO UPDATE` schreibt die bestehende Zeile um. Am echten
+  Worker gemessen, was das anrichtet: der bisherige Code der Person ist danach
+  tot (Anmeldung 401, und niemand sagt es ihr), die Rolle fällt auf den Wert
+  des Auswahlfelds zurück — das steht immer auf „Service", weil es nie
+  vorbelegt wird —, `aktiv:1` hebt eine Sperre auf, und **die einzige Leitung
+  stuft sich damit selbst ab**: `GET /api/personen` antwortet danach 403, auch
+  mit dem alten Keks, zurück geht es nur über die D1-Konsole. Und das in
+  dieser Runde neu eingebaute `hole()` nach einem Fehlschlag machte den
+  Rückfall noch schlimmer: Zweimal „Speichern", und selbst der 409 war
+  umgangen. Mein Wächter war richtig gebaut und stand vor einer offenen Tür.
+* ✅ übernommen — **B**: Die fünfte Stelle. `zaehler("zuordnung")` rief
+  `abgleich(t)` ohne Spanne, also ein Fenster von einem Tag, während
+  Mittagsblick und Abgleichansicht `SPANNE` rechnen. Gemessen an zehn Tagen:
+  Navigation 10, Ansicht daneben 44 — und ist der letzte Tag zufällig
+  vollständig zugeordnet, verschwindet die Zahl ganz, während 44 Kassennamen
+  still aus dem Abgleich fallen.
+* ✅ übernommen — **B**: Die CSV nennt ihren Zeitraum nicht. Jede Zahl darin
+  ist über `SPANNE` Tage summiert, im Kopf stand „Betriebstag <ein Tag>". Mit
+  sieben Berichten: 952 Einheiten, wo an diesem Tag 136 verkauft wurden. Meine
+  Berichtigung der neunten Runde hat die letzte Spalte in dieselbe Skala
+  gezogen — richtig, aber die Skala blieb unbenannt.
+* ✅ übernommen — **C**: K7 prüfte den Toast „Nicht gespeichert" (39 px hoch),
+  nicht den langen Satz; die Bedingung `toastH <= 48` war damit immer wahr, ein
+  zurückgedrehtes `--radius-pill` wäre grün durchgegangen. Und das `max-width`
+  griff unter rund 1120 px gar nicht: bei `position:fixed` mit `left:50%`
+  bleibt nur die halbe Fensterbreite. Gemessen 195 px bei 390 px Fenster —
+  exakt die Zahl, die mein eigener Kommentar als behoben beschrieb.
+* ✅ übernommen — **C**: Die Absagen der LISTE (Rolle, Sperren) haben kein
+  `#nFehler` in der Nähe; bei 390 px liegt das Formular 1253 px weiter unten.
+  Ich hatte den Grund aus dem Toast genommen und nur „Nicht gespeichert"
+  stehen lassen.
+* ✅ übernommen — **C**: `#toast` im Backoffice ohne `env(safe-area-inset-bottom)`.
+* ✅ übernommen — **C**: Mein Satz „der Wächter verhindert immerhin eine zweite
+  Zeile «Casimir» mit voller Leitung" war zu großzügig. Mit gesetztem
+  `ANLAGE_OFFEN` legt JEDER unangemeldete Name eine `leitung`-Zeile an, und
+  der Wächter sperrt nur die exakte Wiederholung — „Casimir." genügt.
+
+**Umgesetzt:**
+1. **Das Formular legt AN, es schreibt nicht um.** Steht der Mensch in
+   `LEUTE`, wird nichts geschrieben; auf dem Schirm steht, warum, und wohin
+   (Rolle in seiner Zeile, Code über „PIN zurücksetzen" — dort sitzen auch die
+   Selbstschutz-Abfragen, die es an diesem Knopf nicht gibt). Die Kennung
+   bleibt, wofür sie gebaut wurde: Sie merkt sich, welche `id` DIESES Fenster
+   einem Namen gab, als es ihn anlegte. Ist die Liste veraltet, geht dieselbe
+   `id` noch einmal hinaus und schreibt dieselbe Zeile (der Fund der fünften
+   Jagd bleibt behoben); ist sie veraltet und der Mensch steht doch schon am
+   Server, fängt ihn der Wächter dort.
+2. **Die fünfte Stelle rechnet dieselbe Spanne**, die CSV nennt Zeitraum,
+   Spanne und Zahl der Berichte im Kopf und trägt den Zeitraum im Dateinamen.
+3. **Der Toast steht zwischen zwei festen Rändern** (`left`/`right` statt
+   `left:50%`), zentriert über `margin-inline:auto`, mit `width:fit-content`
+   und der Safe-Area unten. Gemessen bei 390 px: 358 px breit, sechs Zeilen
+   statt elf. Der Grund steht wieder in BEIDEN — Toast und stehender Hinweis.
+
+**Geprüft:** `npm test` **440/440**. Neu und gegen `94d1832` nachweislich rot:
+* `tests/qa-runde16-kennung.cjs` **K8 klickt** den A-Fund nach: Liste steht,
+  Name getippt → auf dem alten Stand ging ein Paket
+  `{"id":"p-asad","rolle":"service",…}` hinaus (die Rolle still von
+  „wirtschaft" auf „service"), auf dem neuen geht keines, und ein wirklich
+  neuer Mensch wird weiterhin angelegt. Sechs von acht Urteilen kippen.
+* **K7 misst jetzt den langen Satz im Toast**, nicht die Kurzmeldung: auf
+  `94d1832` 195 px breit und elf Zeilen, jetzt 358 px und sechs Zeilen,
+  mittig zwischen 16-px-Rändern.
+* Quelltextwachen für die Spanne der Navigationszahl und die drei neuen
+  Kopfzeilen der CSV.
+
+`sw.js` v51 → **v52**.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch. Der
+Klick-Durchgang live (Egress-Proxy, siehe Morgenbrief).
+
+**Für die Nächsten:**
+* An den **Jäger**: Der Fund war die Umkehrung der drei davor — nicht zwei
+  Stellen, die verschieden rechnen, sondern eine Wache, der der Client die
+  Waffe aus der Hand nimmt. Wer eine Prüfung im Worker baut, muss den Weg
+  klicken, auf dem sie greifen soll; der Quelltext sagt es nicht.
+
+**Phase/Thema:** Runde 16 / zehnte Runde, vor dem Livegang
+
+**Backlog:** „Menge gesamt" auf der Seite „Zuordnung" summiert über ALLE
+geladenen Berichte, die CSV über das Fenster — dieselbe Menge, zwei Skalen,
+beide unbenannt (mittel).
+
+**STATUS:** VERBESSERUNGEN

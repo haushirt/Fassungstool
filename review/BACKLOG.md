@@ -307,4 +307,10 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | niedrig | **`hh_nkennung_v1` überlebt das Schließen des Tabs.** Nur `abmelden()` räumt. Wer den Tab zuklappt, lässt die Mitarbeiternamen im `localStorage` liegen — keine Codes, also keine Regel-9-Frage, aber am geteilten iPad ein Rest. Zusätzlich beim `pagehide` räumen, oder ein Zeitstempel je Eintrag mit Verfall nach 24 h. | `public/leitung.html` (`K_KENNUNG`) |
 | niedrig | **Prüfungsreihenfolge in `personSchreiben`.** Die Namensprüfung läuft vor der PIN-Formprüfung: krummer Code + vorhandener Name gibt 409 statt 422. Über die Oberfläche unerreichbar (`#nAdd` prüft `PIN_MUSTER` selbst). | `src/index.js` |
 | niedrig | **`name` als Objekt oder Array gibt 500 mit D1-Klartext.** Vorbestehend; die Meldung kommt jetzt aus dem neuen `SELECT` statt aus dem `INSERT`. Eine Typprüfung oben wäre ein Dreizeiler. | `src/index.js` (`personSchreiben`) |
-| — | **Für Casimir, nicht für einen Agenten:** im Dashboard nachsehen, ob `ANLAGE_OFFEN` live noch gesetzt ist (`/api/ping` gibt `anlage: true/false` zurück). Solange sie gesetzt ist, steht `POST /api/anlage` unangemeldet offen — der Namenswächter dieser Nacht verhindert dort immerhin eine zweite Zeile „Casimir" mit `rolle: leitung`. | Dashboard |
+| — | **Für Casimir, nicht für einen Agenten:** im Dashboard nachsehen, ob `ANLAGE_OFFEN` live noch gesetzt ist (`/api/ping` gibt `anlage: true/false` zurück). Solange sie gesetzt ist, steht `POST /api/anlage` unangemeldet offen — und der Körper bestimmt die Rolle selbst, **jeder Name legt also eine `leitung`-Zeile an**. Der Namenswächter dieser Nacht sperrt nur die exakte Wiederholung eines vorhandenen Namens; „Casimir." genügt, um an ihm vorbeizukommen. Das ist kein Schutz, sondern eine Bremse (zehnte Jagd · C). | Dashboard |
+
+### Nachtrag · zehnte Jagd
+
+| Prio | Punkt | Datei |
+|---|---|---|
+| mittel | **„Menge gesamt" auf der Seite „Zuordnung" summiert über ALLE geladenen Berichte (bis 60 Tage), die CSV über das Fenster (`SPANNE`).** Für dieselben 44 Kassennamen gemessen: 1293 gegen 885. Beide Zahlen sind für sich richtig, beide Skalen sind auf dem Schirm unbenannt. Entweder beide auf dieselbe Spanne, oder der Zeitraum gehört über die Tabelle. | `public/leitung.html` (`vZuordnung`) |

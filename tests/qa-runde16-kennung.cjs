@@ -318,6 +318,32 @@ const speicherAbzug = p => p.evaluate(() => {
       });
       urteil("K7 · die Absage steht über dem Formular, nicht nur im Toast",
         lage.steht, JSON.stringify(lage.steht));
+      /* BERICHTIGT (zehnte Jagd Runde 16 · C): Gemessen wurde hier der
+         Toast „Nicht gespeichert" — 39 px hoch, und die Bedingung
+         `toastH <= 48` war damit immer wahr. Ein zurueckgedrehtes
+         `--radius-pill` waere gruen durchgegangen. Der lange Satz wird
+         deshalb jetzt AUSDRUECKLICH in den Toast gegeben und dort
+         gemessen. */
+      const geo = await p.evaluate((satz) => {
+        toast(satz);
+        const t = document.querySelector("#toast");
+        const r = t.getBoundingClientRect();
+        const st = getComputedStyle(t);
+        return { b: Math.round(r.width), h: Math.round(r.height),
+                 radius: parseFloat(st.borderTopLeftRadius),
+                 links: Math.round(r.left), rechts: Math.round(innerWidth - r.right),
+                 zeilen: Math.round(r.height / parseFloat(st.lineHeight)) };
+      }, LAGE.absage);
+      urteil("K7 · der lange Satz im Toast ist kein Kreis",
+        geo.radius * 2 < geo.h,
+        "Radius " + geo.radius + " · Höhe " + geo.h);
+      /* 195 px waren es vorher bei 390 px Fenster — exakt 50 vw, weil
+         `left:50%` das `max-width` aushebelte. */
+      urteil("K7 · und er nutzt die Breite (frueher 195 px = 50 vw)",
+        geo.b > 250, geo.b + " px breit · " + geo.zeilen + " Zeilen");
+      urteil("K7 · er steht mittig zwischen zwei Rändern",
+        Math.abs(geo.links - geo.rechts) <= 2,
+        "links " + geo.links + " · rechts " + geo.rechts);
       urteil("K7 · der Toast ist kein Kreis mehr (Radius unter der halben Höhe)",
         lage.radius * 2 < lage.toastH || lage.toastH <= 48,
         "Radius " + lage.radius + " · Höhe " + lage.toastH);
@@ -339,6 +365,57 @@ const speicherAbzug = p => p.evaluate(() => {
       urteil("K7 · keine JS-Fehler", fehler.length === 0, fehler[0]);
       await ctx.close();
       LAGE.absage = null;
+    }
+
+    /* ── K8 · Das Formular legt AN, es schreibt nicht um ──────── */
+    /* Zehnte Jagd Runde 16 · A. Steht der Mensch in der Liste, ging bis
+       eben SEINE Kennung ins Paket — und damit war der Namenswaechter im
+       Worker stumm. `ON CONFLICT(id) DO UPDATE` schrieb die Zeile um:
+       Code tot, Rolle zurueck auf „Service" (das Auswahlfeld wird nie
+       vorbelegt), `aktiv:1` hob eine Sperre auf, und die einzige Leitung
+       stufte sich damit selbst ab. Hier wird geklickt, nicht gelesen. */
+    {
+      LAGE.personenStumm = false;
+      LAGE.personen = [{ id: "p-asad", name: "Asad Karakiri",
+                         rolle: "wirtschaft", aktiv: 1 }];
+      LAGE.pakete = [];
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 600);
+
+      urteil("K8 · die Liste steht (sonst prueft diese Szene nichts)",
+        /Asad Karakiri/.test(await p.locator("#teamL").innerText()));
+
+      await anlegen(p, "Asad Karakiri", rnd());
+      urteil("K8 · es geht KEIN Paket hinaus",
+        LAGE.pakete.length === 0, "Pakete: " + JSON.stringify(LAGE.pakete));
+      const f = await p.locator("#nFehler").innerText().catch(() => "");
+      urteil("K8 · und es steht da, warum", /schon angelegt/.test(f), f.slice(0, 90));
+      urteil("K8 · der Satz nennt den Weg, der wirklich hilft",
+        /PIN zur\u00fccksetzen/.test(f) || /zur\u00fccksetzen/.test(f), f.slice(0, 90));
+
+      /* Auch in der Schreibweise, die der Waechter im Worker abfaengt. */
+      await anlegen(p, "  asad karakiri  ", rnd());
+      urteil("K8 · auch in anderer Schreibweise geht nichts hinaus",
+        LAGE.pakete.length === 0, "Pakete: " + LAGE.pakete.length);
+
+      /* Und ein wirklich neuer Mensch geht weiterhin durch. */
+      await anlegen(p, "Ian Lauchbein", rnd());
+      urteil("K8 · ein neuer Mensch wird weiterhin angelegt",
+        LAGE.pakete.length === 1 && LAGE.pakete[0].name === "Ian Lauchbein",
+        "Pakete: " + LAGE.pakete.length);
+      urteil("K8 · und nicht unter der Kennung eines anderen",
+        LAGE.pakete.length === 1 && LAGE.pakete[0].id !== "p-asad",
+        String(LAGE.pakete[0] && LAGE.pakete[0].id));
+      urteil("K8 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.personen = [];
+      LAGE.personenStumm = true;
     }
 
   } finally {

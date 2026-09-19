@@ -407,6 +407,24 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
       "die Ausfuhr sagt nicht, was zu tun ist");
     assert.match(BO, /sammelbar\(o\)\?"im Backoffice bestätigen/,
       "die Ausfuhr unterscheidet sammelbar nicht von „von Hand“");
+
+    /* Zehnte Jagd · B: Im CSV-Kopf stand nur „Betriebstag <ein Tag>",
+       während JEDE Zahl darunter über `SPANNE` Tage summiert ist — mit
+       sieben Berichten 952 Einheiten, wo an diesem Tag 136 verkauft
+       wurden. Die Rechnung stimmte, die Skala war unbenannt. */
+    assert.match(BO, /\["Zeitraum der Zahlen",a\.von\+" bis "\+a\.bis\]/,
+      "der CSV-Kopf nennt den Zeitraum der Zahlen nicht");
+    assert.match(BO, /\["Spanne",a\.spanne\+\(a\.spanne===1\?" Tag":" Tage"\)\]/,
+      "der CSV-Kopf nennt die Spanne nicht");
+    assert.match(BO, /hol\("abgleich_"\+\(a\.spanne>1\?a\.von\+"_bis_"\+a\.bis:tag\)/,
+      "der Dateiname nennt einen einzelnen Tag für Zahlen über ein Fenster");
+
+    /* Zehnte Jagd · B: die fünfte Stelle. `zaehler("zuordnung")` rief
+       `abgleich(t)` ohne Spanne — ein Fenster von EINEM Tag, während
+       Mittagsblick und Abgleichansicht `SPANNE` rechnen. Gemessen an zehn
+       Tagen: Navigation 10, Ansicht daneben 44. */
+    assert.match(BO, /if\(id==="zuordnung"\)\{ const a=abgleich\(t, SPANNE\);/,
+      "die Navigationszahl rechnet ein anderes Fenster als die Ansicht");
     assert.doesNotMatch(BO, /<h3>Größe fehlt · \$\{a\.ohneGroesse\.length\}/,
       "die Abschnittsüberschrift zählt beide Ursachen als „Größe fehlt“");
 

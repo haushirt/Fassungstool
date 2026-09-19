@@ -125,8 +125,20 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
        `LEUTE` veraltet blieb. Sie hängt jetzt am NAMEN und überlebt den
        geglückten Anlauf. */
     assert.match(BO, /const schl=nm\.toLowerCase\(\);/);
-    assert.match(BO, /else if\(!nKennung\[schl\]\)kennungMerken\(schl,uuid\(\)\);/,
+    assert.match(BO, /if\(!nKennung\[schl\]\)kennungMerken\(schl,uuid\(\)\);/,
       "die Kennung wird nicht je Mensch einmal vergeben");
+    /* BERICHTIGT (zehnte Jagd Runde 16 · A): Hier stand davor
+       `if(da)kennungMerken(schl,da.id);` — die Kennung der GEFUNDENEN
+       Person ging ins Paket, und damit war der Namenswächter im Worker
+       stumm (`namensgleich.some(r => r.id === id)` ist dann wahr).
+       `ON CONFLICT(id) DO UPDATE` schrieb die bestehende Zeile um: Code
+       tot, Rolle zurück auf „Service", Sperre aufgehoben — und die
+       einzige Leitung stufte sich damit selbst ab. Das Formular legt an;
+       steht der Mensch schon in der Liste, schreibt es nichts. */
+    assert.doesNotMatch(BO, /if\(da\)kennungMerken\(schl,da\.id\)/,
+      "das Anlegen-Formular schreibt die vorhandene Person wieder um");
+    assert.match(BO, /if\(da\)\{\n\s*formFehler\(/,
+      "das Anlegen-Formular sagt nicht ab, wenn es den Menschen schon gibt");
     assert.match(BO, /sende\(\{id:nKennung\[schl\],/,
       "der Anlauf schickt seine Kennung nicht mit");
     assert.doesNotMatch(BO, /nAnlauf/,

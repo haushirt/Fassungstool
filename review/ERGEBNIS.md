@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
 
-**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v51.**
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v52.**
 Er bringt die A- und B-Funde der fünften Jagd und die vier Punkte der
 Runde 16 hinaus — und die Funde der sechsten Jagd, die auf diese Runde
 folgte.
@@ -661,18 +661,27 @@ Zwei Wege, einen Code zu setzen:
   Dopplung, speichert nur die Prüfsumme und zeigt den Code **genau
   einmal** gross auf dem Schirm. Er lässt sich nicht noch einmal anzeigen —
   notieren, solange er dasteht.
-* **Selbst eintragen** im Kasten „Aufnehmen oder Code neu setzen": Name
-  genau so schreiben, wie er in der Liste steht (die Zeile wird über den
-  Namen gefunden; eine andere Schreibweise legt die Person ein zweites Mal
-  an), Rolle wie gehabt, vier Ziffern oder „Vorschlagen". Speichern.
+* **Selbst eintragen** geht seit Runde 16 **nur noch für NEUE Menschen.**
+  Das Formular legt an; wer schon in der Liste steht, bekommt eine Absage
+  mit dem Hinweis auf seine Zeile. Einen neuen Code für jemanden, den es
+  schon gibt, holst du dort über „PIN zurücksetzen", die Rolle änderst du
+  im Auswahlfeld seiner Zeile.
+
+  *(Bis Runde 16 schrieb dieses Formular die vorhandene Person still um —
+  ihr bisheriger Code war danach tot, ohne dass es jemand erfuhr, ihre
+  Rolle fiel auf „Service" zurück, weil das Auswahlfeld nie vorbelegt
+  wurde, und eine Sperre war aufgehoben. Die einzige Leitung stufte sich
+  damit sofort selbst ab, samt laufender Sitzung; zurück ging es nur über
+  die D1-Konsole. Gefunden von der zehnten Jagd.)*
 
 **Reihenfolge, wenn mehrere Codes zu ändern sind:**
 
 1. **Eine Person zuerst, dann prüfen:** auf einem zweiten Gerät mit der
    neuen App mit dem neuen Code anmelden. Erst wenn das geht, die übrigen.
-2. **Deinen eigenen zuletzt.** Die offene Sitzung bleibt gültig — sie hängt
-   am Keks, nicht am Code —, du fliegst also nicht heraus. Melde dich erst
-   ab, wenn der neue Code auf einem zweiten Gerät funktioniert hat.
+2. **Deinen eigenen zuletzt.** Setzt du ihn über „PIN zurücksetzen" in
+   deiner Zeile neu, bleibt die offene Sitzung gültig — sie hängt am Keks,
+   nicht am Code —, du fliegst also nicht heraus. Melde dich erst ab, wenn
+   der neue Code auf einem zweiten Gerät funktioniert hat.
 3. **Zum Schluss jedes Gerät im Haus einmal mit dem neuen Code anmelden.**
    Erst diese Anmeldung räumt den alten Code aus dem Gerät; ein Gerät, das
    nie wieder angemeldet wird, kennt ihn ohne Netz weiter.

@@ -536,13 +536,27 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
    je richtig (`.toast` in index.html: `max-width:88vw`, `radius-md`,
    mittig) — dasselbe hier. Es ist NICHT der geteilte Block; der endet
    bei Zeile 244, und die beiden Regeln heißen auch verschieden. */
-#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);
+/* BERICHTIGUNG (zehnte Jagd Runde 16 · C): Die erste Fassung hatte
+   `left:50%` und `max-width` — und das `max-width` griff unter rund
+   1120 px gar nicht, weil bei `position:fixed` mit `left:50%` nur noch
+   die halbe Fensterbreite als Platz danebensteht. Gemessen blieb der
+   Kasten bei 390 px genau 195 px breit, also 50 vw: rund statt Kreis,
+   aber nicht breiter. Er steht deshalb jetzt zwischen zwei festen
+   Rändern und zentriert sich über `margin-inline:auto`; `width:fit-content`
+   hält ihn bei kurzen Sätzen schmal.
+   Dazu die Safe-Area unten — die App hat sie seit je (`.toast` in
+   index.html), das Backoffice stand auf festen 28 px. Kein Bruch der
+   geteilten Schicht: die endet bei Zeile 244, und die beiden Regeln
+   heißen verschieden. */
+#toast{position:fixed;left:var(--space-4);right:var(--space-4);
+  bottom:calc(28px + env(safe-area-inset-bottom));
+  margin-inline:auto;width:fit-content;max-width:min(560px, 100%);
+  transform:translateY(12px);
   background:var(--fg);color:var(--fg-on-dark);padding:10px 18px;
-  max-width:min(560px, calc(100vw - 2*var(--space-4)));
   border-radius:var(--radius-md);text-align:center;box-shadow:var(--shadow-overlay);
   font-size:var(--text-sm);opacity:0;
   pointer-events:none;transition:opacity .18s,transform .18s;z-index:var(--z-toast)}
-#toast.on{opacity:1;transform:translateX(-50%)}
+#toast.on{opacity:1;transform:none}
 
 /* ═══════════════ Schmale Schirme ═══════════════
    Die Navigation war 212px breit und galt ohne Medienabfrage — bei 390px
@@ -1789,7 +1803,14 @@ let SEITE="heute", SPANNE=7;
 
 function zaehler(id){
   const t=letzterTag();
-  if(id==="zuordnung"){ const a=abgleich(t); return a.offen.length||null; }
+  /* BERICHTIGUNG (zehnte Jagd Runde 16 · B): Hier stand `abgleich(t)`
+     ohne Spanne, also ein Fenster von EINEM Tag, während der
+     Mittagsblick und die Abgleichansicht `SPANNE` rechnen. Gemessen an
+     zehn Tagen: Navigation 10, Ansicht daneben 44 — und ist der letzte
+     Tag zufällig vollständig zugeordnet, verschwindet die Zahl ganz,
+     während 44 Kassennamen warten und still aus dem Abgleich fallen.
+     Dieselbe Menge, dieselbe Spanne. */
+  if(id==="zuordnung"){ const a=abgleich(t, SPANNE); return a.offen.length||null; }
   if(id==="bestellen"){ return bestellliste().length||null; }
   if(id==="zaehlliste"){ return zaehlliste().length||null; }
   if(id==="speicher"){ return VORGAENGE.length||null; }
@@ -2223,8 +2244,20 @@ function vAbgleich(m){
 
 function csvAbgleich(tag,a){
   const e=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
+  /* BERICHTIGUNG (zehnte Jagd Runde 16 · B): Im Kopf stand nur
+     „Betriebstag <ein Tag>", während JEDE Zahl darunter über `SPANNE`
+     Tage summiert ist — Verkauf, Entnahme, Differenz und seit der
+     neunten Runde auch „Ohne Zuordnung". Mit sieben Berichten im Fenster
+     standen dort 952 Einheiten, wo an diesem Betriebstag 136 verkauft
+     wurden. Auf dem Schirm steht der Zeitraum über der Tabelle; in der
+     Datei, die weitergereicht wird, stand er nirgends. Die Rechnung war
+     richtig, die Skala unbenannt. Jetzt steht sie im Kopf UND im
+     Dateinamen. */
   const L=[["Abgleich Verkauf gegen Fassung"].map(e).join(";"),
-           ["Betriebstag",tag].map(e).join(";"),"",
+           ["Betriebstag",tag].map(e).join(";"),
+           ["Zeitraum der Zahlen",a.von+" bis "+a.bis].map(e).join(";"),
+           ["Spanne",a.spanne+(a.spanne===1?" Tag":" Tage")].map(e).join(";"),
+           ["Z-Berichte im Zeitraum",a.berichte+" von "+a.spanne].map(e).join(";"),"",
            ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
   /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
      Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
@@ -2254,7 +2287,8 @@ function csvAbgleich(tag,a){
         :o.rezept?"Größe am Bestandteil bestätigen"
         :"Gebindegröße von Hand eintragen",
       sammelbar(o)?(o.geb.ml||""):""].map(e).join(";"))); }
-  hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
+  hol("abgleich_"+(a.spanne>1?a.von+"_bis_"+a.bis:tag)+".csv",
+      "\uFEFF"+L.join("\r\n"), "text/csv");
 }
 function hol(name, inhalt, typ){
   const b=new Blob([inhalt],{type:typ+";charset=utf-8"}), u=URL.createObjectURL(b);
@@ -3131,7 +3165,13 @@ function vTeam(m){
         headers:{"content-type":"application/json"},body:JSON.stringify(body)});
       const j=r.daten||{};
       if(!r.ok){
-        formFehler(j.fehler||"Nicht gespeichert"); toast("Nicht gespeichert");
+        /* Der Grund gehoert in BEIDE: `#nFehler` steht am Formular, aber
+           die Absagen der LISTE (Rolle, Sperren) haben nichts in der
+           Naehe — bei 390 px liegt das Formular 1253 px weiter unten
+           (zehnte Jagd Runde 16 · C). Der Toast traegt den Grund
+           deshalb wieder; lesbar ist er jetzt, er bleibt nach
+           Textlaenge stehen. */
+        formFehler(j.fehler||"Nicht gespeichert"); toast(j.fehler||"Nicht gespeichert");
         /* Der Server hat GEANTWORTET — er ist also erreichbar, und die
            Liste darunter ist vermutlich veraltet. Genau daher kommt die
            häufigste Absage: „Diesen Namen gibt es schon", während die
@@ -3193,9 +3233,43 @@ function vTeam(m){
        er schon geschrieben hat. Sie haengt deshalb jetzt am NAMEN und
        ueberlebt den geglueckten Anlauf: In dieser Sitzung bekommt
        derselbe Mensch dieselbe Zeile, was immer dazwischen passiert. */
+    /* BERICHTIGUNG (zehnte Jagd Runde 16 · A): Hier wurde bei einem
+       Treffer in `LEUTE` dessen `id` gemerkt — die Kennung der GEFUNDENEN
+       Person ging ins Paket. Damit war der Namenswächter im Worker
+       stumm: `namensgleich.some(r => r.id === id)` ist wahr, also greift
+       der 409 nicht, und `ON CONFLICT(id) DO UPDATE` schreibt die
+       bestehende Zeile um. Am echten Worker gemessen, was dabei
+       geschieht: der bisherige Code der Person ist danach tot (Anmeldung
+       401, und niemand hat es ihr gesagt), die Rolle fällt auf den Wert
+       des Auswahlfelds zurück — das steht immer auf „Service", weil es
+       nie vorbelegt wird —, `aktiv:1` hebt nebenbei eine Sperre auf, und
+       die einzige Leitung stuft sich damit selbst ab: `GET
+       /api/personen` antwortet danach 403, auch mit dem alten Keks, und
+       zurück geht es nur über die D1-Konsole. Es gibt kein Löschen und
+       keine Sicherung (Projektanleitung §8).
+
+       Dieses Formular legt AN. Steht der Mensch schon in der Liste, wird
+       hier nichts geschrieben — Rolle ändern, sperren und „PIN
+       zurücksetzen" stehen in seiner Zeile oben, mit den
+       Selbstschutz-Abfragen, die es hier nicht gibt.
+
+       Die Kennung bleibt, wofür sie gebaut wurde: Sie merkt sich, welche
+       `id` DIESES Fenster einem Namen gegeben hat, als es ihn anlegte.
+       Ist die Liste veraltet (der Fall der fünften Jagd), geht dieselbe
+       `id` noch einmal hinaus und schreibt dieselbe Zeile — kein
+       zweiter Eintrag. Ist die Liste frisch und der Mensch steht darin,
+       fängt ihn diese Absage; ist sie veraltet und er steht doch schon
+       am Server, fängt ihn der Wächter dort. */
     const schl=nm.toLowerCase();
-    if(da)kennungMerken(schl,da.id);
-    else if(!nKennung[schl])kennungMerken(schl,uuid());
+    if(da){
+      formFehler("„"+da.name+"“ ist schon angelegt. Dieses Formular legt nur NEUE "
+        +"Menschen an. Die Rolle änderst du in der Zeile oben in der Liste, einen "
+        +"neuen Code gibt es dort über „PIN zurücksetzen“. Wer wirklich so heißt wie "
+        +"jemand im Haus, braucht einen unterscheidenden Namen.");
+      toast("„"+da.name+"“ ist schon angelegt");
+      return;
+    }
+    if(!nKennung[schl])kennungMerken(schl,uuid());
     const b=$("#nAdd"); b.disabled=true; const wort=b.textContent;
     b.textContent="speichert \u2026";
     const gut=await sende({id:nKennung[schl], name:nm, rolle, code, aktiv:1});
