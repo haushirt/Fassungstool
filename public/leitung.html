@@ -1011,6 +1011,31 @@ function uuid(){
    gemerkt. Und die Wache dahinter steht im Worker (`personSchreiben`,
    Namenspruefung): ein Gedaechtnis im Browser kann ein zweites GERAET
    nicht sehen. */
+/* BERICHTIGUNG (elfte Jagd Runde 16 · A): Die Kennung war eine blosse
+   Zeichenkette — und damit nicht zu unterscheiden, ob sie zu einem
+   Anlauf gehoert, der noch NICHT am Server angekommen ist, oder zu einer
+   Zeile, die dort laengst steht. Genau das entscheidet aber alles:
+
+   · Noch nicht bestaetigt  → derselbe Anlauf darf wiederholt werden.
+     Dieselbe `id` schreibt dieselbe Zeile, es entsteht kein zweiter
+     Eintrag (der Fund der fuenften Jagd).
+   · Schon bestaetigt      → den Menschen gibt es. Dann wird hier NICHT
+     geschrieben, auch wenn die Liste gerade nicht geladen ist.
+
+   Ohne diese Unterscheidung hing die Absage an `LEUTE` — und `LEUTE`
+   ist leer, sobald `hole()` in die Frist laeuft, ohne Netz ist oder 401
+   oder 403 bekommt, also genau dann, wenn man sie braucht. Gemessen:
+   Person als Leitung angelegt, Seite neu geladen (das Auswahlfeld steht
+   danach wieder auf „Service"), Liste schweigt, derselbe Name mit neuem
+   Code → dieselbe Kennung ging mit dem NEUEN Inhalt hinaus, der Worker
+   sah seine eigene `id` unter den namensgleichen und schwieg, und
+   `ON CONFLICT(id) DO UPDATE` schrieb Rolle, Pruefsumme und `aktiv`
+   neu: alter Code tot, Rolle „Service", Sperre aufgehoben, auf dem
+   Schirm „Gespeichert".
+
+   Alte Eintraege (blosse Zeichenketten) gelten als BESTAETIGT — die
+   vorsichtige Seite: lieber eine Absage zu viel als ein stilles
+   Ueberschreiben. */
 const K_KENNUNG="hh_nkennung_v1";
 const nKennung=(function(){
   try{
@@ -1018,10 +1043,16 @@ const nKennung=(function(){
     return (o && typeof o==="object" && !Array.isArray(o))?o:{};
   }catch(e){ return {}; }
 })();
-function kennungMerken(schl,id){
-  nKennung[schl]=id;
+function kennungMerken(schl,id,bestaetigt){
+  nKennung[schl]={id:id, ok:!!bestaetigt};
   try{ localStorage.setItem(K_KENNUNG,JSON.stringify(nKennung)); }catch(e){}
   return id;
+}
+function kennungLesen(schl){
+  const v=nKennung[schl];
+  if(!v)return null;
+  if(typeof v==="string")return {id:v, ok:true};   /* Altbestand */
+  return {id:v.id, ok:!!v.ok};
 }
 function kennungRaeumen(){
   Object.keys(nKennung).forEach(k=>{ delete nKennung[k]; });
@@ -1784,6 +1815,22 @@ function teileOhneGroesse(liste){
           stkSammelbar:stk(sam), stkHandisch:stk(hand), stkAusschank:stk(au)};
 }
 
+/* Die Kassennamen, die keinem Artikel zugeordnet sind — über ALLE
+   geladenen Berichte, ohne Fenster. Das ist die Menge, die `vZuordnung`
+   zeigt; die Zahl neben dem Menüpunkt liest sie hier, damit beide
+   dasselbe sagen (elfte Jagd Runde 16 · B). */
+function alleKassennamen(){
+  const namen={};
+  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
+    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0, tage:0};
+    namen[p.name].anzahl+=p.anzahl; namen[p.name].tage++;
+  }));
+  return Object.values(namen);
+}
+function offeneKassennamen(){
+  return alleKassennamen().filter(x=>zuordnung(x).status==="offen");
+}
+
 /* ════════════ 7 · Ansichten ════════════ */
 const SEITEN=[
   {id:"heute",     t:"Mittagsblick",     grp:"Täglich"},
@@ -1803,14 +1850,17 @@ let SEITE="heute", SPANNE=7;
 
 function zaehler(id){
   const t=letzterTag();
-  /* BERICHTIGUNG (zehnte Jagd Runde 16 · B): Hier stand `abgleich(t)`
-     ohne Spanne, also ein Fenster von EINEM Tag, während der
-     Mittagsblick und die Abgleichansicht `SPANNE` rechnen. Gemessen an
-     zehn Tagen: Navigation 10, Ansicht daneben 44 — und ist der letzte
-     Tag zufällig vollständig zugeordnet, verschwindet die Zahl ganz,
-     während 44 Kassennamen warten und still aus dem Abgleich fallen.
-     Dieselbe Menge, dieselbe Spanne. */
-  if(id==="zuordnung"){ const a=abgleich(t, SPANNE); return a.offen.length||null; }
+  /* BERICHTIGUNG (zehnte Jagd · B, berichtigt von der elften): Hier
+     stand erst `abgleich(t)` ohne Spanne (ein Tag), dann `SPANNE` —
+     beides falsch, denn die Zahl steht neben einem Menüpunkt, und die
+     SEITE dahinter kennt gar kein Fenster: `vZuordnung` geht über ALLE
+     geladenen Berichte. Gemessen an zehn Tagen mit einem Kassennamen nur
+     in den drei ältesten: Navigation 44, Seite daneben 45 — und ist im
+     Fenster alles zugeordnet, stand die Zahl auf nichts, während die
+     Seite offene Namen führte. Eine Zahl neben einem Menüpunkt muss
+     zählen, was hinter dem Menüpunkt liegt; sie zählt deshalb jetzt
+     dieselbe Menge wie `vZuordnung`. */
+  if(id==="zuordnung") return offeneKassennamen().length||null;
   if(id==="bestellen"){ return bestellliste().length||null; }
   if(id==="zaehlliste"){ return zaehlliste().length||null; }
   if(id==="speicher"){ return VORGAENGE.length||null; }
@@ -2624,12 +2674,9 @@ function vZuordnung(m){
     Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
     „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.</div></section>`;
 
-  const namen={};
-  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
-    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0, tage:0};
-    namen[p.name].anzahl+=p.anzahl; namen[p.name].tage++;
-  }));
-  const L=Object.values(namen).sort((a,b)=>{
+  /* Dieselbe Zählstelle, die auch die Zahl neben dem Menüpunkt liest
+     (elfte Jagd Runde 16 · B) — vorher baute jede ihre eigene Liste. */
+  const L=alleKassennamen().sort((a,b)=>{
     const za=zuordnung(a), zb=zuordnung(b);
     const rang=x=>x.status==="offen"?0:x.status==="auto"?1:2;
     return rang(za)-rang(zb) || b.anzahl-a.anzahl;
@@ -2909,11 +2956,9 @@ function vRezepte(m){
     <div class="unter">Für Mischgetränke, die einen Artikel aus dem Lager verbrauchen, ohne selbst
     einer zu sein. Was hier steht, wird im Abgleich statt der Position selbst gebucht.</div></section>`;
 
-  const namen={};
-  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
-    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0};
-    namen[p.name].anzahl+=p.anzahl;}));
-  const kandidaten=Object.values(namen)
+  /* Dritte Stelle, die dieselbe Menge zusammenzählte — jetzt dieselbe
+     Zählstelle wie Navigation und Zuordnungsseite (elfte Jagd Runde 16). */
+  const kandidaten=alleKassennamen()
     .filter(p=>!MAP[p.name] && !REZ[p.name])
     .sort((a,b)=>b.anzahl-a.anzahl);
 
@@ -2978,6 +3023,12 @@ function vRezepte(m){
    Codes und Rollen gehören der Leitung, nicht dem Quelltext. Solange
    alles im Browser läuft, ist ein Code eine Unterschrift und keine
    Sperre — das steht hier auch so, damit niemand mehr hineinliest. */
+/* Hinweis zum Formular weiter unten: Der Satz unter „Neuen Menschen
+   aufnehmen" steht als `deutung`, nicht als `unter`. `kuerzeUnter()`
+   klappt jeden `unter` über 150 Zeichen hinter einen Knopf — und genau
+   der zweite Satz („Bei allen anderen änderst du die Rolle in ihrer
+   Zeile …") ist der wichtige. Gemessen war auf dem Schirm nur die erste
+   Hälfte sichtbar (elfte Jagd Runde 16 · B). */
 function vTeam(m){
   m.innerHTML=`<section><h2>Mitarbeiter</h2>
     <div class="unter">Wer sich anmelden darf und was ihm die App dann zeigt.
@@ -2988,9 +3039,9 @@ function vTeam(m){
   const s=document.createElement("section");
   s.innerHTML=`<div id="teamL"><div class="karte leer">Wird geladen \u2026</div></div>
     <h3 style="margin-top:32px">Neuen Menschen aufnehmen</h3>
-    <div class="unter">Nur für Menschen, die noch nicht in der Liste stehen. Bei allen
-      anderen änderst du die Rolle in ihrer Zeile und holst den Code dort über
-      „PIN zurücksetzen“.</div>
+    <div class="deutung" style="margin:var(--space-2) 0 var(--space-4)">Nur für
+      Menschen, die noch nicht in der Liste stehen. Bei allen anderen änderst du die
+      Rolle in ihrer Zeile und holst den Code dort über „PIN zurücksetzen“.</div>
     <div class="karte">
       <div class="reihe" style="margin-bottom:12px">
         <label style="width:140px">Name</label>
@@ -3268,20 +3319,33 @@ function vTeam(m){
        fängt ihn diese Absage; ist sie veraltet und er steht doch schon
        am Server, fängt ihn der Wächter dort. */
     const schl=nm.toLowerCase();
-    if(da){
-      formFehler("„"+da.name+"“ ist schon angelegt. Dieses Formular legt nur NEUE "
-        +"Menschen an. Die Rolle änderst du in der Zeile oben in der Liste, einen "
-        +"neuen Code gibt es dort über „PIN zurücksetzen“. Wer wirklich so heißt wie "
-        +"jemand im Haus, braucht einen unterscheidenden Namen.");
-      toast("„"+da.name+"“ ist schon angelegt");
+    /* Zwei Gründe, hier gar nicht erst zu schreiben, und sie decken
+       zusammen auch die Lage ab, in der die Liste schweigt (elfte Jagd
+       Runde 16 · A): der Mensch steht in der Liste — ODER dieses Fenster
+       hat ihn schon einmal angelegt und der Server hat das bestätigt. */
+    const merk=kennungLesen(schl);
+    if(da || (merk && merk.ok)){
+      const wer=da?da.name:nm;
+      formFehler("„"+wer+"“ ist schon angelegt"
+        +(da?"":" — von diesem Fenster, und der Server hat es bestätigt")
+        +". Dieses Formular legt nur NEUE Menschen an. Die Rolle änderst du in der "
+        +"Zeile oben in der Liste, einen neuen Code gibt es dort über „PIN "
+        +"zurücksetzen“. Wer wirklich so heißt wie jemand im Haus, braucht einen "
+        +"unterscheidenden Namen."
+        +(da?"":" Steht die Zeile oben nicht, kommt gerade die Liste nicht durch — "
+            +"mit Verbindung neu laden."));
+      toast("„"+wer+"“ ist schon angelegt");
       return;
     }
-    if(!nKennung[schl])kennungMerken(schl,uuid());
+    const kennung=merk?merk.id:kennungMerken(schl,uuid(),false);
     const b=$("#nAdd"); b.disabled=true; const wort=b.textContent;
     b.textContent="speichert \u2026";
-    const gut=await sende({id:nKennung[schl], name:nm, rolle, code, aktiv:1});
+    const gut=await sende({id:kennung, name:nm, rolle, code, aktiv:1});
     b.disabled=false; b.textContent=wort;
-    if(gut){ $("#nName").value=""; $("#nCode").value=""; }
+    /* Erst die BESTAETIGUNG des Servers macht aus dem Anlauf eine Zeile.
+       Ab hier darf dieselbe Kennung nichts mehr überschreiben. */
+    if(gut){ kennungMerken(schl,kennung,true);
+             $("#nName").value=""; $("#nCode").value=""; }
   };
   hole();
 }

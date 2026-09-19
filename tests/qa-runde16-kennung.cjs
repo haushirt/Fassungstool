@@ -38,7 +38,13 @@ const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
 const rnd = () => String(require("crypto").randomInt(1000, 10000));
 
 const BELEG = path.join(__dirname, "..", "review", "screens", "qa16");
-const LAGE = { personenStumm: true, pakete: [], personen: [], absage: null };
+/* `postStumm` ist der Fall der fuenften Jagd: Das Paket KOMMT AN, die
+   Antwort geht verloren. Nur so bleibt der Anlauf unbestaetigt, und nur
+   dann darf dieselbe Kennung noch einmal hinaus (elfte Jagd). Antwortet
+   der Server dagegen mit 200, ist die Zeile bestaetigt — ein zweiter
+   Versuch ist dann ein Ueberschreiben und wird abgewiesen. */
+const LAGE = { personenStumm: true, postStumm: false, pakete: [],
+               personen: [], absage: null };
 
 const srv = http.createServer((q, a) => {
   let u = q.url.split("?")[0];
@@ -52,6 +58,7 @@ const srv = http.createServer((q, a) => {
         let leib = ""; q.on("data", c => leib += c);
         return q.on("end", () => {
           try { LAGE.pakete.push(JSON.parse(leib)); } catch (e) {}
+          if (LAGE.postStumm) return;          /* angekommen, nie beantwortet */
           /* `absage` spielt die 409-Antwort des Namenswaechters. */
           if (LAGE.absage) { a.writeHead(409, kopf);
             return a.end(JSON.stringify({ fehler: LAGE.absage })); }
@@ -145,9 +152,13 @@ const speicherAbzug = p => p.evaluate(() => {
 
       const roh = sp.lokal["hh_nkennung_v1"];
       let karte = null; try { karte = JSON.parse(roh); } catch (e) {}
-      urteil("K1 · `hh_nkennung_v1` ist eine flache Karte Name → Kennung",
+      /* Seit der elften Jagd traegt jeder Eintrag zusaetzlich, OB der
+         Server den Anlauf bestaetigt hat — daran haengt, ob dieselbe
+         Kennung noch einmal hinaus darf. */
+      urteil("K1 · `hh_nkennung_v1` ist eine Karte Name → {id, ok}",
         karte && typeof karte === "object" && !Array.isArray(karte)
-        && Object.values(karte).every(v => typeof v === "string"),
+        && Object.values(karte).every(v => v && typeof v === "object"
+             && typeof v.id === "string" && typeof v.ok === "boolean"),
         roh);
       urteil("K1 · sie enthaelt NUR Name und Kennung, keine Rolle, keinen Code",
         karte && Object.keys(karte).length === 2
@@ -157,9 +168,12 @@ const speicherAbzug = p => p.evaluate(() => {
          Fenster etwas anderes, als es geschrieben hat. */
       urteil("K1 · die gemerkte Kennung ist die gesendete",
         LAGE.pakete.length === 2
-        && karte["anna beispiel"] === LAGE.pakete[0].id
-        && karte["bernd zweiter"] === LAGE.pakete[1].id,
+        && karte["anna beispiel"].id === LAGE.pakete[0].id
+        && karte["bernd zweiter"].id === LAGE.pakete[1].id,
         "Pakete: " + LAGE.pakete.length);
+      urteil("K1 · und sie steht als BESTAETIGT da (der Server hat geantwortet)",
+        karte["anna beispiel"].ok === true && karte["bernd zweiter"].ok === true,
+        JSON.stringify(karte));
       urteil("K1 · keine JS-Fehler", fehler.length === 0, fehler[0]);
       await ctx.close();
     }
@@ -170,6 +184,7 @@ const speicherAbzug = p => p.evaluate(() => {
        ganze Zweck der Spiegelung: nach einem Neuladen ist der
        Arbeitsspeicher leer, und nur der `localStorage` traegt noch. */
     {
+      LAGE.postStumm = true;      /* Paket kommt an, Antwort geht verloren */
       const { ctx, p, fehler } = await backoffice(b);
       LAGE.pakete = [];
       await anlegen(p, "Clara Dritte", rnd());
@@ -189,6 +204,7 @@ const speicherAbzug = p => p.evaluate(() => {
 
     /* ── K3 · privates Fenster: der Speicher wirft bei jedem Griff ─ */
     {
+      LAGE.postStumm = true;      /* unbestaetigter Anlauf, wie in K2 */
       const { ctx, p, fehler } = await backoffice(b, SPEICHER_TOT);
       LAGE.pakete = [];
       urteil("K3 · die Seite baut sich trotzdem auf",
@@ -243,6 +259,7 @@ const speicherAbzug = p => p.evaluate(() => {
         await warte(q, 400);
         return q;
       };
+      LAGE.postStumm = true;      /* unbestaetigter Anlauf */
       LAGE.pakete = [];
       const p1 = await tab();
       await anlegen(p1, "Frida Sechste", rnd());
@@ -256,6 +273,8 @@ const speicherAbzug = p => p.evaluate(() => {
       urteil("K5 · keine JS-Fehler", fehler.length === 0, fehler[0]);
       await ctx.close();
     }
+
+    LAGE.postStumm = false;   /* ab hier antwortet der Server wieder */
 
     /* ── K6 · das Abmelden raeumt das Gedaechtnis ───────────── */
     /* `localStorage` vergeht nicht von selbst. Die Namen der Mitarbeiter
@@ -430,6 +449,82 @@ const speicherAbzug = p => p.evaluate(() => {
       await ctx.close();
       LAGE.personen = [];
       LAGE.personenStumm = true;
+    }
+
+    /* ── K9 · Bestaetigt heisst: nie wieder ueberschreiben ────── */
+    /* Elfte Jagd Runde 16 · A. Die Absage der zehnten Runde hing an
+       `LEUTE` — und `LEUTE` ist leer, sobald `hole()` in die Frist
+       laeuft, also genau dann, wenn man sie braucht. Die gemerkte
+       Kennung ging dann mit dem NEUEN Formularinhalt hinaus, der Worker
+       sah seine eigene `id` und schwieg, und `ON CONFLICT(id) DO UPDATE`
+       schrieb Rolle, Pruefsumme und `aktiv` neu. Jetzt merkt sich das
+       Fenster, OB der Server den Anlauf bestaetigt hat. */
+    {
+      LAGE.personenStumm = false;      /* erster Anlauf glueckt */
+      LAGE.personen = [];
+      LAGE.pakete = [];
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen(p, "Asad Karakiri", rnd());
+      urteil("K9 · der erste Anlauf glueckt",
+        LAGE.pakete.length === 1, "Pakete: " + LAGE.pakete.length);
+
+      /* Jetzt schweigt die Liste — und die Seite wird neu geladen, damit
+         nur noch das Gedaechtnis traegt. */
+      LAGE.personenStumm = true;
+      await p.reload({ waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      urteil("K9 · die Liste kommt nicht (sonst prueft das hier nichts)",
+        !/Asad Karakiri/.test(await p.locator("#teamL").innerText()),
+        (await p.locator("#teamL").innerText()).slice(0, 50));
+
+      await anlegen(p, "Asad Karakiri", rnd());
+      urteil("K9 · der bestaetigte Mensch wird NICHT ueberschrieben",
+        LAGE.pakete.length === 1,
+        "Pakete: " + JSON.stringify(LAGE.pakete.slice(1)));
+      const f = await p.locator("#nFehler").innerText().catch(() => "");
+      urteil("K9 · und es steht da, warum", /schon angelegt/.test(f), f.slice(0, 80));
+      urteil("K9 · der Satz sagt auch, warum die Zeile oben fehlt",
+        /Liste nicht durch|neu laden/.test(f), f.slice(0, 160));
+      urteil("K9 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.personen = [];
+      LAGE.personenStumm = true;
+    }
+
+    /* ── K10 · Unbestaetigt heisst: wiederholen ist erlaubt ────── */
+    /* Die andere Haelfte — der Fund der fuenften Jagd muss behoben
+       bleiben: Kommt die ANTWORT nicht an, darf derselbe Anlauf noch
+       einmal hinaus, und zwar mit derselben Kennung. */
+    {
+      LAGE.personenStumm = true;
+      LAGE.postStumm = true;   /* das Paket kommt an, die Antwort nicht */
+      LAGE.pakete = [];
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen(p, "Ian Lauchbein", rnd());
+      await warte(p, 9200);
+      await anlegen(p, "Ian Lauchbein", rnd());
+      const k = new Set(LAGE.pakete.map(x => x.id));
+      urteil("K10 · zweimal derselbe Anlauf → zwei Pakete, EINE Kennung",
+        LAGE.pakete.length === 2 && k.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + k.size);
+      urteil("K10 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
     }
 
   } finally {

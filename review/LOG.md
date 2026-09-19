@@ -4010,3 +4010,67 @@ Ausrichtung). Zusammenlegen geht nur über die geteilte Gestaltungsschicht und
 ist keine Nachtarbeit (mittel).
 
 **STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – software-engineer (zwölfte Runde, nach der elften Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A**: Meine Absage aus der zehnten Runde hing an `LEUTE` —
+  und `LEUTE` ist leer, sobald `hole()` in die Frist läuft, ohne Netz ist oder
+  401/403 bekommt, also **genau dann, wenn man sie braucht**. Die gemerkte
+  Kennung ging dann mit dem NEUEN Formularinhalt hinaus, der Worker sah seine
+  eigene `id` unter den namensgleichen und schwieg, und `ON CONFLICT(id) DO
+  UPDATE` schrieb Rolle, Prüfsumme und `aktiv` neu: alter Code tot, Rolle
+  „Service", Sperre aufgehoben, auf dem Schirm „Gespeichert". Der Morgenbrief
+  schickt Casimir genau in diese Lage — drei Menschen anlegen, danach „PIN
+  zurücksetzen"; ab da hält dieser Browser drei Kennungen dauerhaft.
+* ✅ übernommen — **B**: Die sechste Stelle. Ich hatte die Navigationszahl auf
+  `SPANNE` gestellt — auch falsch. Die Zahl steht neben einem Menüpunkt, und
+  die SEITE dahinter kennt gar kein Fenster: `vZuordnung` geht über alle
+  geladenen Berichte. Gemessen: Navigation 44, Seite daneben 45.
+* ✅ übernommen — **B**: Mein neuer Satz „wohin die anderen gehören" stand nicht
+  auf dem Schirm. `kuerzeUnter()` klappt jeden `.unter` über 150 Zeichen hinter
+  einen Knopf — und genau der zweite Satz war der wichtige.
+* ✅ übernommen — die sechs C-Funde, davon zwei gebaut (siehe unten), vier in
+  den Backlog: weitere unsichtbare Zeichen (U+034F, U+FE0F, U+180E, U+3164,
+  Tag-Zeichen, kyrillisches А), das ZWNJ/ZWJ-Problem in arabischer und
+  indischer Schrift (dort ändern sie das Schriftbild — mein Kommentar „Was auf
+  dem Schirm nichts ist" trifft dort nicht zu), `.toast` in der App mit
+  demselben 50-vw-Fehler, und der waagrechte Überlauf bei 320 px in
+  `.kopf button.k` (vor Runde 16).
+
+**Umgesetzt:**
+1. **Die Kennung merkt sich, OB der Server bestätigt hat.** Aus der
+   Zeichenkette wird `{id, ok}`. Unbestätigt → derselbe Anlauf darf wiederholt
+   werden (der Fund der fünften Jagd bleibt behoben). Bestätigt → hier wird
+   nicht geschrieben, auch wenn die Liste schweigt. Altbestand (bloße
+   Zeichenketten) gilt als bestätigt — die vorsichtige Seite.
+2. **Eine Zählstelle für die Kassennamen.** `alleKassennamen()` /
+   `offeneKassennamen()`; Navigation, Zuordnungsseite und Rezepturen lesen
+   dieselbe. Es waren drei eigene Aufzählungen.
+3. **Der Satz steht auf dem Schirm** — als `deutung` statt als `unter`, damit
+   `kuerzeUnter()` ihn nicht einklappt.
+
+**Geprüft:** `npm test` **440/440**. Neu und gegen `216b7aa` nachweislich rot:
+`tests/qa-runde16-kennung.cjs` **K9** klickt die Lage nach (erster Anlauf
+glückt, Liste schweigt danach, Seite neu geladen, derselbe Name) — auf dem
+alten Stand ging ein Paket `{"rolle":"service",…}` hinaus, jetzt keines.
+**K10** ist die Gegenprobe: kommt das Paket an, aber die ANTWORT nicht, darf
+derselbe Anlauf noch einmal hinaus, mit derselben Kennung — auf beiden Ständen
+grün. Dafür hat der Prüfserver einen neuen Zustand `postStumm` bekommen; die
+alten Szenen K2/K3/K5 liefen mit „GET stumm, POST antwortet", und das ist seit
+dieser Runde eben **kein** unbestätigter Anlauf mehr.
+
+`sw.js` v53 → **v54**.
+
+**Für die Nächsten:**
+* An den **Jäger**: Die Wurzel war diesmal, dass ein Gedächtnis zwei Dinge
+  bedeuten musste, die verschieden behandelt gehören. Es trägt jetzt beides
+  ausdrücklich.
+
+**Phase/Thema:** Runde 16 / zwölfte Runde, vor dem Livegang
+
+**Backlog:** vier C-Funde der elften Jagd (siehe `review/BACKLOG.md`).
+
+**STATUS:** VERBESSERUNGEN

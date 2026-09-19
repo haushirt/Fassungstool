@@ -125,8 +125,23 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
        `LEUTE` veraltet blieb. Sie hängt jetzt am NAMEN und überlebt den
        geglückten Anlauf. */
     assert.match(BO, /const schl=nm\.toLowerCase\(\);/);
-    assert.match(BO, /if\(!nKennung\[schl\]\)kennungMerken\(schl,uuid\(\)\);/,
+    assert.match(BO, /const kennung=merk\?merk\.id:kennungMerken\(schl,uuid\(\),false\);/,
       "die Kennung wird nicht je Mensch einmal vergeben");
+    /* BERICHTIGT (elfte Jagd Runde 16 · A): Die Kennung war eine blosse
+       Zeichenkette — nicht zu unterscheiden, ob sie zu einem Anlauf
+       gehört, der noch NICHT am Server angekommen ist, oder zu einer
+       Zeile, die dort längst steht. Ist `LEUTE` leer (Frist, kein Netz,
+       401, 403 — also genau dann, wenn man sie braucht), griff die
+       Absage nicht, und dieselbe Kennung schrieb die bestehende Zeile mit
+       neuem Inhalt um: Code tot, Rolle „Service", Sperre aufgehoben.
+       Erst die Bestätigung des Servers macht aus dem Anlauf eine Zeile. */
+    assert.match(BO, /function kennungLesen\(schl\)\{/);
+    assert.match(BO, /if\(typeof v==="string"\)return \{id:v, ok:true\};/,
+      "Altbestand gilt nicht als bestätigt — das ist die unsichere Seite");
+    assert.match(BO, /if\(da \|\| \(merk && merk\.ok\)\)\{/,
+      "eine bestätigte Kennung hält das Formular nicht auf");
+    assert.match(BO, /if\(gut\)\{ kennungMerken\(schl,kennung,true\);/,
+      "die Bestätigung des Servers wird nicht gemerkt");
     /* BERICHTIGT (zehnte Jagd Runde 16 · A): Hier stand davor
        `if(da)kennungMerken(schl,da.id);` — die Kennung der GEFUNDENEN
        Person ging ins Paket, und damit war der Namenswächter im Worker
@@ -137,9 +152,9 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
        steht der Mensch schon in der Liste, schreibt es nichts. */
     assert.doesNotMatch(BO, /if\(da\)kennungMerken\(schl,da\.id\)/,
       "das Anlegen-Formular schreibt die vorhandene Person wieder um");
-    assert.match(BO, /if\(da\)\{\n\s*formFehler\(/,
+    assert.match(BO, /const wer=da\?da\.name:nm;\n\s*formFehler\(/,
       "das Anlegen-Formular sagt nicht ab, wenn es den Menschen schon gibt");
-    assert.match(BO, /sende\(\{id:nKennung\[schl\],/,
+    assert.match(BO, /sende\(\{id:kennung, name:nm, rolle, code, aktiv:1\}\)/,
       "der Anlauf schickt seine Kennung nicht mit");
     assert.doesNotMatch(BO, /nAnlauf/,
       "die Kennung haengt wieder am Formularinhalt");

@@ -419,12 +419,22 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     assert.match(BO, /hol\("abgleich_"\+\(a\.spanne>1\?a\.von\+"_bis_"\+a\.bis:tag\)/,
       "der Dateiname nennt einen einzelnen Tag für Zahlen über ein Fenster");
 
-    /* Zehnte Jagd · B: die fünfte Stelle. `zaehler("zuordnung")` rief
-       `abgleich(t)` ohne Spanne — ein Fenster von EINEM Tag, während
-       Mittagsblick und Abgleichansicht `SPANNE` rechnen. Gemessen an zehn
-       Tagen: Navigation 10, Ansicht daneben 44. */
-    assert.match(BO, /if\(id==="zuordnung"\)\{ const a=abgleich\(t, SPANNE\);/,
-      "die Navigationszahl rechnet ein anderes Fenster als die Ansicht");
+    /* Zehnte Jagd · B, berichtigt von der elften: `zaehler("zuordnung")`
+       rief erst `abgleich(t)` (ein Tag), dann `abgleich(t, SPANNE)` —
+       beides falsch. Die Zahl steht neben einem Menüpunkt, und die SEITE
+       dahinter kennt kein Fenster: `vZuordnung` geht über ALLE geladenen
+       Berichte. Gemessen an zehn Tagen: Navigation 44, Seite 45. Beide
+       lesen jetzt dieselbe Zählstelle. */
+    assert.match(BO, /if\(id==="zuordnung"\) return offeneKassennamen\(\)\.length\|\|null;/,
+      "die Navigationszahl zählt nicht, was hinter dem Menüpunkt liegt");
+    assert.match(BO, /function offeneKassennamen\(\)\{/,
+      "es gibt keine gemeinsame Zählstelle");
+    /* Und `vZuordnung` muss sie wirklich benutzen — sonst stehen wieder
+       zwei Listen nebeneinander. */
+    assert.match(BO, /const L=alleKassennamen\(\)\.sort/,
+      "die Seite baut ihre Liste anders auf als die Zählstelle");
+    assert.equal((BO.match(/namen\[p\.name\]\.anzahl\+=p\.anzahl/g)||[]).length, 1,
+      "die Kassennamen werden an mehr als einer Stelle zusammengezählt");
     assert.doesNotMatch(BO, /<h3>Größe fehlt · \$\{a\.ohneGroesse\.length\}/,
       "die Abschnittsüberschrift zählt beide Ursachen als „Größe fehlt“");
 
