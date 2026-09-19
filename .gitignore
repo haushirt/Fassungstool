@@ -1,2 +1,7 @@
 node_modules/
 package-lock.json
+
+# Messlaeufe werden erst abgelegt, wenn der Lauf durch ist — ein halb
+# geschriebener Ordner gehoert nicht in die Geschichte. Der fertige Satz
+# wird am Ende mit `git add -f review/screens/<lauf>` aufgenommen.
+review/screens/r16/
