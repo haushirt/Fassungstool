@@ -32,6 +32,5 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 - Genau vier Dateien in `public/`. Die Gestaltungsschicht steht wortgleich in
   `index.html` und `leitung.html` – Änderungen immer in beiden.
 - Nach jeder Änderung in `public/`: `VERSION` in `sw.js` erhöhen.
-- `CLAUDE.md` nennt als Arbeitszweig `v2-review`; den gibt es nicht mehr.
-  Gearbeitet wird auf dem jeweiligen `claude/…`-Zweig. **Bitte einmal bestätigen**,
-  dann wird die Regel berichtigt.
+- Gearbeitet wird immer auf einem `claude/…`-Zweig, nie direkt auf `main`
+  (Regel 1 in `CLAUDE.md`, berichtigt am 19.09.2026 – vorher stand dort `v2-review`).

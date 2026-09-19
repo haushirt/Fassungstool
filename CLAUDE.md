@@ -36,7 +36,7 @@ Architektur, die bleibt
 
 Harte Regeln (nie brechen)
 
-1. Nur auf Branch `v2-review` arbeiten. Nie auf `main` pushen, nie mergen, nie force-pushen.
+1. Immer auf `claude/…`-Branches arbeiten, nie direkt auf `main`. Nie mergen, nie force-pushen.
 2. Kein `wrangler deploy`. Erlaubt: lokale Tests mit `--local` bzw. `wrangler dev --local`.
    **Live-D1 seit 17.09.2026: NUR LESEN.** Lesende Abfragen (`SELECT`, `PRAGMA`, `sqlite_master`) über den
    Cloudflare-Connector sind erlaubt und erwünscht, um Code gegen die Wirklichkeit zu prüfen.
@@ -97,4 +97,4 @@ FERTIG heißt: aus meiner Rolle keine Punkte mit Priorität hoch/mittel mehr off
 
 Veröffentlichen
 
-Nur wenn ich wörtlich `VERÖFFENTLICHEN` schreibe: Pull Request `v2-review` → `main` erstellen, Beschreibung aus `review/ERGEBNIS.md`. Bei `VERÖFFENTLICHEN phase-a` (bzw. b/c) den PR vom jeweiligen Tag aus erstellen. Enthält der PR Migrationen, steht ganz oben: „Vor dem Merge Migrationen einspielen". Nicht selbst mergen – den Merge (= Live-Gang) mache ich.
+Nur wenn ich wörtlich `VERÖFFENTLICHEN` schreibe: Pull Request vom aktuellen `claude/…`-Branch → `main` erstellen, Beschreibung aus `review/ERGEBNIS.md`. Bei `VERÖFFENTLICHEN phase-a` (bzw. b/c) den PR vom jeweiligen Tag aus erstellen. Enthält der PR Migrationen, steht ganz oben: „Vor dem Merge Migrationen einspielen". Nicht selbst mergen – den Merge (= Live-Gang) mache ich.
