@@ -261,6 +261,19 @@ async function codeNachschlagen(request, env) {
   let code = "";
   try { code = (await request.json()).code || ""; } catch {}
 
+  /* Jäger, Runde 16 (A3): Ein Code, der nicht einmal die Form hat, ist
+     kein Rateversuch — er ist ein leeres Feld oder ein Vertipper. Bis
+     hierher trug JEDE Anfrage von „Freigeben" eine Zeile in
+     `anmeldeversuch` ein, und zehn davon sperren `/api/anmelden` für das
+     GANZE HAUS (die Sperre zählt je IP, und im Haus-WLAN teilen sich alle
+     Geräte eine). Die Freigabe ist der häufigste Dialog überhaupt; zwölf
+     ungeduldige Klicks auf ein leeres Feld hätten am Morgen niemanden
+     mehr hereingelassen. Eine krumme Eingabe wird deshalb abgewiesen,
+     BEVOR sie zählt. Wer die Form trifft und daneben liegt, zählt weiter
+     mit — das ist ein echter Rateversuch und soll etwas kosten. */
+  if (!PIN_MUSTER.test(code))
+    return json({ fehler: "form", laenge: PIN_LAENGE }, 422);
+
   /* Wie beim Anmelden: jeder Code gegen jede Person, kein früher Ausstieg. */
   const { results: leute } = await env.DB.prepare(
     `SELECT name, rolle, code_hash, salt FROM person WHERE aktiv = 1`).all();

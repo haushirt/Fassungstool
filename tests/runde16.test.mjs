@@ -297,7 +297,9 @@ describe("B3 · Der Server entscheidet, wer freigeben darf", () => {
     const env = await haus(CL, CS);
     const keks = keksAus(await anmelden(env, CL));
 
-    const falsch = wuerfel(7);
+    /* Vierstellig — sonst weist der Worker schon die Form ab (A3) und
+       kaeme gar nicht bis zum Nachschlag. */
+    let falsch = wuerfel(); while (falsch === CL || falsch === CS) falsch = wuerfel();
     const toter = await worker.fetch(anfrage("/api/code",
       { method: "POST", keks, body: { code: falsch } }), env);
     assert.equal(toter.status, 401);
@@ -325,16 +327,51 @@ describe("B3 · Der Server entscheidet, wer freigeben darf", () => {
       "eine abgelaufene Sitzung nimmt dem Geraet weiter den gueltigen Code");
   });
 
-  test("der Nachschlag zählt auf dieselbe Sperre ein wie die Anmeldung", async () => {
+  test("ein echter Rateversuch zählt auf dieselbe Sperre ein wie die Anmeldung", async () => {
     const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
     const env = await haus(CL, CS);
     const keks = keksAus(await anmelden(env, CL));
-    const falsch = wuerfel(7);
+    let falsch = wuerfel(); while (falsch === CL || falsch === CS) falsch = wuerfel();
     for (let i = 0; i < 10; i++)
       await worker.fetch(anfrage("/api/code",
         { method: "POST", keks, body: { code: falsch } }), env);
     const zu = await anmelden(env, falsch);
     assert.equal(zu.status, 429, "der Nachschlag ist der Weg an der Sperre vorbei");
+  });
+
+  /* Jäger, Runde 16 (A3): Die Freigabe ist der häufigste Dialog im Haus.
+     Solange JEDE Anfrage von dort eine Zeile in `anmeldeversuch` trug,
+     konnten zwölf ungeduldige Klicks auf ein leeres Feld die Anmeldung
+     für das ganze Haus sperren — die Sperre zählt je IP, und im
+     Haus-WLAN teilen sich alle Geräte eine. */
+  test("ein leeres oder krummes Feld kostet KEINEN Anmeldeversuch", async () => {
+    const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
+    const env = await haus(CL, CS);
+    const keks = keksAus(await anmelden(env, CL));
+
+    for (const krumm of ["", "1", "12", "123", "12345", "abcd", "12a4"]) {
+      const a = await worker.fetch(anfrage("/api/code",
+        { method: "POST", keks, body: { code: krumm } }), env);
+      assert.equal(a.status, 422, "krumme Eingabe „" + krumm + "\" ging durch");
+    }
+    for (let i = 0; i < 20; i++)
+      await worker.fetch(anfrage("/api/code",
+        { method: "POST", keks, body: { code: "" } }), env);
+
+    const n = await env.DB.prepare(
+      `SELECT COUNT(*) AS n FROM anmeldeversuch WHERE ok = 0`).first();
+    assert.equal(n.n, 0, "krumme Eingaben haben " + n.n + " Fehlversuche eingetragen");
+    const auf = await anmelden(env, CL);
+    assert.equal(auf.status, 200, "die Anmeldung ist durch leere Felder gesperrt");
+  });
+
+  test("die App schickt gar nicht erst, was die Form nicht hat", () => {
+    const f = APP.slice(APP.indexOf("async function werHatDenCode(code)"),
+                        APP.indexOf("function codeAbsage(erg)"));
+    assert.match(f, /return \{name:null, quelle:"form"\};/,
+      "eine krumme Eingabe geht weiter an den Server");
+    assert.match(APP, /if\(erg\.quelle==="form"\)/,
+      "die Absage nennt den Grund nicht");
   });
 
   test("die App fragt den Server und vergisst den toten Code", () => {
@@ -469,9 +506,13 @@ describe("R16/2 · Ein Knopf, ein Fenster, zurück zur Startseite", () => {
   test("Rohdaten und Zurücksetzen stehen am Ende des Menüs", () => {
     assert.match(APP, /class="notweg"/);
     assert.match(APP, /id="bJsonAlles">Rohdaten sichern \(JSON\)</);
-    assert.match(APP, /id="bResetAlles" class="adminlink del"|class="adminlink del" id="bResetAlles"/);
+    /* Je angefangenem Vorgang ein eigener Knopf — nicht einer, der alle
+       auf einmal wegräumt (Jagd Runde 16 · B2). */
+    assert.match(APP, /data-reset="\$\{k\}"/);
     assert.match(APP, /function rohdatenSichern\(\)/);
-    assert.match(APP, /function allesZuruecksetzen\(\)/);
+    assert.match(APP, /function vorgangZuruecksetzen\(k\)/);
+    assert.doesNotMatch(APP, /function allesZuruecksetzen\(\)/,
+      "der Sammelknopf räumt wieder alle angefangenen Vorgänge auf einmal weg");
   });
 
   test("der Abschluss holt den Z-Bericht zum VORTAG", () => {
@@ -482,9 +523,9 @@ describe("R16/2 · Ein Knopf, ein Fenster, zurück zur Startseite", () => {
   });
 
   test("mit Z-Bericht: Abgleich mit EINEM Notizfeld · ohne: kurzes Fertig", () => {
-    assert.match(APP, /function popupAbgleich\(d,z\)/);
+    assert.match(APP, /function popupAbgleich\(d,z,groessen\)/);
     assert.match(APP, /function popupFertig\(d\)/);
-    assert.match(APP, /if\(z\)popupAbgleich\(d,z\); else popupFertig\(d\);/);
+    assert.match(APP, /if\(z\)popupAbgleich\(d,z,groessen\); else popupFertig\(d\);/);
     /* Beide enden auf der Startseite. */
     const ab = APP.slice(APP.indexOf("function popupAbgleich"), APP.indexOf("function fensterZu"));
     assert.equal([...ab.matchAll(/zurStartseite\(\)/g)].length, 2,
@@ -511,38 +552,73 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     assert.fail(name + ": keine schliessende Klammer");
   };
   const rechne = new Function(
-    schnitt("gefassteMengen") + "\n" + schnitt("abgleichZeilen") +
-    "\nreturn {gefassteMengen, abgleichZeilen};")();
+    schnitt("gefassteMengen") + "\n" + schnitt("verkaufteFlaschen") +
+    "\n" + schnitt("abgleichZeilen") +
+    "\nreturn {gefassteMengen, verkaufteFlaschen, abgleichZeilen};")();
 
   const vorgang = {
     mode: "tag", tag: "2026-09-19",
     rest: { w1: 2 }, bar: { w2: 3 }, barrot: {}, backup: {},
     zusatz: {}, gent: { cola: 6 }, gzusatz: {}
   };
+  /* Die Zeilen sehen aus, wie `gnparse.ml()` sie wirklich liefert: Die
+     Zahl im Kassennamen landet in `ausschankMl` — „1/8 l" gibt 125,
+     „0,75 l" gibt 750, ein Name ohne Menge gibt null.
+     (Die erste Fassung dieser Prüfung erfand Zeilen mit `ausschankMl:
+     null` für „Cola 0,33"; solche liefert der Parser nie, und die Prüfung
+     bestätigte damit nur sich selbst. Jagd Runde 16 · A2.) */
   const zBericht = { tag: "2026-09-18", positionen: [
-    { rohbez: "Cola 0,33", artikel: "cola", anzahl: 6, ausschankMl: null },
-    { rohbez: "Wein A",    artikel: "w1",   anzahl: 1, ausschankMl: null },
-    { rohbez: "Wein B",    artikel: "w2",   anzahl: 3, ausschankMl: null },
-    { rohbez: "Glaswein",  artikel: "w9",   anzahl: 12, ausschankMl: 125 },
-    { rohbez: "Unbekannt", artikel: null,   anzahl: 4, ausschankMl: null }
+    { rohbez: "Cola 0,33 l",  artikel: "cola", anzahl: 6,  ausschankMl: 330 },
+    { rohbez: "Wein A 1/8 l", artikel: "w1",   anzahl: 6,  ausschankMl: 125 },
+    { rohbez: "Wein B 0,75 l",artikel: "w2",   anzahl: 3,  ausschankMl: 750 },
+    { rohbez: "Wein C 1/8 l", artikel: "w9",   anzahl: 12, ausschankMl: 125 },
+    { rohbez: "Unbekannt",    artikel: null,   anzahl: 4,  ausschankMl: null }
   ]};
+  /* Bestätigte Gebindegrössen, wie sie `GET /api/mapping` liefert. `w9`
+     fehlt absichtlich — das ist der heutige Live-Zustand für ALLE
+     dreizehn Zuordnungen. */
+  const groessen = { "Cola 0,33 l": 330, "Wein A 1/8 l": 750, "Wein B 0,75 l": 750 };
 
   test("gefasst wird aus allen Fächern zusammengezählt", () => {
     assert.deepEqual(rechne.gefassteMengen(vorgang), { w1: 2, w2: 3, cola: 6 });
   });
 
-  test("nur, was auseinandergeht — hier eine Zeile", () => {
-    const a = rechne.abgleichZeilen(vorgang, zBericht);
-    assert.equal(a.zeilen.length, 1, JSON.stringify(a.zeilen));
-    assert.deepEqual(a.zeilen[0], { id: "w1", gefasst: 2, verkauft: 1, diff: 1 });
+  test("verkauft wird gerechnet wie im Backoffice: anzahl × ausschank ÷ gebinde", () => {
+    const f = (p) => rechne.verkaufteFlaschen(p, groessen);
+    /* Sechs Achtel aus der 0,75er sind eine Flasche. */
+    assert.equal(f(zBericht.positionen[1]), 1);
+    /* Drei ganze Flaschen bleiben drei. */
+    assert.equal(f(zBericht.positionen[2]), 3);
+    /* Sechs Flaschen Cola, Gebinde = Ausschank. */
+    assert.equal(f(zBericht.positionen[0]), 6);
+    /* Ohne bestätigte Grösse wird NICHTS geraten. */
+    assert.equal(f(zBericht.positionen[3]), null);
+    /* Ohne Menge im Namen ist ein Stück eine Flasche. */
+    assert.equal(f({ rohbez: "X", anzahl: 2, ausschankMl: null }, groessen), 2);
   });
 
-  test("Offenausschank und nicht zugeordnete Zeilen stehen im Fuss, nicht als Abweichung", () => {
-    const a = rechne.abgleichZeilen(vorgang, zBericht);
-    assert.equal(a.imGlas, 1);
+  test("nur, was auseinandergeht — hier eine Zeile", () => {
+    const a = rechne.abgleichZeilen(vorgang, zBericht, groessen);
+    assert.equal(a.zeilen.length, 1, JSON.stringify(a.zeilen));
+    assert.deepEqual(a.zeilen[0], { id: "w1", gefasst: 2, verkauft: 1, diff: 1 });
+    assert.equal(a.geprueft, 3, "nicht alle vergleichbaren Artikel gezählt");
+  });
+
+  test("ein Artikel ohne bestätigte Grösse bleibt aus der Rechnung — und wird gezählt", () => {
+    const a = rechne.abgleichZeilen(vorgang, zBericht, groessen);
+    assert.equal(a.ohneGroesse, 1);
     assert.equal(a.ohneZuordnung, 1);
     assert.equal(a.zeilen.some(z => z.id === "w9"), false,
-      "eine Position im Glas wird als Abweichung behauptet");
+      "eine Position ohne Gebindegrösse wird als Abweichung behauptet");
+  });
+
+  test("ohne JEDE Grösse wird nichts verglichen — und nichts behauptet", () => {
+    /* Der heutige Live-Zustand. `geprueft` muss 0 sein, damit das Fenster
+       „Nichts zu vergleichen" sagen kann statt „Keine Abweichung". */
+    const a = rechne.abgleichZeilen(vorgang, zBericht, {});
+    assert.equal(a.geprueft, 0);
+    assert.equal(a.zeilen.length, 0);
+    assert.equal(a.ohneGroesse, 4);
   });
 
   test("`holtN` schlägt die Summe der Fächer — wie im Worker", () => {
@@ -550,9 +626,22 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     assert.equal(rechne.gefassteMengen(v).w1, 1);
   });
 
-  test("gar keine Abweichung ergibt eine leere Liste", () => {
+  test("gar keine Abweichung ergibt eine leere Liste bei geprueft > 0", () => {
     const v = Object.assign({}, vorgang, { rest: { w1: 1 } });
-    assert.equal(rechne.abgleichZeilen(v, zBericht).zeilen.length, 0);
+    const a = rechne.abgleichZeilen(v, zBericht, groessen);
+    assert.equal(a.zeilen.length, 0);
+    assert.ok(a.geprueft > 0, "keine Abweichung ohne einen einzigen Vergleich");
+  });
+
+  test("das Fenster behauptet nichts, was es nicht gerechnet hat", () => {
+    const fenster = APP.slice(APP.indexOf("function popupAbgleich"),
+                              APP.indexOf("function popupFertig"));
+    assert.match(fenster, /a\.geprueft===0/,
+      "das Fenster unterscheidet nicht zwischen nichts-verglichen und nichts-gefunden");
+    assert.match(fenster, /Nichts zu vergleichen/);
+    /* Und die unzugeordneten Kassenpositionen gehören nicht in den Keller. */
+    assert.doesNotMatch(fenster, /ohneZuordnung/,
+      "44 Kassenpositionen aus der Küche stehen wieder im Kellerfenster");
   });
 });
 
@@ -585,28 +674,55 @@ describe("R16/4 · Verbunden — und ohne Verbindung wartet der Knopf", () => {
     assert.match(APP, /t="Nicht angemeldet – bitte neu anmelden"/);
     assert.match(APP, /:"Server antwortet nicht"; k="fehler"/);
   });
-  test("der Abschlussknopf hängt an der Verbindung", () => {
+  /* BERICHTIGUNG (Jagd Runde 16 · A1, Veto des qa-guardian): Hier stand
+     „der Abschlussknopf hängt an der Verbindung" als bestandene Prüfung —
+     also der Fund selbst als sein Gegenteil. Der Auftrag der Runde
+     verlangte die Sperre, aber im Keller ist kein Netz; eine fertige
+     Tagesfassung war damit dort nicht abzuschliessen, und die
+     Kellerzählung, die derselbe Auftrag unter „Nicht anfassen" führt, war
+     mitgesperrt. Geprüft wird jetzt das Gegenteil: Der Knopf trägt kein
+     `disabled` aus der Netzlage, und der Hinweis sagt nur, was fehlt. */
+  test("der Abschlussknopf hängt NICHT an der Verbindung", () => {
     assert.match(APP, /function verbunden\(\)/);
     assert.match(APP, /function finishNetz\(\)/);
-    assert.match(APP, /fb\.setAttribute\("data-netz","1"\)/);
-    assert.match(APP, /fb\.disabled=!an;/);
-    assert.match(APP, /hn\.textContent="Keine Verbindung"/);
-    /* Eine abgelaufene Sitzung ist keine fehlende Verbindung. */
-    assert.match(APP, /NETZ\.zustand==="abgemeldet"\s*\n?\s*\? "Nicht angemeldet – bitte neu anmelden"/);
+    assert.doesNotMatch(APP, /fb\.disabled=!an;/,
+      "der Knopf wird wieder wegen der Netzlage gesperrt");
+    const fn = APP.slice(APP.indexOf("function finishNetz()"),
+                         APP.indexOf("function finishNetz()") + 900);
+    assert.doesNotMatch(fn, /\.disabled/,
+      "finishNetz() sperrt wieder den Knopf statt nur den Hinweis zu setzen");
+    /* Und der Abschluss selbst darf nicht vorher aussteigen. */
+    const schritt = APP.slice(APP.indexOf("async function abschlussSchritt"),
+                              APP.indexOf("function popupAbgleich"));
+    assert.doesNotMatch(schritt, /if\(!verbunden\(\)\)/,
+      "abschlussSchritt() steigt ohne Netz wieder aus");
+    assert.match(schritt, /vorgangFestschreiben\(d\);/);
   });
-  test("er wird von selbst wieder drückbar", () => {
+  test("ohne Netz wird trotzdem abgeschlossen und in den Ausgang gelegt", () => {
+    /* Das ist der Kern von Regel 6: Der Vorgang geht in die Reihe und
+       wartet dort. `holeZBericht()` gibt ohne Netz `null` zurück, dann
+       kommt `popupFertig()` — und sagt, dass der Abgleich nachkommt. */
+    const hole = APP.slice(APP.indexOf("async function holeZBericht"),
+                           APP.indexOf("function abgleichZeilen"));
+    assert.match(hole, /catch\(e\)\{ return null; \}/,
+      "holeZBericht() reicht den Fehler durch statt null zu liefern");
+    const fertig = APP.slice(APP.indexOf("function popupFertig"),
+                             APP.indexOf("function fensterZu"));
+    assert.match(fertig, /!verbunden\(\)/,
+      "das Fenster sagt nicht, dass der Vorgang ohne Netz wartet");
+  });
+  test("der Hinweis unter dem Knopf sagt, was fehlt — und geht von selbst weg", () => {
+    assert.match(APP, /hn\.textContent="Keine Verbindung – der Abgleich kommt nach"/);
     /* netzChip() läuft bei online/offline, nach jeder Übertragung und in
-       der 45-s-Runde. Steht finishNetz() dort, kommt der Knopf ohne
-       Zutun zurück. */
+       der 45-s-Runde. Steht finishNetz() dort, verschwindet der Hinweis
+       ohne Zutun. */
     const chip = APP.slice(APP.indexOf("function netzChip()"),
                            APP.indexOf("const OHNE_NETZ="));
     assert.match(chip, /finishNetz\(\);/,
-      "der Knopf wird nicht nachgeführt und bleibt grau");
-    assert.match(APP, /\.finishbtn:disabled\{/, "der gesperrte Knopf ist nicht ausgegraut");
+      "der Hinweis wird nicht nachgeführt und bleibt stehen");
   });
   test("das Gefasste bleibt im Gerät, auch ohne Verbindung", () => {
-    /* Der Knopf sperrt den ABSCHLUSS, nicht das Speichern. `save()` läuft
-       bei jeder Änderung weiter und hängt an nichts Netzartigem. */
+    /* `save()` läuft bei jeder Änderung und hängt an nichts Netzartigem. */
     assert.match(APP, /function save\(\)/);
     const save = APP.slice(APP.indexOf("function save()"), APP.indexOf("function save()") + 400);
     assert.doesNotMatch(save, /verbunden\(\)|fetch\(/,

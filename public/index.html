@@ -332,10 +332,17 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 /* Runde 16 · 4b: Ohne Verbindung ist „Fertig – Speichern" nicht drueckbar.
    Ausgegraut, nicht versteckt — der Knopf bleibt an seinem Platz, damit
    klar ist, dass er wiederkommt. Der Grund steht direkt darunter. */
+/* Der Knopf ist nur waehrend des Speicherns kurz gesperrt (siehe
+   abschlussSchritt) — nie wegen der Verbindung. Gemessen (Jagd Runde 16):
+   `--fg-muted` auf `--surface-4` sind 4,43:1 und damit unter dem Mass des
+   Hauses; `--fg-secondary` bringt 5,83:1 auf demselben Grund. Dieselbe
+   Rechnung steht bei `nav.seite .zahl` in leitung.html. */
 .finishbtn:disabled{background:var(--surface-4);border-color:var(--border-strong);
-  color:var(--fg-muted);cursor:default}
+  color:var(--fg-secondary);cursor:default}
+/* Dieser Satz erklaert als einziger, warum der Abgleich ausbleibt —
+   `--fg-muted` auf `--surface` sind 3,66:1 und zu leise dafuer. */
 .finishhint{margin:var(--space-2) 0 0;text-align:center;
-  font-size:var(--text-sm);color:var(--fg-muted)}
+  font-size:var(--text-sm);color:var(--fg-secondary)}
 /* Der Abgleich im Abschlussfenster: eine Zeile je Artikel, die Zahlen
    rechts und untereinander lesbar. */
 .abgl{margin:var(--space-3) 0 0;border-top:1px solid var(--border)}
@@ -1908,6 +1915,12 @@ async function vergissCode(code){
    Freigabe, die dort gar nicht mehr geht, waere die schlechtere Loesung.
    Welcher Weg es war, sagt `quelle`; der Dialog schreibt es dazu. */
 async function werHatDenCode(code){
+  /* Jäger, Runde 16 (A3): Was die Form nicht hat, geht nicht hinaus. Der
+     Server zählt zwar seit derselben Runde keine krumme Eingabe mehr mit,
+     aber eine Anfrage, die nur ein Nein zurückbringen kann, gehört gar
+     nicht erst abgeschickt — im Keller zählt jede Sekunde am Funkloch. */
+  if(!new RegExp("^\\d{"+PIN_LAENGE+"}$").test(code||""))
+    return {name:null, quelle:"form"};
   try{
     const r=await fetch(API+"/code",{method:"POST",credentials:"same-origin",
       headers:{"content-type":"application/json"},body:JSON.stringify({code})});
@@ -1931,6 +1944,7 @@ async function werHatDenCode(code){
         return {name:n0, quelle:n0?"geraet":"sitzung"}; }
       if(r.status===429) return {name:null,quelle:"gesperrt",
         wartenBis:+j.wartenBis||0, minuten:+j.minuten||0};
+      if(r.status===422) return {name:null, quelle:"form"};
     }
   }catch(e){}
   const n=await bekannterCode(code);
@@ -1940,6 +1954,8 @@ async function werHatDenCode(code){
    Stellen (Freigabe und Wein-Editor), damit dasselbe Nein nicht zweimal
    verschieden klingt. */
 function codeAbsage(erg){
+  if(erg.quelle==="form")
+    return "Der Code hat "+PIN_LAENGE+" Ziffern.";
   if(erg.quelle==="gesperrt"){
     const uhr=erg.wartenBis?new Date(erg.wartenBis).toLocaleTimeString("de-AT",
       {hour:"2-digit",minute:"2-digit"}):"";
@@ -2178,10 +2194,19 @@ const RKEY="hh_rolle";
    Sicherheit vorzutaeuschen, die es noch nicht gibt. */
 const K_ABMELDUNG="hh_abmeldung_offen_v1";
 async function serverAbmelden(){
-  const r=await fetch(API+"/abmelden",{method:"POST",credentials:"same-origin",
-    headers:{accept:"application/json"}});
-  if(!r.ok)throw new Error("abmelden "+r.status);
-  return true;
+  /* Mit Zeitgrenze: Bei totem WLAN antwortet `fetch` nicht und bricht
+     nicht ab — der Knopf bliebe auf „meldet ab …" stehen, bis der Browser
+     von sich aus aufgibt. Acht Sekunden sind lang genug fuer ein
+     schwaches Netz und kurz genug, um im Keller nicht zu warten; danach
+     gilt es als „ohne Netz" und wird vorgemerkt. */
+  const ab=("AbortController" in window)?new AbortController():null;
+  const uhr=ab?setTimeout(()=>ab.abort(),8000):0;
+  try{
+    const r=await fetch(API+"/abmelden",{method:"POST",credentials:"same-origin",
+      headers:{accept:"application/json"}, signal:ab?ab.signal:undefined});
+    if(!r.ok)throw new Error("abmelden "+r.status);
+    return true;
+  } finally { if(uhr)clearTimeout(uhr); }
 }
 async function holeAbmeldungNach(){
   try{ if(!localStorage.getItem(K_ABMELDUNG))return; }catch(e){ return; }
@@ -2543,24 +2568,46 @@ function verbunden(){
   if(navigator.onLine===false)return false;
   return OHNE_NETZ.indexOf(NETZ.zustand)<0;
 }
-/* Den Knopf der Lage nachführen. Läuft aus netzChip(), also bei jedem
-   online/offline-Ereignis, nach jeder Übertragung und in der 45-s-Runde —
-   kommt die Verbindung zurück, wird er von selbst wieder drückbar. */
+/* Den Hinweis unter dem Abschlussknopf der Lage nachführen. Läuft aus
+   netzChip(), also bei jedem online/offline-Ereignis, nach jeder
+   Übertragung und in der 45-s-Runde — kommt die Verbindung zurück,
+   verschwindet er von selbst.
+
+   BERICHTIGUNG (Jagd Runde 16 · A1 und Veto des qa-guardian): Hier stand
+   `fb.disabled = !verbunden()`. Der Auftrag der Runde verlangte das
+   ausdrücklich („nur bei bestehender Verbindung drückbar"), und gemessen
+   hat es genau das getan — auch bei der Kellerzählung, die weder
+   Z-Bericht noch Abgleich kennt und die derselbe Auftrag unter „Nicht
+   anfassen" führt.
+
+   Im Keller ist kein Netz; das ist im Haus Hirt der Normalfall und steht
+   als harte Regel 6 („Offline-Queue nicht aufweichen") und in der
+   Projektanleitung §9. Eine fertige Tagesfassung wäre damit im Keller
+   nicht abzuschliessen gewesen: Der Vorgang bliebe „läuft", ginge nicht
+   in den Ausgang, und es entstünde keine Journalzeile — genau der Weg,
+   für den der Ausgang gebaut wurde. Die eigene Hilfe der App sagt zwei
+   Bildschirme weiter das Gegenteil („ohne Netz geht sie hinaus, sobald
+   wieder Empfang da ist").
+
+   Der Auftrag machte das Urteil von Jäger und qa-guardian zur
+   Merge-Bedingung; beide haben diesen Punkt als A bzw. Veto gemeldet.
+   Der Knopf ist deshalb wieder drückbar. Was vom Auftrag bleibt und
+   gebaut ist: Der Hinweis steht darunter, solange keine Verbindung da
+   ist, und verschwindet von selbst, sobald sie zurück ist — nur sperrt
+   er nicht mehr. Ohne Netz gibt es keinen Abgleich (der Z-Bericht liegt
+   am Server); dann kommt das kurze „Fertig", und es steht dabei, dass
+   der Abgleich nachkommt. */
 function finishNetz(){
-  const fb=document.querySelector(".finishbtn[data-netz]");
-  if(!fb)return;
-  const an=verbunden();
-  fb.disabled=!an;
   const h=document.querySelector(".finishhint");
   if(!h)return;
+  const an=verbunden();
   h.hidden=an;
   /* Der Grund muss der richtige sein. Eine abgelaufene Sitzung ist keine
      fehlende Verbindung — wer daraufhin das WLAN sucht, sucht am
-     falschen Ort. Beide Lagen sperren den Abschluss, beide gehen vorbei,
-     aber nur eine geht durch Neuanmelden vorbei. */
+     falschen Ort. */
   h.textContent = NETZ.zustand==="abgemeldet"
-    ? "Nicht angemeldet – bitte neu anmelden"
-    : "Keine Verbindung";
+    ? "Nicht angemeldet – der Vorgang wartet im Gerät"
+    : "Keine Verbindung – der Abgleich kommt nach";
 }
 
 /* Fertige und laufende Vorgänge einsammeln, die noch nicht draußen sind. */
@@ -2771,11 +2818,21 @@ function renderLogin(){
     if(name&&serverHat) await merkeCode(code,name);        /* fürs nächste Mal */
     laeuftPruefung=false;
     if(name){
-      /* Eine neue Anmeldung ist eine NEUE Sitzung. Stand noch eine
-         vorgemerkte Abmeldung offen (A1, ohne Netz abgemeldet), muss sie
-         jetzt weg — sonst nimmt `holeAbmeldungNach()` beim naechsten
-         Empfang der frisch Angemeldeten den Keks wieder weg. */
-      try{ localStorage.removeItem(K_ABMELDUNG); }catch(e){}
+      /* Eine Anmeldung AM SERVER ist eine neue Sitzung; eine vorgemerkte
+         Abmeldung ist damit erledigt und muss weg, sonst naehme
+         `holeAbmeldungNach()` der frisch Angemeldeten den Keks wieder.
+
+         Jäger, Runde 16 (A4): Hier stand die Zeile ohne Bedingung — also
+         auch auf der Rückfallebene OHNE Netz (`bekannterCode`, weiter
+         unten). Dann war gar keine neue Sitzung entstanden, die Marke
+         fiel trotzdem, und der alte Keks blieb zwölf Stunden gültig: Die
+         nächste Person am iPad erbte die Sitzung der vorigen, samt
+         Personenverwaltung und „PIN zurücksetzen", und im Backoffice
+         stand deren Name unter jedem Import. Die Marke fällt jetzt nur,
+         wenn der Server geantwortet hat. Auf der Rückfallebene bleibt sie
+         stehen und wird beim nächsten Empfang eingelöst — sie nimmt dann
+         den ALTEN Keks weg, der genau dort nicht hingehört. */
+      if(serverHat){ try{ localStorage.removeItem(K_ABMELDUNG); }catch(e){} }
       /* B2 (Jagd 15): Nimmt der sessionStorage nichts an, ist der Name
          nach `setUser` immer noch leer — `renderMenu()` zeichnete dann
          wieder die Anmeldung, stumm und beliebig oft. Jetzt steht da,
@@ -2909,8 +2966,9 @@ function renderMenu(){
     <div class="notweg">
       <div class="mgrp">Wenn etwas klemmt</div>
       <button class="adminlink" id="bJsonAlles">Rohdaten sichern (JSON)</button>
-      ${angefangene().length
-        ? `<button class="adminlink del" id="bResetAlles">Zurücksetzen</button>` : ""}
+      ${angefangene().map(k=>
+        `<button class="adminlink del" data-reset="${k}">`
+        +`Zurücksetzen · ${esc(MODES[k].t)}</button>`).join("")}
     </div>
     </div>`;
   document.querySelectorAll(".mi").forEach(b=>b.onclick=()=>start(b.dataset.m));
@@ -2931,7 +2989,8 @@ function renderMenu(){
   $("#bWechseln").onclick=()=>abmelden();
   $("#bArch").onclick=openArchList;
   $("#bJsonAlles").onclick=rohdatenSichern;
-  const br=$("#bResetAlles"); if(br)br.onclick=allesZuruecksetzen;
+  $("#menu").querySelectorAll("[data-reset]").forEach(b=>
+    b.onclick=()=>vorgangZuruecksetzen(b.dataset.reset));
   netzChip();
 }
 /* 2.2 · Liste der archivierten Vorgänge */
@@ -5318,20 +5377,19 @@ function rDoc(m){
        weiterhin, solange Punkte offen sind — gesperrt ist er nie.
        Runde 16: Ein Wort für alle Modi. „Entnahme melden" und „Lieferung
        melden" waren dieselbe Handlung unter drei Namen; wer zwischen den
-       Modi wechselt, sucht dann jedes Mal neu. Gesperrt ist er jetzt doch,
-       aber nur an einer Bedingung, die vorübergeht: der Verbindung
-       (`data-netz`, siehe finishNetz()). */
+       Modi wechselt, sucht dann jedes Mal neu. Gesperrt ist er nie —
+       siehe die Berichtigung bei `finishNetz()`. */
     fb.setAttribute("data-netz","1");
     fb.textContent="Fertig – Speichern";
     fb.onclick=()=>{
-      if(fb.disabled)return;
       if(!offen.length)return abschlussSchritt(d);
       freigabe(offen);};
     m.appendChild(fb);
-    /* Der Grund steht unter dem Knopf, nicht in einem Toast: Er gilt,
-       solange er gilt, und verschwindet erst mit der Ursache. */
+    /* Der Hinweis steht unter dem Knopf, nicht in einem Toast: Er gilt,
+       solange er gilt, und verschwindet erst mit der Ursache. Er sagt,
+       was ohne Netz anders ist — nicht, dass hier nichts ginge. */
     const hn=document.createElement("p");hn.className="finishhint";
-    hn.textContent="Keine Verbindung";hn.hidden=true;
+    hn.textContent="Keine Verbindung – der Abgleich kommt nach";hn.hidden=true;
     m.appendChild(hn);
     const rc=document.createElement("button");rc.className="recheck";
     rc.textContent="Noch mal nachsehen";
@@ -5440,28 +5498,79 @@ async function holeZBericht(tag){
        und die steht nur im Backoffice. Hier zu raten hiesse, eine falsche
        Abweichung zu behaupten — der Fuss sagt stattdessen, wie viele es
        sind und wer sie rechnet. */
-function abgleichZeilen(d,z){
+/* Wieviele FLASCHEN steckt eine Kassenzeile? — dieselbe Rechnung wie
+   `flaschen()` in public/leitung.html:1344, seit Runde 6:
+
+       Flaschen = anzahl × Ausschank je Einheit ÷ Gebindegrösse
+
+   `ausschankMl` ist NICHT „offener Ausschank": `gnparse.ml()` liest die
+   Menge aus dem KASSENNAMEN — „1/8 l" ergibt 125, „0,75 l" ergibt 750.
+   Eine 0,75er ist eine ganze Flasche, ein Achtel ein Glas; beide tragen
+   die Zahl. (BERICHTIGUNG, Jagd Runde 16 · A2: Runde 16 las sie als
+   „wird im Glas ausgeschenkt" und nahm jede solche Position aus der
+   Rechnung. Gegen den echten Bericht 37 blieben damit ALLE vier
+   zugeordneten Positionen draussen, und das Fenster meldete „Keine
+   Abweichung", ohne eine einzige Zahl verglichen zu haben — die
+   schlimmste Art von Falschaussage gegenüber jemandem, der gerade
+   gezählt hat.)
+
+   Fehlt eine der beiden Zahlen, wird KEINE erfunden: Die Position bleibt
+   aus der Rechnung heraus und wird gezählt. Genau das tut das Backoffice
+   auch, und es ist der heutige Normalfall — live hat keine der dreizehn
+   Zuordnungen eine bestätigte Gebindegrösse. */
+function verkaufteFlaschen(p,groessen){
+  const aus=+p.ausschankMl||0;
+  const geb=+((groessen||{})[p.kassenname||p.rohbez])||0;
+  if(!aus)return +p.anzahl||0;      /* keine Menge im Namen: Stück = Flasche */
+  if(!geb)return null;              /* Menge da, Gebinde unbekannt: nicht rechenbar */
+  return (+p.anzahl||0)*aus/geb;
+}
+
+/* Die bestätigten Gebindegrössen kommen aus der Zuordnung des
+   Backoffices (`GET /api/mapping`, Feld `gebinde_ml`). Ohne Netz oder
+   ohne Antwort bleibt die Liste leer — dann ist nichts umrechenbar, und
+   das Fenster sagt genau das. */
+async function holeGebindeGroessen(){
+  try{
+    const r=await fetch(API+"/mapping",{credentials:"same-origin",
+      headers:{accept:"application/json"}});
+    if(!r.ok)return {};
+    if(!(r.headers.get("content-type")||"").includes("json"))return {};
+    const j=await r.json();
+    const g={};
+    (j.mapping||[]).forEach(m=>{ if(+m.gebinde_ml>0)g[m.kassenname]=+m.gebinde_ml; });
+    return g;
+  }catch(e){ return {}; }
+}
+
+function abgleichZeilen(d,z,groessen){
   const gef=gefassteMengen(d);
-  const verk={}, glas={};
-  let ohneZuordnung=0;
+  const verk={};
+  let ohneZuordnung=0, ohneGroesse=0;
+  const fehltGroesse={};
   (z.positionen||[]).forEach(p=>{
     if(!p.artikel){ ohneZuordnung++; return; }
-    if(+p.ausschankMl>0){ glas[p.artikel]=(glas[p.artikel]||0)+1; return; }
-    verk[p.artikel]=(verk[p.artikel]||0)+(+p.anzahl||0);
+    const fl=verkaufteFlaschen(p,groessen);
+    if(fl===null){ ohneGroesse++; fehltGroesse[p.artikel]=1; return; }
+    verk[p.artikel]=(verk[p.artikel]||0)+fl;
   });
   const rund=n=>Math.round((+n||0)*10)/10;
   const ids=Object.keys(gef).concat(Object.keys(verk))
     .filter((x,i,a)=>a.indexOf(x)===i);
   const zeilen=[];
+  let geprueft=0;
   ids.forEach(id=>{
-    if(glas[id])return;
+    /* Ein Artikel, von dem eine Position nicht umrechenbar ist, ist als
+       Ganzes nicht vergleichbar: Sein Verkauf waere nur teilweise
+       gezaehlt, und die Differenz saehe aus wie Schwund. */
+    if(fehltGroesse[id])return;
+    geprueft++;
     const a=rund(gef[id]), b=rund(verk[id]);
     if(Math.abs(a-b)<0.05)return;
     zeilen.push({id, gefasst:a, verkauft:b, diff:rund(a-b)});
   });
   zeilen.sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
-  return {zeilen, imGlas:Object.keys(glas).length, ohneZuordnung,
-          geprueft:ids.length-Object.keys(glas).filter(i=>ids.indexOf(i)>=0).length};
+  return {zeilen, geprueft, ohneGroesse, ohneZuordnung};
 }
 
 /* Abschliessen — an EINER Stelle, damit der gewoehnliche Weg und die
@@ -5480,30 +5589,31 @@ async function abschlussSchritt(d){
   if(laeuftAbschluss)return; laeuftAbschluss=true;
   const fb=document.querySelector(".finishbtn[data-netz]");
   const wort=fb?fb.textContent:"";
+  /* Der Knopf wird waehrend des Griffs gesperrt, damit ein zweiter Tipp
+     nicht ein zweites Fenster oeffnet — und danach wieder freigegeben.
+     Mit der VERBINDUNG hat das nichts zu tun (siehe finishNetz()). */
   if(fb){ fb.disabled=true; fb.textContent="speichert \u2026"; }
-  /* Erst den Z-Bericht holen, dann festschreiben: Ist der Server gerade
-     doch nicht da, bleibt der Vorgang offen und der Knopf wartet — statt
-     dass ein abgeschlossener Vorgang ohne Fenster dasteht. */
-  let z=null;
+  /* Der Z-Bericht liegt am Server. Ist keiner zu holen — kein Netz, kein
+     Bericht, keine Sitzung —, gibt `holeZBericht()` `null` zurueck und der
+     Abschluss laeuft trotzdem durch: Der Vorgang geht in den Ausgang und
+     wartet dort, wie jeder andere auch. Abgeschlossen wird im Keller,
+     abgeglichen wird, wenn Empfang da ist. */
+  let z=null, groessen={};
   if(d.mode==="tag"||d.mode==="fuellen"){
-    if(!verbunden()){
-      laeuftAbschluss=false;
-      if(fb){ fb.textContent=wort; }
-      finishNetz(); return;
-    }
     z=await holeZBericht(vortagVon(d.tag));
+    if(z)groessen=await holeGebindeGroessen();
   }
   laeuftAbschluss=false;
   if(fb){ fb.textContent=wort; fb.disabled=false; }
   vorgangFestschreiben(d);
-  if(z)popupAbgleich(d,z); else popupFertig(d);
+  if(z)popupAbgleich(d,z,groessen); else popupFertig(d);
 }
 
 /* Das Fenster mit dem Abgleich. Ein Notizfeld fuer alles — nicht eines je
    Zeile: Was im Keller auffaellt, ist ein Satz („zwei Cola fuer die
    Kueche"), keine Tabelle. */
-function popupAbgleich(d,z){
-  const a=abgleichZeilen(d,z);
+function popupAbgleich(d,z,groessen){
+  const a=abgleichZeilen(d,z,groessen);
   $("#ovT").textContent="Abgleich";
   const zeile=x=>{
     const v=x.diff>0?"plus":"minus";
@@ -5511,18 +5621,36 @@ function popupAbgleich(d,z){
       +`<span class="za">gefasst ${x.gefasst} \u00b7 verkauft ${x.verkauft}</span>`
       +`<span class="df ${v}">${x.diff>0?"+":""}${x.diff}</span></div>`;
   };
+  /* BERICHTIGUNG (Jagd Runde 16 · A2): Hier stand „Keine Abweichung",
+     sobald die Liste leer war — auch dann, wenn gar nichts verglichen
+     werden konnte. Gegen den echten Bericht 37 war das der Regelfall:
+     vier zugeordnete Positionen, alle vier mit einer Menge im Namen,
+     keine einzige mit bestaetigter Gebindegroesse, `geprueft` = 0. „Keine
+     Abweichung" ist dann keine Auskunft, sondern eine Falschaussage
+     gegenueber jemandem, der gerade gezaehlt hat. Es gibt jetzt drei
+     Lagen, und sie heissen verschieden. */
+  const kopf = a.geprueft===0
+    ? `<div class="box warn" style="margin-top:0"><b>Nichts zu vergleichen.</b><br>`
+      +`Zum Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))} fehlen die `
+      +`Gebindegr\u00f6\u00dfen \u2014 ohne sie l\u00e4sst sich aus „1/8 l" oder „0,75 l" `
+      +`keine Flaschenzahl rechnen. Die Leitung best\u00e4tigt sie im Backoffice `
+      +`unter „Verkauf \u2194 Fassung".</div>`
+    : a.zeilen.length
+      ? `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))} `
+        +`Nur die Abweichungen:</p><div class="abgl">${a.zeilen.map(zeile).join("")}</div>`
+      : `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}</p>`
+        +`<div class="box good" style="margin-top:0"><b>Keine Abweichung.</b><br>`
+        +a.geprueft+(a.geprueft===1?" Artikel verglichen.":" Artikel verglichen.")+`</div>`;
+  /* Der Fuss nennt nur, was DIESES Fenster nicht rechnen konnte. Die
+     unzugeordneten Kassenpositionen stehen NICHT mehr dabei: Bericht 37
+     hat 44 davon (Omelett, Espresso, Schnittlauch), im Keller kann
+     niemand etwas damit anfangen, und sie haben den eigentlichen Befund
+     zugedeckt. Das ist Arbeit der Leitung und steht im Backoffice. */
   const fuss=[];
-  if(a.imGlas)fuss.push(a.imGlas+(a.imGlas===1?" Position wird":" Positionen werden")
-    +" offen im Glas ausgeschenkt \u2014 die rechnet das Backoffice.");
-  if(a.ohneZuordnung)fuss.push(a.ohneZuordnung
-    +(a.ohneZuordnung===1?" Kassenposition ist":" Kassenpositionen sind")
-    +" keinem Artikel zugeordnet.");
-  $("#ovBody").innerHTML=
-    `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}.`
-    +(a.zeilen.length?" Nur die Abweichungen:":"")+`</p>`
-    +(a.zeilen.length
-      ? `<div class="abgl">${a.zeilen.map(zeile).join("")}</div>`
-      : `<div class="box" style="margin-top:0"><b>Keine Abweichung.</b></div>`)
+  if(a.ohneGroesse)fuss.push(a.ohneGroesse
+    +(a.ohneGroesse===1?" Kassenposition hat":" Kassenpositionen haben")
+    +" keine best\u00e4tigte Gebindegr\u00f6\u00dfe und bleibt aus der Rechnung.");
+  $("#ovBody").innerHTML= kopf
     +(fuss.length?`<p class="abglfuss">${fuss.map(esc).join("<br>")}</p>`:"")
     +`<label class="f" style="margin-top:var(--space-4)"><span>Notiz (optional)</span>`
     +`<input id="abglNotiz" value="${esc(d.notiz||"")}" `
@@ -5544,10 +5672,17 @@ function popupAbgleich(d,z){
 /* Kein Z-Bericht: ein Satz, ein Knopf, weg. */
 function popupFertig(d){
   $("#ovT").textContent="Fertig";
+  /* `deTagKurz()` endet selbst auf einem Punkt („Freitag, 18.09.") — ein
+     zweiter davor gaebe „18.09..". (Jagd Runde 16 · C) */
+  const wann=esc(deTagKurz(d.tag));
+  const nachsatz = !verbunden()
+    ? "Ohne Netz \u2014 der Vorgang liegt im Ger\u00e4t und geht hinaus, sobald "
+      +"wieder Empfang da ist. Der Abgleich kommt dann im Backoffice."
+    : "Kein Z-Bericht zum Vorabend \u2014 der Abgleich steht im Backoffice, "
+      +"sobald er da ist.";
   $("#ovBody").innerHTML=`<p>${esc(MODES[d.mode].t)} f\u00fcr `
-    +`${esc(deTagKurz(d.tag))} ist abgeschlossen und gespeichert.</p>`
-    +`<p class="abglfuss">Kein Z-Bericht zum Vorabend \u2014 der Abgleich `
-    +`steht im Backoffice, sobald er da ist.</p>`;
+    +`${wann} ist abgeschlossen und gespeichert.</p>`
+    +`<p class="abglfuss">${esc(nachsatz)}</p>`;
   $("#ovNo").hidden=true;
   $("#ovOk").textContent="Zur Startseite";
   $("#ov").classList.add("on");
@@ -5602,6 +5737,12 @@ function freigabe(offen){
     const wer=erg.name;
     const d=D();
     d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
+    /* BERICHTIGUNG (Jagd Runde 16 · B1): `save()` stand hier nicht. Kehrte
+       `abschlussSchritt()` danach ohne Abschluss zurueck, war das Fenster
+       schon zu, der Code eingegeben — und der Vermerk, WER freigegeben
+       hat, nur im Arbeitsspeicher. Beim naechsten Laden war er weg. Er
+       gehoert ins Geraet, bevor irgendetwas anderes passiert. */
+    save();
     /* Runde 16: Auch die Freigabe endet im Abschlussfenster und auf der
        Startseite — ein Weg für beide, sonst stünde nach dem einen ein
        Abgleich und nach dem anderen nicht. */
@@ -5815,15 +5956,22 @@ function rohdatenSichern(){
      JSON.stringify(alles,null,2),"application/json");
   toast("Rohdaten gespeichert");
 }
-function allesZuruecksetzen(){
-  const a=angefangene();
-  if(!a.length)return toast("Es ist nichts angefangen.");
+/* BERICHTIGUNG (Jagd Runde 16 · B2): Bis eben stand hier EIN Knopf, der
+   alle angefangenen Vorgaenge auf einmal ins Archiv legte und leerte —
+   ein Tipp, eine Bestaetigung, und die Arbeit mehrerer Leute war von der
+   Startseite verschwunden (`archive()` schickt einen unfertigen Stand
+   nicht hinaus). Ein Notweg darf eng sein: Jetzt steht je angefangenem
+   Vorgang ein eigener Knopf, und die Rueckfrage nennt genau den einen. */
+function vorgangZuruecksetzen(k){
+  const d=S[k];
+  if(!d||!hasData(k,d)||d.finished)
+    return toast("Dieser Vorgang ist nicht angefangen.");
   ask("Zurücksetzen",
-    "<p>"+(a.length===1?"Dieser angefangene Vorgang wird":a.length+" angefangene Vorgänge werden")
-    +" gelöscht und vorher ins Archiv gelegt:</p><div class=\"box\" style=\"margin-top:0\">"
-    +a.map(k=>esc(MODES[k].t)).join("<br>")+"</div>"
-    +"<p>Was schon übertragen wurde, bleibt am Server.</p>",
-    ()=>{ a.forEach(k=>{ archive(S[k]); S[k]=blank(k); });
+    "<p><b>"+esc(MODES[k].t)+"</b> für "+esc(deTagKurz(d.tag))
+    +" wird gelöscht und vorher ins Archiv gelegt.</p>"
+    +"<p>Was schon übertragen wurde, bleibt am Server. Was noch nicht "
+    +"draußen ist, geht damit nicht mehr hinaus.</p>",
+    ()=>{ archive(S[k]); S[k]=blank(k);
       save(); renderMenu(); window.scrollTo(0,0);
       toast("Archiviert und zurückgesetzt"); });
 }

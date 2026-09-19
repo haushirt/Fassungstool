@@ -35,7 +35,7 @@ const LAGE = {
   /* Der Z-Bericht zum Vorabend — oder keiner (404), je nach Szene.
      Gefüllt wird er von der Szene selbst, sobald sie die echten
      Artikelkennungen der App kennt. */
-  zbericht: null,
+  zbericht: null, mapping: [],
   abgemeldet: 0, gesendet: []
 };
 
@@ -51,6 +51,8 @@ const srv = http.createServer((q, a) => {
     if (u === "/api/abmelden") { LAGE.abgemeldet++;
       a.writeHead(200, { ...kopf, "set-cookie": "hh_sitz=; Max-Age=0; Path=/" });
       return a.end(JSON.stringify({ ok: true })); }
+    if (u === "/api/mapping") { a.writeHead(200, kopf);
+      return a.end(JSON.stringify({ mapping: LAGE.mapping || [] })); }
     if (u === "/api/fassungsliste") {
       if (!LAGE.zbericht) { a.writeHead(404, kopf);
         return a.end(JSON.stringify({ fehler: "nicht vorhanden" })); }
@@ -186,14 +188,23 @@ async function tagesfassungBisAbschluss(p) {
       const ids = await tagesfassungBisAbschluss(p);
       urteil("der Abschluss steht ohne offenen Punkt da",
         ids.offen.length === 0, JSON.stringify(ids.offen));
-      /* Wein: gefasst 2, verkauft 1 → eine Abweichung.
-         Getränk: gefasst 6, verkauft 6 → keine, darf nicht erscheinen. */
+      /* Die Zeilen sehen aus, wie `gnparse.ml()` sie liefert: Die Menge
+         steht im Kassennamen und landet in `ausschankMl` — „1/8 l" gibt
+         125, „0,33 l" gibt 330. Umgerechnet wird mit der bestätigten
+         Gebindegrösse aus /api/mapping, genau wie im Backoffice.
+         Wein:    6 × 125 / 750 = 1 Flasche verkauft, 2 gefasst → +1.
+         Getränk: 6 × 330 / 330 = 6 verkauft, 6 gefasst → keine Zeile.
+         Glaswein ohne Grösse → aus der Rechnung, in den Fuss. */
       LAGE.zbericht = { tag: gestern, z: 37, positionen: [
-        { rohbez: "Wein", artikel: ids.wein, anzahl: 1, ausschankMl: null },
-        { rohbez: "Getränk", artikel: ids.getr, anzahl: 6, ausschankMl: null },
-        { rohbez: "Glaswein", artikel: "glas1", anzahl: 12, ausschankMl: 125 },
-        { rohbez: "Unbekannt", artikel: null, anzahl: 3, ausschankMl: null }
+        { rohbez: "Wein 1/8 l",    artikel: ids.wein, anzahl: 6,  ausschankMl: 125 },
+        { rohbez: "Getränk 0,33 l",artikel: ids.getr, anzahl: 6,  ausschankMl: 330 },
+        { rohbez: "Glaswein 1/8 l",artikel: "glas1",  anzahl: 12, ausschankMl: 125 },
+        { rohbez: "Omelett",       artikel: null,     anzahl: 3,  ausschankMl: null }
       ]};
+      LAGE.mapping = [
+        { kassenname: "Wein 1/8 l",     gebinde_ml: 750 },
+        { kassenname: "Getränk 0,33 l", gebinde_ml: 330 }
+      ];
       await bild(p, "02-abschluss-mit-zbericht");
       const knopf = p.locator(".finishbtn[data-netz]");
       urteil("R16/2 · genau ein Knopf, und er heisst „Fertig – Speichern“",
@@ -211,6 +222,12 @@ async function tagesfassungBisAbschluss(p) {
       urteil("R16/2 · und zwar die richtige",
         (await p.locator("#ovBody .abglz .df").first().textContent() || "").trim() === "+1",
         await p.locator("#ovBody .abglz .df").first().textContent());
+      urteil("R16/2 · die Position ohne Gebindegröße steht im Fuß, nicht als Zeile",
+        /keine best.tigte Gebindegr/.test(await p.locator(".abglfuss").textContent() || ""),
+        (await p.locator(".abglfuss").textContent() || "").slice(0, 70));
+      urteil("R16/2 · die Küchenposition steht NICHT im Kellerfenster",
+        !/keinem Artikel zugeordnet/.test(await p.locator("#ovBody").textContent() || ""),
+        (await p.locator("#ovBody").textContent() || "").slice(0, 60));
       urteil("R16/2 · EIN Notizfeld für alles",
         await p.locator("#abglNotiz").count() === 1);
       urteil("R16/2 · kein „Abbrechen“ neben dem Speichern",
@@ -256,7 +273,12 @@ async function tagesfassungBisAbschluss(p) {
       await ctx.close();
     }
 
-    /* ── 4 · Abschluss ohne Verbindung ───────────────────────────────── */
+    /* ── 4 · Abschluss ohne Verbindung ─────────────────────────────────
+       Der Kern von Regel 6: Im Keller ist kein Netz, und eine fertige
+       Fassung muss dort trotzdem abzuschliessen sein. Der Vorgang geht in
+       den Ausgang und wartet; der Abgleich kommt nach.
+       (Bis zur Jagd dieser Runde war der Knopf hier gesperrt, und diese
+       Datei schrieb das als bestandene Prüfung fest.) */
     {
       LAGE.zbericht = null; LAGE.gesendet = [];
       const { ctx, p, fehler } = await seite(b);
@@ -267,25 +289,68 @@ async function tagesfassungBisAbschluss(p) {
       await ctx.setOffline(true);
       await p.evaluate(() => window.dispatchEvent(new Event("offline")));
       await warte(p, 500);
-      urteil("R16/4 · ohne Netz ist er ausgegraut", await knopf.isDisabled());
-      urteil("R16/4 · und darunter steht der Grund",
+      urteil("R16/4 · ohne Netz ist er WEITER drückbar", await knopf.isEnabled());
+      urteil("R16/4 · und darunter steht, was fehlt",
         await p.locator(".finishhint").isVisible() &&
-        (await p.locator(".finishhint").textContent() || "").trim() === "Keine Verbindung");
+        /Keine Verbindung/.test(await p.locator(".finishhint").textContent() || ""),
+        (await p.locator(".finishhint").textContent() || "").trim());
       await bild(p, "07-abschluss-offline");
 
-      /* Das Gefasste darf dabei nicht verloren gehen. */
-      const stand = await p.evaluate(() =>
-        JSON.parse(localStorage.getItem("hh_keller_v12") || "{}"));
-      urteil("R16/4 · das Gefasste liegt weiter im Gerät",
-        !!stand.tag && Object.keys(stand.tag.rest || {}).length === 1 &&
-        stand.tag.finished === false,
-        JSON.stringify(stand.tag && stand.tag.rest));
+      await knopf.click();
+      await warte(p, 900);
+      urteil("R16/4 · ohne Netz kommt das kurze „Fertig“",
+        (await p.locator("#ovT").textContent() || "") === "Fertig",
+        await p.locator("#ovT").textContent());
+      urteil("R16/4 · und es sagt, dass der Vorgang im Gerät wartet",
+        /geht hinaus, sobald/.test(await p.locator("#ovBody").textContent() || ""),
+        (await p.locator("#ovBody").textContent() || "").slice(0, 90));
+      await bild(p, "11-popup-fertig-offline");
+      await p.locator("#ovOk").click();
+      await warte(p, 700);
+
+      const lage = await p.evaluate(() => ({
+        stand: JSON.parse(localStorage.getItem("hh_keller_v12") || "{}"),
+        ausgang: JSON.parse(localStorage.getItem("hh_ausgang_v1") || "[]")
+      }));
+      urteil("R16/4 · der Vorgang ist abgeschlossen",
+        !!lage.stand.tag && lage.stand.tag.finished === true,
+        JSON.stringify(lage.stand.tag && lage.stand.tag.finished));
+      urteil("R16/4 · und liegt im Ausgang, statt verloren zu sein",
+        lage.ausgang.some(x => x.schluessel && x.schluessel.indexOf("tag_") === 0),
+        lage.ausgang.length + " Einträge");
 
       await ctx.setOffline(false);
       await p.evaluate(() => window.dispatchEvent(new Event("online")));
-      await warte(p, 700);
-      urteil("R16/4 · mit der Verbindung kommt der Knopf von selbst zurück",
-        await knopf.isEnabled());
+      await warte(p, 900);
+      urteil("R16/4 · mit der Verbindung geht er von selbst hinaus",
+        LAGE.gesendet.some(v => v.finished === true),
+        LAGE.gesendet.length + " PUTs");
+      urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── 4b · Kein Z-Bericht, keine Größen: nichts behaupten ──────────── */
+    {
+      LAGE.gesendet = [];
+      const { ctx, p, fehler } = await seite(b);
+      const ids = await tagesfassungBisAbschluss(p);
+      /* Der heutige Live-Zustand: ein Z-Bericht ist da, aber KEINE der
+         dreizehn Zuordnungen hat eine bestätigte Gebindegröße. Beide
+         gefassten Artikel kommen darin vor — sonst wäre „gefasst 6,
+         verkauft 0" eine echte Abweichung und gehörte gezeigt. */
+      LAGE.zbericht = { tag: gestern, z: 37, positionen: [
+        { rohbez: "Wein 1/8 l",    artikel: ids.wein, anzahl: 6, ausschankMl: 125 },
+        { rohbez: "Getränk 0,33 l",artikel: ids.getr, anzahl: 6, ausschankMl: 330 }
+      ]};
+      LAGE.mapping = [];
+      await p.locator(".finishbtn[data-netz]").click();
+      await warte(p, 900);
+      const text = await p.locator("#ovBody").textContent() || "";
+      urteil("R16/2 · ohne Gebindegrößen sagt das Fenster „Nichts zu vergleichen“",
+        /Nichts zu vergleichen/.test(text), text.slice(0, 80));
+      urteil("R16/2 · und behauptet NICHT „Keine Abweichung“",
+        !/Keine Abweichung/.test(text));
+      await bild(p, "12-abgleich-ohne-groessen");
       urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
       await ctx.close();
     }
