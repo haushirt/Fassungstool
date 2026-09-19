@@ -271,3 +271,16 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 - **mittel** · Die Selbstschutz-Abfragen stehen nur im Browser. Der falsche Kommentar in `public/leitung.html` ist in Runde 16 berichtigt; der Riegel gehört weiter in den Worker und braucht `p` in `personSchreiben()`. | `src/index.js` (`personSchreiben`), `public/leitung.html`
 - **mittel** · „PIN zurücksetzen" hat keinen Selbstschutz wie „Sperren" — unverändert. Die Rückfrage warnt inzwischen, wenn es die eigene Zeile trifft.
 - **mittel** · Der Abgleich im Backoffice paart dauerhaft um einen Tag versetzt (Entscheidung Casimir nötig) — unverändert. Der neue Abgleich IM KELLER paart richtig (Z-Bericht des Vortags gegen die Fassung des Tages); die beiden widersprechen sich damit, bis das Backoffice nachzieht.
+
+### Neu · zweite Jagd (19.09.2026, nach der Behebung)
+- **mittel** · **Zwei Paarungen desselben Betriebstages, jetzt auf zwei Schirmen.** Der Abgleich im Keller paart Vorgang(T) mit Z-Bericht(T−1) — die Fassung am Morgen füllt nach, was am Abend davor verkauft wurde. Das Backoffice paart weiter Vorgang(T) mit Z-Bericht(T), im Mittagsblick durch `SPANNE=28` verschmiert, bei `abgleich(t)` ohne Spanne nicht. Beide können nicht recht haben. Braucht Casimirs Entscheidung (steht seit 18.09. offen, jetzt sichtbarer). | `public/index.html` (`vortagVon`), `public/leitung.html` (`abgleich`)
+- **mittel** · **Zwei Rechnungen für dieselbe Umrechnung.** `verkaufteFlaschen()` in der App und `flaschen()` in `leitung.html` sind seit dieser Runde deckungsgleich im Ausgang (ohne Menge oder ohne Größe wird nicht verglichen), aber das Backoffice kennt zusätzlich die je ARTIKEL bestätigte Größe und zwei Vorschläge. Die App ist damit strenger, nie großzügiger. Jede Änderung an der einen gehört an der anderen nachgezogen — oder die Rechnung gehört an eine Stelle. | `public/index.html` (`verkaufteFlaschen`), `public/leitung.html:1344`
+- **niedrig** · **`versuche:0`** wird in `inDenAusgang()` gesetzt und nirgends erhöht oder gelesen. Entweder zählen (und nach N Versuchen ins Sackfach) oder streichen. | `public/index.html` (`inDenAusgang`)
+- **niedrig** · **`tests/ui-nachjagd.cjs` meldet einen Nicht-Lauf als Erfolg.** Bricht der Prüfserver mit `EADDRINUSE` ab (fester Port, zweiter Lauf parallel), endet die Datei mit Rückgabe 0. Eine Prüfreihe, die nicht gelaufen ist, darf nicht grün aussehen. Betrifft auch die anderen `.cjs`-Läufe mit festem Port. | `tests/ui-nachjagd.cjs`
+- **niedrig** · Wortumbruch der Artikelnamen im Abgleichfenster bei 320 px — Beleg `review/screens/runde16/13-abgleich-fuss-320.png`.
+
+### Erledigt in der zweiten Jagd
+- ~~**`verkaufteFlaschen()` rechnet Stück = Flasche**~~ — der v24-Fehler des Backoffice, im Keller wieder aufgemacht. Jetzt wird ohne Menge im Namen oder ohne bestätigte Größe nicht verglichen.
+- ~~**Der Abschluss hängt am schweigenden Server**~~ — `holeKurz()` mit acht Sekunden für alle vier wartenden Aufrufe. Belegt in `tests/ui-runde16.cjs`.
+- ~~**`popupFertig()` verspricht einen Abgleich nach Kellerzählung, Wareneingang und Sonderentnahme**~~ — der Satz hängt jetzt am Modus.
+- ~~**`/api/code` räumt die Sperre bei Erfolg nicht auf**~~ — tut es jetzt, wie `anmelden()`.

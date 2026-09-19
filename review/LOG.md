@@ -3284,3 +3284,78 @@ A-Funde. Alles andere ist aus meiner Rolle sauber.
 **Rundenfazit:** Die Tür, die ich zugehalten habe, ist offen und richtig
 gebaut; stehen geblieben sind zwei Zahlen, die im Keller etwas behaupten,
 was der Bericht nicht hergibt.
+
+---
+
+### Runde 16 · dritter Zug – die beiden letzten A-Funde
+
+**Kritik am Vorgänger (wieder an mir selbst):**
+* ✅ übernommen — zweite Jagd, A: `verkaufteFlaschen()` gab ohne Menge im
+  Kassennamen `p.anzahl` zurück, „ein Stück ist eine Flasche". Der Jäger
+  hat den Beleg dafür im eigenen Haus gefunden: Der Kommentar bei
+  `GEBINDE_STANDARD` in `leitung.html` nennt genau diesen Zweig als den
+  Fehler, den v24 abgestellt hat — „ein 2-cl-Stamperl wurde so zur
+  Flasche". Ich hatte ihn im Keller wieder aufgemacht, im selben Zug, in
+  dem ich behauptete, „dieselbe Rechnung wie `flaschen()`" zu machen. In
+  Bericht 37 sind 26 von 48 Positionen betroffen.
+* ✅ übernommen — zweite Jagd, A: keine Zeitgrenze auf `holeZBericht()`
+  und `holeGebindeGroessen()`. Ich hatte `serverAbmelden()` in derselben
+  Runde eine gegeben und mit genau diesem Fall begründet — und den
+  wichtigeren Weg übersehen. Ein WLAN, das annimmt und schweigt, ist der
+  Kellerfall; `navigator.onLine` sagt dazu nichts. Der Knopf blieb auf
+  „speichert …", `laeuftAbschluss` auf `true`.
+* ↩️ geändert — zweite Jagd, B: „Die Papiere behaupten, ‚Nichts zu
+  vergleichen' sei der Regelfall." Richtig gemessen, aber der Schluss
+  liegt anders: Nach der Behebung von A stimmt der Satz wieder, weil jetzt
+  auch die Positionen ohne Menge im Namen herausfallen. Die Papiere
+  bleiben, der Code ist nachgezogen.
+* ❌ abgelehnt — nichts.
+* ✅ übernommen vom **qa-guardian**: Der Fuß mit den unzugeordneten
+  Kassenpositionen gehört zurück, wenn eine Abweichung dasteht, die sie
+  erklären. Sein Argument ist dasselbe wie meines gegen „Keine
+  Abweichung", nur andersherum — „verkauft 0" ohne Erklärung ist auch
+  eine Falschaussage. Sein Bau steht unverändert.
+
+**Umgesetzt:**
+1. `verkaufteFlaschen()` rät nicht mehr: fehlt die Menge im Namen ODER die
+   bestätigte Gebindegröße, bleibt die Position aus der Rechnung und wird
+   gezählt — derselbe Ausgang wie `flaschen()` im Backoffice.
+2. `holeKurz()` als ein Weg für alle vier Aufrufe, die im Keller auf eine
+   Antwort warten (Abmelden, Code-Nachschlag, Z-Bericht, Gebindegrößen),
+   acht Sekunden.
+3. B und C der zweiten Jagd: `popupFertig()` verspricht keinen Abgleich
+   mehr, wo es nie einen gibt; Grammatik und Einzahl im Fuß; „Nichts zu
+   vergleichen" nennt den Grund, der wirklich gilt; die erfundene
+   Kontrastzahl im Kommentar berichtigt (4,73:1 auf dem Seitengrund, nicht
+   3,66:1 auf `--surface` — nachgemessen hat das der Jäger, nicht ich).
+
+**Geprüft:** `npm test` **424/424**, `tests/ui-runde16.cjs` alle ja (neu:
+der **schweigende Server** — Fenster nach 8 s, Knopf wieder frei, Vorgang
+nicht verloren), `tests/qa-runde16-schluss.cjs` 18/18,
+`tests/qa-runde16-gegenprobe.cjs` 18/18, `tests/ui-nachjagd.cjs` und
+`tests/qa-schluss.cjs` alle ja. `sw.js` v42 → v43.
+
+**Für die Nächsten:**
+* An den **Jäger**: Beide Funde waren richtig und im eigenen Haus belegt.
+  Der zweite — dieselbe Vorsichtsmaßnahme an einer Stelle gebaut und an
+  der wichtigeren vergessen — ist das Muster, auf das es sich zu jagen
+  lohnt.
+* An **Casimir**: Der Abgleich im Keller rechnet jetzt **nur**, wo die
+  Kasse eine Menge im Namen führt UND die Gebindegröße bestätigt ist. Das
+  ist heute nirgends der Fall; das Fenster sagt es. Nach dem Bestätigen
+  der Größen rechnen die Wein- und Getränkepositionen mit Mengenangabe,
+  die Spirituosen ohne Menge im Namen („Gin Basil Smash 1 Glas") weiter
+  nicht — dafür fehlt der Kasse die Angabe, nicht uns.
+
+**Phase/Thema:** Runde 16, dritter Zug / zweite Jagd
+
+**Backlog:** erledigt: beide A-Funde der zweiten Jagd, B1 und die
+C-Funde. Offen bleibt der Punkt „zwei Paarungen desselben Tages" (App
+vergleicht Vorgang(T) gegen Z-Bericht(T−1), das Backoffice gegen
+Z-Bericht(T)) — das ist die alte Entscheidung, die Casimir treffen muss.
+
+**STATUS:** FERTIG aus meiner Rolle — dritte Gegenprobe läuft.
+
+**Rundenfazit:** Zweimal dieselbe Vorsicht an der einen Stelle gebaut und
+an der anderen vergessen. Beide Male hat es nicht der gefunden, der es
+gebaut hat.
