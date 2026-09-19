@@ -43,7 +43,7 @@ function umgebung() {
   vm.createContext(s);
   vm.runInContext(QUELLE + `
     globalThis.zeichne = () => {};
-    globalThis.__f = { abgleich, UNKLAR_GRUND, unklarSatz,
+    globalThis.__f = { abgleich, UNKLAR_GRUND, unklarSatz, teileOhneGroesse,
       setzte: (map, geb, zber, vorg, rez) => { MAP = map || {}; GEB_BEST = geb || {};
         ZBER = zber || {}; VORGAENGE = vorg || []; REZ = rez || {}; } };`,
     s, { filename: "leitung.html#unklar" });
@@ -269,5 +269,64 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     const a = f.abgleich(TAG, 1);
     assert.equal(zeile(a, "w003").unklar, "groesse");
     assert.deepEqual(Array.from(a.zeilen, r => r.id), ["w018", "w003"]);
+  });
+
+  /* Siebte Jagd Runde 16 · B. Die Tabellenzeilen unterschieden die beiden
+     Ursachen schon; die Überschrift, der Mittagsblick und der CSV-Kopf
+     sagten für alle „Größe fehlt" und versprachen die Sammelbestätigung.
+     Der Sammelknopf fasst aber nur `fehlt==="gebinde"` an — bei Bericht 37
+     mit der Live-Zuordnung sind das 10 von 17 Positionen, die ins
+     Backoffice geschickt werden, wo es für sie nichts zu tun gibt.
+     Gezählt wird deshalb an einer Stelle: `teileOhneGroesse()`. */
+  test("die beiden Ursachen werden auch dort getrennt, wo nur gezählt wird", () => {
+    const f = umgebung();
+    f.setzte({ "MU Muster, Gelber Muskateller Styria 0,75 l": "w018",
+               "Aperol Spritz 1 Glas": "w003" },
+             {},
+             bericht([{ name: "MU Muster, Gelber Muskateller Styria 0,75 l", anzahl: 3 },
+                      { name: "Aperol Spritz 1 Glas", anzahl: 6 }]),
+             [vorgang({ w018: 4, w003: 2 }, {})]);
+    const a = f.abgleich(TAG, 1);
+    assert.equal(a.ohneGroesse.length, 2, "beide Positionen stehen in der Liste");
+    const t = f.teileOhneGroesse(a.ohneGroesse);
+    assert.equal(t.gebinde.length, 1, "eine wartet auf die Gebindegröße");
+    assert.equal(t.ausschank.length, 1, "eine hat keine Menge im Kassennamen");
+    assert.equal(t.stkGebinde, 3);
+    assert.equal(t.stkAusschank, 6);
+    /* Ohne Trennung liest die Leitung „Größe fehlt: 2 Positionen
+       (9 Einheiten) … gesammelt bestätigen" — und die Hälfte davon lässt
+       sich nirgends bestätigen. */
+    assert.notEqual(t.gebinde.length, a.ohneGroesse.length,
+      "die gemischte Lage ist der Prüffall — sonst prüft dieser Test nichts");
+
+    /* Und die drei Leser, die bis eben pauschal zählten. Quelltext, weil
+       sie in Ansichtsfunktionen stehen: geprüft wird, dass keiner mehr
+       `a.ohneGroesse.length` neben das Wort „Größe fehlt" setzt. */
+    const BO = lies("public", "leitung.html");
+    assert.match(BO, /const t=teileOhneGroesse\(a\.ohneGroesse\);/,
+      "der Mittagsblick zählt nicht mehr getrennt");
+    assert.doesNotMatch(BO, /fehlt\.push\("Größe fehlt: "\+a\.ohneGroesse\.length/,
+      "der Mittagsblick wirft beide Ursachen wieder in einen Topf");
+    assert.match(BO, /Menge fehlt im Kassennamen: /,
+      "die zweite Ursache hat im Mittagsblick keinen eigenen Satz");
+    assert.doesNotMatch(BO, /<h3>Größe fehlt · \$\{a\.ohneGroesse\.length\}/,
+      "die Abschnittsüberschrift zählt beide Ursachen als „Größe fehlt“");
+
+    /* Derselbe Fehler stand noch an zwei Stellen im Mittagsblick, mit
+       fest getippten Gründen: die Kachel nannte „Größe fehlt oder
+       Position nicht zugeordnet" (den zweiten Grund gibt es seit v29
+       nicht mehr), der Hinweis über der Tabelle „keine bestätigte Größe
+       oder kein Z-Bericht" (ohne die fehlende Menge im Kassennamen, den
+       häufigeren Fall). Beide lesen jetzt aus `UNKLAR_GRUND`. */
+    assert.match(BO, /const gruendeSatz=\[\.\.\.new Set\(a\.zeilen\.filter\(r=>r\.unklar\)/,
+      "der Mittagsblick nennt Gründe aus dem Gedächtnis statt aus den Zeilen");
+    assert.doesNotMatch(BO, /ohne Abgleich — Größe fehlt oder Position nicht zugeordnet/,
+      "die Kachel nennt einen Grund, den es seit v29 nicht mehr gibt");
+    assert.doesNotMatch(BO, /nicht bestimmbar \(keine bestätigte Größe oder kein Z-Bericht\)/,
+      "der Hinweis lässt die fehlende Menge im Kassennamen aus");
+    assert.match(BO, /ohne Abgleich — "\+gruendeSatz/,
+      "die Kachel liest die Gründe nicht aus den Zeilen");
+    assert.match(BO, /nicht bestimmbar \(\$\{esc\(gruendeSatz\)\}\)/,
+      "der Hinweis liest die Gründe nicht aus den Zeilen");
   });
 });

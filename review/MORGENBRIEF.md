@@ -18,7 +18,7 @@ falsch: Es sind **vier**. Dieser Brief gilt.
 | ☐ | **Jedes Gerät einmal mit Netz neu laden.** iPhone/iPad: Seite herunterziehen. Als Web-App vom Startbildschirm: einmal ganz schließen und neu öffnen. | 5 |
 | ☐ | **Erkennungszeichen prüfen:** Auf der Startseite steht ganz unten, unter den Kacheln, der Block **„Wenn etwas klemmt"** mit „Rohdaten sichern (JSON)". Steht er nicht da, läuft noch die alte App — dann noch einmal laden. | 1 |
 | ☐ | **Drei Leute anlegen** im Backoffice unter „Team": **Asad Karakiri** (service), **Ian Lauchbein** (service), **Marinus** (wirtschaft). Namen und Rolle eintragen, Code irgendeinen vierstelligen — dann in der Zeile **„PIN zurücksetzen"** drücken und den gewürfelten Code notieren. Er ist **nur einmal** zu sehen. | 10 |
-| ☐ | **Gebindegrößen bestätigen:** Backoffice → „Verkauf ↔ Fassung" → „Größe fehlt" → „Alle N Vorschläge übernehmen". Ohne sie rechnet der Abgleich im Keller nichts. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still) haben keinen Vorschlag und brauchen die Zahl von Hand. | 5 |
+| ☐ | **Gebindegrößen bestätigen:** Backoffice → „Verkauf ↔ Fassung" → Abschnitt „Nicht gerechnet" → „Alle N Vorschläge übernehmen". Ohne sie rechnet der Abgleich im Keller nichts. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still) haben keinen Vorschlag und brauchen die Zahl von Hand. | 5 |
 | ☐ | **Gasteiner 0,25 l in Lade 1 nachzählen.** Das Soll steht auf **8**. Passen dort acht Flaschen in die Spalte oder sieben? Die Zahl geht über das Nachfüllen ins Journal, und das Journal lässt sich nicht zurücknehmen. Sag mir die Zahl, dann ändere ich sie — ich habe sie ausdrücklich **nicht** angefasst. | 3 |
 
 Mehr nicht. **Keine Migration, kein Dashboard-Schritt, kein Codewechsel.**

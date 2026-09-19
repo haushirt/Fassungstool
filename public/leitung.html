@@ -947,6 +947,38 @@ function uuid(){
   return "u"+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
 }
 
+/* Wen dieses Fenster in dieser Sitzung schon angelegt hat: Name (klein
+   geschrieben) -> Kennung.
+
+   BERICHTIGUNG (Jaeger, siebte Jagd): Dieses Gedaechtnis stand bis eben
+   INNERHALB von `vTeam()`. `zeichne()` leert `#inhalt` und ruft die
+   Ansicht neu auf — bei „Aktualisieren" (`#bNeu`), bei jedem
+   Seitenwechsel und bei einem `storage`-Ereignis aus einem zweiten Tab,
+   also ganz ohne Klick. Damit war das Gedaechtnis genau dann weg, wenn
+   man es braucht: Die Liste kam nicht, auf dem Schirm stand „Keine
+   Verbindung zum Server.", die Leitung drueckte „Aktualisieren" und
+   tippte denselben Menschen noch einmal — der bekam eine ZWEITE Kennung,
+   also eine zweite aktive Zeile mit eigenem gueltigen Anmeldecode.
+   Danach wirkt „Sperren" nicht mehr, und in der Live-D1 ist das nicht
+   rueckholbar (kein Loeschen, keine Sicherung, Projektanleitung §8).
+
+   Jetzt auf Modulebene und zusaetzlich in `sessionStorage` gespiegelt,
+   damit auch ein Neuladen des Tabs es nicht loescht. Der Speicher kann
+   verweigern (privates Fenster, volles Kontingent) — dann bleibt das
+   Gedaechtnis im Arbeitsspeicher, und der Rest laeuft unveraendert. */
+const K_KENNUNG="hh_nkennung_v1";
+const nKennung=(function(){
+  try{
+    const o=JSON.parse(sessionStorage.getItem(K_KENNUNG)||"{}");
+    return (o && typeof o==="object" && !Array.isArray(o))?o:{};
+  }catch(e){ return {}; }
+})();
+function kennungMerken(schl,id){
+  nKennung[schl]=id;
+  try{ sessionStorage.setItem(K_KENNUNG,JSON.stringify(nKennung)); }catch(e){}
+  return id;
+}
+
 async function kurz(pfad,opt,ms){
   const frist=+ms>0?+ms:8000;
   const ab=(typeof AbortController!=="undefined")?new AbortController():null;
@@ -1631,6 +1663,27 @@ function abgleich(tag, spanne){
           berichte:berichte.length};
 }
 
+/* `ohneGroesse` hat ZWEI Ursachen, und sie führen an verschiedene Orte:
+   `fehlt==="gebinde"` heißt, die Flaschengröße des Artikels ist nicht
+   bestätigt — dafür gibt es unter „Verkauf ↔ Fassung“ einen Vorschlag
+   und den Sammelknopf. `fehlt==="ausschank"` heißt, im Kassennamen steht
+   keine Menge („Aperol Spritz“) — dort ist mit Bestätigen nichts zu
+   holen, es braucht einen anderen Kassennamen oder eine Rezeptur.
+
+   BERICHTIGUNG (Jäger, siebte Jagd): Die Tabellenzeilen unterschieden
+   das schon, die Überschrift, der Mittagsblick und der CSV-Kopf nicht —
+   die sagten für alle „Größe fehlt“ und versprachen die
+   Sammelbestätigung. Bei Bericht 37 mit der Live-Zuordnung sind das
+   10 von 17 Positionen, die ins Backoffice geschickt werden, wo es für
+   sie nichts zu tun gibt. Gezählt wird deshalb ab jetzt an einer
+   Stelle. */
+function teileOhneGroesse(liste){
+  const g=[], au=[];
+  (liste||[]).forEach(o=>{ (o.fehlt==="ausschank"?au:g).push(o); });
+  const stk=l=>l.reduce((x,o)=>x+(+o.anzahl||0),0);
+  return {gebinde:g, ausschank:au, stkGebinde:stk(g), stkAusschank:stk(au)};
+}
+
 /* ════════════ 7 · Ansichten ════════════ */
 const SEITEN=[
   {id:"heute",     t:"Mittagsblick",     grp:"Täglich"},
@@ -1737,6 +1790,17 @@ function vHeute(m){
   const best=bestellliste();
   const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
   const ohneUrteil=a.zeilen.filter(r=>r.unklar).length;
+  /* Die Gründe aus den Zeilen selbst, nicht aus dem Gedächtnis: Hier
+     standen zwei feste Aufzählungen, und beide waren falsch. Die eine
+     nannte „Position nicht zugeordnet" — den Grund gibt es seit v29
+     nicht mehr (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9), eine offene
+     Kassenposition schaltet keinen Artikel mehr stumm. Die andere nannte
+     Größe und Z-Bericht, aber nicht „keine Menge im Kassennamen" — den
+     häufigeren der beiden Gründe (in Bericht 37: 26 von 48 Positionen).
+     `UNKLAR_GRUND` ist die eine Wahrheit; wer daneben eine zweite Liste
+     pflegt, pflegt sie irgendwann nicht mehr mit. */
+  const gruendeSatz=[...new Set(a.zeilen.filter(r=>r.unklar)
+    .map(r=>UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar"))].join(" · ");
   const minus=minusGeteilt(B);
 
   m.innerHTML=`<section>
@@ -1772,7 +1836,7 @@ function vHeute(m){
         ?(grob.length
           ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
           :ohneUrteil
-            ?(ohneUrteil+" Positionen ohne Abgleich — Größe fehlt oder Position nicht zugeordnet")
+            ?(ohneUrteil+" Positionen ohne Abgleich — "+gruendeSatz)
             :"Verkauf und Entnahme decken sich")
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
       a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
@@ -1789,12 +1853,22 @@ function vHeute(m){
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
   if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
-  /* „Größe fehlt" ist kein Befund, sondern eine offene Angabe. Deshalb
-     steht die Zahl hier und nicht bei den Abweichungen. */
-  if(a.ohneGroesse.length) fehlt.push("Größe fehlt: "+a.ohneGroesse.length
-    +" zugeordnete Kassenpositionen ("+num(a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0))
-    +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
-    +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
+  /* Das ist kein Befund, sondern eine offene Angabe. Deshalb steht die
+     Zahl hier und nicht bei den Abweichungen — und getrennt nach den
+     beiden Ursachen, weil nur die eine im Backoffice bestätigt werden
+     kann. Ein Satz, der alle ins Backoffice schickt, schickt die Hälfte
+     vor eine leere Wand. */
+  {
+    const t=teileOhneGroesse(a.ohneGroesse);
+    if(t.gebinde.length) fehlt.push("Größe fehlt: "+t.gebinde.length
+      +" zugeordnete Kassenpositionen ("+num(t.stkGebinde)
+      +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
+      +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
+    if(t.ausschank.length) fehlt.push("Menge fehlt im Kassennamen: "+t.ausschank.length
+      +" zugeordnete Kassenpositionen ("+num(t.stkAusschank)
+      +" Einheiten) sagen nicht, wie viel ausgeschenkt wurde — sie zählen weder als Verkauf noch als Abweichung."
+      +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge oder eine Rezeptur.");
+  }
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else {
     /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
@@ -1827,7 +1901,7 @@ function vHeute(m){
       unter „Verkauf ↔ Fassung“ ohne Urteil. Das ist noch kein Abgleich.</div>`:"")+
     (a.berichte&&ohneUrteil?`<div class="hinweis" style="margin-bottom:var(--space-4)">
       ${ohneUrteil} Position${ohneUrteil===1?"":"en"} stehen hier nicht: für sie ist der Verkauf
-      nicht bestimmbar (keine bestätigte Größe oder kein Z-Bericht). Ihre Entnahme ist
+      nicht bestimmbar (${esc(gruendeSatz)}). Ihre Entnahme ist
       weder Abweichung noch Schwund — nachzulesen unter „Verkauf ↔ Fassung“.</div>`:"")+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
@@ -1924,7 +1998,7 @@ function vAbgleich(m){
      Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
      Angabe, es fehlt keine Flasche. */
   if(a.ohneGroesse.length){
-    const stk=a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0);
+    const t=teileOhneGroesse(a.ohneGroesse);
     const s=document.createElement("section");
     /* Ein eigener Abschnitt mit Überschrift, nicht ein Hinweiskasten ohne
        Kopf: Er steht zwischen der Filterzeile und der Abgleichtabelle, und
@@ -1932,10 +2006,12 @@ function vAbgleich(m){
        Die Zahl gehört in die Überschrift — sie ist das Maß der Arbeit, die
        hier liegt. */
     s.innerHTML=`<div class="abschnitt"><div>
-      <h3>Größe fehlt · ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}</h3>
-      <div class="unter">${num(stk)} verkaufte Einheiten sind zugeordnet, ihre Größe aber nicht
-      bestätigt — sie bleiben aus der Mengenrechnung heraus, als fehlende Angabe und nicht als
-      Abweichung</div></div></div>
+      <h3>Nicht gerechnet · ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}</h3>
+      <div class="unter">${[
+        t.gebinde.length ? t.gebinde.length+" ohne bestätigte Größe ("+num(t.stkGebinde)+" Einheiten) — hier unten bestätigen" : "",
+        t.ausschank.length ? t.ausschank.length+" ohne Menge im Kassennamen ("+num(t.stkAusschank)+" Einheiten) — hier ist nichts zu bestätigen, es braucht einen Kassennamen mit Menge oder eine Rezeptur" : ""
+      ].filter(Boolean).join(" · ")}. Alle bleiben aus der Mengenrechnung heraus, als fehlende Angabe
+      und nicht als Abweichung</div></div></div>
       <div class="tabhuelle"><table><thead><tr>
         <th>Kassenname</th><th class="r">Menge</th><th>Artikel</th><th>Was fehlt</th><th>Vorschlag</th>
       </tr></thead><tbody>${a.ohneGroesse.map(o=>`<tr>
@@ -2040,7 +2116,7 @@ function csvAbgleich(tag,a){
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
   /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
      des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
-  if(a.ohneGroesse.length){ L.push("",["Größe nicht bestätigt — nicht gerechnet"].map(e).join(";"),
+  if(a.ohneGroesse.length){ L.push("",["Nicht gerechnet — Größe oder Menge fehlt"].map(e).join(";"),
     ["Kassenname","Anzahl","Artikel","Was fehlt","Vorschlag ml"].map(e).join(";"));
     a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,
       (o.rezept?"Bestandteil ":"")+artName(o.id),
@@ -2763,11 +2839,9 @@ function vTeam(m){
   $("#nWuerfel").onclick=()=>{ $("#nCode").value=wuerfelPin(); };
 
   let LEUTE=[];
-  /* Wen dieses Fenster in dieser Sitzung schon angelegt hat: Name (klein
-     geschrieben) → Kennung. Siehe die Berichtigung weiter unten bei
-     `#nAdd` — die Kennung haengt am MENSCHEN, nicht am Formularinhalt
-     und nicht am einzelnen Anlauf. */
-  const nKennung={};
+  /* Das Gedaechtnis `nKennung` liegt auf Modulebene (siehe dort) — die
+     Kennung haengt am MENSCHEN, nicht am Formularinhalt, nicht am
+     einzelnen Anlauf und nicht an dieser Ansicht. */
   const male=()=>{
     $("#teamL").innerHTML=LEUTE.length?`<div class="tabhuelle"><table><thead><tr>
       <th>Name</th><th style="width:200px">Rolle</th><th>Sieht</th><th style="width:120px">Zustand</th>
@@ -2953,8 +3027,8 @@ function vTeam(m){
        ueberlebt den geglueckten Anlauf: In dieser Sitzung bekommt
        derselbe Mensch dieselbe Zeile, was immer dazwischen passiert. */
     const schl=nm.toLowerCase();
-    if(da)nKennung[schl]=da.id;
-    else if(!nKennung[schl])nKennung[schl]=uuid();
+    if(da)kennungMerken(schl,da.id);
+    else if(!nKennung[schl])kennungMerken(schl,uuid());
     const b=$("#nAdd"); b.disabled=true; const wort=b.textContent;
     b.textContent="speichert \u2026";
     const gut=await sende({id:nKennung[schl], name:nm, rolle, code, aktiv:1});

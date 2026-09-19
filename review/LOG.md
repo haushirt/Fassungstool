@@ -3434,3 +3434,97 @@ negative Stückzahlen durch (App und Backoffice gleich, deshalb harmlos).
 erst durch die dritte Jagd; geblieben ist dieselbe halbe Frist eine Datei
 weiter — zum dritten Mal dieselbe Vorsicht an einer Stelle gebaut und an
 der anderen vergessen.
+
+---
+
+### Runde 16 – software-engineer (siebte Runde, nach der siebten Jagd)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — **A**: `const nKennung={}` stand in `vTeam(m)`
+  (`public/leitung.html:2770`). `zeichne()` (`:2989`) leert `#inhalt` und
+  baut die Ansicht neu — bei „Aktualisieren" (`#bNeu`), bei jedem
+  Seitenwechsel und bei einem `storage`-Ereignis aus einem zweiten Tab,
+  ganz ohne Klick. Genau in der Lage, für die das Gedächtnis gebaut war
+  (Liste kommt nicht, auf dem Schirm steht „Keine Verbindung zum Server."),
+  legt der Griff zum Knopf es um. Der Jäger hat es in Chromium am echten
+  Worker-Nachbau gemessen: ohne Klick eine Kennung, nach einem Klick zwei —
+  zwei aktive Zeilen, gleicher Name, zwei gültige Anmeldecodes. Nicht
+  rückholbar (Projektanleitung §8).
+* ✅ übernommen — **B**: `vorbehaltSatz` unterschied die beiden Ursachen,
+  der Mittagsblick (`:1794`), die Abschnittsüberschrift (`:1935`) und der
+  CSV-Kopf (`:2043`) nicht. Bei Bericht 37 mit der Live-Zuordnung sind das
+  10 von 17 Positionen, die der Satz zur Sammelbestätigung ins Backoffice
+  schickt, wo der Knopf sie (richtigerweise) nicht anfasst.
+* ✅ übernommen — **C-1 bis C-4**, alle vier gebaut statt in den Backlog
+  gelegt; sie kosteten zusammen zehn Zeilen.
+* ✅ übernommen — der Vorwurf an die Prüfung: `tests/runde16.test.mjs`
+  las den Quelltext und war grün, während die Lebensdauer falsch war. Eine
+  Regex auf der Datei kann keine Lebensdauer messen.
+
+**Umgesetzt:**
+1. **Die Kennung überlebt das Neuzeichnen.** `nKennung` steht jetzt auf
+   Modulebene und wird in `sessionStorage` (`hh_nkennung_v1`) gespiegelt,
+   überlebt also auch ein Neuladen des Tabs. Verweigert der Speicher
+   (privates Fenster, volles Kontingent), bleibt sie im Arbeitsspeicher —
+   `try/catch` um jeden Zugriff, der Rest läuft unverändert.
+2. **Die beiden Ursachen werden überall getrennt gezählt.** Neue
+   Zählstelle `teileOhneGroesse()`; Mittagsblick hat zwei Sätze („Größe
+   fehlt: …, gesammelt bestätigen" und „Menge fehlt im Kassennamen: …,
+   Bestätigen hilft hier nicht"), die Überschrift heißt „Nicht gerechnet"
+   und nennt beide Zahlen, der CSV-Kopf ebenso.
+3. **Die vier C-Funde.** `.abglz .za` in EINER Regel; die Zahlenzeile darf
+   umbrechen statt unter ihren Inhalt zu schrumpfen (`&#160;` hält „gefasst 120"
+   und „verkauft 108,6" je zusammen, gebrochen wird nur am Mittelpunkt);
+   der veraltete Kommentar über `.abglz` berichtigt; der Vorbehaltssatz
+   der App zählt jetzt wie das Backoffice „N von M Positionen nicht
+   gerechnet".
+
+4. **Zwei weitere Pauschalen im Mittagsblick, selbst gefunden.** Die
+   Kachel „Auffällige Differenzen" nannte als Grund „Größe fehlt oder
+   Position nicht zugeordnet" — den zweiten gibt es seit v29 nicht mehr
+   (`ENTSCHIEDEN-NACHTS.md`, Punkt 9), er stand seit der zehnten Jagd als
+   C im Backlog. Der Hinweis über der Tabelle nannte „keine bestätigte
+   Größe oder kein Z-Bericht" und ließ die fehlende Menge im Kassennamen
+   aus — den häufigeren Grund. Beide lesen jetzt aus `UNKLAR_GRUND`, also
+   aus den Zeilen, die tatsächlich dastehen. Dieselbe Krankheit wie B:
+   eine zweite Liste neben der Wahrheit, die irgendwann nicht mitgepflegt
+   wird.
+
+**Geprüft:** `npm test` **435/435** (eine Prüfung mehr: die getrennte
+Zählung). Neu und gegen den alten Stand nachweislich rot:
+* `tests/ui-runde16.cjs` Szene 8 — sie KLICKT: Server nimmt das POST an,
+  `GET /api/personen` schweigt, dazwischen ein Druck auf „Aktualisieren".
+  Auf `b3eb513`: „Pakete: 2 · Kennungen: 2" → rot, dieselbe Zahl wie beim
+  Jäger. Auf dem neuen Stand: 2 Pakete, 1 Kennung.
+* `tests/abgleich-unklar.test.mjs` — gemischte Lage (eine Position ohne
+  bestätigte Größe, eine ohne Menge im Namen): `teileOhneGroesse` trennt
+  1/1 und 3/6 Einheiten. Die vier Quelltextprüfungen daneben kippen alle
+  vier zwischen `b3eb513` und jetzt (einzeln nachgestellt).
+* `tests/ui-leitung-echt.cjs` 41/41 — die alte Prüfung `/Größe fehlt/` ist
+  durch die schärfere ersetzt („hält die beiden Ursachen auseinander").
+
+Alle acht Browserläufe grün, `ui-mass` alle zehn Urteile grün,
+Gestaltungsschicht wortgleich, vier Dateien in `public/`, `sw.js` v48 → v49.
+`wrangler.jsonc`, `schema.sql`, `migrations/`, `docs/`, `package.json`,
+`RUNDEN` unberührt; keine Zugangsdaten im Diff. Regel 1 weiter gebrochen
+(Branch `claude/runde16` statt `v2-review`) — alt bekannt, aus dem Auftrag
+dieser Nacht.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch,
+die Live-D1 selbst.
+
+**Für die Nächsten:**
+* An den **Jäger**: Der Unterschied zwischen „steht im Quelltext" und
+  „gilt zur Laufzeit" hat diese Runde zweimal getragen. Szene 8 in
+  `ui-runde16.cjs` ist das Muster dafür — sie stellt die Abbruchlage her
+  und klickt den Weg, den die Leitung nimmt.
+* An **Casimir**: `sessionStorage`-Schlüssel `hh_nkennung_v1` ist neu; er
+  liegt nur im Browser des Backoffice und enthält Name → Kennung, keine
+  Codes.
+
+**Phase/Thema:** Runde 16 / siebte Runde, nach der siebten Jagd
+
+**Backlog:** nichts Neues — die vier C-Funde sind gebaut, nicht vertagt.
+
+**STATUS:** VERBESSERUNGEN — aus meiner Rolle keine Punkte mit Priorität
+hoch/mittel mehr offen; die achte Jagd entscheidet.

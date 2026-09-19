@@ -124,15 +124,35 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
        nach einem geglückten Anlauf war sie auf `null` gesetzt, während
        `LEUTE` veraltet blieb. Sie hängt jetzt am NAMEN und überlebt den
        geglückten Anlauf. */
-    assert.match(BO, /const nKennung=\{\};/);
     assert.match(BO, /const schl=nm\.toLowerCase\(\);/);
-    assert.match(BO, /else if\(!nKennung\[schl\]\)nKennung\[schl\]=uuid\(\);/,
+    assert.match(BO, /else if\(!nKennung\[schl\]\)kennungMerken\(schl,uuid\(\)\);/,
       "die Kennung wird nicht je Mensch einmal vergeben");
     assert.match(BO, /sende\(\{id:nKennung\[schl\],/,
       "der Anlauf schickt seine Kennung nicht mit");
     assert.doesNotMatch(BO, /nAnlauf/,
       "die Kennung haengt wieder am Formularinhalt");
     assert.match(BO, /function uuid\(\)/);
+    /* BERICHTIGT (siebte Jagd Runde 16 · A): Hier stand nur
+       `assert.match(BO, /const nKennung=\{\};/)` — und die Regex war
+       grün, während die Kennung IN `vTeam(m)` lag. `zeichne()` leert
+       `#inhalt` und ruft die Ansicht neu auf: bei „Aktualisieren", bei
+       jedem Seitenwechsel und bei einem `storage`-Ereignis aus einem
+       zweiten Tab. Genau dann, wenn die Liste nicht kam und die Leitung
+       zum Knopf greift, war das Gedächtnis weg — derselbe Mensch bekam
+       eine zweite Kennung, also eine zweite aktive Zeile mit eigenem
+       gültigen Code. Eine Regex auf der Datei kann eine Lebensdauer
+       nicht messen; die Prüfung, die den Fund fängt, klickt und steht
+       in `tests/ui-runde16.cjs` (Szene 8). Was hier bleibt, ist die
+       billige Wache davor, dass die Kennung wieder hineinrutscht. */
+    const vT = BO.slice(BO.indexOf("function vTeam(m){"));
+    const vTende = vT.indexOf("\n}\n");
+    assert.ok(vTende > 0, "vTeam nicht abgegrenzt");
+    assert.doesNotMatch(vT.slice(0, vTende), /const nKennung=/,
+      "die Kennung steht wieder in vTeam und stirbt bei jedem zeichne()");
+    assert.match(BO, /^const nKennung=\(function\(\)\{/m,
+      "die Kennung steht nicht auf Modulebene");
+    assert.match(BO, /sessionStorage\.setItem\(K_KENNUNG/,
+      "die Kennung überlebt kein Neuladen des Tabs");
   });
 });
 

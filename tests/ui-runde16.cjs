@@ -36,7 +36,13 @@ const LAGE = {
      Gefüllt wird er von der Szene selbst, sobald sie die echten
      Artikelkennungen der App kennt. */
   zbericht: null, mapping: [], stumm: false, stummerLeib: null,
-  abgemeldet: 0, gesendet: []
+  abgemeldet: 0, gesendet: [],
+  /* Szene 8 · das Team-Formular im Backoffice. `personenStumm` laesst
+     NUR das GET nie antworten; das POST kommt an und wird beantwortet.
+     Genau die Lage, in der die Kennung gebraucht wird: geschrieben ist
+     geschrieben, aber die Liste kommt nicht zurueck, also kann der
+     Client aus `LEUTE` nicht mehr ablesen, ob er schon geschrieben hat. */
+  personen: [], personenStumm: false, pakete: []
 };
 
 const srv = http.createServer((q, a) => {
@@ -62,6 +68,18 @@ const srv = http.createServer((q, a) => {
     if (u === "/api/abmelden") { LAGE.abgemeldet++;
       a.writeHead(200, { ...kopf, "set-cookie": "hh_sitz=; Max-Age=0; Path=/" });
       return a.end(JSON.stringify({ ok: true })); }
+    if (u === "/api/personen") {
+      if (q.method === "POST") {
+        let leib = ""; q.on("data", c => leib += c);
+        return q.on("end", () => {
+          try { LAGE.pakete.push(JSON.parse(leib)); } catch (e) {}
+          a.writeHead(200, kopf); a.end(JSON.stringify({ ok: true }));
+        });
+      }
+      if (LAGE.personenStumm) return;            /* GET antwortet nie */
+      a.writeHead(200, kopf);
+      return a.end(JSON.stringify({ personen: LAGE.personen || [] }));
+    }
     if (u === "/api/mapping") { a.writeHead(200, kopf);
       return a.end(JSON.stringify({ mapping: LAGE.mapping || [] })); }
     if (u === "/api/fassungsliste") {
@@ -586,6 +604,65 @@ async function tagesfassungBisAbschluss(p) {
         klein.length === 0, klein.join(", "));
       urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
       await ctx.close();
+    }
+
+    /* ── 8 · Die Kennung überlebt „Aktualisieren“ ─────────────── */
+    /* Siebte Jagd Runde 16 · A. `tests/runde16.test.mjs` prüfte den
+       Quelltext und war grün, während `const nKennung={}` in `vTeam(m)`
+       lag — eine Regex kann eine Lebensdauer nicht messen. Diese Szene
+       klickt: Der Server nimmt das POST an, das GET auf `/api/personen`
+       schweigt, dazwischen ein Druck auf „Aktualisieren“ (`#bNeu`), der
+       `zeichne()` auslöst und die Ansicht neu baut. Landet derselbe
+       Mensch danach mit einer ZWEITEN Kennung beim Server, stehen in der
+       Live-D1 zwei aktive Zeilen mit zwei gültigen Anmeldecodes — und es
+       gibt kein Löschen und keine Sicherung (Projektanleitung §8). */
+    {
+      LAGE.personenStumm = true; LAGE.pakete = [];
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = []; p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:8781/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+
+      const anlegen = async (code) => {
+        await p.fill("#nName", "Anna Beispiel");
+        await p.fill("#nCode", code);
+        await p.click("#nAdd");
+        await warte(p, 600);
+      };
+      await anlegen("1234");
+      urteil("A/7 · der erste Anlauf kommt beim Server an",
+        LAGE.pakete.length === 1, "Pakete: " + LAGE.pakete.length);
+      /* `hole()` laeuft in die 8-s-Frist von `kurz()` — erst danach
+         steht der Satz da, den die Leitung liest. Hier wird er
+         abgewartet, nicht abgekuerzt: Der Griff zu „Aktualisieren"
+         kommt im Haus genau nach diesem Satz. */
+      await warte(p, 9000);
+      urteil("A/7 · die Liste kam nicht — der Schirm sagt es",
+        /Keine Verbindung zum Server/.test(await p.locator("#teamL").innerText()),
+        (await p.locator("#teamL").innerText()).slice(0, 60));
+
+      /* Der Griff, den der Satz auf dem Schirm nahelegt. */
+      await p.click("#bNeu");
+      await warte(p, 700);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen("5678");
+
+      const kennungen = new Set(LAGE.pakete.map(x => x.id));
+      urteil("A/7 · zweimal derselbe Mensch → EINE Kennung, auch nach „Aktualisieren“",
+        LAGE.pakete.length === 2 && kennungen.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + kennungen.size);
+      urteil("A/7 · die Kennung steht auch nach einem Neuladen des Tabs bereit",
+        await p.evaluate(() => {
+          try { return !!JSON.parse(sessionStorage.getItem("hh_nkennung_v1") || "{}")["anna beispiel"]; }
+          catch (e) { return false; }
+        }));
+      urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.personenStumm = false;
     }
 
   } finally {

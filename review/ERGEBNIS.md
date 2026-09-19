@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
 
-**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v42.**
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v49.**
 Er bringt die A- und B-Funde der fünften Jagd und die vier Punkte der
 Runde 16 hinaus — und die Funde der sechsten Jagd, die auf diese Runde
 folgte.
@@ -124,6 +124,26 @@ vorgemerkte Abmeldung** überlebt jetzt eine Offline-Anmeldung der nächsten
 Person — vorher erbte sie zwölf Stunden lang die Sitzung der vorigen, samt
 Personenverwaltung und „PIN zurücksetzen".
 
+Aus den beiden letzten Jagden noch zwei Dinge, die im Haus zählen:
+
+* **Eine Person wird nicht mehr zweimal angelegt.** Bricht die Verbindung
+  beim Anlegen ab, steht auf dem Schirm „Keine Verbindung zum Server."
+  und man greift zu „Aktualisieren". Bis eben verlor das Backoffice dabei
+  sein Gedächtnis: derselbe Mensch bekam beim zweiten Tippen eine zweite
+  Zeile mit einem zweiten gültigen Anmeldecode — und „Sperren" wirkte
+  danach nicht mehr, weil der andere Code weiter herein lässt. Gelöscht
+  werden kann in der Live-D1 nichts (Projektanleitung §8). Das Gedächtnis
+  überlebt jetzt das Neuzeichnen und sogar ein Neuladen des Tabs.
+* **„Größe fehlt" schickt niemanden mehr ins Leere.** Zwei verschiedene
+  Dinge hießen gleich: eine fehlende **Gebindegröße** (die lässt sich im
+  Backoffice bestätigen) und eine fehlende **Menge im Kassennamen**
+  („Aperol Spritz 1 Glas" — da hilft nur ein anderer Kassenname oder eine
+  Rezeptur). Der Mittagsblick versprach für beide die Sammelbestätigung;
+  bei Bericht 37 waren das 10 von 17 Positionen, für die es dort nichts zu
+  tun gibt. Beide werden jetzt überall getrennt gezählt und getrennt
+  benannt; der Abschnitt heißt daher nicht mehr „Größe fehlt", sondern
+  **„Nicht gerechnet"**.
+
 ## Erkennungszeichen nach dem Deploy
 
 Auf der Startseite steht unter den Kacheln der Block **„Wenn etwas klemmt"**
@@ -142,7 +162,7 @@ Nichts. Keine Migration, kein Dashboard-Schritt, kein Codewechsel.
   (wirtschaft) im Backoffice unter „Team" anlegen und den PIN über „PIN
   zurücksetzen" vergeben.
 * **Die Gebindegrößen bestätigen** — Backoffice → „Verkauf ↔ Fassung" →
-  „Größe fehlt" → „Alle N Vorschläge übernehmen". Solange keine einzige
+  Abschnitt „Nicht gerechnet" → „Alle N Vorschläge übernehmen". Solange keine einzige
   bestätigt ist, kann der Abgleich im Keller nichts rechnen und sagt genau
   das. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still)
   haben keinen Vorschlag und brauchen die Zahl von Hand.

@@ -265,10 +265,23 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
     vAbgleich.tag = "2026-09-16"; SPANNE = 1; zeichne();
     const a = abgleich("2026-09-16", 1);
     return { ohne: a.ohneGroesse.length, verk: Object.keys(a.verk).length,
+             geb: a.ohneGroesse.filter(o => o.fehlt !== "ausschank").length,
+             aus: a.ohneGroesse.filter(o => o.fehlt === "ausschank").length,
              gv: (a.ohneGroesse.find(o => /GV Leindl/.test(o.name)) || {}),
              text: document.querySelector("main").textContent };
   });
-  ok("die Ansicht weist „Größe fehlt“ aus", /Größe fehlt/.test(lage.text));
+  ok("die Ansicht führt die nicht gerechneten Positionen auf",
+     /Nicht gerechnet/.test(lage.text));
+  /* BERICHTIGT (siebte Jagd Runde 16 · B): Hier stand nur
+     `/Größe fehlt/`. Überschrift und Mittagsblick sagten das für BEIDE
+     Ursachen — auch für die Positionen, denen die Menge im Kassennamen
+     fehlt. Die schickt „gesammelt bestätigen“ vor eine leere Wand: der
+     Sammelknopf fasst nur `fehlt==="gebinde"` an. Geprüft wird jetzt,
+     dass die Ansicht die beiden auseinanderhält. */
+  ok("und sie hält die beiden Ursachen auseinander",
+     (!lage.geb || /ohne bestätigte Größe/.test(lage.text))
+     && (!lage.aus || /ohne Menge im Kassennamen/.test(lage.text)),
+     lage.geb + " ohne Größe · " + lage.aus + " ohne Menge");
   ok("die Achtel-Position steht dort mit ihrer echten Menge",
      lage.gv.anzahl === 4 && lage.gv.fehlt === "gebinde", JSON.stringify(lage.gv.anzahl));
   ok("solange nichts bestätigt ist, rechnet keine Zeile mit",

@@ -353,11 +353,13 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 /* Der Abgleich im Abschlussfenster: eine Zeile je Artikel, die Zahlen
    rechts und untereinander lesbar. */
 .abgl{margin:var(--space-3) 0 0;border-top:1px solid var(--border)}
-/* Umbrechend, damit der Vorbehalt eine EIGENE, volle Zeile bekommt.
-   Vorher stand er in `.nm` und damit in der Flexreihe: `.za` und `.df`
-   sind `nowrap`, `.nm` blieb bei 390 px strukturell 55 px breit, und der
-   Satz wurde zur Wortleiter mit Trennung mitten im Wort („Kassen/zeilen",
-   „unvollst/ändig"), 158 px hoch (fuenfte Jagd Runde 16 · B, gemessen). */
+/* Umbrechend, damit Name, Zahlen und Vorbehalt je eine EIGENE Zeile
+   bekommen. Vorher standen alle drei in einer Flexreihe: `.za` und `.df`
+   sind `nowrap`, `.nm` und `.vorb` schrumpften dazwischen auf 55–102 px
+   und wurden zur Wortleiter mit Trennung mitten im Wort
+   („Kassen/zeilen", „unvollst/ändig"), 158 px hoch (fuenfte und sechste
+   Jagd Runde 16 · B, gemessen). `.nm` und `.vorb` haben deshalb
+   `flex-basis:100%` — siehe unten. */
 .abglz{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);
   padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
 /* BERICHTIGUNG (sechste Jagd Runde 16 · B): `.nm` hatte `flex:1` und
@@ -370,9 +372,17 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
    Der Name bekommt jetzt seine eigene, volle Zeile — darunter die
    Zahlen, darunter der Vorbehalt. */
 .abglz .nm{flex-basis:100%;min-width:0;font-weight:var(--weight-medium)}
-.abglz .za{flex:1;min-width:0}
-.abglz .za{font-variant-numeric:tabular-nums;white-space:nowrap;
-  font-size:var(--text-sm);color:var(--fg-muted)}
+/* BERICHTIGUNG (siebte Jagd Runde 16 · C-1/C-2): Der Selektor stand
+   zweimal hintereinander, und mit `min-width:0` bei `nowrap` ohne
+   `overflow` konnte die Zeile erstmals unter ihren Inhalt schrumpfen —
+   bei 320 px waren es gemessene 2 px Reserve, mit breiterer Differenz
+   liefen 10 px in den Zwischenraum vor `.df`. Abschneiden waere hier das
+   Schlechteste (eine halbe Zahl ist schlimmer als keine), also darf die
+   Zeile jetzt umbrechen: ein geschuetztes Leerzeichen (`\u00a0` im
+   Markup) haelt „gefasst 120" und „verkauft 108,6" je fuer sich
+   zusammen, gebrochen wird nur am Mittelpunkt dazwischen. */
+.abglz .za{flex:1;min-width:0;font-variant-numeric:tabular-nums;
+  overflow-wrap:break-word;font-size:var(--text-sm);color:var(--fg-muted)}
 .abglz .df{font-variant-numeric:tabular-nums;white-space:nowrap;
   font-weight:var(--weight-bold);min-width:44px;text-align:right}
 .abglz .df.plus{color:var(--warn-fg)}
@@ -5833,10 +5843,15 @@ function popupAbgleich(d,z,groessen){
                 : x.diff<0 ? "die echte L\u00fccke ist gr\u00f6\u00dfer"
                 : "unvollst\u00e4ndig";
     return `<div class="abglz"><span class="nm">${esc(GN(x.id))}</span>`
-      +`<span class="za">gefasst ${zahl(x.gefasst)} \u00b7 verkauft ${zahl(x.verkauft)}</span>`
+      +`<span class="za">gefasst\u00a0${zahl(x.gefasst)} \u00b7 verkauft\u00a0${zahl(x.verkauft)}</span>`
       +`<span class="df ${v}">${mitZeichen(x.diff)}</span>`
-      +(x.vorbehalt?`<span class="vorb">${x.ohne} von ${x.ganz} Kassenzeilen `
-        +`nicht rechenbar \u2014 ${wohin}</span>`:"")+`</div>`;
+      /* Dasselbe Zaehlwort wie im Backoffice (`vorbehaltSatz`,
+         leitung.html): dort „N von M Positionen nicht gerechnet", hier
+         stand „Kassenzeilen nicht rechenbar" — eine Tatsache, zwei
+         Woerter (siebte Jagd Runde 16 · C-4). Die Richtung dahinter
+         bleibt der App vorbehalten: im Keller zaehlt sie. */
+      +(x.vorbehalt?`<span class="vorb">${x.ohne} von ${x.ganz} Positionen `
+        +`nicht gerechnet \u2014 ${wohin}</span>`:"")+`</div>`;
   };
   /* BERICHTIGUNG (Jagd Runde 16 · A2): Hier stand „Keine Abweichung",
      sobald die Liste leer war — auch dann, wenn gar nichts verglichen
