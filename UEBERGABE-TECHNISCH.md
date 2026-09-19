@@ -193,6 +193,7 @@ Der eigentliche Wert liegt im Vorgangsobjekt unter `d.getr[id]` — der
 | `hh_zaehlnr_v1` | Zählnummer je Vorgangsschlüssel |
 | `hh_fern_v1` | letzter bekannter Serverstand |
 | `hh_bekannt_v1` | `{ sha256("hh:"+code): name }` — Offline-Anmeldung |
+| `hh_nkennung_v1` | **nur `leitung.html`**, seit Runde 16: `{ kleingeschriebener Name: Kennung }`. Damit bekommt derselbe Mensch dieselbe Zeile, auch wenn die Personenliste nach einem Abbruch nicht zurückkommt. **Keine Codes darin** (harte Regel 9). Wird von `abmelden()` geräumt. Die Wache gegen ein zweites Gerät steht im Worker (`personSchreiben`, Namensprüfung) — ein Browserspeicher kann das nicht sehen. |
 
 **Nie ungeprüft schreiben.** `jlese`/`jschreib` fangen Quota-Fehler ab;
 `save()` zeigt bei vollem Speicher einen Toast.

@@ -287,3 +287,14 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 - ~~**Der Abschluss hängt am schweigenden Server**~~ — `holeKurz()` mit acht Sekunden für alle vier wartenden Aufrufe. Belegt in `tests/ui-runde16.cjs`.
 - ~~**`popupFertig()` verspricht einen Abgleich nach Kellerzählung, Wareneingang und Sonderentnahme**~~ — der Satz hängt jetzt am Modus.
 - ~~**`/api/code` räumt die Sperre bei Erfolg nicht auf**~~ — tut es jetzt, wie `anmelden()`.
+
+---
+
+## Runde 16 · achte Jagd und zweite Gegenprobe (19.09.2026, nach dem Livegang)
+
+| Prio | Punkt | Datei |
+|---|---|---|
+| mittel | **Feste Ports in den Prüfskripten.** `tests/ui-runde16.cjs` (8781), `tests/ui-leitung-echt.cjs` (8793), `qa-*` (8955 u. a.) binden feste Ports. Läuft zufällig ein zweiter Lauf, stirbt das Skript mit `EADDRINUSE` und Rückgabe 1, **ohne eine einzige Prüfung zu melden** — ein Ergebnis, das wie ein Fund aussieht und keiner ist; der stille Falschalarm in die andere Richtung ist ebenso möglich. Port `0` plus Weitergabe an die Seite wären drei Zeilen. (qa-guardian, zweite Gegenprobe) | `tests/*.cjs` |
+| niedrig | **`hh_nkennung_v1` vergeht nicht mehr von selbst.** Seit dem Wechsel auf `localStorage` (achte Jagd · B, zweiter Tab) bleibt die Karte Name → Kennung stehen, bis `abmelden()` sie räumt oder der Browserspeicher geleert wird. Keine Codes darin (Regel 9 am laufenden Objekt geprüft), aber sie altert nicht. Ein Zeitstempel je Eintrag und ein Verfall nach 24 h wären sauberer. | `public/leitung.html` (`K_KENNUNG`) |
+| niedrig | **Der Namenswächter im Worker ist ASCII-blind.** `lower()` in SQLite fasst „Müller" und „müller" als verschieden auf; die Wache greift dort also nicht. Die stärkere Hälfte ist die Kennung im Backoffice, die den Namen exakt trifft — aber zwei Geräte mit unterschiedlicher Groß-/Kleinschreibung eines Umlautnamens kämen durch. `NOCASE`-Collation oder Normalisierung im Worker. | `src/index.js` (`personSchreiben`) |
+| niedrig | **Zwei Menschen mit exakt gleichem Namen brauchen jetzt einen Zusatz.** Das ist die Kehrseite des Wächters, entschieden in der Nacht ohne Rückfrage. Falls das im Haus stört: statt der Absage ein Rückfragedialog („‚Asad' gibt es schon — wirklich eine zweite Person?") mit einem ausdrücklichen Kennzeichen im Paket. | `src/index.js`, `public/leitung.html` (`#nAdd`) |

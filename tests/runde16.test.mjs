@@ -151,8 +151,17 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
       "die Kennung steht wieder in vTeam und stirbt bei jedem zeichne()");
     assert.match(BO, /^const nKennung=\(function\(\)\{/m,
       "die Kennung steht nicht auf Modulebene");
-    assert.match(BO, /sessionStorage\.setItem\(K_KENNUNG/,
-      "die Kennung überlebt kein Neuladen des Tabs");
+    /* BERICHTIGT (achte Jagd Runde 16 · B): Der Spiegel lag in
+       `sessionStorage` und ist damit je TAB eigen — zwei offene
+       `leitung.html` am MacBook ergaben für denselben Namen wieder zwei
+       Kennungen. Jetzt `localStorage`, und `abmelden()` räumt ihn weg. */
+    assert.match(BO, /localStorage\.setItem\(K_KENNUNG/,
+      "die Kennung überlebt kein Neuladen und keinen zweiten Tab");
+    assert.doesNotMatch(BO, /sessionStorage\.(set|get)Item\(K_KENNUNG/,
+      "der Spiegel liegt wieder im tabeigenen Speicher");
+    assert.match(BO, /function kennungRaeumen\(\)\{/);
+    assert.match(BO, /kennungRaeumen\(\);\n  ICH=null;/,
+      "das Abmelden lässt die Namen der Mitarbeiter im Browser liegen");
   });
 });
 
@@ -220,6 +229,61 @@ describe("A2 · Ein Code gehört genau einer Person", () => {
     const neu = (await a.json()).pin;
     assert.notEqual(neu, CL, "der Würfel traf den Code der Leitung");
     assert.match(neu, /^\d{4}$/);
+  });
+
+  /* ═════ B3 (achte Jagd Runde 16) · Einen Namen gibt es einmal ═══════
+     Die Kennung im Backoffice hält denselben Menschen zusammen, solange
+     es DERSELBE Browser ist. Ein zweiter Tab (bis eben) und ein zweites
+     Gerät (bis heute) wissen nichts davon: Schweigt `GET /api/personen`,
+     kann der Client nicht mehr sehen, dass es den Menschen schon gibt,
+     und legt ihn noch einmal an — zwei aktive Zeilen, gleicher Name,
+     ZWEI gültige Anmeldecodes. Danach wirkt „Sperren" nicht mehr. Es
+     gibt kein Löschen und keine Sicherung (Projektanleitung §8), also
+     muss der SERVER nein sagen. */
+  test("eine zweite Zeile unter demselben Namen wird abgelehnt", async () => {
+    const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
+    const env = await haus(CL, CS);
+    const keks = keksAus(await anmelden(env, CL));
+    let frei = wuerfel();
+    while (frei === CL || frei === CS) frei = wuerfel();
+
+    const a = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+      body: { name: "Asad", rolle: "service", code: frei } }), env);
+    assert.equal(a.status, 409, "derselbe Mensch wurde ein zweites Mal angelegt");
+    assert.match((await a.json()).fehler, /schon angelegt/,
+      "die Meldung sagt nicht, was los ist");
+
+    /* Und der Code darf dabei nicht vergeben worden sein. */
+    const an = await anmelden(env, frei);
+    assert.equal(an.status, 401, "der Code der abgelehnten Zeile lässt herein");
+  });
+
+  test("dieselbe Zeile weiterzuschreiben bleibt erlaubt", async () => {
+    const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
+    const env = await haus(CL, CS);
+    const keks = keksAus(await anmelden(env, CL));
+    const liste = await worker.fetch(anfrage("/api/personen", { keks }), env);
+    const asad = (await liste.json()).personen.find(p => p.name === "Asad");
+
+    /* Sperren, freigeben, Rolle ändern — alles mit derselben `id` und
+       demselben Namen. Ein Namensprüfer, der das blockiert, sperrt das
+       Haus aus seiner eigenen Verwaltung aus. */
+    for (const koerper of [{ aktiv: 0 }, { aktiv: 1 }, { rolle: "wirtschaft" }]) {
+      const r = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+        body: Object.assign({ id: asad.id, name: "Asad", rolle: "service" }, koerper) }), env);
+      assert.equal(r.status, 200, JSON.stringify(koerper) + " wurde abgewiesen");
+    }
+  });
+
+  test("ohne Namen und ohne Rolle bleibt es bei 422", async () => {
+    /* Die Namensprüfung darf nicht vor der Formprüfung greifen: sonst
+       führt ein leeres Feld zu einer Meldung über Dubletten. */
+    const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
+    const env = await haus(CL, CS);
+    const keks = keksAus(await anmelden(env, CL));
+    const r = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+      body: { name: "", rolle: "service", code: wuerfel() } }), env);
+    assert.equal(r.status, 422);
   });
 });
 

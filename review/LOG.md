@@ -3528,3 +3528,105 @@ die Live-D1 selbst.
 
 **STATUS:** VERBESSERUNGEN — aus meiner Rolle keine Punkte mit Priorität
 hoch/mittel mehr offen; die achte Jagd entscheidet.
+
+---
+
+### Runde 16 – software-engineer (achte Runde, nach der achten Jagd und der zweiten Gegenprobe)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **B (Jäger)**: `teileOhneGroesse()` teilte in ZWEI Töpfe,
+  der Bildschirm darunter kennt DREI Zustände. Alles, was nicht
+  `fehlt==="ausschank"` war, bekam den Satz „hier unten bestätigen" — auch
+  die Rezeptbestandteile (die bewusst keinen Knopf haben) und die Artikel
+  ohne ml-Vorschlag. Gemessen: angekündigt 23, tatsächlich sammelbar 12,
+  und das ist der Regelfall — 35 von 37 Artikeln in `STAMM.GETR` liefern
+  ohne Bestätigung gar keinen Vorschlag. Dieselbe Fehlerart, die die
+  Runde davor behoben hat, eine Schicht tiefer. Der qa-guardian hat
+  denselben Punkt unabhängig gefunden.
+* ✅ übernommen — **B (Jäger)**: Die Z-Bericht-Ansicht schrieb weiter
+  pauschal „Größe fehlt" — und das ist die Ansicht, in der die Leitung den
+  Bericht ZUERST sieht. Bei Bericht 37 betrifft das 26 von 48 Positionen.
+  Mein Kommentar „gezählt wird ab jetzt an EINER Stelle" war damit falsch.
+* ✅ übernommen — **B (Jäger + qa-guardian, unabhängig)**: `sessionStorage`
+  ist je Tab. Zwei offene `leitung.html` am MacBook sind der Normalfall und
+  ergaben für denselben Namen wieder zwei Kennungen.
+* ✅ übernommen — **hoch (qa-guardian)**: `review/MORGENBRIEF.md:4` nannte
+  „`sw.js` v42". Genau an diesem Brief wird um 06:00 geprüft, ob der Deploy
+  durch ist.
+* ✅ übernommen — die vier C-Funde beider Prüfer (Kassennamen statt
+  Kassenpositionen, „1 Einheiten", `hh_nkennung_v1` beim Abmelden räumen,
+  die zwei zu weichen Prüfungen) und die zwei Backlog-Punkte des
+  qa-guardian (dritte Ursache, `esc()` beim zweiten Leser).
+* ❌ abgelehnt — nichts.
+
+**Umgesetzt:**
+1. **Geteilt wird nach dem, was zu TUN ist, nicht nach der Ursache.**
+   Neue gemeinsame Bedingung `sammelbar(o)` — dieselbe, die der
+   Sammelknopf anwendet, eine Bedingung und zwei Leser. `teileOhneGroesse`
+   gibt drei Töpfe zurück: `sammelbar` („hier unten gesammelt bestätigen"),
+   `handisch` („die Gebindegröße von Hand eintragen, bei Mischgetränken am
+   Bestandteil") und `ausschank` („hier ist nichts zu bestätigen"). Der
+   Mittagsblick hat drei Sätze, die Überschrift drei Teile, der
+   Sammelhinweis nennt alle drei Gründe für die übrigen. Eine später
+   dazukommende vierte Ursache landet ausdrücklich bei „von Hand", nicht
+   bei „sammelbar" — die Seite, auf der ein Irrtum niemanden vor eine
+   leere Wand schickt.
+2. **Die Z-Bericht-Ansicht fragt `flaschen()`, statt zu raten** — sie liest
+   jetzt aus `UNKLAR_GRUND` wie alle anderen.
+3. **Die Kennung gilt für den ganzen Browser, und der Server wacht
+   dahinter.** Der Spiegel liegt in `localStorage` statt `sessionStorage`,
+   `abmelden()` räumt ihn weg. Dazu ein Wächter im Worker
+   (`personSchreiben`): Eine NEUE Zeile unter einem Namen, den es schon
+   gibt, wird mit 409 abgelehnt; jede Schreibung auf eine bestehende Zeile
+   (sperren, freigeben, Rolle ändern, Code neu setzen) bleibt erlaubt. Das
+   ist der Teil, den kein Browserspeicher leisten kann — ein zweites GERÄT
+   sieht er nicht. **Entschieden ohne Rückfrage** (du bist nicht
+   erreichbar): Zwei Menschen mit exakt gleichem Namen müssen jetzt
+   unterschieden werden; der Preis ist ein Satz beim Anlegen, der Gegenwert
+   ist ein Doppeleintrag, den niemand mehr herausnehmen kann (§8).
+   Revidierbar, wenn du es anders willst.
+
+**Geprüft:** `npm test` **438/438** (drei Prüfungen mehr: der Namenswächter).
+Jede neue Prüfung gegen den alten Stand gemessen:
+* Namenswächter — ohne `src/index.js` rot („eine zweite Zeile unter
+  demselben Namen wird abgelehnt"), die beiden Gegenproben („dieselbe Zeile
+  weiterzuschreiben bleibt erlaubt", „ohne Namen bleibt es bei 422") grün in
+  beiden Ständen; sie sichern, dass der Wächter das Haus nicht aussperrt.
+* `teileOhneGroesse` — drei Töpfe an einer erfundenen Lage (Vorschlag /
+  Rezept / ohne Vorschlag / ohne Menge) und am echten Bericht 37.
+* `tests/ui-runde16.cjs` Szene 8 klickt jetzt zusätzlich ein **echtes
+  Neuladen** und einen **zweiten Tab** und liest nach, dass im Gedächtnis
+  kein Code steht (Regel 9 am laufenden Objekt).
+* `tests/ui-leitung-echt.cjs` prüft den **Kopf des Abschnitts allein**,
+  nicht mehr den ganzen `main`-Text — „ohne bestätigte Größe" entsteht auch
+  in `vorbehaltSatz()` weiter unten, die Suche über alles konnte grün sein,
+  ohne dass der Kopf sie enthält. Dazu neu: die angekündigte Zahl muss die
+  sein, die der Sammelknopf anfasst. 44/44.
+
+`sw.js` v49 → **v50**. Vier Dateien in `public/`, Gestaltungsschicht
+wortgleich. `wrangler.jsonc`, `schema.sql`, `migrations/`, `docs/`,
+`package.json`, `RUNDEN` unberührt; `src/index.js` geändert (Namenswächter),
+kein Schemaeingriff, keine Migration, kein Schreibzugriff auf die Live-D1.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch.
+Und: **der Klick-Durchgang auf der Live-Adresse ist aus dieser Umgebung
+nicht möglich** — der Egress-Proxy weist `fassungstool.ikrathc.workers.dev`
+per Organisationsrichtlinie ab (403 auf CONNECT). Was ich stattdessen live
+prüfe, steht im Morgenbrief.
+
+**Für die Nächsten:**
+* An den **Jäger**: Zweimal in Folge war der Fund „die Trennung hört eine
+  Ebene zu früh auf". Die Wurzel war beide Male dieselbe: zwei Stellen, die
+  über dieselbe Menge reden, mit zwei eigenen Bedingungen. Jetzt gibt es
+  `sammelbar()` als einzige Bedingung. Der nächste Fund dieser Art wäre
+  eine dritte Stelle, die wieder selbst filtert.
+* An den **qa-guardian**: Die festen Ports in den Prüfskripten sind im
+  Backlog; `EADDRINUSE` sieht aus wie ein Fund und ist keiner.
+
+**Phase/Thema:** Runde 16 / achte Runde, vor dem Livegang
+
+**Backlog:** feste Ports in den Prüfskripten (mittel); `hh_nkennung_v1`
+vergeht nicht mehr von selbst, nur beim Abmelden (niedrig).
+
+**STATUS:** VERBESSERUNGEN — aus meiner Rolle nichts mit Priorität
+hoch/mittel offen; die neunte Jagd entscheidet.

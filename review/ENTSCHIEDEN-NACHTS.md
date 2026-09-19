@@ -536,3 +536,37 @@ dem Merge, nicht danach. Sie kostet zehn Minuten.
 **Aufwand zum Zurückdrehen:** keiner — es ist nichts passiert. Merge = ein
 Klick im Pull Request.
 *vorläufig, revidierbar*
+
+---
+
+## 19.09.2026, Nacht · Der Namenswächter im Worker
+
+**Lage.** Die achte Jagd und der qa-guardian fanden unabhängig dasselbe:
+Das Gedächtnis, das denselben Menschen zusammenhält, liegt im Browser. Ein
+zweiter Tab (`sessionStorage` ist je Tab) und ein zweites Gerät sehen es
+nicht. Schweigt `GET /api/personen` — Kellerfunk, schwacher Access Point —,
+kann der Client nicht mehr sehen, dass es den Menschen schon gibt, und legt
+ihn ein zweites Mal an: zwei aktive Zeilen, gleicher Name, **zwei gültige
+Anmeldecodes**. Danach wirkt „Sperren" nicht mehr, und es gibt kein Löschen
+und keine Sicherung (Projektanleitung §8).
+
+**Entschieden (vorläufig, revidierbar).** Zwei Dinge:
+1. Der Spiegel liegt in `localStorage` statt `sessionStorage` — damit deckt
+   er den ganzen Browser, nicht nur einen Tab. `abmelden()` räumt ihn weg.
+2. Der Worker lehnt eine **neue** Zeile unter einem Namen ab, den es schon
+   gibt (409, mit einem Satz, der sagt, was zu tun ist). Jede Schreibung auf
+   eine bestehende Zeile bleibt erlaubt.
+
+**Warum so.** Punkt 1 allein hätte das zweite Gerät nicht erfasst, und genau
+das ist die Lage im Haus: iPad im Keller, MacBook im Büro. Ein
+Browserspeicher kann nicht wissen, was ein anderes Gerät getan hat — das
+kann nur der Server.
+
+**Der Preis.** Zwei Menschen mit exakt demselben Namen brauchen einen
+unterscheidenden Zusatz. Das ist eine echte Einschränkung, und ich habe sie
+gewählt, weil ein Doppeleintrag nicht rückholbar ist und ein zusätzlicher
+Nachname es ist. Willst du es anders, steht die Alternative im Backlog: ein
+Rückfragedialog statt der Absage.
+
+**Was NICHT entschieden wurde.** Die Groß-/Kleinschreibung von Umlauten:
+`lower()` in SQLite ist ASCII. Das steht als eigener Punkt im Backlog.

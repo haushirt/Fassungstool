@@ -752,6 +752,35 @@ async function personSchreiben(env, body) {
   const { id, name, rolle, code, aktiv } = body || {};
   if (!name || !rolle) return json({ fehler: "name und rolle nötig" }, 422);
 
+  /* B3 (achte Jagd Runde 16) · Der Waechter gegen die doppelte Person.
+     Das Backoffice merkt sich seit dieser Runde, welche Kennung es einem
+     Namen gegeben hat, und ueberlebt damit Neuzeichnen und Neuladen. Es
+     merkt sich das aber im Browser — ein ZWEITER Tab und ein zweites
+     Geraet wissen nichts davon. Schweigt `GET /api/personen` (Kellerfunk,
+     schwacher Access Point), kann der Client nicht mehr sehen, dass es
+     den Menschen schon gibt, und legt ihn noch einmal an: zwei aktive
+     Zeilen, gleicher Name, ZWEI gueltige Anmeldecodes. Danach wirkt
+     „Sperren" nicht mehr — die Leitung sperrt die eine Zeile, der Mensch
+     kommt mit dem anderen Code weiter herein. Es gibt kein Loeschen und
+     keine Sicherung (Projektanleitung §8), also muss der Server selbst
+     nein sagen; ein Gedaechtnis im Browser kann das nicht.
+
+     Erlaubt bleibt jede Schreibung auf eine BESTEHENDE Zeile (Rolle
+     aendern, sperren, freigeben, Code neu setzen): dann steht die eigene
+     `id` unter den namensgleichen. Abgelehnt wird nur das Anlegen einer
+     NEUEN Zeile unter einem Namen, den es schon gibt.
+
+     `lower()` in SQLite ist ASCII — „Müller" und „müller" gelten ihm als
+     verschieden. Das ist die schwaechere Haelfte der Wache; die staerkere
+     ist die Kennung im Backoffice, die den Namen exakt trifft. */
+  const { results: namensgleich } = await env.DB.prepare(
+    `SELECT id FROM person WHERE lower(trim(name)) = lower(trim(?1))`).bind(name).all();
+  if (namensgleich.length && !namensgleich.some(r => r.id === id))
+    return json({ fehler: "„" + name + "“ ist schon angelegt. Einen zweiten Eintrag "
+      + "gibt es nicht — wer wirklich so heißt wie jemand im Haus, braucht einen "
+      + "unterscheidenden Namen. Einen neuen Code für die bestehende Person gibt es "
+      + "über „PIN zurücksetzen“." }, 409);
+
   if (code) {
     /* Runde 15: wieder genau vier Ziffern (siehe PIN_LAENGE ganz oben).
        Geprüft wird nur das VERGEBEN — bestehende Prüfsummen bleiben

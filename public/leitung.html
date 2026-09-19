@@ -962,21 +962,38 @@ function uuid(){
    Danach wirkt „Sperren" nicht mehr, und in der Live-D1 ist das nicht
    rueckholbar (kein Loeschen, keine Sicherung, Projektanleitung §8).
 
-   Jetzt auf Modulebene und zusaetzlich in `sessionStorage` gespiegelt,
-   damit auch ein Neuladen des Tabs es nicht loescht. Der Speicher kann
-   verweigern (privates Fenster, volles Kontingent) — dann bleibt das
-   Gedaechtnis im Arbeitsspeicher, und der Rest laeuft unveraendert. */
+   Jetzt auf Modulebene und zusaetzlich gespiegelt, damit auch ein
+   Neuladen es nicht loescht. Der Speicher kann verweigern (privates
+   Fenster, volles Kontingent) — dann bleibt das Gedaechtnis im
+   Arbeitsspeicher, und der Rest laeuft unveraendert.
+
+   BERICHTIGUNG (achte Jagd Runde 16 · B): Der Spiegel lag in
+   `sessionStorage` — und der ist je TAB eigen. Zwei offene
+   `leitung.html` am MacBook sind der Normalfall, und gemessen ergaben
+   sie fuer denselben Namen wieder zwei Kennungen. Jetzt `localStorage`,
+   also ein Gedaechtnis fuer den ganzen Browser. Der Preis ist, dass es
+   nicht mehr von selbst vergeht; dafuer raeumt `abmelden()` es weg.
+
+   Was hier drinsteht: Name (klein geschrieben) → Kennung. KEINE Codes
+   (harte Regel 9) — der Code geht direkt ins Paket und wird nirgends
+   gemerkt. Und die Wache dahinter steht im Worker (`personSchreiben`,
+   Namenspruefung): ein Gedaechtnis im Browser kann ein zweites GERAET
+   nicht sehen. */
 const K_KENNUNG="hh_nkennung_v1";
 const nKennung=(function(){
   try{
-    const o=JSON.parse(sessionStorage.getItem(K_KENNUNG)||"{}");
+    const o=JSON.parse(localStorage.getItem(K_KENNUNG)||"{}");
     return (o && typeof o==="object" && !Array.isArray(o))?o:{};
   }catch(e){ return {}; }
 })();
 function kennungMerken(schl,id){
   nKennung[schl]=id;
-  try{ sessionStorage.setItem(K_KENNUNG,JSON.stringify(nKennung)); }catch(e){}
+  try{ localStorage.setItem(K_KENNUNG,JSON.stringify(nKennung)); }catch(e){}
   return id;
+}
+function kennungRaeumen(){
+  Object.keys(nKennung).forEach(k=>{ delete nKennung[k]; });
+  try{ localStorage.removeItem(K_KENNUNG); }catch(e){}
 }
 
 async function kurz(pfad,opt,ms){
@@ -1663,25 +1680,55 @@ function abgleich(tag, spanne){
           berichte:berichte.length};
 }
 
-/* `ohneGroesse` hat ZWEI Ursachen, und sie führen an verschiedene Orte:
-   `fehlt==="gebinde"` heißt, die Flaschengröße des Artikels ist nicht
-   bestätigt — dafür gibt es unter „Verkauf ↔ Fassung“ einen Vorschlag
-   und den Sammelknopf. `fehlt==="ausschank"` heißt, im Kassennamen steht
-   keine Menge („Aperol Spritz“) — dort ist mit Bestätigen nichts zu
-   holen, es braucht einen anderen Kassennamen oder eine Rezeptur.
+/* `ohneGroesse` führt an drei verschiedene Orte, und wer sie in einen
+   Topf wirft, schickt einen Teil der Leitung vor eine leere Wand.
 
-   BERICHTIGUNG (Jäger, siebte Jagd): Die Tabellenzeilen unterschieden
-   das schon, die Überschrift, der Mittagsblick und der CSV-Kopf nicht —
-   die sagten für alle „Größe fehlt“ und versprachen die
-   Sammelbestätigung. Bei Bericht 37 mit der Live-Zuordnung sind das
-   10 von 17 Positionen, die ins Backoffice geschickt werden, wo es für
-   sie nichts zu tun gibt. Gezählt wird deshalb ab jetzt an einer
-   Stelle. */
+   · `fehlt==="gebinde"` MIT Vorschlag und ohne Rezept: unter
+     „Verkauf ↔ Fassung“ steht die Zahl samt Herkunft, der Sammelknopf
+     nimmt sie mit. Das ist der einzige Fall, den ein Klick erledigt.
+   · `fehlt==="gebinde"` OHNE Vorschlag, oder Rezeptbestandteil: die
+     Gebindegröße muss von Hand hinein (beim Mischgetränk an der eigenen
+     Kassenposition des Bestandteils).
+   · `fehlt==="ausschank"`: im Kassennamen steht keine Menge („Aperol
+     Spritz“) — dort ist mit Bestätigen gar nichts zu holen, es braucht
+     einen anderen Kassennamen oder eine Rezeptur.
+
+   Zweimal ist derselbe Fehler gefunden worden, jedes Mal eine Ebene
+   tiefer: die siebte Jagd, weil Überschrift, Mittagsblick und CSV-Kopf
+   für alle „Größe fehlt“ sagten (10 von 17 Positionen bei Bericht 37);
+   die achte, weil die Behebung danach in ZWEI Töpfe teilte, während der
+   Bildschirm DREI Zustände kennt (angekündigt 23, sammelbar 12). Die
+   Wurzel war beide Male dieselbe: zwei Stellen, die über dieselbe Menge
+   reden, mit je eigener Bedingung. */
+/* BERICHTIGUNG (achte Jagd Runde 16 · B): Die erste Fassung teilte in
+   ZWEI Töpfe, der Bildschirm darunter kennt aber DREI Zustände. Alles,
+   was nicht `fehlt==="ausschank"` war, bekam den Satz „hier unten
+   bestätigen" — auch die Rezeptbestandteile (die bewusst keinen Knopf
+   haben, die Größe gehört an die eigene Kassenposition des Bestandteils)
+   und die Artikel ohne ml-Vorschlag (da muss die Zahl von Hand hinein).
+   Gemessen: angekündigt 23, tatsächlich sammelbar 12. Und das ist der
+   Regelfall, nicht die Ausnahme — 35 von 37 Artikeln in `STAMM.GETR`
+   liefern ohne Bestätigung gar keinen Vorschlag.
+
+   Geteilt wird deshalb nicht nach der Ursache, sondern nach dem, was zu
+   TUN ist. `sammelbar()` ist dieselbe Bedingung, die der Sammelknopf
+   anwendet (`vorschlaege` weiter unten) — eine Bedingung, zwei Leser. */
+const sammelbar = o => !!(o && o.fehlt==="gebinde" && !o.rezept && o.id
+                          && o.geb && +o.geb.ml>0);
 function teileOhneGroesse(liste){
-  const g=[], au=[];
-  (liste||[]).forEach(o=>{ (o.fehlt==="ausschank"?au:g).push(o); });
+  const sam=[], hand=[], au=[];
+  (liste||[]).forEach(o=>{
+    /* Ausdruecklich auf die bekannten Ursachen gepruefte Zuordnung: Eine
+       dritte, spaeter dazukommende Ursache landet dann bei „von Hand",
+       nicht bei „hier unten sammelt bestaetigen" — das ist die Seite,
+       auf der ein Irrtum niemanden vor eine leere Wand schickt. */
+    if(o.fehlt==="ausschank")au.push(o);
+    else if(o.fehlt==="gebinde" && sammelbar(o))sam.push(o);
+    else hand.push(o);
+  });
   const stk=l=>l.reduce((x,o)=>x+(+o.anzahl||0),0);
-  return {gebinde:g, ausschank:au, stkGebinde:stk(g), stkAusschank:stk(au)};
+  return {sammelbar:sam, handisch:hand, ausschank:au,
+          stkSammelbar:stk(sam), stkHandisch:stk(hand), stkAusschank:stk(au)};
 }
 
 /* ════════════ 7 · Ansichten ════════════ */
@@ -1765,6 +1812,10 @@ async function abmelden(){
   if(!weg){ if(b)b.disabled=false;
     return toast("Keine Verbindung — die Anmeldung gilt weiter. Bitte mit Netz noch einmal."); }
   try{ sessionStorage.removeItem("hh_user"); sessionStorage.removeItem("hh_rolle"); }catch(e){}
+  /* Die Namen der Mitarbeiter gehen mit der Anmeldung. Sie sind kein
+     Geheimnis (Codes stehen nicht darin), aber sie gehoeren der Person,
+     die angemeldet war — nicht der naechsten (achte Jagd Runde 16 · C). */
+  kennungRaeumen();
   ICH=null;
   location.href="index.html";
 }
@@ -1836,7 +1887,7 @@ function vHeute(m){
         ?(grob.length
           ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
           :ohneUrteil
-            ?(ohneUrteil+" Positionen ohne Abgleich — "+gruendeSatz)
+            ?(ohneUrteil+" Positionen ohne Abgleich — "+esc(gruendeSatz))
             :"Verkauf und Entnahme decken sich")
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
       a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
@@ -1854,19 +1905,29 @@ function vHeute(m){
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
   if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
   /* Das ist kein Befund, sondern eine offene Angabe. Deshalb steht die
-     Zahl hier und nicht bei den Abweichungen — und getrennt nach den
-     beiden Ursachen, weil nur die eine im Backoffice bestätigt werden
-     kann. Ein Satz, der alle ins Backoffice schickt, schickt die Hälfte
-     vor eine leere Wand. */
+     Zahl hier und nicht bei den Abweichungen — und getrennt nach dem,
+     was zu TUN ist. Ein Satz, der alle ins Backoffice schickt, schickt
+     einen Teil vor eine leere Wand; bei Bericht 37 waren das erst 10 von
+     17, nach der ersten Berichtigung immer noch 11 von 23 (achte Jagd).
+
+     `nam()` zählt KASSENNAMEN, nicht Kassenzeilen: `merkeOhneGroesse()`
+     fasst denselben Namen über alle Tage des Fensters zu einer Zeile
+     zusammen. Bei SPANNE = 7 stand hier „48 Kassenpositionen", während
+     336 im Fenster lagen (achte Jagd · C). */
   {
     const t=teileOhneGroesse(a.ohneGroesse);
-    if(t.gebinde.length) fehlt.push("Größe fehlt: "+t.gebinde.length
-      +" zugeordnete Kassenpositionen ("+num(t.stkGebinde)
-      +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
+    const nam=n=>n+(n===1?" zugeordneter Kassenname":" zugeordnete Kassennamen");
+    const einh=x=>num(x)+(x===1?" Einheit":" Einheiten");
+    const nix=" — sie zählen weder als Verkauf noch als Abweichung.";
+    if(t.sammelbar.length) fehlt.push("Größe fehlt: "+nam(t.sammelbar.length)
+      +" ("+einh(t.stkSammelbar)+") haben keine bestätigte Größe"+nix
       +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
-    if(t.ausschank.length) fehlt.push("Menge fehlt im Kassennamen: "+t.ausschank.length
-      +" zugeordnete Kassenpositionen ("+num(t.stkAusschank)
-      +" Einheiten) sagen nicht, wie viel ausgeschenkt wurde — sie zählen weder als Verkauf noch als Abweichung."
+    if(t.handisch.length) fehlt.push("Größe fehlt ohne Vorschlag: "+nam(t.handisch.length)
+      +" ("+einh(t.stkHandisch)+") haben keine bestätigte Größe und keinen Vorschlag"+nix
+      +" Die Gebindegröße muss von Hand eingetragen werden; bei Mischgetränken an der"
+      +" eigenen Kassenposition des Bestandteils.");
+    if(t.ausschank.length) fehlt.push("Menge fehlt im Kassennamen: "+nam(t.ausschank.length)
+      +" ("+einh(t.stkAusschank)+") sagen nicht, wie viel ausgeschenkt wurde"+nix
       +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge oder eine Rezeptur.");
   }
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
@@ -1999,6 +2060,8 @@ function vAbgleich(m){
      Angabe, es fehlt keine Flasche. */
   if(a.ohneGroesse.length){
     const t=teileOhneGroesse(a.ohneGroesse);
+    /* „1 Einheiten" stand hier bis zur achten Jagd (C). */
+    const einh=x=>num(x)+(x===1?" Einheit":" Einheiten");
     const s=document.createElement("section");
     /* Ein eigener Abschnitt mit Überschrift, nicht ein Hinweiskasten ohne
        Kopf: Er steht zwischen der Filterzeile und der Abgleichtabelle, und
@@ -2006,10 +2069,11 @@ function vAbgleich(m){
        Die Zahl gehört in die Überschrift — sie ist das Maß der Arbeit, die
        hier liegt. */
     s.innerHTML=`<div class="abschnitt"><div>
-      <h3>Nicht gerechnet · ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}</h3>
+      <h3>Nicht gerechnet · ${a.ohneGroesse.length} Kassenname${a.ohneGroesse.length===1?"":"n"}</h3>
       <div class="unter">${[
-        t.gebinde.length ? t.gebinde.length+" ohne bestätigte Größe ("+num(t.stkGebinde)+" Einheiten) — hier unten bestätigen" : "",
-        t.ausschank.length ? t.ausschank.length+" ohne Menge im Kassennamen ("+num(t.stkAusschank)+" Einheiten) — hier ist nichts zu bestätigen, es braucht einen Kassennamen mit Menge oder eine Rezeptur" : ""
+        t.sammelbar.length ? t.sammelbar.length+" ohne bestätigte Größe ("+einh(t.stkSammelbar)+") — hier unten gesammelt bestätigen" : "",
+        t.handisch.length ? t.handisch.length+" ohne Vorschlag ("+einh(t.stkHandisch)+") — die Gebindegröße von Hand eintragen, bei Mischgetränken am Bestandteil" : "",
+        t.ausschank.length ? t.ausschank.length+" ohne Menge im Kassennamen ("+einh(t.stkAusschank)+") — hier ist nichts zu bestätigen, es braucht einen Kassennamen mit Menge oder eine Rezeptur" : ""
       ].filter(Boolean).join(" · ")}. Alle bleiben aus der Mengenrechnung heraus, als fehlende Angabe
       und nicht als Abweichung</div></div></div>
       <div class="tabhuelle"><table><thead><tr>
@@ -2039,15 +2103,22 @@ function vAbgleich(m){
        Angefasst wird nur, was einen Vorschlag hat — Positionen, bei denen
        die Ausschankmenge im Kassennamen fehlt, kann niemand vorschlagen,
        und ein Sammelknopf darf sie nicht stillschweigend mitnehmen. */
-    const vorschlaege=a.ohneGroesse
-      .filter(o=>o.fehlt==="gebinde" && !o.rezept && o.id && o.geb && +o.geb.ml>0)
+    const vorschlaege=a.ohneGroesse.filter(sammelbar)
       .map(o=>({name:o.name, id:o.id, ml:+o.geb.ml}));
     const ohneVorschlag=a.ohneGroesse.length-vorschlaege.length;
     if(vorschlaege.length){
       const z=document.createElement("div");
       z.className="hinweis abschnitt";
-      z.innerHTML=`<div>Für ${vorschlaege.length} dieser Positionen steht oben ein Vorschlag samt Herkunft.
-        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt: dort fehlt die Ausschankmenge im Kassennamen, oder es ist ein Mischgetränk." : ""}</div>
+      /* Der Grund für die übrigen muss der sein, der wirklich gilt — bis
+         zur achten Jagd nannte der Satz nur zwei der drei Möglichkeiten
+         und ließ „kein Vorschlag" aus, den häufigsten von allen. */
+      const uebrigWarum=[
+        t.handisch.filter(o=>!o.rezept).length ? "kein Vorschlag, die Zahl muss von Hand hinein" : "",
+        t.handisch.filter(o=>o.rezept).length ? "Mischgetränk, die Größe gehört zum Bestandteil" : "",
+        t.ausschank.length ? "keine Menge im Kassennamen" : ""
+      ].filter(Boolean).join(" · ");
+      z.innerHTML=`<div>Für ${vorschlaege.length} dieser Zeilen steht oben ein Vorschlag samt Herkunft.
+        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt ("+uebrigWarum+")." : ""}</div>
         <button class="b tat" id="bGebAlle">Alle ${vorschlaege.length} Vorschläge übernehmen</button>`;
       s.appendChild(z);
       const bAlle=z.querySelector("#bGebAlle");
@@ -2188,7 +2259,15 @@ function vImport(m){
         return `<tr><td>${esc(p.name)}</td>
           <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
           <td>${nm}</td><td class="r">${(f=>!zu.id?"—":f.ok?num(f.fl)
-            :`<span class="dim">Größe fehlt</span>`)(zu.id?flaschen(p,zu.id):null)}</td></tr>`;
+            /* BERICHTIGUNG (achte Jagd Runde 16 · B): Hier stand pauschal
+               „Größe fehlt" — für BEIDE Ursachen, und das ist die
+               Ansicht, in der die Leitung den Bericht ZUERST sieht. Bei
+               Bericht 37 haben 26 von 48 Positionen keine Menge im
+               Kassennamen; für die ist „Größe fehlt" die Falschauskunft,
+               die Mittagsblick, Überschrift und CSV in dieser Runde
+               losgeworden sind. `flaschen()` trennt sauber, also wird hier
+               gefragt statt geraten. */
+            :`<span class="dim">${esc(UNKLAR_GRUND[f.fehlt==="ausschank"?"menge":"groesse"])}</span>`)(zu.id?flaschen(p,zu.id):null)}</td></tr>`;
       }).join("")}</tbody></table></div>`;
   }
   roh.oninput=pruefe;

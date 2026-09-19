@@ -360,7 +360,19 @@ describe("Sammelbestätigung: ein Knopf für alle Vorschläge", () => {
        denen die AUSSCHANKMENGE im Kassennamen fehlt, nicht mitnehmen —
        für die gibt es keinen Vorschlag, nur eine Entscheidung. */
     const quelle = lies("public", "leitung.html");
-    assert.match(quelle, /\.filter\(o=>o\.fehlt==="gebinde" && !o\.rezept && o\.id && o\.geb && \+o\.geb\.ml>0\)/);
+    /* BERICHTIGT (achte Jagd Runde 16 · B): Die Bedingung stand zweimal
+       im Haus — einmal hier im Filter des Sammelknopfs, einmal als
+       stilles „alles außer ausschank" in `teileOhneGroesse()`, das den
+       Satz „hier unten bestätigen" darüber schrieb. Gemessen:
+       angekündigt 23, tatsächlich sammelbar 12. Jetzt eine Bedingung,
+       zwei Leser — geprüft wird deshalb `sammelbar()` und dass beide sie
+       benutzen. */
+    assert.match(quelle, /const sammelbar = o => !!\(o && o\.fehlt==="gebinde" && !o\.rezept && o\.id\s*\n?\s*&& o\.geb && \+o\.geb\.ml>0\);/,
+      "die Bedingung „sammelbar“ steht nicht an einer Stelle");
+    assert.match(quelle, /const vorschlaege=a\.ohneGroesse\.filter\(sammelbar\)/,
+      "der Sammelknopf benutzt die gemeinsame Bedingung nicht");
+    assert.match(quelle, /else if\(o\.fehlt==="gebinde" && sammelbar\(o\)\)sam\.push\(o\);/,
+      "teileOhneGroesse benutzt die gemeinsame Bedingung nicht");
     /* Und der Knopf an der einzelnen Zeile entsteht nur im Zweig ohne
        Rezept — `o.rezept` wird vorher abgefangen. */
     assert.match(quelle, /o\.rezept \? '<span class="dim">kein Knopf an dieser Zeile/);

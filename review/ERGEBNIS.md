@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
 
-**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v49.**
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v50.**
 Er bringt die A- und B-Funde der fünften Jagd und die vier Punkte der
 Runde 16 hinaus — und die Funde der sechsten Jagd, die auf diese Runde
 folgte.
@@ -134,15 +134,30 @@ Aus den beiden letzten Jagden noch zwei Dinge, die im Haus zählen:
   danach nicht mehr, weil der andere Code weiter herein lässt. Gelöscht
   werden kann in der Live-D1 nichts (Projektanleitung §8). Das Gedächtnis
   überlebt jetzt das Neuzeichnen und sogar ein Neuladen des Tabs.
+* **Einen Namen gibt es einmal.** Das Gedächtnis oben deckt einen
+  Browser ab — ein zweites Gerät sieht es nicht. Deshalb wacht jetzt
+  auch der Server: Wer unter einem Namen, den es schon gibt, eine ZWEITE
+  Zeile anlegen will, bekommt eine klare Absage. Alles andere bleibt
+  erlaubt (sperren, freigeben, Rolle ändern, „PIN zurücksetzen").
+  **Folge für den Betrieb:** Zwei Menschen mit exakt demselben Namen
+  brauchen einen unterscheidenden Zusatz. Das habe ich in der Nacht
+  entschieden, weil ein Doppeleintrag in der Live-D1 nicht rückholbar ist
+  (kein Löschen, keine Sicherung, §8) — sag Bescheid, wenn du es anders
+  willst.
 * **„Größe fehlt" schickt niemanden mehr ins Leere.** Zwei verschiedene
   Dinge hießen gleich: eine fehlende **Gebindegröße** (die lässt sich im
   Backoffice bestätigen) und eine fehlende **Menge im Kassennamen**
   („Aperol Spritz 1 Glas" — da hilft nur ein anderer Kassenname oder eine
   Rezeptur). Der Mittagsblick versprach für beide die Sammelbestätigung;
   bei Bericht 37 waren das 10 von 17 Positionen, für die es dort nichts zu
-  tun gibt. Beide werden jetzt überall getrennt gezählt und getrennt
-  benannt; der Abschnitt heißt daher nicht mehr „Größe fehlt", sondern
-  **„Nicht gerechnet"**.
+  tun gibt. Getrennt wird jetzt nach dem, was zu TUN ist, und zwar mit
+  genau der Bedingung, die der Sammelknopf anwendet: **hier unten
+  gesammelt bestätigen** · **von Hand eintragen** (kein Vorschlag im
+  Stamm, oder Mischgetränk — die Größe gehört zum Bestandteil) ·
+  **keine Menge im Kassennamen**. Das steht so im Mittagsblick, in der
+  Abschnittsüberschrift, im Sammelhinweis, in der CSV und in der
+  Z-Bericht-Ansicht. Der Abschnitt heißt daher nicht mehr „Größe
+  fehlt", sondern **„Nicht gerechnet"**.
 
 ## Erkennungszeichen nach dem Deploy
 

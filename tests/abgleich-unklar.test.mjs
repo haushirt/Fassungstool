@@ -289,15 +289,45 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     const a = f.abgleich(TAG, 1);
     assert.equal(a.ohneGroesse.length, 2, "beide Positionen stehen in der Liste");
     const t = f.teileOhneGroesse(a.ohneGroesse);
-    assert.equal(t.gebinde.length, 1, "eine wartet auf die Gebindegröße");
+    /* BERICHTIGT (achte Jagd Runde 16 · B): Hier standen ZWEI Töpfe, der
+       Bildschirm kennt DREI Zustände. Alles, was nicht „ausschank" war,
+       bekam den Satz „hier unten bestätigen" — auch die
+       Rezeptbestandteile (die bewusst keinen Knopf haben) und die Artikel
+       ohne ml-Vorschlag (da muss die Zahl von Hand hinein). Gemessen:
+       angekündigt 23, sammelbar 12. Geteilt wird jetzt nach dem, was zu
+       TUN ist, mit derselben Bedingung, die der Sammelknopf anwendet. */
     assert.equal(t.ausschank.length, 1, "eine hat keine Menge im Kassennamen");
-    assert.equal(t.stkGebinde, 3);
     assert.equal(t.stkAusschank, 6);
-    /* Ohne Trennung liest die Leitung „Größe fehlt: 2 Positionen
-       (9 Einheiten) … gesammelt bestätigen" — und die Hälfte davon lässt
-       sich nirgends bestätigen. */
-    assert.notEqual(t.gebinde.length, a.ohneGroesse.length,
+    /* Ohne bestätigte Gebindegröße und ohne Vorschlag im Stamm ist die
+       MU-Muster-Zeile „von Hand", nicht „sammelbar". */
+    assert.equal(t.sammelbar.length + t.handisch.length, 1);
+    assert.equal(t.stkSammelbar + t.stkHandisch, 3);
+    assert.ok(t.sammelbar.every(o => o.fehlt === "gebinde" && !o.rezept
+      && o.id && o.geb && +o.geb.ml > 0),
+      "im Topf „sammelbar“ liegt etwas, das der Sammelknopf nicht anfasst");
+    assert.notEqual(t.sammelbar.length, a.ohneGroesse.length,
       "die gemischte Lage ist der Prüffall — sonst prüft dieser Test nichts");
+
+    /* Der Kern des Funds: was der Satz verspricht, muss der Knopf auch
+       anfassen. Eine Rezeptzeile und eine Zeile ohne Vorschlag gehören
+       NIE in „hier unten gesammelt bestätigen". */
+    const erfunden = [
+      { name: "A", anzahl: 1, id: "x", fehlt: "gebinde", geb: { ml: 750 }, rezept: false },
+      { name: "B", anzahl: 1, id: "x", fehlt: "gebinde", geb: { ml: 750 }, rezept: true },
+      { name: "C", anzahl: 1, id: "x", fehlt: "gebinde", geb: { ml: null }, rezept: false },
+      { name: "D", anzahl: 1, id: "x", fehlt: "ausschank", geb: {}, rezept: false }
+    ];
+    const e = f.teileOhneGroesse(erfunden);
+    /* `join` statt `deepEqual`: Die Listen entstehen im `vm`, ihr
+       `Array.prototype` ist ein anderes — `deepStrictEqual` vergleicht
+       auch den Prototyp und meldet zwei gleich aussehende Listen als
+       verschieden. */
+    const namen = l => l.map(o => o.name).join("|");
+    assert.equal(namen(e.sammelbar), "A",
+      "nur die Zeile mit Vorschlag und ohne Rezept ist sammelbar");
+    assert.equal(namen(e.handisch), "B|C",
+      "Rezeptzeile und Zeile ohne Vorschlag gehören zu „von Hand“");
+    assert.equal(namen(e.ausschank), "D");
 
     /* Und die drei Leser, die bis eben pauschal zählten. Quelltext, weil
        sie in Ansichtsfunktionen stehen: geprüft wird, dass keiner mehr
@@ -309,6 +339,18 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
       "der Mittagsblick wirft beide Ursachen wieder in einen Topf");
     assert.match(BO, /Menge fehlt im Kassennamen: /,
       "die zweite Ursache hat im Mittagsblick keinen eigenen Satz");
+    assert.match(BO, /Größe fehlt ohne Vorschlag: /,
+      "der dritte Zustand hat im Mittagsblick keinen eigenen Satz");
+    /* „N Kassenpositionen" zählte Kassen-NAMEN: `merkeOhneGroesse()`
+       fasst denselben Namen über alle Tage des Fensters zu einer Zeile
+       zusammen. Bei SPANNE = 7 stand „48 Kassenpositionen" da, während
+       336 im Fenster lagen (achte Jagd · C). */
+    assert.doesNotMatch(BO, /zugeordnete Kassenpositionen \(/,
+      "der Mittagsblick nennt Kassennamen weiter Kassenpositionen");
+    assert.match(BO, /" zugeordnete Kassennamen"/);
+    /* „1 Einheiten" (achte Jagd · C). */
+    assert.match(BO, /x===1\?" Einheit":" Einheiten"/,
+      "die Einheiten haben keine Einzahlform");
     assert.doesNotMatch(BO, /<h3>Größe fehlt · \$\{a\.ohneGroesse\.length\}/,
       "die Abschnittsüberschrift zählt beide Ursachen als „Größe fehlt“");
 
@@ -324,8 +366,8 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
       "die Kachel nennt einen Grund, den es seit v29 nicht mehr gibt");
     assert.doesNotMatch(BO, /nicht bestimmbar \(keine bestätigte Größe oder kein Z-Bericht\)/,
       "der Hinweis lässt die fehlende Menge im Kassennamen aus");
-    assert.match(BO, /ohne Abgleich — "\+gruendeSatz/,
-      "die Kachel liest die Gründe nicht aus den Zeilen");
+    assert.match(BO, /ohne Abgleich — "\+esc\(gruendeSatz\)/,
+      "die Kachel liest die Gründe nicht aus den Zeilen oder ohne esc()");
     assert.match(BO, /nicht bestimmbar \(\$\{esc\(gruendeSatz\)\}\)/,
       "der Hinweis liest die Gründe nicht aus den Zeilen");
   });

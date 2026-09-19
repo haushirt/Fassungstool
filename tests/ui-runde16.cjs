@@ -655,10 +655,43 @@ async function tagesfassungBisAbschluss(p) {
       urteil("A/7 · zweimal derselbe Mensch → EINE Kennung, auch nach „Aktualisieren“",
         LAGE.pakete.length === 2 && kennungen.size === 1,
         "Pakete: " + LAGE.pakete.length + " · Kennungen: " + kennungen.size);
-      urteil("A/7 · die Kennung steht auch nach einem Neuladen des Tabs bereit",
+      /* Der Schlüssel zu LESEN beweist nur, dass er dasteht — nicht, dass
+         die Seite ihn nach einem Neuladen auch benutzt (achte Jagd · C).
+         Also wirklich neu laden und ein DRITTES Mal anlegen. */
+      await p.reload({ waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen("9012");
+      const nachLaden = new Set(LAGE.pakete.map(x => x.id));
+      urteil("A/7 · die Kennung überlebt ein echtes Neuladen des Tabs",
+        LAGE.pakete.length === 3 && nachLaden.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + nachLaden.size);
+
+      /* Und der zweite Tab (achte Jagd · B): derselbe Browserkontext,
+         eine zweite Seite. `sessionStorage` wäre hier je Tab eigen. */
+      const p2 = await ctx.newPage();
+      p2.on("pageerror", e => fehler.push(String(e)));
+      await p2.goto("http://127.0.0.1:8781/leitung.html", { waitUntil: "load" });
+      await warte(p2, 800);
+      await p2.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p2, 500);
+      await p2.fill("#nName", "Anna Beispiel");
+      await p2.fill("#nCode", "3456");
+      await p2.click("#nAdd");
+      await warte(p2, 600);
+      const zweiTabs = new Set(LAGE.pakete.map(x => x.id));
+      urteil("B/8 · ein zweiter Tab bekommt dieselbe Kennung",
+        LAGE.pakete.length === 4 && zweiTabs.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + zweiTabs.size);
+      await p2.close();
+
+      urteil("Regel 9 · im Gedaechtnis steht kein Code",
         await p.evaluate(() => {
-          try { return !!JSON.parse(sessionStorage.getItem("hh_nkennung_v1") || "{}")["anna beispiel"]; }
-          catch (e) { return false; }
+          try {
+            const roh = localStorage.getItem("hh_nkennung_v1") || "";
+            return !/1234|5678|9012|3456/.test(roh);
+          } catch (e) { return false; }
         }));
       urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
       await ctx.close();

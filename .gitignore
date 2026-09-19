@@ -5,3 +5,5 @@ package-lock.json
 # geschriebener Ordner gehoert nicht in die Geschichte. Der fertige Satz
 # wird am Ende mit `git add -f review/screens/<lauf>` aufgenommen.
 review/screens/r16/
+review/screens/qa16/
+review/screens/runde-2-qa/
