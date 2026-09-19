@@ -24,7 +24,7 @@ Architektur, die bleibt
 
 Harte Regeln (nie brechen)
 
-1. Immer auf `claude/…`-Branches arbeiten, nie direkt auf `main`. Nie mergen, nie force-pushen.
+1. Immer auf `claude/…`-Branches arbeiten, nie direkt auf `main` pushen, nie force-pushen. Mergen nur mit Freigabe (siehe „Veröffentlichen"), sonst nie.
 2. Kein `wrangler deploy`. Lokale Tests mit `--local` erlaubt. Live-D1: NUR LESEN (`SELECT`, `PRAGMA`, `sqlite_master`), jede schreibende Operation verboten – keine Sicherung, kein Papierkorb. Migrationen spiele ICH ein.
 3. `schema.sql` ist veraltet, wird NIE ausgeführt. Wahrheit ist die Live-D1, dokumentiert in `docs/live-schema.sql`. Lokale Test-DB daraus aufbauen.
 4. Code und Schema müssen zusammenpassen (Rollen: `service`, `wirtschaft`, `leitung`). Änderungen an Tabellen/Spalten gegen das dokumentierte Live-Schema prüfen.
@@ -75,4 +75,5 @@ FERTIG heißt: aus meiner Rolle keine Punkte mit Priorität hoch/mittel mehr off
 
 Veröffentlichen
 
-Nur wenn ich wörtlich `VERÖFFENTLICHEN` schreibe: Pull Request vom aktuellen `claude/…`-Branch → `main` erstellen, Beschreibung aus `review/ERGEBNIS.md`. Bei `VERÖFFENTLICHEN phase-a` (bzw. b/c) den PR vom jeweiligen Tag aus erstellen. Enthält der PR Migrationen, steht ganz oben: „Vor dem Merge Migrationen einspielen". Nicht selbst mergen – den Merge (= Live-Gang) mache ich.
+* Sage ich wörtlich `VERÖFFENTLICHEN`: Pull Request vom aktuellen `claude/…`-Branch → `main` erstellen, Beschreibung aus `review/ERGEBNIS.md`, und selbst mergen (= Live-Gang). Bei `VERÖFFENTLICHEN phase-a` (bzw. b/c) den PR vom jeweiligen Tag aus erstellen. Enthält der PR Migrationen, steht ganz oben „Vor dem Merge Migrationen einspielen" – dann erst mergen, wenn ich sie eingespielt habe.
+* Bei `/nacht` und `/tag` zählt meine vorher gegebene Antwort auf „mergen ja/nein" als Freigabe: „ja" heißt PR erstellen und selbst mergen, „nein" heißt PR erstellen und liegen lassen. Ohne eins von beidem nie mergen.
