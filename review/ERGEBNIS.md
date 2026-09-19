@@ -5,7 +5,190 @@ Phase gefüllt, nicht laufend.
 
 ---
 
-# Was mit diesem Merge live geht
+# Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
+
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v56.**
+Er bringt die vier Punkte der Runde 16 hinaus, die A- und B-Funde der
+fünften Jagd — und alles, was dreizehn weitere Jagden und vier
+Schlusskontrollen in derselben Nacht dazu gefunden haben. Die letzte Jagd
+meldet **0 A, 0 B**; die Schlusskontrolle gibt **frei**.
+
+**Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
+`wrangler.jsonc`, `package.json` unberührt, kein `ALTER`, kein `CREATE`,
+kein `INSERT` in die Live-D1. `RUNDEN` unverändert — bestehende
+Anmeldungen bleiben gültig. Die Spalten `schluessel`, `zaehlnr`, `geraet`
+sind nicht angefasst (Regel 14).
+
+## Was im Betrieb anders ist
+
+**1 · „abmelden" meldet wirklich ab.** Bis heute leerte der Knopf nur den
+Speicher des Geräts; die Sitzung am Server galt weitere zwölf Stunden. Am
+geteilten iPad war die nächste Person damit über `/leitung.html` volle
+Leitung — samt „PIN zurücksetzen". Der Knopf ruft jetzt `POST
+/api/abmelden`, wartet auf die Antwort und gibt das Gerät erst danach
+frei. Ohne Netz wird die Abmeldung vorgemerkt, gesagt und beim nächsten
+Empfang nachgeholt. Das Backoffice hat einen eigenen Ausgang bekommen: am
+Fuß der Navigation, „abmelden".
+
+**2 · Ein Code gehört genau einer Person.** „Selbst eintragen",
+„Vorschlagen" und `POST /api/anlage` prüften bisher nicht auf Dopplung.
+Zwei gleiche Codes hießen: beim Anmelden gewinnt die letzte Zeile, und im
+append-only Journal steht dauerhaft der falsche Name. Ein doppelter Code
+wird jetzt mit einer klaren Meldung abgelehnt — gezählt werden alle
+anderen Personen, auch gesperrte.
+
+**3 · Der Abschluss ist eine Handlung, keine Ausgabestelle.** Es gibt nur
+noch **einen** Knopf, „Fertig – Speichern", in jedem Modus. „Protokoll
+senden", „Als PDF sichern", „Auch als CSV" und das Feld „Notiz (optional)"
+sind im Frontoffice ersatzlos entfallen. Beim Drücken:
+
+* Liegt zum **Vorabend** ein Z-Bericht vor, kommt das Fenster **Abgleich**:
+  gefasst gegen verkauft, **nur die Abweichungen**, darunter **ein**
+  Notizfeld für alles. Speichern → Vorgang abgeschlossen, Notiz am
+  Vorgang, zurück zur Startseite.
+* Liegt keiner vor, kommt ein kurzes **Fertig** und dann die Startseite.
+
+„Rohdaten sichern (JSON)" und „Zurücksetzen" sind **nicht** gelöscht: Sie
+stehen jetzt dezent am Ende des Menüs, als Notweg bei Offline-Problemen.
+
+**4 · Ohne Verbindung wird trotzdem abgeschlossen — anders als bestellt.**
+Der Auftrag der Nacht sagte: „‚Fertig – Speichern' ist nur bei bestehender
+Verbindung drückbar." So war es gebaut, und genau so hat es gemessen
+funktioniert — **auch bei der Kellerzählung**, die weder Z-Bericht noch
+Abgleich kennt und die derselbe Auftrag unter „Nicht anfassen" führt.
+
+Im Keller ist kein Netz. Eine fertige Tagesfassung war damit dort nicht
+abzuschließen: Der Vorgang blieb „läuft", ging nicht in den Ausgang, und
+es entstand keine Journalzeile — genau der Weg, für den der Ausgang gebaut
+wurde. Das bricht harte Regel 6 („Offline-Queue nicht aufweichen") und
+Projektanleitung §9 („Offline ist der Normalfall"); die Hilfe der App
+selbst sagt zwei Bildschirme weiter das Gegenteil.
+
+Derselbe Auftrag hat das Urteil von **Jäger und qa-guardian zur
+Merge-Bedingung** gemacht. Beide haben diesen Punkt gemeldet — der Jäger
+als A-Fund, der qa-guardian als Veto. **Die Sperre ist deshalb draußen.**
+
+Was vom Punkt 4b gebaut bleibt: Der Hinweis steht unter dem Knopf, solange
+keine Verbindung da ist („Keine Verbindung – der Abgleich kommt nach"), und
+verschwindet von selbst, sobald sie zurück ist. Ohne Netz gibt es keinen
+Abgleich — der Z-Bericht liegt am Server —, also kommt das kurze „Fertig",
+und es steht dabei, dass der Vorgang im Gerät wartet und hinausgeht, sobald
+Empfang da ist.
+
+**Das ist die eine Stelle, an der dieser Stand von deinem Auftrag
+abweicht.** Willst du die Sperre doch, ist sie in zwei Zeilen zurück —
+dann gehört aber „Offline ist der Normalfall" mit derselben Runde aus
+Projektanleitung, Hilfe und CLAUDE.md gestrichen.
+
+**5 · Kleinigkeiten, die den Tag ausmachen.** Der Doppeltipp zoomt nicht
+mehr (Zwei-Finger-Zoom bleibt), kein Eingabefeld unter 16 px, damit Safari
+beim Fokus nicht hineinspringt. Die Statuszeile sagt „Verbunden" statt
+„Nichts liegt mehr auf diesem Gerät". Auf der Startseite sind die
+Gruppentöne getauscht: Service steht auf dem hellsten Grund, Bestand tritt
+zurück.
+
+**6 · Der Abgleich rechnet — oder sagt, dass er es nicht kann.** Die erste
+Fassung dieser Nacht las das Feld `ausschankMl` als „wird offen im Glas
+ausgeschenkt" und nahm jede solche Position aus der Rechnung. Das Feld ist
+aber die **Menge aus dem Kassennamen**: „1/8 l" ergibt 125, „0,75 l" ergibt
+750 — das eine ein Glas, das andere eine ganze Flasche. Gegen den echten
+Bericht 37 fielen damit **alle vier** zugeordneten Positionen heraus, und
+das Fenster meldete „Keine Abweichung", ohne eine einzige Zahl verglichen
+zu haben. Gefunden von der Jagd nach dieser Runde.
+
+Jetzt gilt dieselbe Rechnung wie im Backoffice: `anzahl × Ausschank ÷
+Gebindegröße`, die Größen kommen aus der Zuordnung (`GET /api/mapping`).
+Fehlt eine Größe, wird keine erfunden — die Position bleibt draußen und
+wird gezählt. Und wenn **gar nichts** vergleichbar war, sagt das Fenster
+„Nichts zu vergleichen" statt „Keine Abweichung". Das ist heute der
+Regelfall: live hat keine der dreizehn Zuordnungen eine bestätigte
+Gebindegröße — siehe „Danach".
+
+**7 · Behoben, ohne dass man es sieht.** Die Sperrmeldung an der Tür nannte
+in allen drei Stufen „15 Minuten" und zählte die Restversuche mit einer
+anderen Rechnung als die Sperre selbst — beides kommt jetzt aus einer
+Quelle. Ein nicht schreibbarer Speicher (privates Fenster) ließ die
+Anmeldung stumm auf Anfang springen; jetzt steht da, was los ist. Freigabe
+und Wein-Editor fragen den **Server**, wer zu einem Code gehört
+(`POST /api/code`, ohne Sitzungswechsel, an derselben Sperre) — ein
+zurückgesetzter Code gibt damit nicht mehr frei. Und der neue Code beim
+Zurücksetzen kann nicht mehr verloren gehen: Das Backoffice würfelt ihn
+selbst und kennt ihn, bevor die Antwort unterwegs ist.
+
+Aus der Jagd nach dieser Runde dazu: Ein **leeres oder krummes Feld** im
+Freigabedialog kostet keinen Anmeldeversuch mehr — vorher hätten zwölf
+ungeduldige Klicks die Anmeldung für das ganze Haus sperren können, weil
+die Sperre je IP zählt. Eine **abgelaufene Sitzung** nimmt dem Gerät nicht
+mehr den gültigen Code aus dem Vorrat (beide Fälle antworten mit 401, aber
+nur einer heißt „diesen Code gibt es nicht"). Und eine **ohne Netz
+vorgemerkte Abmeldung** überlebt jetzt eine Offline-Anmeldung der nächsten
+Person — vorher erbte sie zwölf Stunden lang die Sitzung der vorigen, samt
+Personenverwaltung und „PIN zurücksetzen".
+
+Aus den beiden letzten Jagden noch zwei Dinge, die im Haus zählen:
+
+* **Eine Person wird nicht mehr zweimal angelegt.** Bricht die Verbindung
+  beim Anlegen ab, steht auf dem Schirm „Keine Verbindung zum Server."
+  und man greift zu „Aktualisieren". Bis eben verlor das Backoffice dabei
+  sein Gedächtnis: derselbe Mensch bekam beim zweiten Tippen eine zweite
+  Zeile mit einem zweiten gültigen Anmeldecode — und „Sperren" wirkte
+  danach nicht mehr, weil der andere Code weiter herein lässt. Gelöscht
+  werden kann in der Live-D1 nichts (Projektanleitung §8). Das Gedächtnis
+  überlebt jetzt das Neuzeichnen und sogar ein Neuladen des Tabs.
+* **Einen Namen gibt es einmal.** Das Gedächtnis oben deckt einen
+  Browser ab — ein zweites Gerät sieht es nicht. Deshalb wacht jetzt
+  auch der Server: Wer unter einem Namen, den es schon gibt, eine ZWEITE
+  Zeile anlegen will, bekommt eine klare Absage. Alles andere bleibt
+  erlaubt (sperren, freigeben, Rolle ändern, „PIN zurücksetzen").
+  **Folge für den Betrieb:** Zwei Menschen mit exakt demselben Namen
+  brauchen einen unterscheidenden Zusatz. Das habe ich in der Nacht
+  entschieden, weil ein Doppeleintrag in der Live-D1 nicht rückholbar ist
+  (kein Löschen, keine Sicherung, §8) — sag Bescheid, wenn du es anders
+  willst.
+* **„Größe fehlt" schickt niemanden mehr ins Leere.** Zwei verschiedene
+  Dinge hießen gleich: eine fehlende **Gebindegröße** (die lässt sich im
+  Backoffice bestätigen) und eine fehlende **Menge im Kassennamen**
+  („Aperol Spritz 1 Glas" — da hilft nur ein anderer Kassenname oder eine
+  Rezeptur). Der Mittagsblick versprach für beide die Sammelbestätigung;
+  bei Bericht 37 waren das 10 von 17 Positionen, für die es dort nichts zu
+  tun gibt. Getrennt wird jetzt nach dem, was zu TUN ist, und zwar mit
+  genau der Bedingung, die der Sammelknopf anwendet: **hier unten
+  gesammelt bestätigen** · **von Hand eintragen** (kein Vorschlag im
+  Stamm, oder Mischgetränk — die Größe gehört zum Bestandteil) ·
+  **keine Menge im Kassennamen**. Das steht so im Mittagsblick, in der
+  Abschnittsüberschrift, im Sammelhinweis, in der CSV und in der
+  Z-Bericht-Ansicht. Der Abschnitt heißt daher nicht mehr „Größe
+  fehlt", sondern **„Nicht gerechnet"**.
+
+## Erkennungszeichen nach dem Deploy
+
+Auf der Startseite steht unter den Kacheln der Block **„Wenn etwas klemmt"**
+mit „Rohdaten sichern (JSON)". Steht er nicht da, läuft noch die alte App —
+dann mit Netz neu laden (iPhone: Seite herunterziehen; als Web-App: einmal
+schließen und neu öffnen).
+
+## Vor dem Merge
+
+Nichts. Keine Migration, kein Dashboard-Schritt, kein Codewechsel.
+
+## Danach
+
+* Auf **jedem** Gerät die App einmal **mit Netz** neu laden.
+* **Asad Karakiri** (service), **Ian Lauchbein** (service) und **Marinus**
+  (wirtschaft) im Backoffice unter „Team" anlegen und den PIN über „PIN
+  zurücksetzen" vergeben.
+* **Die Gebindegrößen bestätigen** — Backoffice → „Verkauf ↔ Fassung" →
+  Abschnitt „Nicht gerechnet" → „Alle N Vorschläge übernehmen". Solange keine einzige
+  bestätigt ist, kann der Abgleich im Keller nichts rechnen und sagt genau
+  das. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still)
+  haben keinen Vorschlag und brauchen die Zahl von Hand.
+* **Gasteiner 0,25 l in der Lade nachzählen.** Das Soll steht auf 8; steht
+  dort in Wirklichkeit Platz für 7, bucht jedes Nachfüllen dauerhaft eine
+  Flasche zu viel ins append-only Journal.
+
+---
+
+# Vorgeschichte · Was mit dem Merge von Runde 13–15 live ging
 
 **Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v37.**
 Der Merge bringt **drei Runden zusammen** hinaus: Runde 13 (elf Befunde vom
@@ -479,18 +662,27 @@ Zwei Wege, einen Code zu setzen:
   Dopplung, speichert nur die Prüfsumme und zeigt den Code **genau
   einmal** gross auf dem Schirm. Er lässt sich nicht noch einmal anzeigen —
   notieren, solange er dasteht.
-* **Selbst eintragen** im Kasten „Aufnehmen oder Code neu setzen": Name
-  genau so schreiben, wie er in der Liste steht (die Zeile wird über den
-  Namen gefunden; eine andere Schreibweise legt die Person ein zweites Mal
-  an), Rolle wie gehabt, vier Ziffern oder „Vorschlagen". Speichern.
+* **Selbst eintragen** geht seit Runde 16 **nur noch für NEUE Menschen.**
+  Das Formular legt an; wer schon in der Liste steht, bekommt eine Absage
+  mit dem Hinweis auf seine Zeile. Einen neuen Code für jemanden, den es
+  schon gibt, holst du dort über „PIN zurücksetzen", die Rolle änderst du
+  im Auswahlfeld seiner Zeile.
+
+  *(Bis Runde 16 schrieb dieses Formular die vorhandene Person still um —
+  ihr bisheriger Code war danach tot, ohne dass es jemand erfuhr, ihre
+  Rolle fiel auf „Service" zurück, weil das Auswahlfeld nie vorbelegt
+  wurde, und eine Sperre war aufgehoben. Die einzige Leitung stufte sich
+  damit sofort selbst ab, samt laufender Sitzung; zurück ging es nur über
+  die D1-Konsole. Gefunden von der zehnten Jagd.)*
 
 **Reihenfolge, wenn mehrere Codes zu ändern sind:**
 
 1. **Eine Person zuerst, dann prüfen:** auf einem zweiten Gerät mit der
    neuen App mit dem neuen Code anmelden. Erst wenn das geht, die übrigen.
-2. **Deinen eigenen zuletzt.** Die offene Sitzung bleibt gültig — sie hängt
-   am Keks, nicht am Code —, du fliegst also nicht heraus. Melde dich erst
-   ab, wenn der neue Code auf einem zweiten Gerät funktioniert hat.
+2. **Deinen eigenen zuletzt.** Setzt du ihn über „PIN zurücksetzen" in
+   deiner Zeile neu, bleibt die offene Sitzung gültig — sie hängt am Keks,
+   nicht am Code —, du fliegst also nicht heraus. Melde dich erst ab, wenn
+   der neue Code auf einem zweiten Gerät funktioniert hat.
 3. **Zum Schluss jedes Gerät im Haus einmal mit dem neuen Code anmelden.**
    Erst diese Anmeldung räumt den alten Code aus dem Gerät; ein Gerät, das
    nie wieder angemeldet wird, kennt ihn ohne Netz weiter.
@@ -576,7 +768,7 @@ eintippen. Die D1-Konsole wird dafür **nicht** gebraucht.
 | `tests/ui-leitung-echt.cjs` | 22 Punkte: das Backoffice in Chromium (1440×900) gegen den echten Worker, die echte Datenbank und den echten Z-Bericht. Eingelesen über die Oberfläche, Zuordnung landet in `mapping`, ein zweites Gerät mit leerem Browserspeicher sieht beides, ein nur per Mail eingelieferter Bericht ist sichtbar, eine Teilzählung lässt alle 57 Weine stehen. |
 | `tests/modi.test.mjs` | 16 Prüfungen: alle fünf Modi bis ins Journal (Vorzeichen, Ort, Kistengröße), die Zuordnung in beide Richtungen, die Absenderprüfung des Postfachs. |
 | `tests/zbericht-37.test.mjs` | 24 Prüfungen am echten Bericht Nr. 37: Kopf, Blockwahl, die vier Eigenheiten mit ihren Zahlen, Rabatt und Storno, und der ganze Weg durch den Worker bis in `fassungszeile` (48 Zeilen, 145 Stück, 602,50 €, `ausschankMl` 125 für das Achtel). |
-| `node tests/durchstich.cjs` | 35 von 35 Punkten. Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. **Vor jedem Livegang laufen lassen.** |
+| `node tests/durchstich.cjs` | Fasst App **und** Worker gleichzeitig an, gegen eine echte SQLite-DB aus `docs/live-schema.sql`. *(Der Lauf war seit Runde 15 tot — die vierte Ziffer sendet seither von selbst, der Klick auf den Bestätigungsknopf lief in den Timeout. In Runde 16 berichtigt.)* |
 | `node tests/persona-tagesfassung.cjs` | Anmeldung mit vierstelligem Code, Tagesfassung bis zum Abschluss, Abbruch, Offline, doppeltes Absenden, abgelaufene Sitzung — durchgelaufen. |
 | Anmeldung am iPhone-Maß (Chromium) | Vier Felder; Ziffern kommen vom Ziffernblock UND von der Tastatur, Rücktaste nimmt die letzte weg, die vierte Ziffer sendet von selbst. |
 

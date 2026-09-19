@@ -202,6 +202,24 @@
 .deutung{font-size:var(--text-sm);color:var(--fg-secondary);line-height:var(--leading-normal)}
 .neg{color:var(--danger-fg);font-weight:var(--weight-bold)}
 
+/* ═══════════════ Finger am Glas ═══════════════
+   Runde 16 · Zwei Dinge, die Safari am iPhone von sich aus tut und die im
+   Keller stören:
+
+   · Ein Doppeltipp zoomt. Genau das passiert beim Zählen: zwei Flaschen,
+     zweimal schnell auf dieselbe Zeile — und statt der zweiten Zahl steht
+     die Seite vergrössert da. `manipulation` nimmt GENAU diese Geste weg.
+     Wischen und Zwei-Finger-Zoom bleiben; `none` oder `pan-x pan-y` würden
+     beides mitnehmen und kommen deshalb nicht in Frage.
+   · Ein Feld unter 16px zoomt beim Fokus. Am Schreibtisch
+     (data-dichte="maus") sind die kleinen Grade gewollt — dort zählt
+     Dichte und es wird nicht getippt. Gehoben wird deshalb nur, wo
+     wirklich ein Finger im Spiel ist (pointer:coarse). */
+html{touch-action:manipulation}
+@media(pointer:coarse){
+  input,select,textarea{font-size:var(--text-base)}
+}
+
 /* ═══════════════ Fokus ═══════════════ */
 :where(button,input,select,textarea,a,[tabindex]):focus-visible{
   outline:var(--ring-width) solid var(--ring);
@@ -314,6 +332,9 @@ nav.seite .zahl{font-size:var(--text-xs);font-weight:var(--weight-medium);
   background:var(--surface-4);color:var(--fg-secondary);font-variant-numeric:tabular-nums}
 nav.seite button.on .zahl{background:var(--surface-3)}
 nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
+/* Der Ausgang steht unten, abgesetzt und leise — er ist kein Menuepunkt. */
+nav.seite button.ausgang{margin-top:var(--space-6);border-top:1px solid var(--border);
+  border-radius:0;padding-top:var(--space-4);color:var(--fg-muted)}
 main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
 
 /* ═══════════════ Überschriften ═══════════════ */
@@ -506,11 +527,36 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
 .balken i{display:block;height:100%;background:var(--accent)}
 .balken i.knapp{background:var(--danger)}
 .balken i.satt{background:var(--success)}
-#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);
+/* BERICHTIGUNG (qa-guardian, zweite Schlusskontrolle · mittel): Der
+   Kasten hatte weder `max-width` noch `text-align`, und mit
+   `--radius-pill` (999px) ist der Radius immer die halbe Höhe. Bei
+   390 px und einem langen Satz wurde daraus ein KREIS: 195 × 208 px,
+   elf Zeilen, erste und letzte Zeile hell auf hellem Seitengrund und
+   damit unlesbar (gemessen am echten 409-Satz). Die App hat das seit
+   je richtig (`.toast` in index.html: `max-width:88vw`, `radius-md`,
+   mittig) — dasselbe hier. Es ist NICHT der geteilte Block; der endet
+   bei Zeile 244, und die beiden Regeln heißen auch verschieden. */
+/* BERICHTIGUNG (zehnte Jagd Runde 16 · C): Die erste Fassung hatte
+   `left:50%` und `max-width` — und das `max-width` griff unter rund
+   1120 px gar nicht, weil bei `position:fixed` mit `left:50%` nur noch
+   die halbe Fensterbreite als Platz danebensteht. Gemessen blieb der
+   Kasten bei 390 px genau 195 px breit, also 50 vw: rund statt Kreis,
+   aber nicht breiter. Er steht deshalb jetzt zwischen zwei festen
+   Rändern und zentriert sich über `margin-inline:auto`; `width:fit-content`
+   hält ihn bei kurzen Sätzen schmal.
+   Dazu die Safe-Area unten — die App hat sie seit je (`.toast` in
+   index.html), das Backoffice stand auf festen 28 px. Kein Bruch der
+   geteilten Schicht: die endet bei Zeile 244, und die beiden Regeln
+   heißen verschieden. */
+#toast{position:fixed;left:var(--space-4);right:var(--space-4);
+  bottom:calc(28px + env(safe-area-inset-bottom));
+  margin-inline:auto;width:fit-content;max-width:min(560px, 100%);
+  transform:translateY(12px);
   background:var(--fg);color:var(--fg-on-dark);padding:10px 18px;
-  border-radius:var(--radius-pill);font-size:var(--text-sm);opacity:0;
+  border-radius:var(--radius-md);text-align:center;box-shadow:var(--shadow-overlay);
+  font-size:var(--text-sm);opacity:0;
   pointer-events:none;transition:opacity .18s,transform .18s;z-index:var(--z-toast)}
-#toast.on{opacity:1;transform:translateX(-50%)}
+#toast.on{opacity:1;transform:none}
 
 /* ═══════════════ Schmale Schirme ═══════════════
    Die Navigation war 212px breit und galt ohne Medienabfrage — bei 390px
@@ -610,8 +656,15 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const num = n => (Math.round(n * 10) / 10).toLocaleString("de-AT", {maximumFractionDigits:1});
 const eur = n => (+n||0).toLocaleString("de-AT", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
 
+/* 2,2 s reichen für „Gespeichert". Für einen Satz, der erklärt, WARUM
+   etwas nicht ging, reichen sie nicht — er ist weg, bevor man ihn
+   gelesen hat (qa-guardian, zweite Schlusskontrolle). Grob 55 ms je
+   Zeichen, gedeckelt bei neun Sekunden. Ein Satz, der bleiben MUSS,
+   gehört trotzdem nicht in den Toast, sondern in einen stehenden
+   Hinweis — siehe `nFehler` im Team-Formular. */
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
-  clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),2200);}
+  const dauer=Math.min(9000,Math.max(2200,String(t||"").length*55));
+  clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),dauer);}
 
 /* ── Schlüssel der Fassungsseite. Ändern sie sich dort, hier nachziehen ── */
 const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
@@ -879,6 +932,199 @@ function nachZeit(a,b){
 
 /* ════════════ 3 · Quelle ════════════ */
 let QUELLE="—", VORGAENGE=[], STAND=null;
+
+/* Wie viele Ziffern ein Code hat. Genau eine Stelle nennt die Zahl — im
+   Worker (`PIN_LAENGE` in src/index.js) und in der App (`PIN_LAENGE` in
+   public/index.html) heisst die Konstante genauso, und alle drei muessen
+   dasselbe sagen. Runde 16: die vier harten Vieren in dieser Datei sind
+   dadurch ersetzt. */
+const PIN_LAENGE=4;
+const PIN_MUSTER=new RegExp("^\\d{"+PIN_LAENGE+"}$");
+/* Gleichverteilt ueber 0000…9999 (bzw. so viele Stellen, wie PIN_LAENGE
+   sagt). Der Rest einer 32-Bit-Zahl geteilt durch die Spanne bevorzugt die
+   niedrigen Werte leicht; was ueber der letzten vollen Runde liegt, wird
+   deshalb verworfen und neu gewuerfelt. Dieselbe Rechnung wie
+   `wuerfelPin()` im Worker. */
+function wuerfelPin(){
+  const a=new Uint32Array(1), spanne=Math.pow(10,PIN_LAENGE);
+  const grenze=Math.floor(4294967296/spanne)*spanne;
+  do{ crypto.getRandomValues(a); }while(a[0]>=grenze);
+  return String(a[0]%spanne).padStart(PIN_LAENGE,"0");
+}
+
+/* Ein `fetch` mit Frist — fuer die beiden Wege, bei denen ein Haengen
+   wehtut: Abmelden (am geteilten iPad) und „PIN zuruecksetzen". Das
+   Backoffice laeuft sonst am MacBook mit stabiler Leitung; die uebrigen
+   Aufrufe holen nur Zahlen und duerfen warten.
+
+   BERICHTIGUNG (qa-guardian, dritte Gegenprobe): Die erste Fassung gab
+   die `Response` zurueck und raeumte die Uhr im `finally` — also sobald
+   der KOPF da war. Genau der Fehler, den `holeKurz()` in index.html eine
+   Stunde vorher abgestellt hatte, und der Kommentar hier behauptete,
+   es sei „dieselbe Rechnung". Gemessen: `kurz()` kam nach 3 ms zurueck,
+   `await r.json()` beim Aufrufer hing danach unbegrenzt. Bei „PIN
+   zuruecksetzen" heisst das: Der Knopf bleibt tot (`b.disabled=false`
+   wird nie erreicht), es kommt weder Dialog noch Hinweis, und der
+   Ersatzcode im `catch` greift nicht, weil nichts wirft — waehrend der
+   neue Code am Server laengst stehen kann. Dann kommt die Person nicht
+   mehr herein, und niemand kennt ihren Code.
+
+   Diese Fassung liest den Leib INNERHALB der Frist, wie `holeKurz()`. */
+/* Eine Kennung, die der Client vergibt. `crypto.randomUUID` gibt es
+   erst ab Safari 15.4; der Rueckfall muss nicht kryptografisch sein, er
+   muss nur eindeutig sein. Dieselbe Rueckfallebene wie `uuid()` in
+   index.html. */
+function uuid(){
+  try{ if(crypto.randomUUID)return crypto.randomUUID(); }catch(e){}
+  return "u"+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+}
+
+/* Wen dieses Fenster in dieser Sitzung schon angelegt hat: Name (klein
+   geschrieben) -> Kennung.
+
+   BERICHTIGUNG (Jaeger, siebte Jagd): Dieses Gedaechtnis stand bis eben
+   INNERHALB von `vTeam()`. `zeichne()` leert `#inhalt` und ruft die
+   Ansicht neu auf — bei „Aktualisieren" (`#bNeu`), bei jedem
+   Seitenwechsel und bei einem `storage`-Ereignis aus einem zweiten Tab,
+   also ganz ohne Klick. Damit war das Gedaechtnis genau dann weg, wenn
+   man es braucht: Die Liste kam nicht, auf dem Schirm stand „Keine
+   Verbindung zum Server.", die Leitung drueckte „Aktualisieren" und
+   tippte denselben Menschen noch einmal — der bekam eine ZWEITE Kennung,
+   also eine zweite aktive Zeile mit eigenem gueltigen Anmeldecode.
+   Danach wirkt „Sperren" nicht mehr, und in der Live-D1 ist das nicht
+   rueckholbar (kein Loeschen, keine Sicherung, Projektanleitung §8).
+
+   Jetzt auf Modulebene und zusaetzlich gespiegelt, damit auch ein
+   Neuladen es nicht loescht. Der Speicher kann verweigern (privates
+   Fenster, volles Kontingent) — dann bleibt das Gedaechtnis im
+   Arbeitsspeicher, und der Rest laeuft unveraendert.
+
+   BERICHTIGUNG (achte Jagd Runde 16 · B): Der Spiegel lag in
+   `sessionStorage` — und der ist je TAB eigen. Zwei offene
+   `leitung.html` am MacBook sind der Normalfall, und gemessen ergaben
+   sie fuer denselben Namen wieder zwei Kennungen. Jetzt `localStorage`,
+   also ein Gedaechtnis fuer den ganzen Browser. Der Preis ist, dass es
+   nicht mehr von selbst vergeht; dafuer raeumt `abmelden()` es weg.
+
+   Was hier drinsteht: Name (klein geschrieben) → Kennung. KEINE Codes
+   (harte Regel 9) — der Code geht direkt ins Paket und wird nirgends
+   gemerkt. Und die Wache dahinter steht im Worker (`personSchreiben`,
+   Namenspruefung): ein Gedaechtnis im Browser kann ein zweites GERAET
+   nicht sehen. */
+/* BERICHTIGUNG (elfte Jagd Runde 16 · A): Die Kennung war eine blosse
+   Zeichenkette — und damit nicht zu unterscheiden, ob sie zu einem
+   Anlauf gehoert, der noch NICHT am Server angekommen ist, oder zu einer
+   Zeile, die dort laengst steht. Genau das entscheidet aber alles:
+
+   · Noch nicht bestaetigt  → derselbe Anlauf darf wiederholt werden.
+     Dieselbe `id` schreibt dieselbe Zeile, es entsteht kein zweiter
+     Eintrag (der Fund der fuenften Jagd).
+   · Schon bestaetigt      → den Menschen gibt es. Dann wird hier NICHT
+     geschrieben, auch wenn die Liste gerade nicht geladen ist.
+
+   Ohne diese Unterscheidung hing die Absage an `LEUTE` — und `LEUTE`
+   ist leer, sobald `hole()` in die Frist laeuft, ohne Netz ist oder 401
+   oder 403 bekommt, also genau dann, wenn man sie braucht. Gemessen:
+   Person als Leitung angelegt, Seite neu geladen (das Auswahlfeld steht
+   danach wieder auf „Service"), Liste schweigt, derselbe Name mit neuem
+   Code → dieselbe Kennung ging mit dem NEUEN Inhalt hinaus, der Worker
+   sah seine eigene `id` unter den namensgleichen und schwieg, und
+   `ON CONFLICT(id) DO UPDATE` schrieb Rolle, Pruefsumme und `aktiv`
+   neu: alter Code tot, Rolle „Service", Sperre aufgehoben, auf dem
+   Schirm „Gespeichert".
+
+   Alte Eintraege (blosse Zeichenketten) gelten als BESTAETIGT — die
+   vorsichtige Seite: lieber eine Absage zu viel als ein stilles
+   Ueberschreiben. */
+const K_KENNUNG="hh_nkennung_v1";
+const nKennung=(function(){
+  try{
+    const o=JSON.parse(localStorage.getItem(K_KENNUNG)||"{}");
+    return (o && typeof o==="object" && !Array.isArray(o))?o:{};
+  }catch(e){ return {}; }
+})();
+/* Ein unbestaetigter Anlauf ist eine Falle auf Zeit: Solange `ok` false
+   bleibt, darf dieselbe Kennung wieder hinaus — mit dem INHALT, der
+   gerade im Formular steht. Das ist richtig, solange es wirklich die
+   Wiederholung desselben Anlaufs ist, und falsch, sobald Wochen
+   vergangen sind. Zwei Dinge halten die Falle deshalb kurz:
+
+   · `kennungHeilen()` setzt `ok`, sobald die Liste den Menschen zeigt —
+     dann ist bewiesen, dass die Zeile am Server steht. Das war die
+     Luecke der zwoelften Jagd: `ok:false` wurde NIE fortgeschrieben,
+     auch nicht, nachdem die Liste den Menschen laengst fuehrte.
+   · `FRIST_UNBESTAETIGT` laesst einen unbestaetigten Anlauf nach einer
+     halben Stunde verfallen. Danach gilt er als unbekannt: Es geht eine
+     NEUE Kennung hinaus, und der Namenswaechter im Worker antwortet 409,
+     statt still zu ueberschreiben. Aus einer Falle wird eine Absage. */
+const FRIST_UNBESTAETIGT=30*60*1000;
+function kennungSchreiben(){
+  try{ localStorage.setItem(K_KENNUNG,JSON.stringify(nKennung)); }catch(e){}
+}
+function kennungMerken(schl,id,bestaetigt){
+  nKennung[schl]={id:id, ok:!!bestaetigt, t:Date.now()};
+  kennungSchreiben();
+  return id;
+}
+function kennungLesen(schl){
+  const v=nKennung[schl];
+  if(!v)return null;
+  if(typeof v==="string")return {id:v, ok:true};   /* Altbestand */
+  if(!v.ok && (!v.t || Date.now()-v.t>FRIST_UNBESTAETIGT))return null;
+  return {id:v.id, ok:!!v.ok};
+}
+/* Die Liste ist der Beweis: Steht der Mensch darin, ist seine Zeile am
+   Server — und dieses Fenster darf sie nicht mehr ueberschreiben. */
+function kennungHeilen(leute){
+  let wandel=false;
+  (leute||[]).forEach(pp=>{
+    const k=String(pp && pp.name || "").toLowerCase();
+    const v=nKennung[k];
+    if(v && typeof v==="object" && !v.ok){ v.ok=true; v.t=Date.now(); wandel=true; }
+  });
+  if(wandel)kennungSchreiben();
+}
+function kennungRaeumen(){
+  Object.keys(nKennung).forEach(k=>{ delete nKennung[k]; });
+  try{ localStorage.removeItem(K_KENNUNG); }catch(e){}
+}
+
+async function kurz(pfad,opt,ms){
+  const frist=+ms>0?+ms:8000;
+  const ab=(typeof AbortController!=="undefined")?new AbortController():null;
+  const uhr=ab?setTimeout(()=>ab.abort(),frist):0;
+  const lauf=(async()=>{
+    const r=await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
+      ab?{signal:ab.signal}:{}));
+    const typ=r.headers.get("content-type")||"";
+    /* `text()` NICHT abfangen: Bricht die Frist mitten im Leib ab, wirft
+       es — und genau das soll es. Die frueher hier stehende Falle machte
+       aus einem halben Leib ohne JSON-Kopf eine geglueckte Antwort
+       (vierte Jagd Runde 16 · C). Eine leere Antwort wirft nicht, die
+       gibt "" zurueck. */
+    const text=await r.text();
+    let daten=null;
+    if(typ.includes("json")){ try{ daten=JSON.parse(text); }catch(e){} }
+    /* Eine halb gelesene Antwort ist keine Antwort. Bricht die Frist
+       mitten im Leib ab, kam hier `{json:true, daten:null}` zurueck —
+       der Aufrufer hielt das fuer einen geglueckten Ruf ohne Inhalt und
+       zeigte eine leere Auskunft statt seiner Rueckfallebene. Jetzt
+       wirft es, und der `catch` des Aufrufers greift, wie er soll. */
+    if(typ.includes("json") && daten===null)
+      throw new Error("unvollständige Antwort");
+    return {ok:r.ok, status:r.status, json:typ.includes("json"), daten};
+  })();
+  /* Das Versprechen NUR anlegen, wenn es gebraucht wird. Unbedingt
+     erzeugt wurde es 8 s nach JEDEM Aufruf abgelehnt — auch nach einem
+     geglueckten — und stand als unbehandelte Ablehnung in der Konsole,
+     samt Zeitgeber, der die Seite so lange wachhielt (vierte Jagd
+     Runde 16 · C). `holeKurz()` in index.html macht es lazy; hier stand
+     es eine Zeile zu frueh. */
+  try{
+    return ab ? await lauf : await Promise.race([lauf,
+      new Promise((_,weg)=>setTimeout(()=>weg(new Error("Frist")),frist))]);
+  } finally { if(uhr)clearTimeout(uhr); }
+}
 
 let ICH=null;
 async function werBinIch(){
@@ -1322,8 +1568,13 @@ function zuordnung(pos){
 /* ════════════ 6 · Abgleich Verkauf ↔ Fassung ════════════ */
 /* Warum eine Zeile keinen Befund bekommt — an einer Stelle, damit
    Tabelle, Mittagsblick und CSV denselben Satz sagen. */
+/* „menge" ist neu (sechste Jagd Runde 16): Im Kassennamen steht keine
+   Menge („Aperol Spritz 1 Glas"). Das fehlt der KASSE, nicht dem
+   Backoffice — „Größe fehlt" schickte die Leitung dort vergeblich
+   suchen. */
 const UNKLAR_GRUND={
   groesse:     "Größe fehlt",
+  menge:       "keine Menge im Kassennamen",
   keinbericht: "kein Z-Bericht im Zeitraum"
 };
 const unklarSatz = g => "kein Abgleich möglich — " + (UNKLAR_GRUND[g] || "Verkauf nicht bestimmbar");
@@ -1341,8 +1592,25 @@ const unklarSatz = g => "kein Abgleich möglich — " + (UNKLAR_GRUND[g] || "Ver
    ein anderer schon: dann bleibt die Differenz stehen — mit Vorbehalt.
    Eine halbe Wahrheit, die sich als ganze ausgibt, ist der teuerste Fall;
    eine Differenz MIT Vorbehalt ist besser als gar keine. */
-const vorbehaltSatz = v =>
-  v.ohne+" von "+v.gesamt+" Positionen ohne Größe — die Differenz ist unvollständig";
+/* BERICHTIGUNG (sechste Jagd Runde 16 · B): Hier stand für BEIDE
+   Ursachen „ohne Größe". `flaschen()` unterscheidet sie sauber
+   (`fehlt:"ausschank"` — keine Menge im Kassennamen; `fehlt:"gebinde"` —
+   keine bestätigte Gebindegröße), `merkeOhneGroesse()` warf sie wieder
+   in einen Topf. In Bericht 37 haben 26 von 48 Positionen keine Menge im
+   Namen — der häufigere der beiden Fälle. Die Leitung las „ohne Größe",
+   ging nach „Verkauf ↔ Fassung" und fand dort nichts zu bestätigen: Was
+   fehlt, fehlt der KASSE, nicht dem Backoffice. Dieselbe Falschzuweisung
+   hat die dritte Jagd in der App beseitigt (`ohneMenge` gegen
+   `ohneGebinde` in `abgleichZeilen`); auf dieser Seite desselben
+   Duplikats stand sie unverändert. */
+const vorbehaltSatz = v => {
+  const teile=[];
+  if(v.gebinde)teile.push(v.gebinde+" ohne bestätigte Größe");
+  if(v.menge)teile.push(v.menge+" ohne Menge im Kassennamen");
+  return (v.ohne+" von "+v.gesamt+" Positionen nicht gerechnet"
+    + (teile.length?" ("+teile.join(", ")+")":"")
+    + " — die Differenz ist unvollständig");
+};
 
 /* Der Befund einer GERECHNETEN Zeile — an einer Stelle für Tabelle und CSV.
    Warum die Fallunterscheidung: Eine Zeile mit Vorbehalt sagte bis v30 bei
@@ -1353,8 +1621,18 @@ const vorbehaltSatz = v =>
    neutrale Plakette wie bei „kein Abgleich"; der Satz daneben
    (`vorbehaltSatz`) sagt, wie viel fehlt.
    Ab einer Differenz von 0,5 Flaschen bleibt der Befund, wie er war:
-   „kleine Abweichung"/„prüfen" behauptet nichts über Vollständigkeit,
-   sondern nennt eine Untergrenze — und die gilt mit Vorbehalt erst recht. */
+   „kleine Abweichung"/„prüfen" behauptet nichts über Vollständigkeit.
+
+   BERICHTIGUNG (fünfte Jagd Runde 16): Hier stand „sondern nennt eine
+   Untergrenze — und die gilt mit Vorbehalt erst recht." Das ist für die
+   Schwund-Richtung verdreht. `diff = entnommen − verkauft`; eine nicht
+   gerechnete Position ist ein VERKAUF. Käme sie dazu, stiege `verkauft`
+   und SÄNKE `diff`. Bei positiver Differenz ist die gezeigte Zahl damit
+   eine OBER-, keine Untergrenze — die echte Lücke ist kleiner. Das
+   Backoffice druckt hier kein Wort dazu, also blieb der Fehler folgenlos;
+   die App hat ihn übernommen und als „mind." ausgegeben, und dort tat er
+   weh. Der Satz steht berichtigt, damit ihn niemand ein zweites Mal
+   abschreibt. */
 const BEFUND = r => Math.abs(r.diff)<0.5
   ? (r.vorbehalt ? {w:"unvollständig", k:"p-grau"} : {w:"stimmt", k:"p-ok"})
   : Math.abs(r.diff)<2 ? {w:"kleine Abweichung", k:"p-warn"}
@@ -1388,10 +1666,17 @@ function abgleich(tag, spanne){
      sofort gesetzt und löschte rückwirkend einen schon gerechneten
      Verkauf (Spritzerwein: 1,80 Fl. gerechnet, Entnahme 9 → die Zeile
      sagte „kein Abgleich möglich" statt +7,2). */
-  const posZahl={}, posOhne={};
-  const zaehlePos=(id,gerechnet)=>{ if(!id) return;
+  /* `grund` ist neu (sechste Jagd Runde 16): "ausschank" heisst, im
+     Kassennamen steht keine Menge — das kann die Leitung nicht beheben.
+     "gebinde" heisst, die Groesse ist nicht bestaetigt — das kann sie.
+     Zwei verschiedene Saetze, deshalb zwei Zaehler. */
+  const posZahl={}, posOhne={}, posMenge={}, posGebinde={};
+  const zaehlePos=(id,gerechnet,grund)=>{ if(!id) return;
     posZahl[id]=(posZahl[id]||0)+1;
-    if(!gerechnet) posOhne[id]=(posOhne[id]||0)+1; };
+    if(gerechnet) return;
+    posOhne[id]=(posOhne[id]||0)+1;
+    if(grund==="ausschank") posMenge[id]=(posMenge[id]||0)+1;
+    else posGebinde[id]=(posGebinde[id]||0)+1; };
   /* Dritter Zustand neben „zugeordnet" und „offen": zugeordnet, aber die
      Größe ist nicht bestätigt. Solche Positionen gehen weder in `verk`
      noch in die Differenz ein — sonst sähe eine fehlende Zahl aus wie
@@ -1424,7 +1709,7 @@ function abgleich(tag, spanne){
           merkeOhneGroesse(p, r[luecke].id, {fehlt:"gebinde", aus:r[luecke].ml, geb:gebs[luecke]}, true);
           /* Die ganze Position bleibt draußen — also fehlt der Verkauf
              JEDES Bestandteils, nicht nur der des einen mit der Lücke. */
-          r.forEach(x=>zaehlePos(x.id,false));
+          r.forEach(x=>zaehlePos(x.id,false,"gebinde"));
           return;
         }
         r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
@@ -1432,10 +1717,31 @@ function abgleich(tag, spanne){
         return;
       }
       const zu=zuordnung(p);
-      if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
+      if(zu.status==="offen"){
+        /* BERICHTIGUNG (neunte Jagd Runde 16 · A): Hier stand
+           `if(!offen.some(...)) offen.push(p)` — der ERSTE Tag gewann,
+           und sein `anzahl` ging unverändert in die CSV-Ausfuhr
+           (`csvAbgleich`, Abschnitt „Ohne Zuordnung"), während die
+           Ausfuhr über das ganze Fenster geht. Mit sieben Berichten im
+           Fenster (SPANNE steht auf 7) wies sie 136 Einheiten aus, wo
+           952 verkauft wurden — Faktor sieben auf jeder der 44 Zeilen.
+           Die Zuordnungsansicht daneben summiert richtig; dieselbe Zahl
+           stand an zwei Stellen mit zwei Werten. Solange nur EIN Bericht
+           im Fenster liegt, fallen beide zusammen — deshalb ist es so
+           lange niemandem aufgefallen.
+
+           `p` ist das Positionsobjekt aus `ZBER` und darf nicht
+           verändert werden (es liegt im Speicher des Geräts); es wird
+           deshalb eine eigene Zeile geführt. Dieselbe Summierung wie in
+           `merkeOhneGroesse()` gleich darunter. */
+        const da=offen.find(o=>o.name===p.name);
+        if(da){ da.anzahl+=(+p.anzahl||0); da.umsatz+=(+p.umsatz||0); }
+        else offen.push({name:p.name, anzahl:(+p.anzahl||0), umsatz:(+p.umsatz||0)});
+        return;
+      }
       if(zu.status==="ignoriert") return;
       const f=flaschen(p, zu.id);
-      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false); return; }
+      if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false,f.fehlt); return; }
       verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
     });
   });
@@ -1453,8 +1759,13 @@ function abgleich(tag, spanne){
      mit Vorbehalt. */
   const vorbehalt={};
   Object.keys(posOhne).forEach(id=>{
-    if((posZahl[id]||0)>posOhne[id]) vorbehalt[id]={ohne:posOhne[id], gesamt:posZahl[id]};
-    else nichtRechenbar(id,"groesse");
+    if((posZahl[id]||0)>posOhne[id])
+      vorbehalt[id]={ohne:posOhne[id], gesamt:posZahl[id],
+                     menge:posMenge[id]||0, gebinde:posGebinde[id]||0};
+    /* Auch der Grund, aus dem GAR NICHTS rechenbar war, gehoert benannt:
+       „Groesse fehlt" schickt die Leitung ins Backoffice, „Menge fehlt"
+       waere dort vergebliche Arbeit. */
+    else nichtRechenbar(id, (posMenge[id]||0)>=(posOhne[id]||0) ? "menge" : "groesse");
   });
   /* Ohne Z-Bericht ist die Verkaufsseite nicht leer, sondern unbekannt —
      der einzige verbliebene Grund, der einen Artikel ganz stumm stellt.
@@ -1483,6 +1794,80 @@ function abgleich(tag, spanne){
           berichte:berichte.length};
 }
 
+/* `ohneGroesse` führt an drei verschiedene Orte, und wer sie in einen
+   Topf wirft, schickt einen Teil der Leitung vor eine leere Wand.
+
+   · `fehlt==="gebinde"` MIT Vorschlag und ohne Rezept: unter
+     „Verkauf ↔ Fassung“ steht die Zahl samt Herkunft, der Sammelknopf
+     nimmt sie mit. Das ist der einzige Fall, den ein Klick erledigt.
+   · `fehlt==="gebinde"` OHNE Vorschlag, oder Rezeptbestandteil: die
+     Gebindegröße muss von Hand hinein (beim Mischgetränk an der eigenen
+     Kassenposition des Bestandteils).
+   · `fehlt==="ausschank"`: im Kassennamen steht keine Menge („Aperol
+     Spritz“) — dort ist mit Bestätigen gar nichts zu holen, es braucht
+     einen anderen Kassennamen oder eine Rezeptur.
+
+   Zweimal ist derselbe Fehler gefunden worden, jedes Mal eine Ebene
+   tiefer: die siebte Jagd, weil Überschrift, Mittagsblick und CSV-Kopf
+   für alle „Größe fehlt“ sagten (10 von 17 Positionen bei Bericht 37);
+   die achte, weil die Behebung danach in ZWEI Töpfe teilte, während der
+   Bildschirm DREI Zustände kennt (angekündigt 23, sammelbar 12). Die
+   Wurzel war beide Male dieselbe: zwei Stellen, die über dieselbe Menge
+   reden, mit je eigener Bedingung. */
+/* BERICHTIGUNG (achte Jagd Runde 16 · B): Die erste Fassung teilte in
+   ZWEI Töpfe, der Bildschirm darunter kennt aber DREI Zustände. Alles,
+   was nicht `fehlt==="ausschank"` war, bekam den Satz „hier unten
+   bestätigen" — auch die Rezeptbestandteile (die bewusst keinen Knopf
+   haben, die Größe gehört an die eigene Kassenposition des Bestandteils)
+   und die Artikel ohne ml-Vorschlag (da muss die Zahl von Hand hinein).
+   Gemessen: angekündigt 23, tatsächlich sammelbar 12. Und das ist der
+   Regelfall, nicht die Ausnahme — 35 von 37 Artikeln in `STAMM.GETR`
+   liefern ohne Bestätigung gar keinen Vorschlag.
+
+   Geteilt wird deshalb nicht nach der Ursache, sondern nach dem, was zu
+   TUN ist. `sammelbar()` ist dieselbe Bedingung, die der Sammelknopf
+   anwendet (`vorschlaege` weiter unten) — eine Bedingung, zwei Leser. */
+const sammelbar = o => !!(o && o.fehlt==="gebinde" && !o.rezept && o.id
+                          && o.geb && +o.geb.ml>0);
+function teileOhneGroesse(liste){
+  const sam=[], hand=[], au=[];
+  (liste||[]).forEach(o=>{
+    /* Ausdruecklich auf die bekannten Ursachen gepruefte Zuordnung: Eine
+       dritte, spaeter dazukommende Ursache landet dann bei „von Hand",
+       nicht bei „hier unten sammelt bestaetigen" — das ist die Seite,
+       auf der ein Irrtum niemanden vor eine leere Wand schickt. */
+    if(o.fehlt==="ausschank")au.push(o);
+    else if(o.fehlt==="gebinde" && sammelbar(o))sam.push(o);
+    else hand.push(o);
+  });
+  const stk=l=>l.reduce((x,o)=>x+(+o.anzahl||0),0);
+  return {sammelbar:sam, handisch:hand, ausschank:au,
+          stkSammelbar:stk(sam), stkHandisch:stk(hand), stkAusschank:stk(au)};
+}
+
+/* Die Kassennamen, die keinem Artikel zugeordnet sind — über ALLE
+   geladenen Berichte, ohne Fenster. Das ist die Menge, die `vZuordnung`
+   zeigt; die Zahl neben dem Menüpunkt liest sie hier, damit beide
+   dasselbe sagen (elfte Jagd Runde 16 · B). */
+function alleKassennamen(){
+  const namen={};
+  /* `(z.positionen||[])`: Diese Schleife laeuft seit der elften Runde
+     bei JEDEM Neuzeichnen ueber alle bis zu 60 Tage — vorher lag sie
+     nur in den Ansichten. Ein Eintrag ohne `positionen` wuerde damit
+     mitten in `zeichneNav()` werfen und die halbe Navigation stehen
+     lassen. `vomServer()` legt so etwas zwar nicht an; eine Schleife,
+     die alles traegt, darf trotzdem nicht an einem fehlenden Feld
+     zerbrechen (zwoelfte Jagd Runde 16 · C). */
+  Object.values(ZBER).forEach(z=>(z&&z.positionen||[]).forEach(p=>{
+    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0, tage:0};
+    namen[p.name].anzahl+=p.anzahl; namen[p.name].tage++;
+  }));
+  return Object.values(namen);
+}
+function offeneKassennamen(){
+  return alleKassennamen().filter(x=>zuordnung(x).status==="offen");
+}
+
 /* ════════════ 7 · Ansichten ════════════ */
 const SEITEN=[
   {id:"heute",     t:"Mittagsblick",     grp:"Täglich"},
@@ -1502,7 +1887,17 @@ let SEITE="heute", SPANNE=7;
 
 function zaehler(id){
   const t=letzterTag();
-  if(id==="zuordnung"){ const a=abgleich(t); return a.offen.length||null; }
+  /* BERICHTIGUNG (zehnte Jagd · B, berichtigt von der elften): Hier
+     stand erst `abgleich(t)` ohne Spanne (ein Tag), dann `SPANNE` —
+     beides falsch, denn die Zahl steht neben einem Menüpunkt, und die
+     SEITE dahinter kennt gar kein Fenster: `vZuordnung` geht über ALLE
+     geladenen Berichte. Gemessen an zehn Tagen mit einem Kassennamen nur
+     in den drei ältesten: Navigation 44, Seite daneben 45 — und ist im
+     Fenster alles zugeordnet, stand die Zahl auf nichts, während die
+     Seite offene Namen führte. Eine Zahl neben einem Menüpunkt muss
+     zählen, was hinter dem Menüpunkt liegt; sie zählt deshalb jetzt
+     dieselbe Menge wie `vZuordnung`. */
+  if(id==="zuordnung") return offeneKassennamen().length||null;
   if(id==="bestellen"){ return bestellliste().length||null; }
   if(id==="zaehlliste"){ return zaehlliste().length||null; }
   if(id==="speicher"){ return VORGAENGE.length||null; }
@@ -1533,6 +1928,43 @@ function zeichneNav(){
       zeichne(); window.scrollTo(0,0); };
     n.appendChild(b);
   });
+  /* A1 · Der Ausgang steht am Fuss der Navigation, nicht in der Leiste:
+     Unter 900 px ist die Leiste mit Marke, „Aktualisieren" und
+     „Fassungstool" schon voll — ein vierter Knopf schob sie 24 px aus dem
+     Fenster (gemessen mit tests/ui-mass.cjs). In der Navigation ist Platz,
+     er steht am selben Ort wie in jeder anderen Verwaltung, und am
+     MacBook liegt er dauerhaft offen. */
+  const ab=document.createElement("button");
+  ab.id="bAb"; ab.className="ausgang";
+  ab.innerHTML='<span>abmelden</span>';
+  ab.onclick=abmelden;
+  n.appendChild(ab);
+}
+
+/* A1 (Jagd 15) · Diese Seite hatte keinen Ausgang. Wer sie am geteilten
+   iPad offen liess, liess die naechste Person als Leitung hier stehen —
+   der Sitzungskeks gilt zwoelf Stunden, und „PIN zuruecksetzen" haengt an
+   ihm. Der Keks kann nur vom SERVER genommen werden (`POST /api/abmelden`
+   setzt ihn auf Max-Age=0), also wird er gerufen und auf die Antwort
+   gewartet; erst danach faellt der Name aus der Sitzung dieses Fensters
+   (`hh_user`/`hh_rolle` teilen sich beide Seiten im selben Tab) und die
+   Anmeldung kommt wieder. Ohne Netz bleibt die Sitzung stehen — dann wird
+   das gesagt, statt eine Sicherheit vorzutaeuschen, die es nicht gibt. */
+async function abmelden(){
+  const b=$("#bAb"); if(b)b.disabled=true;
+  let weg=false;
+  try{
+    weg=(await kurz("/api/abmelden",{method:"POST"})).ok;
+  }catch(e){}
+  if(!weg){ if(b)b.disabled=false;
+    return toast("Keine Verbindung — die Anmeldung gilt weiter. Bitte mit Netz noch einmal."); }
+  try{ sessionStorage.removeItem("hh_user"); sessionStorage.removeItem("hh_rolle"); }catch(e){}
+  /* Die Namen der Mitarbeiter gehen mit der Anmeldung. Sie sind kein
+     Geheimnis (Codes stehen nicht darin), aber sie gehoeren der Person,
+     die angemeldet war — nicht der naechsten (achte Jagd Runde 16 · C). */
+  kennungRaeumen();
+  ICH=null;
+  location.href="index.html";
 }
 
 function letzterTag(){
@@ -1556,6 +1988,17 @@ function vHeute(m){
   const best=bestellliste();
   const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
   const ohneUrteil=a.zeilen.filter(r=>r.unklar).length;
+  /* Die Gründe aus den Zeilen selbst, nicht aus dem Gedächtnis: Hier
+     standen zwei feste Aufzählungen, und beide waren falsch. Die eine
+     nannte „Position nicht zugeordnet" — den Grund gibt es seit v29
+     nicht mehr (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9), eine offene
+     Kassenposition schaltet keinen Artikel mehr stumm. Die andere nannte
+     Größe und Z-Bericht, aber nicht „keine Menge im Kassennamen" — den
+     häufigeren der beiden Gründe (in Bericht 37: 26 von 48 Positionen).
+     `UNKLAR_GRUND` ist die eine Wahrheit; wer daneben eine zweite Liste
+     pflegt, pflegt sie irgendwann nicht mehr mit. */
+  const gruendeSatz=[...new Set(a.zeilen.filter(r=>r.unklar)
+    .map(r=>UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar"))].join(" · ");
   const minus=minusGeteilt(B);
 
   m.innerHTML=`<section>
@@ -1591,7 +2034,7 @@ function vHeute(m){
         ?(grob.length
           ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
           :ohneUrteil
-            ?(ohneUrteil+" Positionen ohne Abgleich — Größe fehlt oder Position nicht zugeordnet")
+            ?(ohneUrteil+" Positionen ohne Abgleich — "+esc(gruendeSatz))
             :"Verkauf und Entnahme decken sich")
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
       a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
@@ -1607,13 +2050,42 @@ function vHeute(m){
   if(!fassung) fehlt.push("Für "+deTag(tag)+" liegt keine Tagesfassung vor.");
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
-  if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
-  /* „Größe fehlt" ist kein Befund, sondern eine offene Angabe. Deshalb
-     steht die Zahl hier und nicht bei den Abweichungen. */
-  if(a.ohneGroesse.length) fehlt.push("Größe fehlt: "+a.ohneGroesse.length
-    +" zugeordnete Kassenpositionen ("+num(a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0))
-    +" Einheiten) haben keine bestätigte Größe — sie zählen weder als Verkauf noch als Abweichung."
-    +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
+  /* Auch das sind KASSENNAMEN, nicht Kassenzeilen — `abgleich()` führt
+     denselben Namen über alle Tage des Fensters als eine Zeile (neunte
+     Jagd · C: bei sieben Berichten 44 Namen gegen 308 Kassenzeilen). */
+  /* „im Zeitraum" gehoert dazu: Die Zahl neben dem Menuepunkt „Zuordnung"
+     zaehlt ALLE geladenen Berichte, diese hier nur das Fenster. Beide
+     sind richtig, und ohne Zeitangabe sehen sie wie ein Widerspruch aus
+     (zwoelfte Jagd Runde 16 · C: 45 gegen 44). */
+  if(a.offen.length) fehlt.push(a.offen.length
+    +(a.offen.length===1?" Kassenname ist":" Kassennamen sind")
+    +" im Zeitraum keinem Artikel zugeordnet — der Verkauf fehlt im Abgleich.");
+  /* Das ist kein Befund, sondern eine offene Angabe. Deshalb steht die
+     Zahl hier und nicht bei den Abweichungen — und getrennt nach dem,
+     was zu TUN ist. Ein Satz, der alle ins Backoffice schickt, schickt
+     einen Teil vor eine leere Wand; bei Bericht 37 waren das erst 10 von
+     17, nach der ersten Berichtigung immer noch 11 von 23 (achte Jagd).
+
+     `nam()` zählt KASSENNAMEN, nicht Kassenzeilen: `merkeOhneGroesse()`
+     fasst denselben Namen über alle Tage des Fensters zu einer Zeile
+     zusammen. Bei SPANNE = 7 stand hier „48 Kassenpositionen", während
+     336 im Fenster lagen (achte Jagd · C). */
+  {
+    const t=teileOhneGroesse(a.ohneGroesse);
+    const nam=n=>n+(n===1?" zugeordneter Kassenname":" zugeordnete Kassennamen");
+    const einh=x=>num(x)+(x===1?" Einheit":" Einheiten");
+    const nix=" — sie zählen weder als Verkauf noch als Abweichung.";
+    if(t.sammelbar.length) fehlt.push("Größe fehlt: "+nam(t.sammelbar.length)
+      +" ("+einh(t.stkSammelbar)+") haben keine bestätigte Größe"+nix
+      +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
+    if(t.handisch.length) fehlt.push("Größe fehlt ohne Vorschlag: "+nam(t.handisch.length)
+      +" ("+einh(t.stkHandisch)+") haben keine bestätigte Größe und keinen Vorschlag"+nix
+      +" Die Gebindegröße muss von Hand eingetragen werden; bei Mischgetränken an der"
+      +" eigenen Kassenposition des Bestandteils.");
+    if(t.ausschank.length) fehlt.push("Menge fehlt im Kassennamen: "+nam(t.ausschank.length)
+      +" ("+einh(t.stkAusschank)+") sagen nicht, wie viel ausgeschenkt wurde"+nix
+      +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge oder eine Rezeptur.");
+  }
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else {
     /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
@@ -1646,7 +2118,7 @@ function vHeute(m){
       unter „Verkauf ↔ Fassung“ ohne Urteil. Das ist noch kein Abgleich.</div>`:"")+
     (a.berichte&&ohneUrteil?`<div class="hinweis" style="margin-bottom:var(--space-4)">
       ${ohneUrteil} Position${ohneUrteil===1?"":"en"} stehen hier nicht: für sie ist der Verkauf
-      nicht bestimmbar (keine bestätigte Größe oder kein Z-Bericht). Ihre Entnahme ist
+      nicht bestimmbar (${esc(gruendeSatz)}). Ihre Entnahme ist
       weder Abweichung noch Schwund — nachzulesen unter „Verkauf ↔ Fassung“.</div>`:"")+
     (top.length? `<div class="tabhuelle"><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
@@ -1734,16 +2206,27 @@ function vAbgleich(m){
   }
   if(a.offen.length){
     const s=document.createElement("section");
-    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenpositionen ohne Zuordnung —
-      ihr Verkauf fehlt in dieser Rechnung.
+    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenname${a.offen.length===1?"":"n"} ohne Zuordnung
+      im Zeitraum ${deTag(a.von)} bis ${deTag(a.bis)} —
+      ${a.offen.length===1?"sein":"ihr"} Verkauf fehlt in dieser Rechnung.
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
   }
   /* Der dritte Zustand: zugeordnet, aber die Größe ist nicht bestätigt.
      Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
      Angabe, es fehlt keine Flasche. */
+  /* BERICHTIGUNG (neunte Jagd Runde 16 · C): Die Spalte „Vorschlag" in
+     der Tabelle weiter unten prüfte mit einer EIGENEN Bedingung (nicht
+     rezept, nicht ausschank, geb.ml da), während Kopf und Sammelknopf
+     `sammelbar()` benutzen. Heute zahlengleich — aber ein dritter
+     `fehlt`-Wert ergäbe dort einen Knopf, während der Kopf darüber „von
+     Hand eintragen" ankündigt. Vierte Stelle mit eigener Bedingung, und
+     genau das ist die Wurzel, an der diese Runde zweimal hängen blieb.
+     Sie fragt jetzt `sammelbar(o)`. */
   if(a.ohneGroesse.length){
-    const stk=a.ohneGroesse.reduce((x,o)=>x+o.anzahl,0);
+    const t=teileOhneGroesse(a.ohneGroesse);
+    /* „1 Einheiten" stand hier bis zur achten Jagd (C). */
+    const einh=x=>num(x)+(x===1?" Einheit":" Einheiten");
     const s=document.createElement("section");
     /* Ein eigener Abschnitt mit Überschrift, nicht ein Hinweiskasten ohne
        Kopf: Er steht zwischen der Filterzeile und der Abgleichtabelle, und
@@ -1751,10 +2234,13 @@ function vAbgleich(m){
        Die Zahl gehört in die Überschrift — sie ist das Maß der Arbeit, die
        hier liegt. */
     s.innerHTML=`<div class="abschnitt"><div>
-      <h3>Größe fehlt · ${a.ohneGroesse.length} Kassenposition${a.ohneGroesse.length===1?"":"en"}</h3>
-      <div class="unter">${num(stk)} verkaufte Einheiten sind zugeordnet, ihre Größe aber nicht
-      bestätigt — sie bleiben aus der Mengenrechnung heraus, als fehlende Angabe und nicht als
-      Abweichung</div></div></div>
+      <h3>Nicht gerechnet · ${a.ohneGroesse.length} Kassenname${a.ohneGroesse.length===1?"":"n"}</h3>
+      <div class="unter">${[
+        t.sammelbar.length ? t.sammelbar.length+" ohne bestätigte Größe ("+einh(t.stkSammelbar)+") — hier unten gesammelt bestätigen" : "",
+        t.handisch.length ? t.handisch.length+" ohne Vorschlag ("+einh(t.stkHandisch)+") — die Gebindegröße von Hand eintragen, bei Mischgetränken am Bestandteil" : "",
+        t.ausschank.length ? t.ausschank.length+" ohne Menge im Kassennamen ("+einh(t.stkAusschank)+") — hier ist nichts zu bestätigen, es braucht einen Kassennamen mit Menge oder eine Rezeptur" : ""
+      ].filter(Boolean).join(" · ")}. Alle bleiben aus der Mengenrechnung heraus, als fehlende Angabe
+      und nicht als Abweichung</div></div></div>
       <div class="tabhuelle"><table><thead><tr>
         <th>Kassenname</th><th class="r">Menge</th><th>Artikel</th><th>Was fehlt</th><th>Vorschlag</th>
       </tr></thead><tbody>${a.ohneGroesse.map(o=>`<tr>
@@ -1765,13 +2251,13 @@ function vAbgleich(m){
           : o.fehlt==="ausschank"
           ? "Die Ausschankmenge steht nicht im Kassennamen"
           : "Die Gebindegröße des Artikels ist nicht bestätigt"}</td>
-        <td>${o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
-          : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
-          : o.geb.ml
-            ? `<span class="vorschlag"><span>${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span></span>
+        <td>${sammelbar(o)
+          ? `<span class="vorschlag"><span>${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span></span>
                <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
                  data-ml="${o.geb.ml}">Übernehmen</button></span>`
-            : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
+          : o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
+          : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
+          : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
       </tr>`).join("")}</tbody></table></div>`;
     m.appendChild(s);
     s.querySelectorAll("button[data-geb]").forEach(b=>b.onclick=()=>
@@ -1782,15 +2268,22 @@ function vAbgleich(m){
        Angefasst wird nur, was einen Vorschlag hat — Positionen, bei denen
        die Ausschankmenge im Kassennamen fehlt, kann niemand vorschlagen,
        und ein Sammelknopf darf sie nicht stillschweigend mitnehmen. */
-    const vorschlaege=a.ohneGroesse
-      .filter(o=>o.fehlt==="gebinde" && !o.rezept && o.id && o.geb && +o.geb.ml>0)
+    const vorschlaege=a.ohneGroesse.filter(sammelbar)
       .map(o=>({name:o.name, id:o.id, ml:+o.geb.ml}));
     const ohneVorschlag=a.ohneGroesse.length-vorschlaege.length;
     if(vorschlaege.length){
       const z=document.createElement("div");
       z.className="hinweis abschnitt";
-      z.innerHTML=`<div>Für ${vorschlaege.length} dieser Positionen steht oben ein Vorschlag samt Herkunft.
-        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt: dort fehlt die Ausschankmenge im Kassennamen, oder es ist ein Mischgetränk." : ""}</div>
+      /* Der Grund für die übrigen muss der sein, der wirklich gilt — bis
+         zur achten Jagd nannte der Satz nur zwei der drei Möglichkeiten
+         und ließ „kein Vorschlag" aus, den häufigsten von allen. */
+      const uebrigWarum=[
+        t.handisch.filter(o=>!o.rezept).length ? "kein Vorschlag, die Zahl muss von Hand hinein" : "",
+        t.handisch.filter(o=>o.rezept).length ? "Mischgetränk, die Größe gehört zum Bestandteil" : "",
+        t.ausschank.length ? "keine Menge im Kassennamen" : ""
+      ].filter(Boolean).join(" · ");
+      z.innerHTML=`<div>Für ${vorschlaege.length} dieser Zeilen steht oben ein Vorschlag samt Herkunft.
+        ${ohneVorschlag ? "Die übrigen "+ohneVorschlag+" bleiben unberührt ("+uebrigWarum+")." : ""}</div>
         <button class="b tat" id="bGebAlle">Alle ${vorschlaege.length} Vorschläge übernehmen</button>`;
       s.appendChild(z);
       const bAlle=z.querySelector("#bGebAlle");
@@ -1843,8 +2336,20 @@ function vAbgleich(m){
 
 function csvAbgleich(tag,a){
   const e=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
+  /* BERICHTIGUNG (zehnte Jagd Runde 16 · B): Im Kopf stand nur
+     „Betriebstag <ein Tag>", während JEDE Zahl darunter über `SPANNE`
+     Tage summiert ist — Verkauf, Entnahme, Differenz und seit der
+     neunten Runde auch „Ohne Zuordnung". Mit sieben Berichten im Fenster
+     standen dort 952 Einheiten, wo an diesem Betriebstag 136 verkauft
+     wurden. Auf dem Schirm steht der Zeitraum über der Tabelle; in der
+     Datei, die weitergereicht wird, stand er nirgends. Die Rechnung war
+     richtig, die Skala unbenannt. Jetzt steht sie im Kopf UND im
+     Dateinamen. */
   const L=[["Abgleich Verkauf gegen Fassung"].map(e).join(";"),
-           ["Betriebstag",tag].map(e).join(";"),"",
+           ["Betriebstag",tag].map(e).join(";"),
+           ["Zeitraum der Zahlen",a.von+" bis "+a.bis].map(e).join(";"),
+           ["Spanne",a.spanne+(a.spanne===1?" Tag":" Tage")].map(e).join(";"),
+           ["Z-Berichte im Zeitraum",a.berichte+" von "+a.spanne].map(e).join(";"),"",
            ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
   /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
      Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
@@ -1859,14 +2364,23 @@ function csvAbgleich(tag,a){
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
   /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
      des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
-  if(a.ohneGroesse.length){ L.push("",["Größe nicht bestätigt — nicht gerechnet"].map(e).join(";"),
-    ["Kassenname","Anzahl","Artikel","Was fehlt","Vorschlag ml"].map(e).join(";"));
+  /* Drei Zustände wie auf dem Schirm, nicht zwei (neunte Jagd · C): Die
+     Spalte sagte für „sammelbar" und für „ohne Vorschlag" dasselbe und
+     ließ den Unterschied nur an der leeren Spalte daneben erraten. Eine
+     eigene Spalte „Was zu tun ist" sagt es geradeheraus. */
+  if(a.ohneGroesse.length){ L.push("",["Nicht gerechnet"].map(e).join(";"),
+    ["Kassenname","Anzahl","Artikel","Was fehlt","Was zu tun ist","Vorschlag ml"].map(e).join(";"));
     a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,
       (o.rezept?"Bestandteil ":"")+artName(o.id),
       o.rezept?"Gebindegröße des Bestandteils"
         :o.fehlt==="ausschank"?"Ausschankmenge im Kassennamen":"Gebindegröße des Artikels",
-      o.rezept?"":(o.geb.ml||"")].map(e).join(";"))); }
-  hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
+      sammelbar(o)?"im Backoffice bestätigen (Vorschlag steht bereit)"
+        :o.fehlt==="ausschank"?"Kassenname mit Menge oder Rezeptur"
+        :o.rezept?"Größe am Bestandteil bestätigen"
+        :"Gebindegröße von Hand eintragen",
+      sammelbar(o)?(o.geb.ml||""):""].map(e).join(";"))); }
+  hol("abgleich_"+(a.spanne>1?a.von+"_bis_"+a.bis:tag)+".csv",
+      "\uFEFF"+L.join("\r\n"), "text/csv");
 }
 function hol(name, inhalt, typ){
   const b=new Blob([inhalt],{type:typ+";charset=utf-8"}), u=URL.createObjectURL(b);
@@ -1931,7 +2445,15 @@ function vImport(m){
         return `<tr><td>${esc(p.name)}</td>
           <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
           <td>${nm}</td><td class="r">${(f=>!zu.id?"—":f.ok?num(f.fl)
-            :`<span class="dim">Größe fehlt</span>`)(zu.id?flaschen(p,zu.id):null)}</td></tr>`;
+            /* BERICHTIGUNG (achte Jagd Runde 16 · B): Hier stand pauschal
+               „Größe fehlt" — für BEIDE Ursachen, und das ist die
+               Ansicht, in der die Leitung den Bericht ZUERST sieht. Bei
+               Bericht 37 haben 26 von 48 Positionen keine Menge im
+               Kassennamen; für die ist „Größe fehlt" die Falschauskunft,
+               die Mittagsblick, Überschrift und CSV in dieser Runde
+               losgeworden sind. `flaschen()` trennt sauber, also wird hier
+               gefragt statt geraten. */
+            :`<span class="dim">${esc(UNKLAR_GRUND[f.fehlt==="ausschank"?"menge":"groesse"])}</span>`)(zu.id?flaschen(p,zu.id):null)}</td></tr>`;
       }).join("")}</tbody></table></div>`;
   }
   roh.oninput=pruefe;
@@ -2194,12 +2716,9 @@ function vZuordnung(m){
     Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
     „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.</div></section>`;
 
-  const namen={};
-  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
-    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0, tage:0};
-    namen[p.name].anzahl+=p.anzahl; namen[p.name].tage++;
-  }));
-  const L=Object.values(namen).sort((a,b)=>{
+  /* Dieselbe Zählstelle, die auch die Zahl neben dem Menüpunkt liest
+     (elfte Jagd Runde 16 · B) — vorher baute jede ihre eigene Liste. */
+  const L=alleKassennamen().sort((a,b)=>{
     const za=zuordnung(a), zb=zuordnung(b);
     const rang=x=>x.status==="offen"?0:x.status==="auto"?1:2;
     return rang(za)-rang(zb) || b.anzahl-a.anzahl;
@@ -2479,11 +2998,9 @@ function vRezepte(m){
     <div class="unter">Für Mischgetränke, die einen Artikel aus dem Lager verbrauchen, ohne selbst
     einer zu sein. Was hier steht, wird im Abgleich statt der Position selbst gebucht.</div></section>`;
 
-  const namen={};
-  Object.values(ZBER).forEach(z=>z.positionen.forEach(p=>{
-    if(!namen[p.name]) namen[p.name]={name:p.name, anzahl:0};
-    namen[p.name].anzahl+=p.anzahl;}));
-  const kandidaten=Object.values(namen)
+  /* Dritte Stelle, die dieselbe Menge zusammenzählte — jetzt dieselbe
+     Zählstelle wie Navigation und Zuordnungsseite (elfte Jagd Runde 16). */
+  const kandidaten=alleKassennamen()
     .filter(p=>!MAP[p.name] && !REZ[p.name])
     .sort((a,b)=>b.anzahl-a.anzahl);
 
@@ -2548,6 +3065,12 @@ function vRezepte(m){
    Codes und Rollen gehören der Leitung, nicht dem Quelltext. Solange
    alles im Browser läuft, ist ein Code eine Unterschrift und keine
    Sperre — das steht hier auch so, damit niemand mehr hineinliest. */
+/* Hinweis zum Formular weiter unten: Der Satz unter „Neuen Menschen
+   aufnehmen" steht als `deutung`, nicht als `unter`. `kuerzeUnter()`
+   klappt jeden `unter` über 150 Zeichen hinter einen Knopf — und genau
+   der zweite Satz („Bei allen anderen änderst du die Rolle in ihrer
+   Zeile …") ist der wichtige. Gemessen war auf dem Schirm nur die erste
+   Hälfte sichtbar (elfte Jagd Runde 16 · B). */
 function vTeam(m){
   m.innerHTML=`<section><h2>Mitarbeiter</h2>
     <div class="unter">Wer sich anmelden darf und was ihm die App dann zeigt.
@@ -2557,7 +3080,10 @@ function vTeam(m){
 
   const s=document.createElement("section");
   s.innerHTML=`<div id="teamL"><div class="karte leer">Wird geladen \u2026</div></div>
-    <h3 style="margin-top:32px">Aufnehmen oder Code neu setzen</h3>
+    <h3 style="margin-top:32px">Neuen Menschen aufnehmen</h3>
+    <div class="deutung" style="margin:var(--space-2) 0 var(--space-4)">Nur für
+      Menschen, die noch nicht in der Liste stehen. Bei allen anderen änderst du die
+      Rolle in ihrer Zeile und holst den Code dort über „PIN zurücksetzen“.</div>
     <div class="karte">
       <div class="reihe" style="margin-bottom:12px">
         <label style="width:140px">Name</label>
@@ -2569,9 +3095,18 @@ function vTeam(m){
         <span class="deutung" id="nHint">${esc(RECHTETEXT.service)}</span></div>
       <div class="reihe" style="margin-bottom:16px">
         <label style="width:140px">Code</label>
-        <input type="text" id="nCode" placeholder="vier Ziffern" maxlength="4"
+        <input type="text" id="nCode" placeholder="${PIN_LAENGE} Ziffern" maxlength="${PIN_LAENGE}"
           inputmode="numeric" style="width:180px">
         <button class="b klein" id="nWuerfel">Vorschlagen</button></div>
+      <!-- Was der Server zurückweist, steht hier und BLEIBT stehen, bis
+           der nächste Versuch läuft. Im Toast war es nach 2,2 s weg —
+           gerade die Meldung „diesen Namen gibt es schon" braucht man
+           länger als das (qa-guardian, zweite Schlusskontrolle).
+           BERICHTIGT (qa-guardian, dritte Schlusskontrolle): Der Kasten
+           stand UNTER dem Knopf — gemessen bei 1280 px auf y=735 gegen
+           den Knopf bei y=687, während Log und Morgenbrief „über dem
+           Formular" behaupteten. Er steht jetzt wirklich darüber. -->
+      <div id="nFehler" hidden></div>
       <div class="reihe">
         <button class="b stark" id="nAdd">Speichern</button>
         <span class="mini rechts">Der Code erscheint danach nirgends mehr. Jetzt notieren.</span></div>
@@ -2579,18 +3114,18 @@ function vTeam(m){
   m.appendChild(s);
 
   $("#nRolle").onchange=e=>{ $("#nHint").textContent=RECHTETEXT[e.target.value]||""; };
-  $("#nWuerfel").onclick=()=>{
-    /* Runde 15: wieder vier Ziffern, 0000 bis 9999.
-       Der Rest einer 32-Bit-Zahl geteilt durch 10000 bevorzugt die
-       niedrigen Werte leicht; was über der letzten vollen Runde liegt,
-       wird deshalb verworfen und neu gewürfelt. */
-    const a=new Uint32Array(1), spanne=10000;
-    const grenze=Math.floor(4294967296/spanne)*spanne;
-    do{ crypto.getRandomValues(a); }while(a[0]>=grenze);
-    $("#nCode").value=String(a[0]%spanne).padStart(4,"0");
-  };
+  $("#nWuerfel").onclick=()=>{ $("#nCode").value=wuerfelPin(); };
 
   let LEUTE=[];
+  /* Ob die Liste, die dasteht, wirklich vom Server kam. Nur dann ist ihr
+     Fehlen ein Beweis: Steht der Mensch NICHT in einer frischen Liste,
+     gibt es seine Zeile nicht, und ein Gedaechtniseintrag dazu ist Schrott
+     (dreizehnte Jagd Runde 16 · C — vorher kam man da nur ueber
+     „abmelden" wieder heraus). */
+  let listeFrisch=false;
+  /* Das Gedaechtnis `nKennung` liegt auf Modulebene (siehe dort) — die
+     Kennung haengt am MENSCHEN, nicht am Formularinhalt, nicht am
+     einzelnen Anlauf und nicht an dieser Ansicht. */
   const male=()=>{
     $("#teamL").innerHTML=LEUTE.length?`<div class="tabhuelle"><table><thead><tr>
       <th>Name</th><th style="width:200px">Rolle</th><th>Sieht</th><th style="width:120px">Zustand</th>
@@ -2611,8 +3146,12 @@ function vTeam(m){
        nächste Anfrage kommt als 401 zurück. Ist man die einzige Leitung im
        Haus, kommt danach NIEMAND mehr hinein: `ich()` im Worker findet nur
        `aktiv = 1`, und den Weg zurück gibt es nur über die D1-Konsole.
-       Der Worker weist beides zusätzlich ab; hier steht es, damit die
-       Leitung den Grund liest und nicht einen Fehler. */
+       BERICHTIGUNG (Jagd 15): Hier stand „Der Worker weist beides
+       zusätzlich ab". Das ist falsch und war es immer — `personSchreiben()`
+       bekommt gar nicht mit, WER schreibt, und kann es deshalb nicht
+       prüfen. Der Riegel liegt allein in diesem Browser. Er gehört in den
+       Worker; das steht als eigener Punkt in review/BACKLOG.md und ist
+       nicht Sache dieser Runde. */
     $("#teamL").querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>{
       const p=LEUTE.find(x=>x.id===b.dataset.ap);
       if(p.aktiv && ICH && p.name===ICH.name)
@@ -2639,28 +3178,44 @@ function vTeam(m){
         (ichSelbst ? "\n\nDas bist DU. Notiere ihn, sonst kommst du beim "+
           "nächsten Anmelden nicht mehr herein." : "")))return;
       b.disabled=true;
+      /* B4 (Jagd 15) · Bis Runde 15 würfelte der Server. Brach die
+         Verbindung NACH dem UPDATE ab, war der Code vergeben und niemand
+         hatte ihn je gesehen: die Person ausgesperrt, auf dem Schirm nur
+         „Keine Verbindung". Jetzt würfelt diese Seite ihn selbst
+         (`wuerfelPin()`, dieselbe Gleichverteilung wie im Worker) und
+         schickt ihn mit. Sie kennt ihn damit, bevor die Antwort unterwegs
+         ist — bricht sie ab, steht er trotzdem da, samt dem einen Satz,
+         der dann zählt. Geprüft wird er im Worker wie jeder vergebene
+         Code: Form und Dopplung. */
+      let vorschlag=null;
+      try{ vorschlag=wuerfelPin(); }catch(e){ vorschlag=null; }
       try{
-        const r=await fetch("/api/person/pin",{method:"POST",
+        const r=await kurz("/api/person/pin",{method:"POST",
           headers:{"content-type":"application/json"},
-          body:JSON.stringify({id:p.id})});
-        const j=await r.json();
+          body:JSON.stringify(vorschlag?{id:p.id,code:vorschlag}:{id:p.id})});
+        const j=r.daten||{};
         if(!r.ok){ b.disabled=false; return toast(j.fehler||"Nicht zurückgesetzt"); }
-        zeigePin(p.name, j.pin);
-      }catch(e){ toast("Keine Verbindung"); }
+        zeigePin(p.name, j.pin||vorschlag);
+      }catch(e){
+        if(vorschlag) zeigePin(p.name, vorschlag,
+          "Die Verbindung brach ab. Ist der Code angekommen, ist es DIESER. "
+         +"Geht er beim Anmelden nicht, einfach noch einmal zurücksetzen.");
+        else toast("PIN wurde evtl. geändert – bitte erneut zurücksetzen");
+      }
       b.disabled=false;
     });
   };
   /* Der neue Code, gross und genau einmal. Kein Speichern, kein zweites
      Anzeigen, kein Log — wer ihn hier nicht notiert, würfelt neu. */
-  const zeigePin=(name,pin)=>{
+  const zeigePin=(name,pin,unsicher)=>{
     const w=document.createElement("div");
     w.className="pinzeig";
     w.innerHTML=`<div class="pinzeig-karte" role="dialog" aria-modal="true"
         aria-label="Neuer Code für ${esc(name)}">
       <p class="pinzeig-wer">Neuer Code für <b>${esc(name)}</b></p>
       <p class="pinzeig-zahl">${esc(pin)}</p>
-      <p class="pinzeig-warn">Nur jetzt zu sehen. Notiere ihn und gib ihn
-        weiter — er lässt sich nicht noch einmal anzeigen.</p>
+      <p class="pinzeig-warn">${unsicher ? esc(unsicher) : `Nur jetzt zu sehen. Notiere ihn und gib ihn
+        weiter — er lässt sich nicht noch einmal anzeigen.`}</p>
       <button class="b stark">Notiert</button></div>`;
     w.querySelector("button").onclick=()=>w.remove();
     document.body.appendChild(w);
@@ -2668,7 +3223,7 @@ function vTeam(m){
   };
   const hole=async()=>{
     try{
-      const r=await fetch("/api/personen");
+      const r=await kurz("/api/personen");
       if(r.status===403){ $("#teamL").innerHTML=
         `<div class="hinweis warn">Nur die Leitung darf Mitarbeiter verwalten.</div>`; return; }
       /* 401 ist keine ausbleibende Antwort, sondern eine Antwort: die
@@ -2681,26 +3236,173 @@ function vTeam(m){
       if(!r.ok){ $("#teamL").innerHTML=
         `<div class="hinweis warn">Der Server antwortet nicht. Mitarbeiter lassen sich
          nur mit Verbindung pflegen.</div>`; return; }
-      LEUTE=(await r.json()).personen||[]; male();
-    }catch(e){ $("#teamL").innerHTML=
+      LEUTE=((r.daten||{}).personen)||[]; listeFrisch=true;
+      kennungHeilen(LEUTE); male();
+    }catch(e){
+      /* Steht schon eine Liste, bleibt sie stehen: Nach einem geglueckten
+         Speichern lief `hole()` in die Frist und ueberschrieb die Liste
+         mit „Keine Verbindung zum Server." — waehrend der Toast daneben
+         „Gespeichert" sagte (sechste Jagd Runde 16 · C). Zwei Saetze zur
+         selben Lage, einer davon falsch. */
+      if(LEUTE.length){ toast("Die Liste ist vielleicht nicht aktuell"); return; }
+      $("#teamL").innerHTML=
       `<div class="hinweis warn">Keine Verbindung zum Server.</div>`; }
   };
-  const sende=async(body)=>{
-    try{
-      const r=await fetch("/api/personen",{method:"POST",
-        headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-      const j=await r.json();
-      if(!r.ok)return toast(j.fehler||"Nicht gespeichert");
-      toast("Gespeichert"); hole();
-    }catch(e){ toast("Keine Verbindung"); }
+  /* BERICHTIGUNG (vierte Jagd Runde 16 · B): Der dritte schreibende Weg
+     des Backoffice hatte weder Frist noch Rueckmeldung — nacktes `fetch`
+     und danach `await r.json()`. Schweigt der Server, passierte gar
+     nichts Sichtbares: kein Toast, kein gesperrter Knopf, und die Felder
+     waren beim Aufrufer schon geleert. Wer daraufhin noch einmal tippt,
+     schickt OHNE `id`; der Worker blockt nur denselben Code (409) — mit
+     einem anderen entsteht die Person ZWEIMAL. Jetzt mit Frist, und der
+     Aufrufer erfaehrt, ob es geklappt hat. */
+  /* Ein Satz, den man lesen und dem man folgen muss, gehört nicht in
+     eine Sprechblase, die nach Sekunden verschwindet. Er steht über dem
+     Formular, bis der nächste Versuch läuft. */
+  const formFehler=(txt)=>{
+    const f=$("#nFehler"); if(!f)return;
+    if(!txt){ f.hidden=true; f.innerHTML=""; return; }
+    f.hidden=false;
+    f.innerHTML=`<div class="hinweis warn" style="margin:var(--space-3) 0">${esc(txt)}</div>`;
   };
-  $("#nAdd").onclick=()=>{
+  const sende=async(body)=>{
+    formFehler("");
+    try{
+      const r=await kurz("/api/personen",{method:"POST",
+        headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+      const j=r.daten||{};
+      if(!r.ok){
+        /* Der Grund gehoert in BEIDE: `#nFehler` steht am Formular, aber
+           die Absagen der LISTE (Rolle, Sperren) haben nichts in der
+           Naehe — bei 390 px liegt das Formular 1253 px weiter unten
+           (zehnte Jagd Runde 16 · C). Der Toast traegt den Grund
+           deshalb wieder; lesbar ist er jetzt, er bleibt nach
+           Textlaenge stehen. */
+        formFehler(j.fehler||"Nicht gespeichert"); toast(j.fehler||"Nicht gespeichert");
+        /* Der Server hat GEANTWORTET — er ist also erreichbar, und die
+           Liste darunter ist vermutlich veraltet. Genau daher kommt die
+           häufigste Absage: „Diesen Namen gibt es schon", während die
+           Zeile auf dem Schirm fehlt und der Satz zu einem Knopf schickt
+           („PIN zurücksetzen"), den man dort nicht sieht (neunte Jagd
+           Runde 16 · B). Also nachladen. */
+        hole();
+        return false; }
+      toast("Gespeichert"); hole(); return true;
+    }catch(e){
+      formFehler("Keine Verbindung zum Server. Die Eingabe steht noch da — "
+        +"mit Empfang noch einmal auf „Speichern“ drücken. Derselbe Mensch "
+        +"bekommt dabei dieselbe Zeile, es entsteht kein zweiter Eintrag.");
+      toast("Keine Verbindung — bitte noch einmal versuchen"); return false; }
+  };
+  $("#nAdd").onclick=async()=>{
     const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();
     if(!nm) return toast("Ohne Namen geht es nicht");
-    if(!/^\d{4}$/.test(code)) return toast("Der Code hat vier Ziffern");
+    if(!PIN_MUSTER.test(code)) return toast("Der Code hat "+PIN_LAENGE+" Ziffern");
     const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
-    sende({id:da?da.id:undefined, name:nm, rolle:$("#nRolle").value, code, aktiv:1});
-    $("#nName").value=""; $("#nCode").value="";
+    const rolle=$("#nRolle").value;
+    /* BERICHTIGUNG (fuenfte Jagd Runde 16 · B): Der zweite Griff nach
+       einer abgelaufenen Frist legte die Person ein ZWEITES Mal an.
+       Gemessen: Der erste Ruf kam beim Server an, die Antwort erreichte
+       das Backoffice nicht; `hole()` lief nicht, `LEUTE` blieb alt, also
+       fand `find()` nichts und `id` blieb `undefined` — und
+       `personSchreiben()` bindet `id || crypto.randomUUID()`. Am echten
+       Worker durchgespielt: zweimal „Asad Hussain", beide aktiv. Es gibt
+       kein Loeschen, nur „aktiv" umschalten, und keine Sicherung
+       (Projektanleitung Paragraf 8). Die 8-s-Frist aus der vierten Jagd
+       machte das Fenster dafuer weiter auf, nicht schmaler.
+
+       Der Client bringt jetzt seine eigene Kennung mit — derselbe
+       Gedanke wie beim Vorgang (`<modus>_<tag>` in index.html): Zweimal
+       dasselbe Paket schreibt dieselbe Zeile, weil
+       `ON CONFLICT(id) DO UPDATE` greift. Die Kennung bleibt liegen,
+       solange derselbe Mensch mit demselben Code gemeint ist, und faellt
+       erst, wenn es angekommen ist. */
+    /* BERICHTIGUNG (sechste Jagd Runde 16): Die Kennung hing am
+       FORMULARINHALT — Name, Code und Rolle zusammen. Damit war die
+       Dublette nur verschoben, nicht geschlossen, auf zwei Wegen, beide
+       am echten Worker nachgestellt:
+
+       · Erster Anlauf kommt an, die Antwort geht verloren. Die Leitung
+         greift zum Knopf „Vorschlagen" daneben und probiert es mit einem
+         NEUEN Code — `code` ist anders, also gab es eine neue Kennung.
+         Ergebnis: zwei aktive Zeilen, gleicher Name, ZWEI gueltige
+         Anmeldecodes. Danach wirkt „Sperren" nicht mehr: Die Leitung
+         sperrt eine der beiden gleich aussehenden Zeilen, und der Mensch
+         kommt mit dem anderen Code weiter herein. Der Worker schickt sie
+         sogar dorthin — auf denselben Code antwortet er mit 409 und dem
+         Rat, einen anderen zu waehlen.
+       · Speichern glueckt, `hole()` laeuft danach in die Frist. `LEUTE`
+         bleibt alt, die Kennung war auf `null` gesetzt — wer denselben
+         Menschen noch einmal tippt, legt ihn ein zweites Mal an.
+
+       Gemeinsame Wurzel: Sobald `LEUTE` veraltet ist — und genau dann
+       braucht man die Kennung —, kann der Client nicht mehr wissen, ob
+       er schon geschrieben hat. Sie haengt deshalb jetzt am NAMEN und
+       ueberlebt den geglueckten Anlauf: In dieser Sitzung bekommt
+       derselbe Mensch dieselbe Zeile, was immer dazwischen passiert. */
+    /* BERICHTIGUNG (zehnte Jagd Runde 16 · A): Hier wurde bei einem
+       Treffer in `LEUTE` dessen `id` gemerkt — die Kennung der GEFUNDENEN
+       Person ging ins Paket. Damit war der Namenswächter im Worker
+       stumm: `namensgleich.some(r => r.id === id)` ist wahr, also greift
+       der 409 nicht, und `ON CONFLICT(id) DO UPDATE` schreibt die
+       bestehende Zeile um. Am echten Worker gemessen, was dabei
+       geschieht: der bisherige Code der Person ist danach tot (Anmeldung
+       401, und niemand hat es ihr gesagt), die Rolle fällt auf den Wert
+       des Auswahlfelds zurück — das steht immer auf „Service", weil es
+       nie vorbelegt wird —, `aktiv:1` hebt nebenbei eine Sperre auf, und
+       die einzige Leitung stuft sich damit selbst ab: `GET
+       /api/personen` antwortet danach 403, auch mit dem alten Keks, und
+       zurück geht es nur über die D1-Konsole. Es gibt kein Löschen und
+       keine Sicherung (Projektanleitung §8).
+
+       Dieses Formular legt AN. Steht der Mensch schon in der Liste, wird
+       hier nichts geschrieben — Rolle ändern, sperren und „PIN
+       zurücksetzen" stehen in seiner Zeile oben, mit den
+       Selbstschutz-Abfragen, die es hier nicht gibt.
+
+       Die Kennung bleibt, wofür sie gebaut wurde: Sie merkt sich, welche
+       `id` DIESES Fenster einem Namen gegeben hat, als es ihn anlegte.
+       Ist die Liste veraltet (der Fall der fünften Jagd), geht dieselbe
+       `id` noch einmal hinaus und schreibt dieselbe Zeile — kein
+       zweiter Eintrag. Ist die Liste frisch und der Mensch steht darin,
+       fängt ihn diese Absage; ist sie veraltet und er steht doch schon
+       am Server, fängt ihn der Wächter dort. */
+    const schl=nm.toLowerCase();
+    /* Zwei Gründe, hier gar nicht erst zu schreiben, und sie decken
+       zusammen auch die Lage ab, in der die Liste schweigt (elfte Jagd
+       Runde 16 · A): der Mensch steht in der Liste — ODER dieses Fenster
+       hat ihn schon einmal angelegt und der Server hat das bestätigt. */
+    let merk=kennungLesen(schl);
+    /* Eine FRISCHE Liste ohne diesen Menschen ist der Gegenbeweis: Dann
+       gibt es seine Zeile nicht, und was das Gedaechtnis dazu sagt, ist
+       veraltet (dreizehnte Jagd Runde 16 · C). Der Eintrag geht weg, und
+       das Anlegen laeuft wie bei einem neuen Menschen. */
+    if(merk && listeFrisch && !da){ delete nKennung[schl]; kennungSchreiben(); merk=null; }
+    if(da || (merk && merk.ok)){
+      const wer=da?da.name:nm;
+      /* Kein Satz, der mehr behauptet, als hier gewusst wird: Das
+         Gedächtnis sagt nur, dass DIESES Fenster den Namen schon einmal
+         mit Erfolg abgeschickt hat — ob die Zeile von hier stammt, weiss
+         es nicht (dreizehnte Jagd Runde 16 · C). */
+      formFehler("„"+wer+"“ ist schon angelegt"
+        +". Dieses Formular legt nur NEUE Menschen an. Die Rolle änderst du in der "
+        +"Zeile oben in der Liste, einen neuen Code gibt es dort über „PIN "
+        +"zurücksetzen“. Wer wirklich so heißt wie jemand im Haus, braucht einen "
+        +"unterscheidenden Namen."
+        +(da?"":" Steht die Zeile oben nicht, kommt gerade die Liste nicht durch — "
+            +"mit Verbindung neu laden."));
+      toast("„"+wer+"“ ist schon angelegt");
+      return;
+    }
+    const kennung=merk?merk.id:kennungMerken(schl,uuid(),false);
+    const b=$("#nAdd"); b.disabled=true; const wort=b.textContent;
+    b.textContent="speichert \u2026";
+    const gut=await sende({id:kennung, name:nm, rolle, code, aktiv:1});
+    b.disabled=false; b.textContent=wort;
+    /* Erst die BESTAETIGUNG des Servers macht aus dem Anlauf eine Zeile.
+       Ab hier darf dieselbe Kennung nichts mehr überschreiben. */
+    if(gut){ kennungMerken(schl,kennung,true);
+             $("#nName").value=""; $("#nCode").value=""; }
   };
   hole();
 }

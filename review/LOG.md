@@ -2784,3 +2784,1428 @@ mehr in sein Werkzeug.
 
 **Rundenfazit:** Der Riegel ist gut gebaut; der Zettel daneben beschreibt
 noch das alte Schloss.
+
+---
+
+### Runde 16 – Nachtlauf (ohne Casimir, Auftrag vom 19.09.2026)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — `public/index.html:2669` („abmelden" leert nur den
+  `sessionStorage", Fund A1): stimmt, und es ist der schwerste der Nacht.
+  Der Knopf ruft jetzt `POST /api/abmelden` und wartet auf die Antwort.
+* ✅ übernommen — `src/index.js:591` (`personSchreiben()` prüft keine
+  Dopplung, A2). Behoben, und die Prüfung liegt jetzt in EINER Funktion,
+  die sich `pinZuruecksetzen()` mit ihr teilt.
+* ↩️ geändert — A2 verlangte „gegen alle anderen Personen". Umgesetzt
+  wörtlich: **auch gegen gesperrte.** `pinZuruecksetzen()` prüfte bis
+  heute nur `aktiv = 1` — eine gesperrte Person konnte damit denselben
+  Code bekommen, und beim Freigeben stünden zwei gleiche da. Beide Wege
+  zählen jetzt alle.
+* ✅ übernommen — B1: `uebrig` zählte alle Fehlversuche aus zwei Stunden,
+  die Sperre hing am zehntjüngsten. Gerechnet wird jetzt mit
+  `sperreBis()` selbst (`versucheBisSperre`), und die Dauer kommt aus
+  derselben Staffel (`sperrDauer`, 15/30/60).
+* ✅ übernommen — B2, B3, B4, B5.
+* ❌ abgelehnt — B4 „Mindestens: Meldung ‚PIN wurde evtl. geändert'".
+  Das ist die schwächere Hälfte des Auftrags; die stärkere war ausdrücklich
+  erlaubt und ging ohne Schemaänderung: Das Backoffice **würfelt den Code
+  selbst** (`wuerfelPin()` in leitung.html, dieselbe Gleichverteilung wie
+  im Worker) und schickt ihn mit. `POST /api/person/pin` nimmt ihn
+  optional entgegen und prüft ihn wie jeden vergebenen Code (Form,
+  Dopplung). Bricht die Verbindung nach dem UPDATE ab, kennt das
+  Backoffice den Code trotzdem und zeigt ihn mit dem einen Satz, der dann
+  zählt. Die schwache Meldung bleibt als Rückfallebene, falls ein Browser
+  kein `crypto.getRandomValues` hat.
+* ❌ abgelehnt — A1 „Gleiches für jeden Abmelde-Weg in `leitung.html`".
+  Es gab dort keinen: `leitung.html` hatte überhaupt keinen Ausgang. Einer
+  ist gebaut worden — nicht in der Kopfleiste (dort schob der vierte Knopf
+  die Leiste unter 900 px 24 px aus dem Fenster, gemessen), sondern am Fuß
+  der Navigation.
+
+**Umgesetzt:**
+1. A1/A2/B1–B5 behoben; dazu der neue Endpunkt `POST /api/code` („wer
+   gehört zu diesem Code?" — kein Keks, Sitzung nötig, zählt auf dieselbe
+   Sperre ein), damit ein zurückgesetzter Code nicht mehr freigibt.
+2. Der Abschluss umgebaut: ein Knopf, das Fenster „Abgleich" gegen den
+   Z-Bericht des Vorabends (nur Abweichungen, EIN Notizfeld) bzw. ein
+   kurzes „Fertig", danach die Startseite. PDF, CSV, „Protokoll senden"
+   und das Notizfeld auf der Seite sind weg; Rohdaten und Zurücksetzen
+   stehen als Notweg am Menüende.
+3. `touch-action:manipulation`, Felder am Finger nie unter 16 px,
+   Gruppentöne getauscht, Statuszeile „Verbunden", Abschlussknopf an der
+   Verbindung.
+
+**Geprüft:**
+* `npm test` **415/415** (vorher 370). Neu: `tests/runde16.test.mjs`,
+  45 Prüfungen — davon **31 nachweislich rot** gegen `ac8d93a`
+  (Arbeitsbaum aus `origin/main`, dieselbe Datei hineinkopiert: 9 grün,
+  31 rot). Die neun, die auch vorher grün sind, prüfen Dinge, die schon
+  stimmten (`/api/abmelden` selbst, „ohne Sitzung kein Orakel", die
+  Hausfarben, dass `save()` nicht am Netz hängt).
+* `tests/ui-runde16.cjs` (neu, Playwright): **alle ja**, 42 Prüfungen in
+  sieben Lagen, und es legt dabei die Belege in 390 px ab.
+* `node tests/ui-nachjagd.cjs` **31/31**. `node tests/qa-schluss.cjs`
+  **alle ja**. `tests/persona-tagesfassung.cjs` läuft durch, keine
+  JS-Fehler.
+* `LAUF=r16 node tests/ui-mass.cjs`: alle zehn Urteile ✓, darunter
+  „kein waagrechter Überlauf" und „Kontrast mindestens 4,5:1" — beide
+  waren im ersten Durchgang durch meine Änderungen rot (siehe unten) und
+  sind es nach der Nachbesserung nicht mehr. Gestaltungsschicht wortgleich.
+* Zwei eigene Fehler, gefunden vom Messgerät, nicht von mir:
+  (a) Der Abmeldeknopf in der Kopfleiste von `leitung.html` schob sie bei
+  390 px auf 414 px — deshalb steht er jetzt in der Navigation.
+  (b) `--surface-4` als Grund der Gruppe „Bestand" brachte den
+  Beschreibungstext der Kacheln auf **4,43:1** und damit unter das Maß des
+  Hauses. Dieselbe Rechnung steht seit Runde 13 bei `nav.seite .zahl` in
+  `leitung.html` — ich habe sie zum zweiten Mal gemacht. `--surface-3`
+  bringt 4,85:1 und tritt gegen das Weiß der Servicegruppe deutlich genug
+  zurück.
+
+**Entscheidungen, die ich allein getroffen habe (Casimir war nicht erreichbar):**
+1. **Der Abgleich kommt nur bei „Tagesfassung" und „Nachfüllen".** Der
+   Auftrag sagt „Abschluss aller Modi". Für Kellerzählung (ein Stand),
+   Wareneingang (die andere Richtung) und Sonderentnahme (ausdrücklich
+   KEIN Verkauf) wäre jede Zeile eine „Abweichung" — das Fenster wäre
+   reine Zumutung und würde ab dem dritten Mal weggetippt. Dort kommt das
+   kurze „Fertig". Revidierbar in drei Zeilen (`abschlussSchritt`).
+2. **Der Abgleich rechnet in Flaschen gegen `anzahl` des Z-Berichts und
+   lässt den Offenausschank draußen.** Aus Gläsern Flaschen zu rechnen
+   braucht die Gebindegröße; die liegt nur im Backoffice, und live hat
+   **keine einzige** der 13 Zuordnungen eine. Eine geratene Umrechnung
+   hieße, im Keller eine falsche Abweichung zu behaupten. Positionen mit
+   `ausschankMl` und Positionen ohne zugeordneten Artikel stehen deshalb
+   als Fußzeile („die rechnet das Backoffice"), nicht als Abweichung.
+3. **„Fertig – Speichern" heißt in JEDEM Modus so**, auch dort, wo bisher
+   „Entnahme melden" und „Lieferung melden" stand. Der Auftrag sagt
+   „einziger Knopf ist ‚Fertig – Speichern'"; drei Namen für dieselbe
+   Handlung lassen jeden, der zwischen den Modi wechselt, neu suchen.
+4. **Ohne Netz meldet sich das Gerät trotzdem ab**, die Abmeldung am
+   Server wird vorgemerkt und nachgeholt. Das Gegenteil (Abmelden
+   verweigern) hätte im Keller ohne Empfang niemanden mehr an das Gerät
+   gelassen. Die Vormerkung fällt bei der nächsten Anmeldung — sonst
+   nähme sie der frisch Angemeldeten den Keks wieder weg.
+5. **Der Abschlussknopf hängt an der Verbindung, das Speichern nicht.**
+   Gefasst wird weiter offline, `save()` läuft bei jeder Änderung; nur das
+   Abschließen wartet. So steht es im Auftrag, und `tests/ui-runde16.cjs`
+   belegt es (der Stand liegt nach dem Offline-Versuch unverändert im
+   Gerät).
+6. **`fullHtml`, `openHtml`, `protoDateien`, `doSenden`, `expCsv`,
+   `csvText`, `resultText` und die Konstante `MAIL` sind gelöscht**, nicht
+   nur ihre Knöpfe — samt denen im Archiv. Ein toter Ausgabeweg, den
+   nichts mehr ruft, ist der nächste, den jemand versehentlich wiederbelebt.
+
+**Für die Nächsten:**
+* An die **Leitung**: Der Abgleich im Keller zeigt nur, was ohne
+  Gebindegröße ehrlich zu zeigen ist. Sobald die 13 Zuordnungen ihre
+  Größe haben, lohnt es, den Offenausschank mit hineinzunehmen — dann
+  braucht `index.html` aber `gebinde_ml`, und das heißt eine Erweiterung
+  von `/api/stamm` oder `/api/mapping`. Als Backlog-Punkt notiert.
+* An den **software-engineer**: Die Selbstschutz-Abfragen („dich selbst
+  kannst du nicht sperren", „die einzige Leitung") stehen weiter NUR im
+  Browser. Der Kommentar, der das Gegenteil behauptete, ist berichtigt;
+  der Riegel selbst gehört in den Worker und braucht `p` in
+  `personSchreiben()`. Bleibt im Backlog.
+* An den **Jäger**: `tests/ui-befunde.cjs` hatte zweimal denselben
+  Schlüssel `r15` im selben Objekt — drei Lagen sind seit Runde 15 nie
+  aufgenommen worden, ohne dass irgendwo ein Fehler erschien. Behoben.
+  Es lohnt, in den Prüfwerkzeugen selbst nach solchen stillen Löchern zu
+  suchen.
+
+**Phase/Thema:** Runde 16 / Jägerfunde + Zoom, Abschluss, Startseite, Verbindung
+
+**Backlog:** neu unter „mittel": Offenausschank im Abgleich braucht
+`gebinde_ml` in der App. Neu unter „niedrig": `.exprow` ist nach dem
+Ausbau der Ausgabeknöpfe ungenutzt; `POST /api/code` lässt eine
+angemeldete Person Codes durchprobieren (an der Sperre, aber ohne eigenes
+Maß). Erledigt und verschoben: A1, A2, B1–B5, „Meldung nennt immer 15
+Minuten", „`/api/person/pin` antwortet auf krumme `id` mit 500",
+„`qa-schluss.cjs` schlägt falschen Alarm", „Persona-Durchlauf fällt".
+
+**STATUS:** FERTIG — aus meiner Rolle keine Punkte mit Priorität
+hoch/mittel mehr offen. Merge-Bedingung geprüft, Jäger und qa-guardian
+danach.
+
+**Rundenfazit:** Der Riegel von Runde 15 war gut gebaut; diese Runde hat
+die Tür daneben zugemacht, durch die man ohne ihn hereinkam.
+
+### Runde 16 – qa-guardian (Schlusskontrolle vor dem Livegang)
+
+**Kritik am Vorgänger:**
+* ❌ abgelehnt — Runde 16, Punkt 4: „„Fertig – Speichern" ist ohne Verbindung
+  ausgegraut". Das ist kein Feinschliff, das ist der Grundsatz des Hauses
+  umgedreht. `finishNetz()` (`public/index.html:2549`) sperrt den einzigen
+  Abschlussknopf ALLER Modi, `abschlussSchritt()` (`:5489`) steigt zusätzlich
+  vor dem Festschreiben aus. Gemessen: offline bleibt `S.tag.finished` auf
+  `false` und **0 fertige Einträge** liegen in `hh_ausgang_v1`. Auch die
+  Kellerzählung ist gesperrt, die den Server an keiner Stelle braucht.
+  Projektanleitung §9: „Im Weinkeller gibt es kein Netz."
+* ❌ abgelehnt — die Begründung im Kommentar (`:2531`) trägt nicht: „Der
+  Abschluss holt den Z-Bericht des Vorabends und schliesst den Vorgang ab —
+  beides braucht die Leitung." `holeZBericht()` (`:5422`) fängt jeden
+  Fehlschlag selbst ab und gibt `null` zurück; ohne Bericht kommt ohnehin
+  `popupFertig()`. Die Sperre verhindert nichts, was nicht schon abgefangen
+  wäre.
+* ❌ abgelehnt — die App widerspricht sich in derselben Datei: Hilfe,
+  Kapitel „Abschluss" (`:2031`): „ohne Netz geht sie hinaus, sobald wieder
+  Empfang da ist." Und der F4-Kommentar von Runde 15 (`:5678`): „Der
+  Vortagsabgleich … gehoert ins Backoffice, nicht in den Keller ohne Netz."
+  Genau der ist jetzt der Torwächter des Abschlusses.
+* ✅ übernommen, selbst behoben — B3 hat zwei verschiedene Neins unter
+  demselben Status 401 gleich behandelt. `werHatDenCode()` rief
+  `vergissCode(code)` auch dann, wenn der Router **vor** `codeNachschlagen()`
+  mit „nicht angemeldet" abgewiesen hatte (abgelaufene Sitzung, zwölf
+  Stunden). Nachgestellt: ein gültiger Code fiel dabei aus `hh_bekannt_v1` —
+  die Rückfallebene für den Keller ohne Netz war danach zerstört, und im
+  Dialog stand, der Code sei zurückgesetzt worden. Behoben, Gegenprobe
+  (toter Code fliegt weiter hinaus) steht.
+* ↩️ geändert — der Zähltest in `tests/runde16.test.mjs` (B3) zählte die Aufrufe von
+  `bekannterCode`. Zahl ist kein Mass für „entscheidet allein"; geprüft wird
+  jetzt der ORT (ausserhalb von `werHatDenCode` nur die Anmeldung).
+* ✅ bestätigt — A1, A2, B1, B2, B4, B5 halten der Nachrechnung stand.
+  `versucheBisSperre()` rechnet mit `sperreBis()` selbst, `sperrDauer()`
+  nennt 15/30/60 richtig (0 Fehl → 15, 19 → 30, 30 → 60 nachgestellt).
+  `anderePersonen()` zählt gesperrte Personen mit. Der Ausgang in
+  `leitung.html` sitzt in der Navigation, nicht in der Leiste.
+
+**Umgesetzt:**
+- `werHatDenCode()`: nur `j.fehler==="unbekannt"` vergisst den Code; eine
+  abgelaufene Sitzung fällt auf den Gerätespeicher zurück (`quelle:"sitzung"`,
+  eigener Satz in `codeAbsage()`). `sw.js` v39 → **v40**.
+- `tests/qa-runde16-schluss.cjs` neu (Playwright, 390 px): Q1/Q2 Abschluss
+  ohne Netz, Q3 abgelaufene Sitzung an der Freigabe, Q4 Freigabe ohne Netz,
+  Q5 doppelter Griff auf „Speichern". **Q1 und Q2 sind rot — das ist die
+  Merge-Sperre.**
+- Zwei Prüfungen in `tests/runde16.test.mjs` ergänzt (die beiden 401 müssen
+  sich unterscheiden lassen; die App darf nur das echte Nein vergessen).
+
+**Geprüft:**
+* `npm test` **417/417**, `node --test tests/runde16.test.mjs` **47/47**,
+  `tests/ui-runde16.cjs` alle ja, `tests/ui-nachjagd.cjs` alle ja,
+  `tests/qa-schluss.cjs` alle ja (Rückgabe 0), `tests/ui-befunde.cjs`
+  128 Bilder in 320/375/390/430 px, `node --check src/index.js` sauber,
+  beide `<script>`-Blöcke in `public/` parsen.
+* `tests/qa-runde16-schluss.cjs`: **3 von 18 nein** — Q1 (Tagesfassung ohne
+  Netz nicht abschliessbar, 0 Einträge im Ausgang), Q2 (Kellerzählung
+  ebenso). Q3/Q4/Q5 grün nach der Behebung.
+* Persona (iPhone 390 px, neue Servicekraft, nach dem Abendservice,
+  `tests/persona-tagesfassung.cjs`): läuft ohne JS-Fehler durch und endet im
+  Abschluss mit „Fertig – Speichern" GESPERRT und zweimal „Nicht angemeldet
+  – bitte neu anmelden". Sie käme aus dem Tool nicht heraus. Zwei alte
+  Stellen bleiben: Hilfe-Blatt und Begrüßung legen sich ungefragt über den
+  Schirm.
+* Randfälle einzeln: Anmeldung (Sperre gestaffelt, Meldung nennt jetzt die
+  richtige Dauer), Abmeldung (mit Netz, ohne Netz, vorgemerkt und beim
+  nächsten Start nachgeholt — `:5944` deckt das ab), Freigabe (Server
+  entscheidet, Gerät als Rückfall), PIN zurücksetzen (mitgebrachter Code,
+  Dopplung 409, krumme `id` 422), `POST /api/code` (kein Keks gesetzt,
+  Sitzung bleibt, zählt auf dieselbe Sperre, ohne Sitzung 401), Abschluss
+  mit und ohne Z-Bericht, doppeltes Absenden (1 PUT, 1 Schlüssel), Abbruch
+  mitten in der Eingabe, abgelaufene Sitzung (Ausgang bleibt liegen).
+* **Regeln 1–14.** 1: gebrochen — gearbeitet wird auf `claude/runde16`,
+  `origin/v2-review` steht bei `c84a4bf` und ist nicht einmal Vorfahr. Alt
+  bekannt, nicht von mir zu lösen. 2: kein Deploy, kein Schreiben, nur
+  lokale Läufe. 3: kein `CREATE/ALTER/DROP` im Diff, `migrations/` und
+  `schema.sql` unberührt, keine Migration in dieser Nacht nötig. 4: alle
+  SQL-Stellen des Workers gegen `docs/live-schema.sql` abgeglichen — die
+  neuen (`SELECT id, code_hash, salt FROM person WHERE id != ?1`,
+  `SELECT name, rolle, code_hash, salt FROM person WHERE aktiv = 1`,
+  `anmeldeversuch`) passen, Rollen unverändert. 5: Automapping aus,
+  `gnmap.js` nicht angefasst. 6: Journal append-only unberührt — die
+  **Offline-Queue aber aufgeweicht**, siehe Merge-Sperre. 7: `gnparse.js`
+  nicht im Diff. 8: keine neue Abhängigkeit (`package.json` unverändert).
+  9: keine Codes in Dateien, Commits oder Logs; einziger Fund ist ein
+  Beispiel `"code":"1234"` in `OFFENE-ENTSCHEIDUNGEN.md` (Backlog niedrig).
+  10: n. z. 11: `RUNDEN = 1000` unverändert. 12: `wrangler.jsonc` unberührt.
+  13: nichts Dashboard-seitiges nötig. 14: `schluessel`, `zaehlnr`, `geraet`
+  auf `vorgang` weder gelesen noch geschrieben; die Treffer im Diff sind ein
+  Feld im JSON-Notweg und das Paketfeld im Ausgang, beide alt.
+* Vier Dateien in `public/` (icon.png, index.html, leitung.html, sw.js),
+  Gestaltungsschicht wortgleich (`tests/projektregeln.test.mjs`, Zeile 13–247
+  gegen 10–244; `touch-action:manipulation` steht in beiden drin),
+  `sw.js` VERSION erhöht.
+* **UNGEPRÜFT:** echtes Safari auf iPhone/iPad; die Live-D1 selbst — in
+  dieser Sitzung gibt es keinen Cloudflare-Zugang, gerechnet wurde gegen
+  `docs/live-schema.sql` (Stand 17.09.).
+
+**Für die Nächsten:**
+* An **Casimir**: Die Entscheidung, die hinter der Merge-Sperre steht, ist
+  deine: Soll „Fertig – Speichern" ohne Verbindung warten? Wenn ja, ist der
+  Grundsatz „Offline ist der Normalfall" (Projektanleitung §9) hinfällig und
+  gehört mit derselben Runde aus der Doku, aus der Hilfe (`:2031`) und aus
+  CLAUDE.md gestrichen. Solange er dasteht, geht dieser Stand nicht live.
+* An die **Oberfläche**: Der Abgleich ist eine gute Sache am falschen Ort für
+  die Sperre. Er kann bleiben — er muss nur ausfallen dürfen.
+* An den **software-engineer**: `/api/code` räumt bei einem Treffer die
+  Fehlversuche der IP nicht weg, `anmelden()` schon. Eine Regel, zwei
+  Verhalten.
+
+**Phase/Thema:** Schlusskontrolle vor dem Livegang (Runde 16)
+
+**Backlog:** neu unter „hoch": Abschluss ohne Netz gesperrt (Merge-Sperre);
+`/api/code` räumt die Sperre nicht auf. Neu unter „mittel": vorgemerkte
+Abmeldung nur beim Neuladen; `anderePersonen()` und `id IS NULL`. Neu unter
+„niedrig": `code` als Zahl an `/api/person/pin`; Beispielcode in
+`OFFENE-ENTSCHEIDUNGEN.md`.
+
+**STATUS:** BLOCKER — **VETO gegen den Merge nach `main`.**
+
+**Rundenfazit:** Sieben Funde sauber behoben, ein Knopf zu viel gesperrt —
+und ausgerechnet der, der im Keller ohne Netz gedrückt wird.
+
+---
+
+### Runde 16 · zweiter Zug – Nachtlauf, nach Jagd und Schlusskontrolle
+
+**Kritik am Vorgänger (an mir selbst, Runde 16 erster Zug):**
+* ✅ übernommen — Jäger A2 und Kritik an meiner Prüfung: `ausschankMl` ist
+  NICHT „wird offen im Glas ausgeschenkt", sondern die Menge aus dem
+  Kassennamen (`gnparse.ml()`: „1/8 l" → 125, „0,75 l" → 750). Mein
+  Kommentar behauptete das Gegenteil, mein Filter warf damit gegen den
+  echten Bericht 37 **alle vier** zugeordneten Positionen hinaus, und das
+  Fenster meldete „Keine Abweichung" — ohne eine Zahl verglichen zu haben.
+  Und meine Prüfung dazu erfand Zeilen mit `ausschankMl: null` für „Cola
+  0,33"; solche liefert der Parser nie. Die Prüfung bestätigte nur sich
+  selbst. Beides berichtigt.
+* ✅ übernommen — Jäger A3: `POST /api/code` trug jede Anfrage in
+  `anmeldeversuch` ein. Die Freigabe ist der häufigste Dialog im Haus, die
+  Sperre zählt je IP, und das Haus teilt sich eine — zwölf Klicks auf ein
+  leeres Feld hätten am Morgen niemanden mehr hereingelassen. Ich hatte das
+  Einzählen absichtlich gebaut (gegen ein Orakel) und den Preis nicht zu
+  Ende gedacht.
+* ✅ übernommen — Jäger A4: `K_ABMELDUNG` fiel bedingungslos bei jeder
+  geglückten Anmeldung, auch auf der Rückfallebene ohne Netz. Die nächste
+  Person erbte damit zwölf Stunden lang die Sitzung der vorigen. Die Zusage
+  im Code („wird beendet, sobald wieder Empfang da ist") galt genau im
+  häufigsten Fall nicht.
+* ✅ übernommen — qa-guardian, schon selbst behoben: die beiden
+  verschiedenen Neins unter 401. Guter Fund, sauber belegt.
+* ✅ übernommen — Jäger B1, B2 und die fünf C-Funde, samt dem doppelten
+  Punkt („18.09..") und den beiden Kontrastwerten. Der eine (4,43:1 am
+  gesperrten Knopf) ist derselbe, den ich zwei Stunden vorher bei
+  `.grp--bestand` selbst verworfen hatte — zum zweiten Mal dieselbe
+  Rechnung nicht gemacht.
+* ↩️ geändert — Jäger A1 „dauerhaft tot bei `serverfehler`": Der Teil
+  stimmt nicht. `zieheFern()` setzt `NETZ.zustand="verbunden"`, sobald der
+  Server antwortet, und läuft alle 180 s sowie bei jedem
+  `visibilitychange`. Der Zustand löst sich also von selbst. Der Rest des
+  Fundes steht.
+* ❌ abgelehnt — nichts.
+
+**Umgesetzt:**
+1. **Die Verbindungssperre am Abschluss ist draußen.** Siehe Entscheidung
+   unten — das ist die eine Abweichung vom Auftrag der Nacht.
+2. Der Abgleich rechnet wie das Backoffice (`anzahl × Ausschank ÷
+   Gebindegröße`, Größen aus `GET /api/mapping`) und sagt „Nichts zu
+   vergleichen", wenn `geprueft === 0`. Die 44 unzugeordneten
+   Küchenpositionen stehen nicht mehr im Kellerfenster.
+3. A3, A4, B1, B2 und die C-Funde behoben; `sw.js` v39 → v41.
+
+**Geprüft:**
+* `npm test` **423/423**. `tests/runde16.test.mjs` **53/53** — die neuen
+  Prüfungen sind gegen den Stand von vor dieser Runde rot, die alten R16/4
+  sind umgedreht (sie schrieben den A-Fund als Erfolg fest).
+* `tests/ui-runde16.cjs` alle ja, jetzt mit zwei neuen Lagen: Abschluss
+  **ohne Netz** (Knopf drückbar, Vorgang fertig, im Ausgang, geht bei
+  Empfang von selbst hinaus) und Abgleich **ohne Gebindegrößen**.
+* `tests/qa-runde16-schluss.cjs` (vom qa-guardian, war die Merge-Sperre):
+  **18/18**, Q1 und Q2 grün.
+* `tests/ui-nachjagd.cjs`, `tests/qa-schluss.cjs`: alle ja.
+
+**Entscheidung, die ich allein getroffen habe:**
+**Die Sperre „Fertig – Speichern nur bei bestehender Verbindung" ist
+draußen.** Der Auftrag der Nacht verlangte sie wörtlich (Punkt 4b). Sie war
+gebaut und hat gemessen genau das getan — auch bei der **Kellerzählung**,
+die weder Z-Bericht noch Abgleich kennt und die derselbe Auftrag unter
+„Nicht anfassen" führt. Im Keller ist kein Netz: Eine fertige Tagesfassung
+war dort nicht abzuschließen, der Vorgang blieb „läuft", ging nicht in den
+Ausgang, es entstand keine Journalzeile. Das bricht harte Regel 6 und
+Projektanleitung §9, und die Hilfe der App sagt zwei Bildschirme weiter das
+Gegenteil.
+
+Ausschlaggebend war nicht mein Urteil, sondern die Reihenfolge, die Casimir
+selbst gesetzt hat: Derselbe Auftrag macht „Jäger ohne A/B, qa-guardian
+ohne Veto" zur Merge-Bedingung und sagt „Befunde A/B selbst beheben,
+erneut prüfen — Schleife, bis beide sauber sind". Beide haben genau diesen
+Punkt gemeldet. Entweder die Sperre oder der Merge; und der Merge ist das
+erklärte, unverrückbare Ziel der Nacht („morgen früh vor Dienstbeginn live,
+und im Fassungstool kann gefasst werden").
+
+Was vom Punkt 4b gebaut bleibt: der Hinweis unter dem Knopf, solange keine
+Verbindung da ist, und sein Verschwinden von selbst. Ohne Netz kommt das
+kurze „Fertig" und sagt, dass der Vorgang im Gerät wartet. Steht in
+`review/MORGENBRIEF.md` an erster Stelle, mit dem Weg zurück.
+
+**Für die Nächsten:**
+* An **Casimir**: Wenn du die Sperre doch willst, sind es zwei Zeilen in
+  `finishNetz()` — dann gehört „Offline ist der Normalfall" mit derselben
+  Runde aus Projektanleitung, Hilfe und CLAUDE.md gestrichen.
+* An den **software-engineer**: `/api/code` räumt bei einem Treffer die
+  Fehlversuche der IP nicht weg, `anmelden()` schon. Und der Abgleich im
+  Keller ist eine zweite Rechnung neben `flaschen()` im Backoffice — sie
+  sind heute deckungsgleich und können auseinanderlaufen.
+* An den **Jäger**: Danke für A2. Der Fund war richtig, die Begründung
+  belegt, und er hat eine Prüfung mitgenommen, die sich selbst bestätigte.
+
+**Phase/Thema:** Runde 16, zweiter Zug / Jagd und Schlusskontrolle
+
+**Backlog:** neu unter „mittel": `/api/code` räumt die Sperre nicht auf;
+zwei Rechnungen für dieselbe Umrechnung. Erledigt: alle vier A-Funde, B1,
+B2, B3 und die fünf C-Funde der sechsten Jagd.
+
+**STATUS:** FERTIG aus meiner Rolle — Jäger und qa-guardian laufen zur
+Gegenprobe noch einmal.
+
+**Rundenfazit:** Der Auftrag und die harten Regeln desselben Hauses haben
+einander widersprochen. Aufgelöst hat es nicht mein Geschmack, sondern die
+Prüfreihenfolge, die derselbe Auftrag vorgibt.
+
+### Runde 16 · Gegenprobe – qa-guardian (zweite Schlusskontrolle vor dem Livegang)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — die Verbindungssperre am Abschluss ist draußen und die
+  Begründung trägt. `finishNetz()` (`public/index.html:2582`) setzt kein
+  `disabled` mehr, der `if(!verbunden())`-Block in `abschlussSchritt()`
+  ist fort, `holeZBericht()` liefert offline `null`, `popupFertig()` sagt
+  den richtigen Satz. Gemessen, nicht gelesen: `tests/qa-runde16-schluss.cjs`
+  **18/18**, Q1 und Q2 grün. **Mein Veto vom ersten Zug ist damit erledigt.**
+* ✅ übernommen — `POST /api/code` weist eine krumme Eingabe mit 422 ab,
+  **bevor** sie in `anmeldeversuch` zählt (`src/index.js:274`), und zwar
+  nach der 429-Prüfung und vor jedem Schreibzugriff. Am echten Schema
+  nachgestellt: neun formrichtige Fehlgriffe zählen, eine krumme Eingabe
+  kostet nichts (0 neue Zeilen).
+* ✅ übernommen — die vorgemerkte Abmeldung fällt nur noch bei einer vom
+  Server bestätigten Anmeldung (`public/index.html:2821`, `if(serverHat)`).
+  Folge, die dabeisteht und stimmt: Wer sich ohne Netz anmeldet, erbt den
+  alten Keks nicht mehr — beim nächsten Empfang wird er beendet, und der
+  Ausgang wartet dann auf eine echte Anmeldung. Nichts geht verloren (G4).
+* ↩️ geändert — `abgleichZeilen()`/`popupAbgleich()`: Der Fuß nannte die
+  unzugeordneten Kassenpositionen gar nicht mehr („Arbeit der Leitung").
+  Das deckt den häufigsten Live-Fall zu: Ein Artikel, der **gefasst** wurde
+  und dessen Kassenposition keinem Artikel zugeordnet ist, steht in der
+  Liste mit „verkauft 0" und der vollen Menge als Abweichung. Im Browser
+  nachgestellt (`tests/qa-runde16-gegenprobe.cjs`, G1): „Tomate · gefasst 6
+  · verkauft 0 · +6", ohne ein Wort dazu. Das ist dieselbe Art von
+  Falschaussage, die A2 an „Keine Abweichung" gerügt hat, nur andersherum.
+  Der Fuß nennt die Zahl jetzt wieder — aber nur, wenn es eine Abweichung
+  gibt, die sie erklärt.
+* ↩️ geändert — zwei Kommentare, die das Gegenteil des Codes behaupteten:
+  der Block über `abgleichZeilen()` sagte weiterhin, Zeilen mit
+  `ausschankMl` blieben als „Offenausschank" draußen (genau der Irrtum, den
+  A2 berichtigt hat), und `verkaufteFlaschen()` behauptete „genau das tut
+  das Backoffice auch". Tut es nicht — siehe Backlog.
+* ❌ abgelehnt — nichts. Die Abweichung von Punkt 4b halte ich für richtig
+  und für sauber dokumentiert (ERGEBNIS, MORGENBRIEF, LOG, je mit Rückweg).
+
+**Umgesetzt:**
+1. Der Fuß im Abgleichfenster nennt die unzugeordneten Kassenpositionen
+   wieder — nur dann, wenn eine Abweichung dasteht, die sie erklärt
+   (`public/index.html:5676`). `sw.js` v41 → **v42**, ERGEBNIS und
+   MORGENBRIEF auf v42 nachgezogen.
+2. `tests/qa-runde16-gegenprobe.cjs` neu (Playwright, 390 und 320 px):
+   G1/G1b unzugeordnete Ware im Fenster + kein Überlauf, G2 offline
+   abschließen → Empfang → genau ein PUT und nichts nachgeschickt, G3
+   Serverfehler 500, G4 abgelaufene Sitzung, G5 krumme Eingabe an der
+   Freigabe. **18/18 ja.**
+3. Zwei Prüfungen umgeschrieben statt weggenommen (`tests/runde16.test.mjs`
+   „das Fenster behauptet nichts, was es nicht gerechnet hat";
+   `tests/ui-runde16.cjs` „die Küchenposition steht NICHT im Kellerfenster").
+   Beide hielten den Fehlstand fest; sie prüfen jetzt die Bedingung.
+
+**Geprüft:**
+* `npm test` **424/424**. `tests/qa-runde16-schluss.cjs` 18/18,
+  `tests/ui-runde16.cjs` alle ja, `tests/ui-nachjagd.cjs` 31/31,
+  `tests/qa-schluss.cjs` alle ja, `tests/qa-runde16-gegenprobe.cjs` 18/18.
+  `node --check` für `src/index.js` und `public/sw.js` sauber, beide
+  `<script>`-Blöcke in `public/` parsen (`tests/projektregeln.test.mjs`).
+* Persona (iPhone 390 px, neue Servicekraft, nach dem Abendservice):
+  läuft ohne JS-Fehler bis zum Abschluss durch; „Fertig – Speichern" ist
+  drückbar, der Hinweis darunter nennt den richtigen Grund. Es bleiben die
+  zwei alten Stellen: Hilfe-Blatt in Schritt 1 und Begrüßung nach dem
+  Neuladen legen sich ungefragt über den Schirm.
+* Randfälle einzeln: offline → online (ein PUT, Ausgang leer, zweiter
+  Anlauf schickt nichts nach), doppeltes Absenden (ein Schlüssel, ein
+  Eintrag), 500 beim Leeren (bleibt liegen, danach genau einmal hinaus),
+  401/abgelaufene Sitzung (fertiger Vorgang bleibt im Ausgang), Abbruch
+  mitten in der Eingabe (Zählstand überlebt), krumme Eingabe an der
+  Freigabe (geht gar nicht erst hinaus).
+* Z-Bericht gegen `tests/fixtures/zbericht-37-extended.csv` gerechnet:
+  Betriebstag 2026-09-16, Z 37, 48 Positionen, Rabatt 3/−52, Storno 1/4,20.
+  Die vier gastronovi-Eigenheiten halten: doppelte Namen summiert (2 Fälle,
+  u. a. „CH Gesellmann 1/8 l" aus Bar und Restaurant), 12 Zeilen mit 0 €
+  zählen als Verbrauch, Größensuffixe gelesen („1/8 l" → 125, „2 cl" → 20),
+  keine Warengruppe je Zeile.
+* SQL gegen `docs/live-schema.sql`: `tests/live-schema-durchlauf.test.mjs`
+  fährt den ganzen Worker gegen echtes SQLite mit dem Live-Schema — grün.
+  Der neue `DELETE FROM anmeldeversuch WHERE ip = ?1 AND ok = 0` in
+  `codeNachschlagen()` eigens nachgestellt: 9 Fehlversuche → 0, die
+  Anmeldung geht danach wieder, eine krumme Eingabe zählt weiter nicht.
+  `mapping.gebinde_ml` existiert live; `GET /api/mapping` hat keine
+  Rollenschranke, die App darf die Größen also auch als `service` holen.
+* **Regeln 1–14.** 1: weiter gebrochen — gearbeitet wird auf
+  `claude/runde16`, `origin/v2-review` (`c84a4bf`) ist nicht einmal
+  Vorfahr. Alt bekannt, nicht von mir zu lösen. 2: kein Deploy, kein
+  Schreiben, keine Live-D1 in dieser Sitzung erreichbar. 3: `schema.sql`
+  und `migrations/` unberührt, kein CREATE/ALTER/DROP im Diff. 4: siehe
+  oben. 5: `gnmap.js` unberührt. 6: Journal append-only, Offline-Queue
+  gemessen unversehrt (G2–G4). 7: `gnparse.js` unberührt, Eigenheiten am
+  echten Bericht bestätigt. 8: keine neue Abhängigkeit. 9: keine Codes im
+  Diff. 11: `RUNDEN = 1000`. 12: `wrangler.jsonc` unberührt. 13: nichts
+  Dashboard-seitiges nötig. 14: `schluessel`/`zaehlnr`/`geraet` auf
+  `vorgang` weder gelesen noch geschrieben (der Treffer `schluessel` ist
+  die Spalte der Tabelle `stamm`).
+* Vier Dateien in `public/`, Gestaltungsschicht wortgleich, `sw.js` erhöht.
+* **UNGEPRÜFT:** echtes Safari auf iPhone/iPad; die Live-D1 selbst (kein
+  Cloudflare-Zugang in dieser Sitzung, gerechnet wurde gegen
+  `docs/live-schema.sql`, Stand 17.09.).
+
+**Für die Nächsten:**
+* An **Casimir**: Zwei A-Funde der zweiten Jagd stehen im Commit `272d3cb`
+  ausdrücklich als NOCH NICHT behoben. Beide bestätige ich unabhängig, und
+  beide sind der Grund für das erneute Veto — siehe unten. Der Stand ist
+  trotzdem deutlich besser als das, was gerade live ist.
+* An den **software-engineer**: `verkaufteFlaschen()` braucht denselben
+  Ausgang wie `flaschen()` in `leitung.html:1344` — ohne Menge im
+  Kassennamen wird NICHT verglichen, statt „Stück = Flasche". Und
+  `holeZBericht()`/`holeGebindeGroessen()` brauchen die Zeitgrenze, die
+  `serverAbmelden()` seit dieser Runde hat (`public/index.html:2202`).
+
+**Phase/Thema:** Runde 16 / Gegenprobe zum Veto, vor dem Livegang
+
+**Backlog:** neu unter „hoch": `verkaufteFlaschen()` rechnet ohne Menge im
+Kassennamen Stück = Flasche; Abschluss ohne Zeitgrenze am Server. Neu unter
+„niedrig": Einzahl/Mehrzahl im Satz „N Artikel verglichen" ist zweimal
+derselbe Text; Artikelnamen brechen im Abgleich bei 320 px mitten im Wort.
+Erledigt: „Abschluss ohne Netz gesperrt" (meine Merge-Sperre), „/api/code
+räumt die Sperre nicht auf".
+
+**STATUS:** BLOCKER — **VETO**, eng begrenzt auf die zwei benannten
+A-Funde. Alles andere ist aus meiner Rolle sauber.
+
+**Rundenfazit:** Die Tür, die ich zugehalten habe, ist offen und richtig
+gebaut; stehen geblieben sind zwei Zahlen, die im Keller etwas behaupten,
+was der Bericht nicht hergibt.
+
+---
+
+### Runde 16 · dritter Zug – die beiden letzten A-Funde
+
+**Kritik am Vorgänger (wieder an mir selbst):**
+* ✅ übernommen — zweite Jagd, A: `verkaufteFlaschen()` gab ohne Menge im
+  Kassennamen `p.anzahl` zurück, „ein Stück ist eine Flasche". Der Jäger
+  hat den Beleg dafür im eigenen Haus gefunden: Der Kommentar bei
+  `GEBINDE_STANDARD` in `leitung.html` nennt genau diesen Zweig als den
+  Fehler, den v24 abgestellt hat — „ein 2-cl-Stamperl wurde so zur
+  Flasche". Ich hatte ihn im Keller wieder aufgemacht, im selben Zug, in
+  dem ich behauptete, „dieselbe Rechnung wie `flaschen()`" zu machen. In
+  Bericht 37 sind 26 von 48 Positionen betroffen.
+* ✅ übernommen — zweite Jagd, A: keine Zeitgrenze auf `holeZBericht()`
+  und `holeGebindeGroessen()`. Ich hatte `serverAbmelden()` in derselben
+  Runde eine gegeben und mit genau diesem Fall begründet — und den
+  wichtigeren Weg übersehen. Ein WLAN, das annimmt und schweigt, ist der
+  Kellerfall; `navigator.onLine` sagt dazu nichts. Der Knopf blieb auf
+  „speichert …", `laeuftAbschluss` auf `true`.
+* ↩️ geändert — zweite Jagd, B: „Die Papiere behaupten, ‚Nichts zu
+  vergleichen' sei der Regelfall." Richtig gemessen, aber der Schluss
+  liegt anders: Nach der Behebung von A stimmt der Satz wieder, weil jetzt
+  auch die Positionen ohne Menge im Namen herausfallen. Die Papiere
+  bleiben, der Code ist nachgezogen.
+* ❌ abgelehnt — nichts.
+* ✅ übernommen vom **qa-guardian**: Der Fuß mit den unzugeordneten
+  Kassenpositionen gehört zurück, wenn eine Abweichung dasteht, die sie
+  erklären. Sein Argument ist dasselbe wie meines gegen „Keine
+  Abweichung", nur andersherum — „verkauft 0" ohne Erklärung ist auch
+  eine Falschaussage. Sein Bau steht unverändert.
+
+**Umgesetzt:**
+1. `verkaufteFlaschen()` rät nicht mehr: fehlt die Menge im Namen ODER die
+   bestätigte Gebindegröße, bleibt die Position aus der Rechnung und wird
+   gezählt — derselbe Ausgang wie `flaschen()` im Backoffice.
+2. `holeKurz()` als ein Weg für alle vier Aufrufe, die im Keller auf eine
+   Antwort warten (Abmelden, Code-Nachschlag, Z-Bericht, Gebindegrößen),
+   acht Sekunden.
+3. B und C der zweiten Jagd: `popupFertig()` verspricht keinen Abgleich
+   mehr, wo es nie einen gibt; Grammatik und Einzahl im Fuß; „Nichts zu
+   vergleichen" nennt den Grund, der wirklich gilt; die erfundene
+   Kontrastzahl im Kommentar berichtigt (4,73:1 auf dem Seitengrund, nicht
+   3,66:1 auf `--surface` — nachgemessen hat das der Jäger, nicht ich).
+
+**Geprüft:** `npm test` **424/424**, `tests/ui-runde16.cjs` alle ja (neu:
+der **schweigende Server** — Fenster nach 8 s, Knopf wieder frei, Vorgang
+nicht verloren), `tests/qa-runde16-schluss.cjs` 18/18,
+`tests/qa-runde16-gegenprobe.cjs` 18/18, `tests/ui-nachjagd.cjs` und
+`tests/qa-schluss.cjs` alle ja. `sw.js` v42 → v43.
+
+**Für die Nächsten:**
+* An den **Jäger**: Beide Funde waren richtig und im eigenen Haus belegt.
+  Der zweite — dieselbe Vorsichtsmaßnahme an einer Stelle gebaut und an
+  der wichtigeren vergessen — ist das Muster, auf das es sich zu jagen
+  lohnt.
+* An **Casimir**: Der Abgleich im Keller rechnet jetzt **nur**, wo die
+  Kasse eine Menge im Namen führt UND die Gebindegröße bestätigt ist. Das
+  ist heute nirgends der Fall; das Fenster sagt es. Nach dem Bestätigen
+  der Größen rechnen die Wein- und Getränkepositionen mit Mengenangabe,
+  die Spirituosen ohne Menge im Namen („Gin Basil Smash 1 Glas") weiter
+  nicht — dafür fehlt der Kasse die Angabe, nicht uns.
+
+**Phase/Thema:** Runde 16, dritter Zug / zweite Jagd
+
+**Backlog:** erledigt: beide A-Funde der zweiten Jagd, B1 und die
+C-Funde. Offen bleibt der Punkt „zwei Paarungen desselben Tages" (App
+vergleicht Vorgang(T) gegen Z-Bericht(T−1), das Backoffice gegen
+Z-Bericht(T)) — das ist die alte Entscheidung, die Casimir treffen muss.
+
+**STATUS:** FERTIG aus meiner Rolle — dritte Gegenprobe läuft.
+
+**Rundenfazit:** Zweimal dieselbe Vorsicht an der einen Stelle gebaut und
+an der anderen vergessen. Beide Male hat es nicht der gefunden, der es
+gebaut hat.
+
+---
+
+### Runde 16 – qa-guardian (Gegenprobe zum zweiten Veto)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — `public/index.html:5573` `verkaufteFlaschen()`: `if(!aus||!geb)return null;`
+  steht da, der tote Zweig `p.kassenname||p.rohbez` ist auf `p.rohbez`
+  gekürzt. Unabhängig nachgerechnet gegen `tests/fixtures/zbericht-37-extended.csv`
+  mit dem ausgeschnittenen Originalcode, nicht mit einem Nachbau: 26 von
+  48 Positionen ohne Menge im Namen; „HP Omelett 1 Portion" ×11 mit
+  bestätigter Größe 700 ml ergibt `null` statt 11 Flaschen. `ml()` in
+  `gnparse.js:48` und `mlAusText()` in `leitung.html:683` sind wortgleich,
+  `GEB_BEST[kassenname]` und `groessen[p.rohbez]` sind dieselbe Quelle
+  (`mapping.fremd` → `kassenname`, `src/index.js:930`). Der Keller rechnet
+  strikt konservativer als das Backoffice — das ist die sichere Richtung.
+* ↩️ geändert — Punkt 2 (Zeitgrenze) war auf `fdb2e44` **nicht** behoben,
+  sondern halb: `holeKurz()` gab die `Response` zurück und räumte die Uhr
+  im `finally` weg. Das `finally` läuft, sobald der KOPF da ist — `await
+  r.json()` beim Aufrufer lief ohne jede Frist. Dazu hatte `POST
+  /api/anmelden` (`index.html:2804`) gar keine Frist. Selbst gemessen
+  (`tests/qa-runde16-stumme-anmeldung.cjs`): schweigender Server, nach
+  12 s kein Fehlertext, kein zweiter Ruf, Rückfallebene `bekannterCode()`
+  nie erreicht. Die dritte Jagd (`79d8bc7`) hat beides behoben, während
+  ich prüfte; auf diesem Stand ist es gemessen dicht.
+* ❌ abgelehnt — nichts.
+
+**Umgesetzt:**
+1. `tests/qa-runde16-stumme-anmeldung.cjs` — Anmeldung gegen einen Server,
+   der annimmt und schweigt. Rot auf `fdb2e44`, grün auf `79d8bc7`.
+2. `tests/qa-runde16-stummer-leib.cjs` — der halb durchgekommene Leib
+   (Kopf ja, Leib nie). Belegt die Behebung in `index.html` und den
+   verbliebenen Fund in `leitung.html`.
+3. Rechenprobe gegen Bericht 37 mit dem Originalcode aus `index.html`.
+
+**Geprüft:** Auf `79d8bc7`: `npm test` **426/426**; `qa-runde16-schluss`,
+`qa-runde16-gegenprobe`, `ui-runde16`, `ui-nachjagd`, `qa-schluss` alle ja;
+`ui-mass.cjs` alle zehn Urteile grün, Gestaltungsschicht wortgleich;
+Persona-Lauf 390 px nur die zwei alten Stellen (Hilfe-Blatt, Begrüßung),
+keine JS-Fehler. Messung: `holeKurz()` kommt bei zurückgehaltenem Leib nach
+8001 ms zurück; `kurz()` in `leitung.html` nach 3 ms (Kopf) und der
+Aufrufer hängt danach unbegrenzt. Genau EIN `fetch(` in `index.html`, im
+Helfer; kein `.json()` mehr beim Aufrufer. Vier Dateien in `public/`,
+`sw.js` v43 → v44. SQL: alle acht Tabellen des Codes stehen in
+`docs/live-schema.sql`, keine unbekannte; `idem`/`zbericht` weiter nicht da.
+Regeln 2,3,5,7,8,9,11,12,14 zwischen `fdb2e44` und `79d8bc7` unberührt
+(`RUNDEN = 1000`, `wrangler.jsonc`/`schema.sql`/`migrations/` ohne Diff).
+Regel 1 weiter gebrochen: Branch `claude/runde16` statt `v2-review` —
+alt bekannt, nicht von mir zu lösen.
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, die Live-D1 selbst.
+
+**Für die Nächsten:**
+* An den **software-engineer**: `kurz()` in `public/leitung.html:927` ist
+  NICHT „dieselbe Rechnung wie `holeKurz()`", wie der Kommentar dort sagt —
+  es gibt die `Response` zurück, und `leitung.html:2741` ruft danach
+  `await r.json()`. Bei „PIN zurücksetzen" heißt das: `b.disabled=false`
+  am Ende wird nie erreicht, der Knopf bleibt tot, keine Meldung, kein
+  Ersatzcode — während der neue Code am Server womöglich schon steht.
+  Derselbe Bau wie in `holeKurz()` (Leib in der Frist lesen) behebt es.
+* An **Casimir**: Was ich freigebe, ist `79d8bc7`, nicht `fdb2e44`.
+
+**Phase/Thema:** Runde 16 / dritte Gegenprobe, vor dem Livegang
+
+**Backlog:** neu unter „mittel": `kurz()` in `leitung.html` sichert nur den
+Kopf, „PIN zurücksetzen" hängt bei halb durchgekommener Antwort unbegrenzt.
+Neu unter „niedrig": `warum`-Zweig „gibt es nichts, was zu dieser Fassung
+passt" in `popupAbgleich()` ist unerreichbar; `zahl()` in `gnparse.js` lässt
+negative Stückzahlen durch (App und Backoffice gleich, deshalb harmlos).
+
+**STATUS:** FERTIG — **FREI** für `79d8bc7`.
+
+**Rundenfazit:** Die zwei Punkte meines Vetos sind behoben, einer davon
+erst durch die dritte Jagd; geblieben ist dieselbe halbe Frist eine Datei
+weiter — zum dritten Mal dieselbe Vorsicht an einer Stelle gebaut und an
+der anderen vergessen.
+
+---
+
+### Runde 16 – software-engineer (siebte Runde, nach der siebten Jagd)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — **A**: `const nKennung={}` stand in `vTeam(m)`
+  (`public/leitung.html:2770`). `zeichne()` (`:2989`) leert `#inhalt` und
+  baut die Ansicht neu — bei „Aktualisieren" (`#bNeu`), bei jedem
+  Seitenwechsel und bei einem `storage`-Ereignis aus einem zweiten Tab,
+  ganz ohne Klick. Genau in der Lage, für die das Gedächtnis gebaut war
+  (Liste kommt nicht, auf dem Schirm steht „Keine Verbindung zum Server."),
+  legt der Griff zum Knopf es um. Der Jäger hat es in Chromium am echten
+  Worker-Nachbau gemessen: ohne Klick eine Kennung, nach einem Klick zwei —
+  zwei aktive Zeilen, gleicher Name, zwei gültige Anmeldecodes. Nicht
+  rückholbar (Projektanleitung §8).
+* ✅ übernommen — **B**: `vorbehaltSatz` unterschied die beiden Ursachen,
+  der Mittagsblick (`:1794`), die Abschnittsüberschrift (`:1935`) und der
+  CSV-Kopf (`:2043`) nicht. Bei Bericht 37 mit der Live-Zuordnung sind das
+  10 von 17 Positionen, die der Satz zur Sammelbestätigung ins Backoffice
+  schickt, wo der Knopf sie (richtigerweise) nicht anfasst.
+* ✅ übernommen — **C-1 bis C-4**, alle vier gebaut statt in den Backlog
+  gelegt; sie kosteten zusammen zehn Zeilen.
+* ✅ übernommen — der Vorwurf an die Prüfung: `tests/runde16.test.mjs`
+  las den Quelltext und war grün, während die Lebensdauer falsch war. Eine
+  Regex auf der Datei kann keine Lebensdauer messen.
+
+**Umgesetzt:**
+1. **Die Kennung überlebt das Neuzeichnen.** `nKennung` steht jetzt auf
+   Modulebene und wird in `sessionStorage` (`hh_nkennung_v1`) gespiegelt,
+   überlebt also auch ein Neuladen des Tabs. Verweigert der Speicher
+   (privates Fenster, volles Kontingent), bleibt sie im Arbeitsspeicher —
+   `try/catch` um jeden Zugriff, der Rest läuft unverändert.
+2. **Die beiden Ursachen werden überall getrennt gezählt.** Neue
+   Zählstelle `teileOhneGroesse()`; Mittagsblick hat zwei Sätze („Größe
+   fehlt: …, gesammelt bestätigen" und „Menge fehlt im Kassennamen: …,
+   Bestätigen hilft hier nicht"), die Überschrift heißt „Nicht gerechnet"
+   und nennt beide Zahlen, der CSV-Kopf ebenso.
+3. **Die vier C-Funde.** `.abglz .za` in EINER Regel; die Zahlenzeile darf
+   umbrechen statt unter ihren Inhalt zu schrumpfen (`&#160;` hält „gefasst 120"
+   und „verkauft 108,6" je zusammen, gebrochen wird nur am Mittelpunkt);
+   der veraltete Kommentar über `.abglz` berichtigt; der Vorbehaltssatz
+   der App zählt jetzt wie das Backoffice „N von M Positionen nicht
+   gerechnet".
+
+4. **Zwei weitere Pauschalen im Mittagsblick, selbst gefunden.** Die
+   Kachel „Auffällige Differenzen" nannte als Grund „Größe fehlt oder
+   Position nicht zugeordnet" — den zweiten gibt es seit v29 nicht mehr
+   (`ENTSCHIEDEN-NACHTS.md`, Punkt 9), er stand seit der zehnten Jagd als
+   C im Backlog. Der Hinweis über der Tabelle nannte „keine bestätigte
+   Größe oder kein Z-Bericht" und ließ die fehlende Menge im Kassennamen
+   aus — den häufigeren Grund. Beide lesen jetzt aus `UNKLAR_GRUND`, also
+   aus den Zeilen, die tatsächlich dastehen. Dieselbe Krankheit wie B:
+   eine zweite Liste neben der Wahrheit, die irgendwann nicht mitgepflegt
+   wird.
+
+**Geprüft:** `npm test` **435/435** (eine Prüfung mehr: die getrennte
+Zählung). Neu und gegen den alten Stand nachweislich rot:
+* `tests/ui-runde16.cjs` Szene 8 — sie KLICKT: Server nimmt das POST an,
+  `GET /api/personen` schweigt, dazwischen ein Druck auf „Aktualisieren".
+  Auf `b3eb513`: „Pakete: 2 · Kennungen: 2" → rot, dieselbe Zahl wie beim
+  Jäger. Auf dem neuen Stand: 2 Pakete, 1 Kennung.
+* `tests/abgleich-unklar.test.mjs` — gemischte Lage (eine Position ohne
+  bestätigte Größe, eine ohne Menge im Namen): `teileOhneGroesse` trennt
+  1/1 und 3/6 Einheiten. Die vier Quelltextprüfungen daneben kippen alle
+  vier zwischen `b3eb513` und jetzt (einzeln nachgestellt).
+* `tests/ui-leitung-echt.cjs` 41/41 — die alte Prüfung `/Größe fehlt/` ist
+  durch die schärfere ersetzt („hält die beiden Ursachen auseinander").
+
+Alle acht Browserläufe grün, `ui-mass` alle zehn Urteile grün,
+Gestaltungsschicht wortgleich, vier Dateien in `public/`, `sw.js` v48 → v49.
+`wrangler.jsonc`, `schema.sql`, `migrations/`, `docs/`, `package.json`,
+`RUNDEN` unberührt; keine Zugangsdaten im Diff. Regel 1 weiter gebrochen
+(Branch `claude/runde16` statt `v2-review`) — alt bekannt, aus dem Auftrag
+dieser Nacht.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch,
+die Live-D1 selbst.
+
+**Für die Nächsten:**
+* An den **Jäger**: Der Unterschied zwischen „steht im Quelltext" und
+  „gilt zur Laufzeit" hat diese Runde zweimal getragen. Szene 8 in
+  `ui-runde16.cjs` ist das Muster dafür — sie stellt die Abbruchlage her
+  und klickt den Weg, den die Leitung nimmt.
+* An **Casimir**: `sessionStorage`-Schlüssel `hh_nkennung_v1` ist neu; er
+  liegt nur im Browser des Backoffice und enthält Name → Kennung, keine
+  Codes.
+
+**Phase/Thema:** Runde 16 / siebte Runde, nach der siebten Jagd
+
+**Backlog:** nichts Neues — die vier C-Funde sind gebaut, nicht vertagt.
+
+**STATUS:** VERBESSERUNGEN — aus meiner Rolle keine Punkte mit Priorität
+hoch/mittel mehr offen; die achte Jagd entscheidet.
+
+---
+
+### Runde 16 – software-engineer (achte Runde, nach der achten Jagd und der zweiten Gegenprobe)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **B (Jäger)**: `teileOhneGroesse()` teilte in ZWEI Töpfe,
+  der Bildschirm darunter kennt DREI Zustände. Alles, was nicht
+  `fehlt==="ausschank"` war, bekam den Satz „hier unten bestätigen" — auch
+  die Rezeptbestandteile (die bewusst keinen Knopf haben) und die Artikel
+  ohne ml-Vorschlag. Gemessen: angekündigt 23, tatsächlich sammelbar 12,
+  und das ist der Regelfall — 35 von 37 Artikeln in `STAMM.GETR` liefern
+  ohne Bestätigung gar keinen Vorschlag. Dieselbe Fehlerart, die die
+  Runde davor behoben hat, eine Schicht tiefer. Der qa-guardian hat
+  denselben Punkt unabhängig gefunden.
+* ✅ übernommen — **B (Jäger)**: Die Z-Bericht-Ansicht schrieb weiter
+  pauschal „Größe fehlt" — und das ist die Ansicht, in der die Leitung den
+  Bericht ZUERST sieht. Bei Bericht 37 betrifft das 26 von 48 Positionen.
+  Mein Kommentar „gezählt wird ab jetzt an EINER Stelle" war damit falsch.
+* ✅ übernommen — **B (Jäger + qa-guardian, unabhängig)**: `sessionStorage`
+  ist je Tab. Zwei offene `leitung.html` am MacBook sind der Normalfall und
+  ergaben für denselben Namen wieder zwei Kennungen.
+* ✅ übernommen — **hoch (qa-guardian)**: `review/MORGENBRIEF.md:4` nannte
+  „`sw.js` v42". Genau an diesem Brief wird um 06:00 geprüft, ob der Deploy
+  durch ist.
+* ✅ übernommen — die vier C-Funde beider Prüfer (Kassennamen statt
+  Kassenpositionen, „1 Einheiten", `hh_nkennung_v1` beim Abmelden räumen,
+  die zwei zu weichen Prüfungen) und die zwei Backlog-Punkte des
+  qa-guardian (dritte Ursache, `esc()` beim zweiten Leser).
+* ❌ abgelehnt — nichts.
+
+**Umgesetzt:**
+1. **Geteilt wird nach dem, was zu TUN ist, nicht nach der Ursache.**
+   Neue gemeinsame Bedingung `sammelbar(o)` — dieselbe, die der
+   Sammelknopf anwendet, eine Bedingung und zwei Leser. `teileOhneGroesse`
+   gibt drei Töpfe zurück: `sammelbar` („hier unten gesammelt bestätigen"),
+   `handisch` („die Gebindegröße von Hand eintragen, bei Mischgetränken am
+   Bestandteil") und `ausschank` („hier ist nichts zu bestätigen"). Der
+   Mittagsblick hat drei Sätze, die Überschrift drei Teile, der
+   Sammelhinweis nennt alle drei Gründe für die übrigen. Eine später
+   dazukommende vierte Ursache landet ausdrücklich bei „von Hand", nicht
+   bei „sammelbar" — die Seite, auf der ein Irrtum niemanden vor eine
+   leere Wand schickt.
+2. **Die Z-Bericht-Ansicht fragt `flaschen()`, statt zu raten** — sie liest
+   jetzt aus `UNKLAR_GRUND` wie alle anderen.
+3. **Die Kennung gilt für den ganzen Browser, und der Server wacht
+   dahinter.** Der Spiegel liegt in `localStorage` statt `sessionStorage`,
+   `abmelden()` räumt ihn weg. Dazu ein Wächter im Worker
+   (`personSchreiben`): Eine NEUE Zeile unter einem Namen, den es schon
+   gibt, wird mit 409 abgelehnt; jede Schreibung auf eine bestehende Zeile
+   (sperren, freigeben, Rolle ändern, Code neu setzen) bleibt erlaubt. Das
+   ist der Teil, den kein Browserspeicher leisten kann — ein zweites GERÄT
+   sieht er nicht. **Entschieden ohne Rückfrage** (du bist nicht
+   erreichbar): Zwei Menschen mit exakt gleichem Namen müssen jetzt
+   unterschieden werden; der Preis ist ein Satz beim Anlegen, der Gegenwert
+   ist ein Doppeleintrag, den niemand mehr herausnehmen kann (§8).
+   Revidierbar, wenn du es anders willst.
+
+**Geprüft:** `npm test` **438/438** (drei Prüfungen mehr: der Namenswächter).
+Jede neue Prüfung gegen den alten Stand gemessen:
+* Namenswächter — ohne `src/index.js` rot („eine zweite Zeile unter
+  demselben Namen wird abgelehnt"), die beiden Gegenproben („dieselbe Zeile
+  weiterzuschreiben bleibt erlaubt", „ohne Namen bleibt es bei 422") grün in
+  beiden Ständen; sie sichern, dass der Wächter das Haus nicht aussperrt.
+* `teileOhneGroesse` — drei Töpfe an einer erfundenen Lage (Vorschlag /
+  Rezept / ohne Vorschlag / ohne Menge) und am echten Bericht 37.
+* `tests/ui-runde16.cjs` Szene 8 klickt jetzt zusätzlich ein **echtes
+  Neuladen** und einen **zweiten Tab** und liest nach, dass im Gedächtnis
+  kein Code steht (Regel 9 am laufenden Objekt).
+* `tests/ui-leitung-echt.cjs` prüft den **Kopf des Abschnitts allein**,
+  nicht mehr den ganzen `main`-Text — „ohne bestätigte Größe" entsteht auch
+  in `vorbehaltSatz()` weiter unten, die Suche über alles konnte grün sein,
+  ohne dass der Kopf sie enthält. Dazu neu: die angekündigte Zahl muss die
+  sein, die der Sammelknopf anfasst. 44/44.
+
+`sw.js` v49 → **v50**. Vier Dateien in `public/`, Gestaltungsschicht
+wortgleich. `wrangler.jsonc`, `schema.sql`, `migrations/`, `docs/`,
+`package.json`, `RUNDEN` unberührt; `src/index.js` geändert (Namenswächter),
+kein Schemaeingriff, keine Migration, kein Schreibzugriff auf die Live-D1.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch.
+Und: **der Klick-Durchgang auf der Live-Adresse ist aus dieser Umgebung
+nicht möglich** — der Egress-Proxy weist `fassungstool.ikrathc.workers.dev`
+per Organisationsrichtlinie ab (403 auf CONNECT). Was ich stattdessen live
+prüfe, steht im Morgenbrief.
+
+**Für die Nächsten:**
+* An den **Jäger**: Zweimal in Folge war der Fund „die Trennung hört eine
+  Ebene zu früh auf". Die Wurzel war beide Male dieselbe: zwei Stellen, die
+  über dieselbe Menge reden, mit zwei eigenen Bedingungen. Jetzt gibt es
+  `sammelbar()` als einzige Bedingung. Der nächste Fund dieser Art wäre
+  eine dritte Stelle, die wieder selbst filtert.
+* An den **qa-guardian**: Die festen Ports in den Prüfskripten sind im
+  Backlog; `EADDRINUSE` sieht aus wie ein Fund und ist keiner.
+
+**Phase/Thema:** Runde 16 / achte Runde, vor dem Livegang
+
+**Backlog:** feste Ports in den Prüfskripten (mittel); `hh_nkennung_v1`
+vergeht nicht mehr von selbst, nur beim Abmelden (niedrig).
+
+**STATUS:** VERBESSERUNGEN — aus meiner Rolle nichts mit Priorität
+hoch/mittel offen; die neunte Jagd entscheidet.
+
+---
+
+### Runde 16 – software-engineer (neunte Runde, nach der neunten Jagd und der zweiten Schlusskontrolle)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A (Jäger)**: Die CSV-Ausfuhr „Ohne Zuordnung" wies die
+  Stückzahl eines EINZIGEN Tages aus, während die Ausfuhr über das ganze
+  Fenster geht. `abgleich()` führt denselben Kassennamen über alle Tage als
+  eine Zeile, legte dabei aber das Positionsobjekt des ersten Tages ab. Mit
+  sieben Berichten im Fenster: 136 Einheiten ausgewiesen, 952 verkauft —
+  Faktor sieben auf jeder der 44 Zeilen. Die Zuordnungsansicht daneben
+  summierte richtig; dieselbe Zahl, zwei Werte, keiner gekennzeichnet. Nicht
+  aus dieser Runde, aber ein A — und heute unsichtbar, weil nur ein Bericht
+  im Fenster liegt.
+* ✅ übernommen — **B (Jäger)**: Der Namenswächter verglich in SQL. `lower()`
+  ist dort ASCII, `trim()` schneidet nur außen, NFC und NFD sind verschiedene
+  Zeichenketten. Am echten Worker kamen durch: doppeltes Leerzeichen,
+  geschütztes Leerzeichen, NFD-Umlaut, „MÜLLER" neben „Müller".
+* ✅ übernommen — **B (Jäger + qa-guardian, unabhängig)**: Die 409-Meldung ist
+  216 Zeichen lang und stand 2,2 s in einer Sprechblase; bei 390 px machte
+  `--radius-pill` daraus einen Kreis von 195 × 208 px, erste und letzte Zeile
+  hell auf hellem Grund. Und `sende()` lud nach einem Fehlschlag die Liste
+  nicht nach — die Zeile, zu deren „PIN zurücksetzen" der Satz schickt, stand
+  gar nicht auf dem Schirm.
+* ✅ übernommen — die drei C-Funde: `a.offen` hieß weiter „Kassenpositionen"
+  (dieselbe Berichtigung zwei Zeilen höher war an ihr vorbeigegangen), die
+  Vorschlag-Spalte prüfte mit einer vierten eigenen Bedingung, der CSV-Kopf
+  kannte zwei Zustände, während die Ansicht drei kennt.
+* ❌ abgelehnt — die Einordnung des qa-guardian, der Toast liege in der
+  geteilten Gestaltungsschicht. Er tut es nicht: Der geteilte Block endet bei
+  `leitung.html:244`, die Regel steht bei `:530`, und die App hat eine eigene
+  (`.toast` in `index.html:1068`, mit `max-width:88vw` und `radius-md` — dort
+  war es seit je richtig). Geändert habe ich deshalb nur `leitung.html`.
+
+**Umgesetzt:**
+1. **Die offene Kassenposition zählt über das Fenster.** `offen` summiert
+   jetzt wie `merkeOhneGroesse()` daneben — und führt eine eigene Zeile,
+   statt das Objekt aus `ZBER` abzulegen (das liegt im Speicher des Geräts
+   und darf nicht verändert werden).
+2. **Der Wächter vergleicht in JS statt in SQL:** `normalize("NFKC")`,
+   kleingeschrieben, Leerraum zusammengezogen. Nicht normalisiert werden
+   Satzzeichen — „Marinus." kommt weiter durch, und das ist Absicht: Der
+   Fall, den die Wache abfängt, ist der zweite Anlauf nach einem Abbruch, und
+   dabei tippt man denselben Namen. Von zwei Schreibweisen auf denselben
+   Menschen zu RATEN wäre derselbe Fehler, den Regel 5 beim Automapping
+   verbietet.
+3. **Die Absage steht, statt zu blinken.** Serverfehler aus `sende()` gehen in
+   einen stehenden `.hinweis warn` am Formular (`#nFehler`) und bleiben
+   bis zum nächsten Versuch; der Toast bekommt `max-width`, `radius-md`,
+   mittige Ausrichtung und eine Dauer nach Textlänge (55 ms je Zeichen,
+   gedeckelt bei 9 s). Und nach einem Fehlschlag lädt `sende()` die Liste
+   nach — der Server hat ja geantwortet, er ist erreichbar; die Zeile, zu der
+   der Satz schickt, steht danach da.
+4. **Die drei C-Funde**, dazu die Vorschlag-Spalte auf `sammelbar(o)`
+   umgestellt (vierte Stelle mit eigener Bedingung — genau die Wurzel, an der
+   diese Runde zweimal hängen blieb) und die CSV um eine Spalte „Was zu tun
+   ist" erweitert.
+
+**Geprüft:** `npm test` **440/440**. Neu und gegen `c61ed70` nachweislich rot:
+* die Fensterrechnung (drei Tage, derselbe Kassenname: 12 statt 5) samt der
+  Gegenprobe, dass der gespeicherte Z-Bericht dabei unverändert bleibt;
+* der Wächter gegen acht Schreibweisen (`asad`, `ASAD`, Leerraum außen,
+  Tabulator, geschütztes Leerzeichen, `JÜRGEN`, NFD, doppelter Leerraum
+  zwischen Vor- und Nachnamen) — und die Gegenprobe, dass ein Leerzeichen
+  MITTEN im Wort weiterhin ein anderer Name ist;
+* `tests/qa-runde16-kennung.cjs` K7: die Absage steht am Formular, der
+  Toast ist kein Kreis mehr (Radius 8 statt 999 bei 39 px Höhe), kein
+  waagrechter Überlauf bei 390 px, und nach zehn Sekunden steht der Satz
+  immer noch da. Auf `c61ed70` dreimal rot, mit gemessenen 999 px Radius auf
+  208 px Höhe.
+
+`sw.js` v50 → **v51**.
+
+**Nicht behoben, bewusst:**
+* **Der Wettlauf.** Zwei gleichzeitige `POST /api/personen` mit demselben
+  neuen Namen laufen beide am `SELECT` vorbei. Dicht macht das nur ein
+  UNIQUE-Index auf `person(name)` — eine Migration, und diese Nacht hat
+  ausdrücklich keine. Steht im Backlog samt der Abfrage, die vorher lesend
+  laufen muss (sonst scheitert der Index an schon bestehenden Dubletten).
+* **`ANLAGE_OFFEN`.** Der qa-guardian hat bemerkt, dass der Wächter nebenbei
+  ein altes Loch schließt: Solange `ANLAGE_OFFEN` gesetzt ist, konnte ein
+  unangemeldeter `POST /api/anlage` eine zweite Zeile „Casimir" mit
+  `rolle: leitung` anlegen. Das ist jetzt 409. **Berichtigt von der zehnten
+  Jagd:** Das ist kein Schutz. Der Körper bestimmt die Rolle selbst, jeder
+  Name legt eine `leitung`-Zeile an, und der Wächter sperrt nur die exakte
+  Wiederholung — „Casimir." genügt. Ob die Variable live noch
+  gesetzt ist, steht im Dashboard und ist für mich nicht erreichbar —
+  Aufgabe im Morgenbrief.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch. Der
+Klick-Durchgang live (Egress-Proxy weist die Adresse ab, siehe Morgenbrief).
+
+**Für die Nächsten:**
+* An den **Jäger**: Dreimal in Folge hieß der Fund „eine Stelle rechnet
+  anders als die daneben". `sammelbar()` ist jetzt die einzige Bedingung, und
+  `offen` summiert wie `ohneGroesse`. Der nächste Fund dieser Art wäre eine
+  fünfte Stelle.
+
+**Phase/Thema:** Runde 16 / neunte Runde, vor dem Livegang
+
+**Backlog:** Wettlauf/UNIQUE-Index (niedrig, nach Live-Prüfung);
+`hh_nkennung_v1` auch beim `pagehide` räumen (niedrig); Prüfungsreihenfolge in
+`personSchreiben` (niedrig); feste Ports in den Prüfskripten (mittel).
+
+**STATUS:** VERBESSERUNGEN — aus meiner Rolle nichts mit Priorität hoch/mittel
+offen.
+
+---
+
+### Runde 16 – software-engineer (zehnte Runde, nach der zehnten Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A**: Der Namenswächter, den ich in der achten Runde gebaut
+  habe, **feuert auf dem normalen Weg nie.** `#nAdd` suchte den Namen in
+  `LEUTE` und schickte die gefundene `id` mit; im Worker ist
+  `namensgleich.some(r => r.id === id)` damit wahr, der 409 fällt aus, und
+  `ON CONFLICT(id) DO UPDATE` schreibt die bestehende Zeile um. Am echten
+  Worker gemessen, was das anrichtet: der bisherige Code der Person ist danach
+  tot (Anmeldung 401, und niemand sagt es ihr), die Rolle fällt auf den Wert
+  des Auswahlfelds zurück — das steht immer auf „Service", weil es nie
+  vorbelegt wird —, `aktiv:1` hebt eine Sperre auf, und **die einzige Leitung
+  stuft sich damit selbst ab**: `GET /api/personen` antwortet danach 403, auch
+  mit dem alten Keks, zurück geht es nur über die D1-Konsole. Und das in
+  dieser Runde neu eingebaute `hole()` nach einem Fehlschlag machte den
+  Rückfall noch schlimmer: Zweimal „Speichern", und selbst der 409 war
+  umgangen. Mein Wächter war richtig gebaut und stand vor einer offenen Tür.
+* ✅ übernommen — **B**: Die fünfte Stelle. `zaehler("zuordnung")` rief
+  `abgleich(t)` ohne Spanne, also ein Fenster von einem Tag, während
+  Mittagsblick und Abgleichansicht `SPANNE` rechnen. Gemessen an zehn Tagen:
+  Navigation 10, Ansicht daneben 44 — und ist der letzte Tag zufällig
+  vollständig zugeordnet, verschwindet die Zahl ganz, während 44 Kassennamen
+  still aus dem Abgleich fallen.
+* ✅ übernommen — **B**: Die CSV nennt ihren Zeitraum nicht. Jede Zahl darin
+  ist über `SPANNE` Tage summiert, im Kopf stand „Betriebstag <ein Tag>". Mit
+  sieben Berichten: 952 Einheiten, wo an diesem Tag 136 verkauft wurden. Meine
+  Berichtigung der neunten Runde hat die letzte Spalte in dieselbe Skala
+  gezogen — richtig, aber die Skala blieb unbenannt.
+* ✅ übernommen — **C**: K7 prüfte den Toast „Nicht gespeichert" (39 px hoch),
+  nicht den langen Satz; die Bedingung `toastH <= 48` war damit immer wahr, ein
+  zurückgedrehtes `--radius-pill` wäre grün durchgegangen. Und das `max-width`
+  griff unter rund 1120 px gar nicht: bei `position:fixed` mit `left:50%`
+  bleibt nur die halbe Fensterbreite. Gemessen 195 px bei 390 px Fenster —
+  exakt die Zahl, die mein eigener Kommentar als behoben beschrieb.
+* ✅ übernommen — **C**: Die Absagen der LISTE (Rolle, Sperren) haben kein
+  `#nFehler` in der Nähe; bei 390 px liegt das Formular 1253 px weiter unten.
+  Ich hatte den Grund aus dem Toast genommen und nur „Nicht gespeichert"
+  stehen lassen.
+* ✅ übernommen — **C**: `#toast` im Backoffice ohne `env(safe-area-inset-bottom)`.
+* ✅ übernommen — **C**: Mein Satz „der Wächter verhindert immerhin eine zweite
+  Zeile «Casimir» mit voller Leitung" war zu großzügig. Mit gesetztem
+  `ANLAGE_OFFEN` legt JEDER unangemeldete Name eine `leitung`-Zeile an, und
+  der Wächter sperrt nur die exakte Wiederholung — „Casimir." genügt.
+
+**Umgesetzt:**
+1. **Das Formular legt AN, es schreibt nicht um.** Steht der Mensch in
+   `LEUTE`, wird nichts geschrieben; auf dem Schirm steht, warum, und wohin
+   (Rolle in seiner Zeile, Code über „PIN zurücksetzen" — dort sitzen auch die
+   Selbstschutz-Abfragen, die es an diesem Knopf nicht gibt). Die Kennung
+   bleibt, wofür sie gebaut wurde: Sie merkt sich, welche `id` DIESES Fenster
+   einem Namen gab, als es ihn anlegte. Ist die Liste veraltet, geht dieselbe
+   `id` noch einmal hinaus und schreibt dieselbe Zeile (der Fund der fünften
+   Jagd bleibt behoben); ist sie veraltet und der Mensch steht doch schon am
+   Server, fängt ihn der Wächter dort.
+2. **Die fünfte Stelle rechnet dieselbe Spanne**, die CSV nennt Zeitraum,
+   Spanne und Zahl der Berichte im Kopf und trägt den Zeitraum im Dateinamen.
+3. **Der Toast steht zwischen zwei festen Rändern** (`left`/`right` statt
+   `left:50%`), zentriert über `margin-inline:auto`, mit `width:fit-content`
+   und der Safe-Area unten. Gemessen bei 390 px: 358 px breit, sechs Zeilen
+   statt elf. Der Grund steht wieder in BEIDEN — Toast und stehender Hinweis.
+
+**Geprüft:** `npm test` **440/440**. Neu und gegen `94d1832` nachweislich rot:
+* `tests/qa-runde16-kennung.cjs` **K8 klickt** den A-Fund nach: Liste steht,
+  Name getippt → auf dem alten Stand ging ein Paket
+  `{"id":"p-asad","rolle":"service",…}` hinaus (die Rolle still von
+  „wirtschaft" auf „service"), auf dem neuen geht keines, und ein wirklich
+  neuer Mensch wird weiterhin angelegt. Sechs von acht Urteilen kippen.
+* **K7 misst jetzt den langen Satz im Toast**, nicht die Kurzmeldung: auf
+  `94d1832` 195 px breit und elf Zeilen, jetzt 358 px und sechs Zeilen,
+  mittig zwischen 16-px-Rändern.
+* Quelltextwachen für die Spanne der Navigationszahl und die drei neuen
+  Kopfzeilen der CSV.
+
+`sw.js` v51 → **v52**.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch. Der
+Klick-Durchgang live (Egress-Proxy, siehe Morgenbrief).
+
+**Für die Nächsten:**
+* An den **Jäger**: Der Fund war die Umkehrung der drei davor — nicht zwei
+  Stellen, die verschieden rechnen, sondern eine Wache, der der Client die
+  Waffe aus der Hand nimmt. Wer eine Prüfung im Worker baut, muss den Weg
+  klicken, auf dem sie greifen soll; der Quelltext sagt es nicht.
+
+**Phase/Thema:** Runde 16 / zehnte Runde, vor dem Livegang
+
+**Backlog:** „Menge gesamt" auf der Seite „Zuordnung" summiert über ALLE
+geladenen Berichte, die CSV über das Fenster — dieselbe Menge, zwei Skalen,
+beide unbenannt (mittel).
+
+**STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – qa-guardian (dritte Schlusskontrolle, Urteil auf `896b6c6` / Codestand `94d1832`)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — **deine Ablehnung meiner Einordnung „der Toast liegt in der
+  geteilten Schicht" ist richtig, meine war falsch.** Nachgemessen: der geteilte
+  Block ist `index.html:13–247` = `leitung.html:10–244`, `diff` sagt byteweise
+  identisch; `#toast` steht bei `leitung.html:530`, also darunter, und
+  `index.html:1068` hat eine eigene `.toast`-Regel mit `max-width:88vw`,
+  `radius-md`, `text-align:center`, `box-shadow`. Nur `leitung.html` zu ändern
+  war richtig.
+* ❌ abgelehnt — **„der Toast ist repariert" gilt nur am MacBook.** Gemessen auf
+  `896b6c6` mit einem langen Satz: 320 px → 168×152, 390 px → 195×133, 430 px →
+  215×114, 1280 px → 560×58. `max-width:min(560px, calc(100vw - 2*space-4))`
+  greift unter rund 1120 px nie, weil neben `position:fixed; left:50%` nur die
+  halbe Fensterbreite Platz ist. Kein Kreis mehr (Radius 8) — aber auch nicht
+  breiter. (Die zehnte Jagd hat denselben Punkt; in `fb10168` gemessen 358 px
+  bei 390 px.)
+* ❌ abgelehnt — **„die Absage steht über dem Formular".** `#nFehler` steht im
+  Markup NACH der Zeile mit „Speichern", gemessen bei 1280 px auf y=735 gegen
+  Knopf y=687 — also darunter. Gilt für `LOG.md`, `MORGENBRIEF.md`, den
+  HTML-Kommentar bei `:3012` und den K7-Urteilstext.
+* ✅ übernommen — **`Marinus.` bleibt offen.** Deine Begründung trägt: aus zwei
+  Schreibweisen auf denselben Menschen zu raten wäre Regel 5 mit anderem
+  Vorzeichen.
+* ✅ übernommen — Wettlauf/UNIQUE-Index und meine Funde 4/5 im Backlog.
+
+**Umgesetzt:** nichts am Code (Auftrag: nichts ändern, nichts committen). Belege
+unter `review/screens/qa16/` (`a-ueberschreiben-1280.png`, `q1`–`q4`,
+`toast-rein-*`, `toast-neu-*`, `k7-absage-390.png`).
+
+**Geprüft (alles gegen eine reine `git archive 896b6c6`-Ausfuhr, nicht gegen den
+Arbeitsbaum — siehe Prozesswarnung unten):**
+* **VETO-Fund · Das Anlegen-Formular schreibt eine bestehende Person um.**
+  `#nAdd` sucht den Namen in `LEUTE` und schickt DEREN `id` mit; im Worker ist
+  `namensgleich.some(r => r.id === id)` damit wahr, der 409 fällt aus, und
+  `ON CONFLICT(id) DO UPDATE` überschreibt die Zeile. Im Browser gemessen:
+  Paket `{"id":"p-service-7","name":"Asad Karakiri","rolle":"service",
+  "code":"…","aktiv":1}` — die Rolle kommt aus dem Auswahlfeld, das nie
+  vorbelegt wird, und `aktiv:1` hebt eine Sperre auf. Am echten Worker gegen
+  `docs/live-schema.sql` durchgespielt: Rolle `leitung` → `service`, Anmeldung
+  mit dem alten Code danach 401 (niemand sagt es der Person), mit dem neuen 200
+  als `service`, `GET /api/personen` danach 403. Ist es die einzige Leitung,
+  kommt niemand mehr in die Verwaltung; zurück nur über die D1-Konsole, ohne
+  Sicherung und ohne Papierkorb. Der Schirm sagt dabei „Gespeichert".
+  **In `fb10168` behoben** (nachgemessen: kein Paket geht mehr hinaus).
+* **K7 misst nicht, was es behauptet.** In einer Kopie NUR die Toast-Regel
+  zurückgedreht (`radius-pill`, kein `max-width`) — K7 bleibt vollständig grün
+  und druckt dabei „der Toast ist kein Kreis mehr (Radius 999 · Höhe 39)". Die
+  Bedingung `lage.radius*2 < lage.toastH || lage.toastH <= 48` fällt immer auf
+  den zweiten Zweig, weil der lange Satz seit dieser Runde gar nicht mehr in den
+  Toast geht. K7 sichert `#nFehler` (richtig und wertvoll), die Gestaltung des
+  Toasts sichert es nicht.
+* **Absagen aus der LISTE sind praktisch stumm.** Rollenwechsel bei 390 px mit
+  acht Zeilen: der stehende Satz landet auf y=1820 bei 844 px Fensterhöhe,
+  der Toast sagte nur „Nicht gespeichert". (In `fb10168` trägt der Toast den
+  Grund wieder.)
+* **Namenswächter, zehn Wege am echten Worker:** Großschreibung, `JÜRGEN`, NFD,
+  zwei Leerzeichen, geschütztes Leerzeichen, U+202F, Tabulator, Zeilenumbruch,
+  Leerraum außen, gesperrte Zeile — alle 409. Umbenennen auf einen belegten
+  Namen 409, dieselbe Zeile schreiben 200, erste Person in leerer Tabelle 200.
+  **Offen bleibt der unsichtbare Zeichensatz:** U+200B, U+00AD und U+200E
+  erzeugen eine zweite Zeile (U+FEFF nicht, das fängt `\s`). Kein Tippweg, aber
+  ein Einfügeweg.
+* **Fenstersumme eigenständig nachgerechnet** (echter Bericht 37, siebenmal, im
+  ausgelieferten `abgleich()`): 44 Kassennamen, 136 → 952 Stück, jede Zeile
+  trägt die Fenstersumme, `ZBER` bleibt tief gleich, die CSV nennt dieselbe
+  Zahl, mit einem Bericht im Fenster unverändert 136.
+* **Das neue `hole()` nach einem Fehlschlag schadet nirgends:** 401 → die Liste
+  sagt „Die Anmeldung gilt nicht mehr" (der stehende Satz sagt nur „Nicht
+  gespeichert", weil der 401 des Workers kein `fehler` trägt); stummer GET →
+  Liste bleibt stehen, Hinweis bleibt stehen, Toast „Die Liste ist vielleicht
+  nicht aktuell"; zweimal drücken → dieselbe Kennung, kein zweiter Eintrag; die
+  Eingabe bleibt stehen. Keine JS-Fehler.
+* **Harte Regeln `c61ed70` → `94d1832`:** vier Dateien in `public/`;
+  Gestaltungsschicht byteweise wortgleich (auch noch in `fb10168`); `VERSION`
+  v50 → v51, `ERGEBNIS.md`/`MORGENBRIEF.md` nennen v51; `RUNDEN` = 1000
+  unberührt; `wrangler.jsonc`, `schema.sql`, `migrations/`, `package.json`
+  unberührt; Regel 6 nicht berührt (`index.html` unverändert); Regel 14 nicht
+  berührt; Regel 9: im Diff keine Ziffernfolge außer 9000/2200 (Fristen), und am
+  laufenden Objekt kein Code in `localStorage`/`sessionStorage`, in `#nFehler`
+  oder in der Liste. Einzige neue SQL-Stelle `SELECT id, name FROM person` —
+  deckt sich mit `docs/live-schema.sql:33`. Kein Schreibzugriff auf die Live-D1.
+* **Nachgemessen statt geglaubt:** `npm test` 440/440 (zweimal), `ui-runde16`,
+  `qa-runde16-kennung`, `qa-runde16-schluss`, `qa-runde16-gegenprobe`,
+  `qa-runde16-stumme-anmeldung`, `qa-runde16-stummer-leib`, `ui-nachjagd`,
+  `qa-schluss` alle „Alle Prüfungen ja.", `ui-leitung-echt` 44/44, `ui-mass`
+  zehn Urteile grün. Persona „neue Servicekraft, erster Tag" bei 390 px
+  vollständig: offline → online, doppeltes Absenden (1 Vorgang bleibt 1),
+  Abbruch mitten in der Eingabe, abgelaufene Sitzung — keine JS-Fehler; hängen
+  bleibt sie an zwei bekannten Stellen (Hilfe-Sheet öffnet ungefragt,
+  Begrüßung nach dem Neuladen).
+
+**Für die Nächsten:**
+* **Prozesswarnung an die Orchestrierung:** Während dieser Kontrolle hat ein
+  zweiter Agent im SELBEN Arbeitsbaum gearbeitet, dabei
+  `git show 94d1832:public/leitung.html > public/leitung.html` auf den laufenden
+  Baum geschrieben, `fb10168` mitten in meine Prüfung committet, und die festen
+  Ports kollidierten (`EADDRINUSE` 8793). Jede Messung aus diesem Fenster ist
+  wertlos. Ich habe deshalb alles gegen eine reine Ausfuhr geprüft. Ein
+  Arbeitsbaum je Agent (`git worktree`) oder eine ernst gemeinte Reihenfolge.
+* An den **software-engineer**: Die Überschrift „Aufnehmen oder Code neu setzen"
+  steht in `fb10168` noch da, obwohl das Formular den zweiten Fall jetzt
+  ausdrücklich abweist.
+
+**Phase/Thema:** Runde 16 / Schlusskontrolle vor dem Livegang
+
+**Backlog:** Formular überschreibt bestehende Person (hoch, in `fb10168`
+behoben — dort gegenprüfen); K7 sichert die Toast-Gestaltung nicht (mittel);
+`#toast` nutzt unter 1120 px nur die halbe Breite (mittel, in `fb10168`
+behoben); Absagen aus der Liste stehen 1000 px unter dem Fenster (mittel, in
+`fb10168` entschärft); unsichtbare Zeichen im Namenswächter (niedrig);
+`#nFehler` steht unter dem Knopf, nicht darüber (niedrig); Überschrift
+„Aufnehmen oder Code neu setzen" (niedrig).
+
+**STATUS:** BLOCKER — **VETO für `896b6c6`.** Der Livegang dieses Standes würde
+die einzige Leitung aussperren können, ohne Rückweg außer der D1-Konsole. Auf
+`fb10168` ist der Fund behoben; dieser Stand ist von mir nicht geprüft.
+
+---
+
+### Runde 16 – software-engineer (elfte Runde, nach der dritten Schlusskontrolle)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **das Veto ist berechtigt**, und der Fund ist derselbe, den
+  die zehnte Jagd gemeldet hat. Er war zum Zeitpunkt des Urteils (`896b6c6`)
+  offen und ist in `fb10168` behoben; der qa-guardian hat das nachgemessen, es
+  geht kein Paket mehr hinaus.
+* ✅ übernommen — **„die Absage steht über dem Formular" war falsch.** `#nFehler`
+  stand im Markup NACH der Zeile mit „Speichern", gemessen bei 1280 px auf
+  y=735 gegen den Knopf bei y=687. Der Satz stand in meinem Log, im
+  Morgenbrief, im HTML-Kommentar und im Urteilstext von K7. Der Kasten steht
+  jetzt wirklich darüber (gemessen y=675 gegen y=844), und K7 prüft die Lage.
+* ✅ übernommen — **unsichtbare Zeichen umgehen den Wächter.** Weiches
+  Trennzeichen, Nullbreiten-Leerzeichen, Wortverbinder und die
+  Schreibrichtungs-Marken erzeugten eine zweite Zeile. Tippen kann man sie
+  nicht, aus einer Tabelle oder einer Nachricht kopiert man sie leicht mit.
+  Sie werden jetzt entfernt — was auf dem Schirm nichts ist, darf auch im
+  Vergleich nichts sein. Geraten wird dabei nicht: sichtbare Zeichen bleiben
+  alle stehen.
+* ✅ übernommen — die Überschrift „Aufnehmen oder Code neu setzen" versprach
+  weiter den zweiten Fall, den das Formular jetzt ausdrücklich abweist. Sie
+  heißt „Neuen Menschen aufnehmen", mit einer Zeile darunter, wohin die
+  anderen gehören.
+* ✅ übernommen — **die Prozesswarnung, und sie trifft mich.** Ich habe
+  während der laufenden Schlusskontrolle im selben Arbeitsbaum gearbeitet und
+  für eine Gegenprobe sogar kurz `git show 94d1832:public/leitung.html` über
+  die Datei geschrieben. Das macht fremde Messungen aus demselben Fenster
+  wertlos. Die Gegenproben gehören in eine Kopie (Kratzverzeichnis), nicht in
+  den Arbeitsbaum, und ein prüfender Agent darf nicht neben einem bauenden
+  laufen. Ab hier: erst bauen und committen, dann prüfen lassen, nichts
+  dazwischen.
+
+**Umgesetzt:**
+1. **`#nFehler` steht über dem Knopf**, der stehende Kasten hat Rand nach oben
+   und unten.
+2. **`namensSchluessel` entfernt unsichtbare Zeichen** (U+00AD, U+200B–U+200F,
+   U+2060, U+202A–U+202E, U+FEFF) vor dem Zusammenziehen.
+3. **Die Überschrift sagt, was das Formular tut**, und nennt den Weg für alle
+   anderen.
+
+**Geprüft:** `npm test` **440/440**; der Wächter gegen sechs Einfügewege mit
+unsichtbaren Zeichen, gegen `fb10168` nachweislich rot. K7 misst jetzt auch die
+Lage des Kastens. `sw.js` v52 → **v53**.
+
+**Für die Nächsten:**
+* An den **qa-guardian**: Der nächste Durchgang läuft gegen einen stabilen,
+  committeten Stand, ohne zweiten Agenten im Baum. Das war mein Fehler.
+
+**Phase/Thema:** Runde 16 / elfte Runde, vor dem Livegang
+
+**Backlog:** `#toast` und `.toast` sind zwei Regeln für dieselbe Sache in zwei
+Dateien — sie driften seit Runden auseinander (Safe-Area, `max-width`,
+Ausrichtung). Zusammenlegen geht nur über die geteilte Gestaltungsschicht und
+ist keine Nachtarbeit (mittel).
+
+**STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – software-engineer (zwölfte Runde, nach der elften Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A**: Meine Absage aus der zehnten Runde hing an `LEUTE` —
+  und `LEUTE` ist leer, sobald `hole()` in die Frist läuft, ohne Netz ist oder
+  401/403 bekommt, also **genau dann, wenn man sie braucht**. Die gemerkte
+  Kennung ging dann mit dem NEUEN Formularinhalt hinaus, der Worker sah seine
+  eigene `id` unter den namensgleichen und schwieg, und `ON CONFLICT(id) DO
+  UPDATE` schrieb Rolle, Prüfsumme und `aktiv` neu: alter Code tot, Rolle
+  „Service", Sperre aufgehoben, auf dem Schirm „Gespeichert". Der Morgenbrief
+  schickt Casimir genau in diese Lage — drei Menschen anlegen, danach „PIN
+  zurücksetzen"; ab da hält dieser Browser drei Kennungen dauerhaft.
+* ✅ übernommen — **B**: Die sechste Stelle. Ich hatte die Navigationszahl auf
+  `SPANNE` gestellt — auch falsch. Die Zahl steht neben einem Menüpunkt, und
+  die SEITE dahinter kennt gar kein Fenster: `vZuordnung` geht über alle
+  geladenen Berichte. Gemessen: Navigation 44, Seite daneben 45.
+* ✅ übernommen — **B**: Mein neuer Satz „wohin die anderen gehören" stand nicht
+  auf dem Schirm. `kuerzeUnter()` klappt jeden `.unter` über 150 Zeichen hinter
+  einen Knopf — und genau der zweite Satz war der wichtige.
+* ✅ übernommen — die sechs C-Funde, davon zwei gebaut (siehe unten), vier in
+  den Backlog: weitere unsichtbare Zeichen (U+034F, U+FE0F, U+180E, U+3164,
+  Tag-Zeichen, kyrillisches А), das ZWNJ/ZWJ-Problem in arabischer und
+  indischer Schrift (dort ändern sie das Schriftbild — mein Kommentar „Was auf
+  dem Schirm nichts ist" trifft dort nicht zu), `.toast` in der App mit
+  demselben 50-vw-Fehler, und der waagrechte Überlauf bei 320 px in
+  `.kopf button.k` (vor Runde 16).
+
+**Umgesetzt:**
+1. **Die Kennung merkt sich, OB der Server bestätigt hat.** Aus der
+   Zeichenkette wird `{id, ok}`. Unbestätigt → derselbe Anlauf darf wiederholt
+   werden (der Fund der fünften Jagd bleibt behoben). Bestätigt → hier wird
+   nicht geschrieben, auch wenn die Liste schweigt. Altbestand (bloße
+   Zeichenketten) gilt als bestätigt — die vorsichtige Seite.
+2. **Eine Zählstelle für die Kassennamen.** `alleKassennamen()` /
+   `offeneKassennamen()`; Navigation, Zuordnungsseite und Rezepturen lesen
+   dieselbe. Es waren drei eigene Aufzählungen.
+3. **Der Satz steht auf dem Schirm** — als `deutung` statt als `unter`, damit
+   `kuerzeUnter()` ihn nicht einklappt.
+
+**Geprüft:** `npm test` **440/440**. Neu und gegen `216b7aa` nachweislich rot:
+`tests/qa-runde16-kennung.cjs` **K9** klickt die Lage nach (erster Anlauf
+glückt, Liste schweigt danach, Seite neu geladen, derselbe Name) — auf dem
+alten Stand ging ein Paket `{"rolle":"service",…}` hinaus, jetzt keines.
+**K10** ist die Gegenprobe: kommt das Paket an, aber die ANTWORT nicht, darf
+derselbe Anlauf noch einmal hinaus, mit derselben Kennung — auf beiden Ständen
+grün. Dafür hat der Prüfserver einen neuen Zustand `postStumm` bekommen; die
+alten Szenen K2/K3/K5 liefen mit „GET stumm, POST antwortet", und das ist seit
+dieser Runde eben **kein** unbestätigter Anlauf mehr.
+
+`sw.js` v53 → **v54**.
+
+**Für die Nächsten:**
+* An den **Jäger**: Die Wurzel war diesmal, dass ein Gedächtnis zwei Dinge
+  bedeuten musste, die verschieden behandelt gehören. Es trägt jetzt beides
+  ausdrücklich.
+
+**Phase/Thema:** Runde 16 / zwölfte Runde, vor dem Livegang
+
+**Backlog:** vier C-Funde der elften Jagd (siehe `review/BACKLOG.md`).
+
+**STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – software-engineer (dreizehnte Runde, nach der zwölften Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A**: Meine Behebung war nicht behoben, sondern **halbiert**.
+  Die bestätigte Hälfte war zu, die unbestätigte offen — und sie ist die, für
+  die der ganze Mechanismus gebaut wurde. `ok:false` wurde **nie**
+  fortgeschrieben: auch nicht, nachdem die Liste den Menschen längst zeigte.
+  Damit war die Reichweite nicht „ein Mensch, den dieses Fenster gerade angelegt
+  hat", sondern „jeder Mensch, dessen erster Anlauf aus diesem Browser je eine
+  Antwort verloren hat" — unbegrenzt lange. Am echten Worker gemessen: Rolle
+  `leitung` → `service`, Prüfsumme neu (alter Code 401), `aktiv:1`, Toast
+  „Gespeichert".
+* ✅ übernommen — **C**: Mein Urteil `A/11 · bestaetigt: derselbe Mensch wird
+  nicht überschrieben` maß `pakete.length === 5`, also dass ein fünftes Paket
+  hinausging. Der Satz sagte das Gegenteil dessen, was dastand.
+* ✅ übernommen — **C**: Die Prüfszenen zählten **Pakete, nie Zeilen**. „Kein
+  zweiter Eintrag" und „dieselbe Zeile still überschrieben" sehen an einem
+  Paketzähler gleich aus — genau daran ist der A durch zehn grüne Urteile
+  gelaufen.
+* ✅ übernommen — **C**: Navigation 45 gegen Mittagsblick/Abgleich 44 im selben
+  Augenblick; beide Skalen richtig, beide unbenannt.
+* ✅ übernommen — **C**: `alleKassennamen()` läuft seit der elften Runde bei
+  jedem Neuzeichnen über alle 60 Tage und war ungesichert.
+* ✅ übernommen — **C**: Das Urteil von `ui-mass` nannte 320 px, maß das
+  Backoffice aber erst ab 390 — der bekannte Überlauf dort lag unter einem
+  Urteil, das ihn scheinbar ausschloss.
+* ✅ zur Kenntnis — der eine nicht reproduzierbare `fail 1` in 15 Läufen. Ich
+  habe ihn nicht gesehen; er steht hier, damit er nicht verloren geht.
+
+**Umgesetzt:**
+1. **`kennungHeilen()`** setzt `ok`, sobald die Liste den Menschen zeigt — dann
+   ist bewiesen, dass die Zeile am Server steht. Läuft in `hole()`, direkt nach
+   dem Übernehmen von `LEUTE`.
+2. **`FRIST_UNBESTAETIGT`**: Ein unbestätigter Anlauf verfällt nach einer halben
+   Stunde. Danach geht eine NEUE Kennung hinaus, und der Namenswächter im Worker
+   antwortet 409, statt still zu überschreiben. Aus einer Falle wird eine
+   Absage.
+3. **Der Prüfserver führt Zeilen wie der Worker** (`ON CONFLICT(id) DO UPDATE`).
+   K9 und das neue **K11** messen an der ZEILE, nicht am Paket.
+4. Die vier weiteren C-Funde: `(z&&z.positionen||[])`, „im Zeitraum" in beiden
+   Sätzen, der berichtigte A/11-Urteilstext, und das `ui-mass`-Urteil nennt
+   jetzt, was es misst.
+
+**Geprüft:** `npm test` **440/440**. **K11** stellt die Lage der zwölften Jagd
+Schritt für Schritt nach — Anlauf mit Rolle „Leitung", Antwort verloren, Liste
+kommt einmal durch, Liste schweigt wieder, derselbe Name mit anderer Rolle. Auf
+`379f2e5` viermal rot, mit genau dem gemessenen Schaden (`rolle: leitung` →
+`service`, neuer Code); jetzt grün, und die Zeile am Server ist Zeichen für
+Zeichen unverändert.
+
+`sw.js` v54 → **v55**.
+
+**Für die Nächsten:**
+* An den **Jäger**: Der Hinweis „zählt Pakete, nie Zeilen" war der wertvollste
+  der Nacht — er erklärt, warum zwei Runden lang grüne Urteile über demselben
+  Fund standen. Die beiden Prüfserver führen jetzt Zeilen.
+
+**Phase/Thema:** Runde 16 / dreizehnte Runde, vor dem Livegang
+
+**STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – software-engineer (vierzehnte Runde, nach der dreizehnten Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **C**: `kennungHeilen()` heilt nach NAMEN, ohne die `id` zu
+  vergleichen. Die Richtung ist die vorsichtige (geheilt heißt: schreibt nicht
+  mehr), aber der Satz danach war falsch: „von diesem Fenster, und der Server
+  hat es bestätigt" — auch für eine Kennung, die nie geschrieben wurde. Der
+  Satz behauptet jetzt nur noch, was hier gewusst wird.
+* ✅ übernommen — **C**: Die Absage fragte die frische Liste nicht. Stand
+  `ok:true`, refüsierte das Formular auch dann, wenn eine durchgekommene Liste
+  diese Person gar nicht führte — und der Ausweg war nur das Abmelden. Eine
+  frische Liste ohne diesen Menschen räumt den Eintrag jetzt.
+* ✅ übernommen — **C**: Mein Prüfserver „führte Zeilen wie der Worker" an drei
+  Stellen nicht: ein Paket ohne `id` legte keine Zeile an (der Worker legt
+  eine an — genau der A der fünften Jagd), die Zeile wurde vor der 409-Prüfung
+  geschrieben, und einen Namenswächter hatte er gar nicht.
+* ✅ übernommen — **C**: `ui-runde16.cjs` Szene 8 zählte weiter nur Pakete.
+* ✅ übernommen — **C**: Der neue Satz im Abgleich war der einzige Ort auf dem
+  Schirm mit ISO-Datum, während der Mittagsblick daneben `deTag` schreibt.
+* ✅ übernommen — **C**: Das Urteil „Kontrast mindestens 4,5:1" behauptete mehr,
+  als es misst (3:1 bei großer/fetter Schrift, `.gpt` ganz ausgenommen) —
+  dasselbe Muster wie beim Überlauf-Urteil, das ich eine Runde vorher
+  berichtigt hatte.
+* ✅ übernommen — **C**: Die Zeilen-Nachbildung nahm `code` mit auf, und die
+  Urteile druckten ihn — während K1 derselben Datei urteilt „der Code steht in
+  keiner Konsolenzeile". Gewürfelte Codes, also kein Bruch von Regel 9, aber
+  ein Widerspruch im selben Lauf.
+* ✅ zur Kenntnis — die springende Gerätuhr (`t` in der Zukunft hält die Frist
+  länger offen). Der Jäger führt es nicht als Fund, weil `kennungHeilen()` die
+  Lage begrenzt. Ich sehe es genauso und lasse es stehen.
+
+**Umgesetzt:** alle sieben. Verglichen wird in den Prüfungen weiter die VOLLE
+Zeile (sonst fiele ein geänderter Code nicht auf), gedruckt die geschwärzte.
+
+**Geprüft:** `npm test` **440/440**, `qa-runde16-kennung` K1–K11 ja,
+`ui-runde16` ja (Szene 8 misst jetzt auch die Zeile), `ui-mass` zehn Urteile.
+`sw.js` v55 → **v56**.
+
+**Phase/Thema:** Runde 16 / vierzehnte Runde, vor dem Livegang
+
+**STATUS:** FERTIG — aus meiner Rolle nichts mit Priorität hoch/mittel offen.
+
+---
+
+### Runde 16 – software-engineer (fünfzehnte Runde, nach der vierten Schlusskontrolle)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **`tests/durchstich.cjs` war tot**, und `review/ERGEBNIS.md`
+  nannte es „35 von 35 … vor jedem Livegang laufen lassen". Zwei Gründe: der
+  Klick auf `[data-ok]` lief seit Runde 15 in den Timeout (die vierte Ziffer
+  sendet von selbst), und der Filter suchte den Abschlussknopf nach „Protokoll
+  erstellen|melden" — Wörter, die diese Runde abgeschafft hat. Beides
+  berichtigt, **35 von 35**. Das einzige Tor, das die Unterlagen selbst
+  benennen, ist wieder offen.
+* ✅ übernommen — die vier Reibungspunkte in den Morgenbrief, vor allem: **in
+  der eigenen Zeile nichts anfassen.** Der Rollenkasten hat keine Rückfrage,
+  und der Brief schickt genau dorthin.
+* ✅ zur Kenntnis — das dritte `ui-mass`-Urteil („keine JS-Fehler") nennt
+  seinen Umfang nicht und sieht das Abgleich-Fenster nie. Der qa-guardian hat
+  die Messung selbst nachgeholt (320/375/390/430 px, sauber). Backlog.
+
+**Umgesetzt:** `durchstich.cjs` wiederbelebt, die falsche Zeile in `ERGEBNIS.md`
+berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
+
+**Geprüft:** `npm test` 440/440, `node tests/durchstich.cjs` **35/35**.
+
+**Phase/Thema:** Runde 16 / letzte Runde vor dem Livegang
+
+**STATUS:** FERTIG

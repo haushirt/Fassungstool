@@ -1,0 +1,17 @@
+
+─── Urteil ───
+  ✓ kein waagrechter Überlauf in 320/375/390/430/768/1280  (0 Stellen)
+  ✓ nichts im Service wird von einem Kasten abgeschnitten  (0 Stellen)
+  ✓ keine JS-Fehler  (0 Fehler)
+  ✓ Schrift im Service nie unter 15 px  (0 Stellen)
+  ✓ Trefferflächen mindestens 44 px (Service)  (0 Knöpfe ohne Griff · 2604 sichtbar kleiner (erlaubt))
+  ✓ Kontrast mindestens 4,5:1  (0 Stellen)
+  ✓ die Zählzeile bleibt eine Zeile  (0 umgebrochene Zeilen)
+  (Ziffern auf Zählpunkten: 2436 absichtlich leise bei 1,9:1 — Hinweis, kein Urteil)
+  ✓ Kürzel in den Laden überlappen einander nicht  (0 Stellen)
+  ✓ kein Kürzel wird beschnitten  (0 Stellen)
+  ✓ Gestaltungsschicht in beiden Dateien wortgleich  (wortgleich)
+  (Trefferflächen im Backoffice: 248 sichtbar unter 44 px, davon 229 auch ohne Griff — dort ist die Maus im Einsatz, kein Urteil)
+
+Bilder und messung.json in review/screens/r16/
+UNGEPRÜFT bleibt: echtes Safari, echte Tastatur, Notch, Gummiband.

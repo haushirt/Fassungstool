@@ -623,7 +623,13 @@ async function grussWeg(p) {
     if (m.jsFehler && m.jsFehler.length) { fehlerGes += m.jsFehler.length;
       console.log("  JS-FEHLER " + k + ": " + m.jsFehler[0]); }
   });
-  urteil("kein waagrechter Überlauf in 320/375/390/430/768/1280",
+  /* BERICHTIGT (zwölfte Jagd Runde 16 · C): Der Satz nannte alle sechs
+     Breiten, gemessen wurde das Backoffice aber erst ab 390 px
+     (`BREITEN_LEITUNG`) — der bekannte Überlauf bei 320 px in
+     `.kopf button.k` (336 statt 320) lag damit unter einem Urteil, das
+     ihn scheinbar ausschloss. Das Urteil nennt jetzt, was es misst. */
+  urteil("kein waagrechter Überlauf — Service 320/375/390/430/768/1280, "
+         + "Backoffice ab 390",
          ueberGes === 0, ueberGes + " Stellen");
   urteil("nichts im Service wird von einem Kasten abgeschnitten",
          klemmSvc === 0, klemmSvc + " Stellen");
@@ -631,7 +637,22 @@ async function grussWeg(p) {
   urteil("Schrift im Service nie unter 15 px", winzig === 0, winzig + " Stellen");
   urteil("Trefferflächen mindestens 44 px (Service)", griffSvc === 0,
          griffSvc + " Knöpfe ohne Griff · " + kleinSvc + " sichtbar kleiner (erlaubt)");
-  urteil("Kontrast mindestens 4,5:1", schwachGes === 0, schwachGes + " Stellen");
+  /* BERICHTIGT (dreizehnte Jagd Runde 16 · C): Der Satz nannte 4,5:1 fuer
+     alles. Gemessen wird 4,5:1 fuer gewoehnliche Schrift und 3:1 fuer
+     grosse oder fette (WCAG), und die Ziffern auf den Zaehlpunkten
+     (`.gpt`) sind ausdruecklich ausgenommen — sie stehen absichtlich
+     leise bei 1,9:1 und werden im Hinweis darunter genannt. Dasselbe
+     Muster wie beim Ueberlauf-Urteil: das Urteil nennt jetzt, was es
+     misst. Was uebersprungen wurde, steht dabei. */
+  urteil("Kontrast mindestens 4,5:1 (3:1 bei grosser/fetter Schrift, "
+         + "Ziffern auf Zählpunkten ausgenommen)",
+         schwachGes === 0, schwachGes + " Stellen");
+  {
+    const uebersprungen = Object.values(erg.seiten)
+      .reduce((a, m) => a + (m.kontrastUebersprungen || 0), 0);
+    if (uebersprungen) console.log("  (nicht messbar, deshalb übersprungen: "
+      + uebersprungen + " Stellen)");
+  }
   /* Am iPad ist „voll" unter den Namen gerutscht, und kein Urteil hat es
      gesehen. Seit Runde 14 ist das eines. */
   urteil("die Zählzeile bleibt eine Zeile", umbruchSvc === 0,

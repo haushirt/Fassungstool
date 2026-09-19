@@ -43,7 +43,7 @@ function umgebung() {
   vm.createContext(s);
   vm.runInContext(QUELLE + `
     globalThis.zeichne = () => {};
-    globalThis.__f = { abgleich, UNKLAR_GRUND, unklarSatz,
+    globalThis.__f = { abgleich, UNKLAR_GRUND, unklarSatz, teileOhneGroesse,
       setzte: (map, geb, zber, vorg, rez) => { MAP = map || {}; GEB_BEST = geb || {};
         ZBER = zber || {}; VORGAENGE = vorg || []; REZ = rez || {}; } };`,
     s, { filename: "leitung.html#unklar" });
@@ -69,8 +69,17 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
 
     assert.equal(Object.keys(a.verk).length, 0, "die Ausgangslage: verk ist leer");
     assert.ok(a.zeilen.length > 0, "die Entnahme steht weiterhin da");
+    /* BERICHTIGT (sechste Jagd Runde 16): Hier stand für JEDE Zeile
+       „Größe fehlt". Das war zu grob — `flaschen()` unterscheidet seit je
+       zwei Ursachen, und in Bericht 37 haben 26 von 48 Positionen gar
+       keine Menge im Kassennamen („Aperol Spritz 1 Glas"). Für die ist
+       „Größe fehlt" eine Falschauskunft: Sie schickt die Leitung ins
+       Backoffice, wo es nichts zu bestätigen gibt — was fehlt, fehlt der
+       KASSE. Geprüft wird jetzt beides: dass keine Differenz entsteht
+       (das ist der Kern) UND dass der Grund der richtige ist. */
     for (const r of a.zeilen) {
-      assert.equal(r.unklar, "groesse", r.name + " müsste „Größe fehlt“ sagen");
+      assert.ok(["groesse", "menge"].includes(r.unklar),
+        r.name + ": unerwarteter Grund " + r.unklar);
       assert.equal(r.diff, null, r.name + ": keine Differenz ohne Verkauf");
       assert.ok(r.entnahme > 0, r.name + ": die Entnahme bleibt sichtbar");
     }
@@ -87,7 +96,33 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
        (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9) — siehe die Prüfung
        „eine nicht zugeordnete Kassenposition nimmt keinem Artikel den
        Befund" weiter unten. Es bleiben zwei Gründe. */
-    assert.deepEqual(Object.keys(f.UNKLAR_GRUND).sort(), ["groesse", "keinbericht"]);
+    /* Seit der sechsten Jagd ein dritter: „menge" — im Kassennamen steht
+       keine Menge. Das ist eine andere Aufgabe als eine fehlende Größe
+       und gehört anders benannt. */
+    assert.equal(f.UNKLAR_GRUND.menge, "keine Menge im Kassennamen");
+    assert.equal(f.unklarSatz("menge"),
+      "kein Abgleich möglich — keine Menge im Kassennamen");
+    assert.deepEqual(Object.keys(f.UNKLAR_GRUND).sort(),
+      ["groesse", "keinbericht", "menge"]);
+  });
+
+  /* Die beiden Ursachen dürfen nicht durcheinandergeraten: Eine Position
+     MIT Menge im Namen, aber ohne bestätigte Größe, ist Arbeit der
+     Leitung; eine OHNE Menge im Namen ist es nicht. */
+  test("die beiden Ursachen werden auseinandergehalten", () => {
+    const mitMenge = umgebung();
+    mitMenge.setzte({ "GV Leindl Langenlois 1/8 l": "w001" }, {},
+      bericht([{ name: "GV Leindl Langenlois 1/8 l", anzahl: 4 }]),
+      [vorgang({ w001: 1 }, {})]);
+    assert.equal(zeile(mitMenge.abgleich(TAG, 1), "w001").unklar, "groesse",
+      "Menge im Namen, Größe nicht bestätigt → Arbeit der Leitung");
+
+    const ohneMenge = umgebung();
+    ohneMenge.setzte({ "Aperol Spritz 1 Glas": "w001" }, {},
+      bericht([{ name: "Aperol Spritz 1 Glas", anzahl: 4 }]),
+      [vorgang({ w001: 1 }, {})]);
+    assert.equal(zeile(ohneMenge.abgleich(TAG, 1), "w001").unklar, "menge",
+      "keine Menge im Namen → das fehlt der Kasse, nicht dem Backoffice");
   });
 
   test("bestätigte Größe → die Zeile bekommt ihren Befund zurück", () => {
@@ -234,5 +269,190 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     const a = f.abgleich(TAG, 1);
     assert.equal(zeile(a, "w003").unklar, "groesse");
     assert.deepEqual(Array.from(a.zeilen, r => r.id), ["w018", "w003"]);
+  });
+
+  /* Siebte Jagd Runde 16 · B. Die Tabellenzeilen unterschieden die beiden
+     Ursachen schon; die Überschrift, der Mittagsblick und der CSV-Kopf
+     sagten für alle „Größe fehlt" und versprachen die Sammelbestätigung.
+     Der Sammelknopf fasst aber nur `fehlt==="gebinde"` an — bei Bericht 37
+     mit der Live-Zuordnung sind das 10 von 17 Positionen, die ins
+     Backoffice geschickt werden, wo es für sie nichts zu tun gibt.
+     Gezählt wird deshalb an einer Stelle: `teileOhneGroesse()`. */
+  /* Neunte Jagd Runde 16 · A. `abgleich()` führt eine offene
+     Kassenposition über alle Tage des Fensters als EINE Zeile — legte
+     dabei aber das Positionsobjekt des ERSTEN Tages ab. Die CSV-Ausfuhr
+     schrieb daraus `p.anzahl`, obwohl sie über das ganze Fenster geht:
+     mit sieben Berichten 136 Einheiten statt 952, Faktor sieben auf jeder
+     der 44 Zeilen. Die Zuordnungsansicht daneben summierte richtig —
+     dieselbe Zahl, zwei Werte, keiner gekennzeichnet. Solange nur EIN
+     Bericht im Fenster liegt, fallen beide zusammen. */
+  test("eine offene Kassenposition zählt über das ganze Fenster", () => {
+    const f = umgebung();
+    const tage = [TAG];
+    const d = new Date(TAG + "T12:00:00Z");
+    for (let i = 1; i < 3; i++) {
+      d.setUTCDate(d.getUTCDate() - 1);
+      tage.push(d.toISOString().slice(0, 10));
+    }
+    /* Derselbe Kassenname an drei Tagen, verschiedene Stückzahlen, keine
+       Zuordnung — also „offen". */
+    const zber = {};
+    [5, 3, 4].forEach((n, i) => {
+      zber[tage[i]] = { tag: tage[i], nr: 90 + i, umsatz: 0,
+        positionen: [{ name: "HP Omelett 1 Portion", anzahl: n, umsatz: n * 4 }] };
+    });
+    f.setzte({}, {}, zber, [vorgang({ w001: 1 }, {})]);
+    const a = f.abgleich(TAG, 3);
+    assert.equal(a.berichte, 3, "alle drei Tage liegen im Fenster");
+    assert.equal(a.offen.length, 1, "der Kassenname steht einmal");
+    assert.equal(a.offen[0].anzahl, 12,
+      "die Anzahl ist die eines einzigen Tages statt der des Fensters");
+    assert.equal(a.offen[0].umsatz, 48);
+
+    /* Und das Positionsobjekt im Z-Bericht darf dabei nicht verändert
+       worden sein — es liegt im Speicher des Geräts. */
+    assert.equal(zber[tage[0]].positionen[0].anzahl, 5,
+      "der gespeicherte Z-Bericht wurde mitverändert");
+
+    /* Die CSV-Ausfuhr liest genau dieses Feld. */
+    const BO = lies("public", "leitung.html");
+    assert.match(BO, /a\.offen\.forEach\(p=>L\.push\(\[p\.name,p\.anzahl\]/,
+      "die Ausfuhr liest ein anderes Feld als das geprüfte");
+  });
+
+  test("die beiden Ursachen werden auch dort getrennt, wo nur gezählt wird", () => {
+    const f = umgebung();
+    f.setzte({ "MU Muster, Gelber Muskateller Styria 0,75 l": "w018",
+               "Aperol Spritz 1 Glas": "w003" },
+             {},
+             bericht([{ name: "MU Muster, Gelber Muskateller Styria 0,75 l", anzahl: 3 },
+                      { name: "Aperol Spritz 1 Glas", anzahl: 6 }]),
+             [vorgang({ w018: 4, w003: 2 }, {})]);
+    const a = f.abgleich(TAG, 1);
+    assert.equal(a.ohneGroesse.length, 2, "beide Positionen stehen in der Liste");
+    const t = f.teileOhneGroesse(a.ohneGroesse);
+    /* BERICHTIGT (achte Jagd Runde 16 · B): Hier standen ZWEI Töpfe, der
+       Bildschirm kennt DREI Zustände. Alles, was nicht „ausschank" war,
+       bekam den Satz „hier unten bestätigen" — auch die
+       Rezeptbestandteile (die bewusst keinen Knopf haben) und die Artikel
+       ohne ml-Vorschlag (da muss die Zahl von Hand hinein). Gemessen:
+       angekündigt 23, sammelbar 12. Geteilt wird jetzt nach dem, was zu
+       TUN ist, mit derselben Bedingung, die der Sammelknopf anwendet. */
+    assert.equal(t.ausschank.length, 1, "eine hat keine Menge im Kassennamen");
+    assert.equal(t.stkAusschank, 6);
+    /* Ohne bestätigte Gebindegröße und ohne Vorschlag im Stamm ist die
+       MU-Muster-Zeile „von Hand", nicht „sammelbar". */
+    assert.equal(t.sammelbar.length + t.handisch.length, 1);
+    assert.equal(t.stkSammelbar + t.stkHandisch, 3);
+    assert.ok(t.sammelbar.every(o => o.fehlt === "gebinde" && !o.rezept
+      && o.id && o.geb && +o.geb.ml > 0),
+      "im Topf „sammelbar“ liegt etwas, das der Sammelknopf nicht anfasst");
+    assert.notEqual(t.sammelbar.length, a.ohneGroesse.length,
+      "die gemischte Lage ist der Prüffall — sonst prüft dieser Test nichts");
+
+    /* Der Kern des Funds: was der Satz verspricht, muss der Knopf auch
+       anfassen. Eine Rezeptzeile und eine Zeile ohne Vorschlag gehören
+       NIE in „hier unten gesammelt bestätigen". */
+    const erfunden = [
+      { name: "A", anzahl: 1, id: "x", fehlt: "gebinde", geb: { ml: 750 }, rezept: false },
+      { name: "B", anzahl: 1, id: "x", fehlt: "gebinde", geb: { ml: 750 }, rezept: true },
+      { name: "C", anzahl: 1, id: "x", fehlt: "gebinde", geb: { ml: null }, rezept: false },
+      { name: "D", anzahl: 1, id: "x", fehlt: "ausschank", geb: {}, rezept: false }
+    ];
+    const e = f.teileOhneGroesse(erfunden);
+    /* `join` statt `deepEqual`: Die Listen entstehen im `vm`, ihr
+       `Array.prototype` ist ein anderes — `deepStrictEqual` vergleicht
+       auch den Prototyp und meldet zwei gleich aussehende Listen als
+       verschieden. */
+    const namen = l => l.map(o => o.name).join("|");
+    assert.equal(namen(e.sammelbar), "A",
+      "nur die Zeile mit Vorschlag und ohne Rezept ist sammelbar");
+    assert.equal(namen(e.handisch), "B|C",
+      "Rezeptzeile und Zeile ohne Vorschlag gehören zu „von Hand“");
+    assert.equal(namen(e.ausschank), "D");
+
+    /* Und die drei Leser, die bis eben pauschal zählten. Quelltext, weil
+       sie in Ansichtsfunktionen stehen: geprüft wird, dass keiner mehr
+       `a.ohneGroesse.length` neben das Wort „Größe fehlt" setzt. */
+    const BO = lies("public", "leitung.html");
+    assert.match(BO, /const t=teileOhneGroesse\(a\.ohneGroesse\);/,
+      "der Mittagsblick zählt nicht mehr getrennt");
+    assert.doesNotMatch(BO, /fehlt\.push\("Größe fehlt: "\+a\.ohneGroesse\.length/,
+      "der Mittagsblick wirft beide Ursachen wieder in einen Topf");
+    assert.match(BO, /Menge fehlt im Kassennamen: /,
+      "die zweite Ursache hat im Mittagsblick keinen eigenen Satz");
+    assert.match(BO, /Größe fehlt ohne Vorschlag: /,
+      "der dritte Zustand hat im Mittagsblick keinen eigenen Satz");
+    /* „N Kassenpositionen" zählte Kassen-NAMEN: `merkeOhneGroesse()`
+       fasst denselben Namen über alle Tage des Fensters zu einer Zeile
+       zusammen. Bei SPANNE = 7 stand „48 Kassenpositionen" da, während
+       336 im Fenster lagen (achte Jagd · C). */
+    assert.doesNotMatch(BO, /zugeordnete Kassenpositionen \(/,
+      "der Mittagsblick nennt Kassennamen weiter Kassenpositionen");
+    assert.match(BO, /" zugeordnete Kassennamen"/);
+    /* „1 Einheiten" (achte Jagd · C). */
+    assert.match(BO, /x===1\?" Einheit":" Einheiten"/,
+      "die Einheiten haben keine Einzahlform");
+    /* Neunte Jagd · C: `a.offen` zählt ebenfalls Kassennamen — dieselbe
+       Berichtigung zwei Zeilen höher war an ihr vorbeigegangen. */
+    assert.doesNotMatch(BO, /a\.offen\.length\+" Kassenpositionen/,
+      "die offenen Positionen heißen weiter Kassenpositionen");
+    assert.doesNotMatch(BO, /\$\{a\.offen\.length\} Kassenpositionen/,
+      "der Hinweis nennt sie weiter Kassenpositionen");
+    /* Neunte Jagd · C: die Vorschlag-Spalte hatte eine eigene Bedingung. */
+    assert.match(BO, /<td>\$\{sammelbar\(o\)/,
+      "die Vorschlag-Spalte prüft mit einer eigenen Bedingung");
+    /* Neunte Jagd · C: der CSV-Kopf kannte zwei Zustände, die Ansicht drei. */
+    assert.match(BO, /"Was zu tun ist"/,
+      "die Ausfuhr sagt nicht, was zu tun ist");
+    assert.match(BO, /sammelbar\(o\)\?"im Backoffice bestätigen/,
+      "die Ausfuhr unterscheidet sammelbar nicht von „von Hand“");
+
+    /* Zehnte Jagd · B: Im CSV-Kopf stand nur „Betriebstag <ein Tag>",
+       während JEDE Zahl darunter über `SPANNE` Tage summiert ist — mit
+       sieben Berichten 952 Einheiten, wo an diesem Tag 136 verkauft
+       wurden. Die Rechnung stimmte, die Skala war unbenannt. */
+    assert.match(BO, /\["Zeitraum der Zahlen",a\.von\+" bis "\+a\.bis\]/,
+      "der CSV-Kopf nennt den Zeitraum der Zahlen nicht");
+    assert.match(BO, /\["Spanne",a\.spanne\+\(a\.spanne===1\?" Tag":" Tage"\)\]/,
+      "der CSV-Kopf nennt die Spanne nicht");
+    assert.match(BO, /hol\("abgleich_"\+\(a\.spanne>1\?a\.von\+"_bis_"\+a\.bis:tag\)/,
+      "der Dateiname nennt einen einzelnen Tag für Zahlen über ein Fenster");
+
+    /* Zehnte Jagd · B, berichtigt von der elften: `zaehler("zuordnung")`
+       rief erst `abgleich(t)` (ein Tag), dann `abgleich(t, SPANNE)` —
+       beides falsch. Die Zahl steht neben einem Menüpunkt, und die SEITE
+       dahinter kennt kein Fenster: `vZuordnung` geht über ALLE geladenen
+       Berichte. Gemessen an zehn Tagen: Navigation 44, Seite 45. Beide
+       lesen jetzt dieselbe Zählstelle. */
+    assert.match(BO, /if\(id==="zuordnung"\) return offeneKassennamen\(\)\.length\|\|null;/,
+      "die Navigationszahl zählt nicht, was hinter dem Menüpunkt liegt");
+    assert.match(BO, /function offeneKassennamen\(\)\{/,
+      "es gibt keine gemeinsame Zählstelle");
+    /* Und `vZuordnung` muss sie wirklich benutzen — sonst stehen wieder
+       zwei Listen nebeneinander. */
+    assert.match(BO, /const L=alleKassennamen\(\)\.sort/,
+      "die Seite baut ihre Liste anders auf als die Zählstelle");
+    assert.equal((BO.match(/namen\[p\.name\]\.anzahl\+=p\.anzahl/g)||[]).length, 1,
+      "die Kassennamen werden an mehr als einer Stelle zusammengezählt");
+    assert.doesNotMatch(BO, /<h3>Größe fehlt · \$\{a\.ohneGroesse\.length\}/,
+      "die Abschnittsüberschrift zählt beide Ursachen als „Größe fehlt“");
+
+    /* Derselbe Fehler stand noch an zwei Stellen im Mittagsblick, mit
+       fest getippten Gründen: die Kachel nannte „Größe fehlt oder
+       Position nicht zugeordnet" (den zweiten Grund gibt es seit v29
+       nicht mehr), der Hinweis über der Tabelle „keine bestätigte Größe
+       oder kein Z-Bericht" (ohne die fehlende Menge im Kassennamen, den
+       häufigeren Fall). Beide lesen jetzt aus `UNKLAR_GRUND`. */
+    assert.match(BO, /const gruendeSatz=\[\.\.\.new Set\(a\.zeilen\.filter\(r=>r\.unklar\)/,
+      "der Mittagsblick nennt Gründe aus dem Gedächtnis statt aus den Zeilen");
+    assert.doesNotMatch(BO, /ohne Abgleich — Größe fehlt oder Position nicht zugeordnet/,
+      "die Kachel nennt einen Grund, den es seit v29 nicht mehr gibt");
+    assert.doesNotMatch(BO, /nicht bestimmbar \(keine bestätigte Größe oder kein Z-Bericht\)/,
+      "der Hinweis lässt die fehlende Menge im Kassennamen aus");
+    assert.match(BO, /ohne Abgleich — "\+esc\(gruendeSatz\)/,
+      "die Kachel liest die Gründe nicht aus den Zeilen oder ohne esc()");
+    assert.match(BO, /nicht bestimmbar \(\$\{esc\(gruendeSatz\)\}\)/,
+      "der Hinweis liest die Gründe nicht aus den Zeilen");
   });
 });

@@ -265,10 +265,51 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
     vAbgleich.tag = "2026-09-16"; SPANNE = 1; zeichne();
     const a = abgleich("2026-09-16", 1);
     return { ohne: a.ohneGroesse.length, verk: Object.keys(a.verk).length,
+             geb: a.ohneGroesse.filter(o => o.fehlt !== "ausschank").length,
+             aus: a.ohneGroesse.filter(o => o.fehlt === "ausschank").length,
              gv: (a.ohneGroesse.find(o => /GV Leindl/.test(o.name)) || {}),
+             /* Der Untertitel ALLEIN, nicht der ganze `main`-Text: „ohne
+                bestätigte Größe" entsteht auch in `vorbehaltSatz()` weiter
+                unten in der Abgleichtabelle — eine Suche über alles
+                konnte grün sein, ohne dass der Kopf sie enthält
+                (achte Jagd · C). */
+             kopf: (() => {
+               const h = [...document.querySelectorAll("h3")]
+                 .find(x => /Nicht gerechnet/.test(x.textContent));
+               const u = h && h.parentElement.querySelector(".unter");
+               return { h: h ? h.textContent : "", u: u ? u.textContent : "" };
+             })(),
+             sam: a.ohneGroesse.filter(o => o.fehlt === "gebinde" && !o.rezept
+                    && o.id && o.geb && +o.geb.ml > 0).length,
              text: document.querySelector("main").textContent };
   });
-  ok("die Ansicht weist „Größe fehlt“ aus", /Größe fehlt/.test(lage.text));
+  ok("die Ansicht führt die nicht gerechneten Positionen auf",
+     /Nicht gerechnet/.test(lage.text));
+  /* BERICHTIGT (siebte Jagd Runde 16 · B): Hier stand nur
+     `/Größe fehlt/`. Überschrift und Mittagsblick sagten das für BEIDE
+     Ursachen — auch für die Positionen, denen die Menge im Kassennamen
+     fehlt. Die schickt „gesammelt bestätigen“ vor eine leere Wand: der
+     Sammelknopf fasst nur `fehlt==="gebinde"` an. Geprüft wird jetzt,
+     dass die Ansicht die beiden auseinanderhält. */
+  ok("und sie hält die Ursachen auseinander — im Kopf des Abschnitts",
+     (!lage.sam || /ohne bestätigte Größe/.test(lage.kopf.u))
+     && (!(lage.geb - lage.sam) || /ohne Vorschlag/.test(lage.kopf.u))
+     && (!lage.aus || /ohne Menge im Kassennamen/.test(lage.kopf.u)),
+     lage.kopf.u.slice(0, 120));
+  /* Was der Kopf als „hier unten gesammelt bestätigen" ankündigt, muss
+     der Sammelknopf auch anfassen (achte Jagd · B): angekündigt 23,
+     tatsächlich sammelbar 12 war der Fund. */
+  {
+    const m = /(\d+) ohne bestätigte Größe/.exec(lage.kopf.u);
+    ok("die angekündigte Zahl ist die, die der Sammelknopf anfasst",
+       (m ? +m[1] : 0) === lage.sam, (m ? m[1] : "—") + " angekündigt · "
+       + lage.sam + " sammelbar");
+  }
+  ok("die Überschrift zählt Kassennamen, nicht Kassenpositionen",
+     /Kassenname/.test(lage.kopf.h) && !/Kassenposition/.test(lage.kopf.h),
+     lage.kopf.h);
+  ok("„1 Einheiten“ steht nirgends",
+     !/\b1 Einheiten\b/.test(lage.kopf.u), lage.kopf.u.slice(0, 120));
   ok("die Achtel-Position steht dort mit ihrer echten Menge",
      lage.gv.anzahl === 4 && lage.gv.fehlt === "gebinde", JSON.stringify(lage.gv.anzahl));
   ok("solange nichts bestätigt ist, rechnet keine Zeile mit",

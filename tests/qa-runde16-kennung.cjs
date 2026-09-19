@@ -1,0 +1,646 @@
+/* qa-guardian · Runde 16, letzter Zug — das Gedaechtnis `hh_nkennung_v1`
+   ───────────────────────────────────────────────────────────────────────
+       node tests/qa-runde16-kennung.cjs
+
+   NICHT Teil von `npm test` (braucht Playwright, Regel 8).
+
+   Die siebte Jagd hat `nKennung` aus `vTeam()` auf Modulebene gehoben und
+   zusaetzlich in den `localStorage` gespiegelt. Das beruehrt zwei harte
+   Regeln, die eine Quelltext-Regex nicht messen kann:
+
+   · Regel 9 — in dem neuen Schluessel darf KEIN Anmeldecode stehen.
+     Geprueft wird deshalb am laufenden Objekt: nach dem Anlegen einer
+     Person wird JEDER Eintrag beider Browserspeicher gelesen und gegen
+     den gerade getippten Code gehalten. Dazu die Form: eine flache Karte
+     Name -> Kennung, sonst nichts.
+   · Der Speicher darf verweigern (privates Fenster, volles Kontingent).
+     Dann muss das Backoffice unveraendert weiterlaufen — und darf vor
+     allem nicht in die Dublette zurueckfallen, solange der Tab lebt.
+
+   Dazu der Fall, den `tests/ui-runde16.cjs` Szene 8 offen laesst: ein
+   ECHTES Neuladen des Tabs (`reload()`), nicht nur `zeichne()`.
+
+   Alles im Arbeitsspeicher, kein Netz, keine Live-Datenbank (Regel 2). */
+
+const ORTE = ["playwright", "/opt/node22/lib/node_modules/playwright",
+              "/usr/lib/node_modules/playwright"];
+let pw = null;
+for (const o of ORTE) { try { pw = require(o); break; } catch (e) {} }
+if (!pw) { console.log("Playwright nicht gefunden — UNGEPRÜFT."); process.exit(0); }
+
+const http = require("http"), fs = require("fs"), path = require("path");
+const ROOT = path.join(__dirname, "..", "public");
+const PORT = 8793;
+const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
+                ".png": "image/png", ".json": "application/json" };
+
+/* Bei jedem Lauf gewuerfelt (Regel 9): kein fester Code im Quelltext. */
+const rnd = () => String(require("crypto").randomInt(1000, 10000));
+
+const BELEG = path.join(__dirname, "..", "review", "screens", "qa16");
+/* `postStumm` ist der Fall der fuenften Jagd: Das Paket KOMMT AN, die
+   Antwort geht verloren. Nur so bleibt der Anlauf unbestaetigt, und nur
+   dann darf dieselbe Kennung noch einmal hinaus (elfte Jagd). Antwortet
+   der Server dagegen mit 200, ist die Zeile bestaetigt — ein zweiter
+   Versuch ist dann ein Ueberschreiben und wird abgewiesen. */
+const LAGE = { personenStumm: true, postStumm: false, pakete: [],
+               zeilen: {}, personen: [], absage: null };
+
+const srv = http.createServer((q, a) => {
+  let u = q.url.split("?")[0];
+  if (u === "/") u = "/leitung.html";
+  if (u.startsWith("/api")) {
+    const kopf = { "content-type": "application/json" };
+    if (u === "/api/ich") { a.writeHead(200, kopf);
+      return a.end(JSON.stringify({ name: "Casimir", rolle: "leitung" })); }
+    if (u === "/api/personen") {
+      if (q.method === "POST") {
+        let leib = ""; q.on("data", c => leib += c);
+        return q.on("end", () => {
+          let b = null;
+          try { b = JSON.parse(leib); LAGE.pakete.push(b); } catch (e) {}
+          /* Pakete zaehlen genuegt nicht: „kein zweiter Eintrag" und
+             „dieselbe Zeile still ueberschrieben" sehen an einem
+             Paketzaehler gleich aus — genau daran ist der A-Fund der
+             zwoelften Jagd durch zehn gruene Urteile gelaufen. Der
+             Pruefserver fuehrt deshalb Zeilen wie `personSchreiben()`.
+
+             BERICHTIGT (dreizehnte Jagd · C): Drei Abweichungen vom
+             echten Worker sind weg. (a) Ein Paket OHNE `id` legt dort
+             eine Zeile an (`id || crypto.randomUUID()`) — genau der
+             A-Fund der fuenften Jagd; hier wurde gar nichts angelegt.
+             (b) Die 409-Absage kommt VOR dem Schreiben, nicht danach.
+             (c) Der Namenswaechter fehlte ganz: zwei Kennungen unter
+             einem Namen ergaben hier zwei Zeilen, am Worker unmoeglich. */
+          if (!b) { a.writeHead(400, kopf); return a.end("{}"); }
+          const schl = n => String(n == null ? "" : n)
+            .normalize("NFKC").replace(/[\u00ad\u200b-\u200f\u2060\u202a-\u202e\ufeff]/g, "")
+            .toLowerCase().replace(/\s+/g, " ").trim();
+          const fremd = Object.values(LAGE.zeilen)
+            .some(z => schl(z.name) === schl(b.name) && z.id !== b.id);
+          if (fremd || LAGE.absage) {
+            if (LAGE.postStumm) return;
+            a.writeHead(409, kopf);
+            return a.end(JSON.stringify({ fehler: LAGE.absage
+              || "„" + b.name + "“ ist schon angelegt." }));
+          }
+          const id = b.id || ("srv-" + Math.random().toString(36).slice(2, 10));
+          LAGE.zeilen[id] = Object.assign({}, LAGE.zeilen[id], b, { id });
+          if (LAGE.postStumm) return;          /* angekommen, nie beantwortet */
+          a.writeHead(200, kopf); a.end(JSON.stringify({ ok: true }));
+        });
+      }
+      if (LAGE.personenStumm) return;          /* GET antwortet nie */
+      a.writeHead(200, kopf);
+      return a.end(JSON.stringify({ personen: LAGE.personen }));
+    }
+    a.writeHead(200, kopf); return a.end("{}");
+  }
+  const f = path.join(ROOT, u);
+  if (!f.startsWith(ROOT) || !fs.existsSync(f)) { a.writeHead(404); return a.end("nix"); }
+  a.writeHead(200, { "content-type": TYPEN[path.extname(f)] || "text/plain" });
+  a.end(fs.readFileSync(f));
+});
+
+let nein = 0;
+/* Die Zeilen-Nachbildung traegt `code`. Gewuerfelt zwar, aber K1
+   urteilt in derselben Datei „der Code steht in keiner Konsolenzeile" —
+   also wird beim Drucken geschwaerzt (dreizehnte Jagd · C). */
+const ohneCode = x => JSON.stringify(x, (k, v) => k === "code" ? "\u2026" : v);
+const urteil = (satz, gut, dazu) => {
+  if (!gut) nein++;
+  console.log((gut ? "  ✓ " : "  ✗ ") + satz + (dazu ? "  (" + dazu + ")" : ""));
+};
+const warte = (p, ms) => p.waitForTimeout(ms);
+
+/* Der Speicher, der wie im privaten Fenster bei JEDEM Zugriff wirft. */
+const SPEICHER_TOT = `(()=>{
+  const werf=()=>{ const e=new Error("QuotaExceededError"); e.name="QuotaExceededError"; throw e; };
+  const tot={ getItem:werf, setItem:werf, removeItem:werf, clear:werf, key:werf, get length(){werf();} };
+  try{ Object.defineProperty(window,"localStorage",{configurable:true,get:()=>tot}); }catch(e){}
+})();`;
+
+/* Ein Wert, den niemand geschrieben hat: Fremdmüll unter demselben
+   Schluessel (anderes Werkzeug, halb geschriebene Zeile, Handarbeit). */
+const SPEICHER_MUELL = `(()=>{ try{
+  localStorage.setItem("hh_nkennung_v1","[nicht einmal JSON");
+}catch(e){} })();`;
+
+const SPEICHER_ARRAY = `(()=>{ try{
+  localStorage.setItem("hh_nkennung_v1","[1,2,3]");
+}catch(e){} })();`;
+
+async function backoffice(b, saat) {
+  const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+  if (saat) await ctx.addInitScript(saat);
+  const p = await ctx.newPage();
+  const fehler = [], konsole = [];
+  p.on("pageerror", e => fehler.push(String(e)));
+  p.on("console", m => konsole.push(m.text()));
+  await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+  await warte(p, 700);
+  await p.evaluate(() => { SEITE = "team"; zeichne(); });
+  await warte(p, 400);
+  return { ctx, p, fehler, konsole };
+}
+const anlegen = async (p, name, code) => {
+  await p.fill("#nName", name);
+  await p.fill("#nCode", code);
+  await p.click("#nAdd");
+  await warte(p, 700);
+};
+const speicherAbzug = p => p.evaluate(() => {
+  const nimm = s => { const o = {}; try {
+    for (let i = 0; i < s.length; i++) { const k = s.key(i); o[k] = s.getItem(k); }
+  } catch (e) { return { FEHLER: String(e) }; } return o; };
+  return { sitzung: nimm(sessionStorage), lokal: nimm(localStorage) };
+});
+
+(async () => {
+  await new Promise(r => srv.listen(PORT, "127.0.0.1", r));
+  const b = await pw.chromium.launch();
+  try {
+
+    /* ── K1 · Regel 9 am laufenden Objekt ───────────────────────── */
+    {
+      const { ctx, p, fehler, konsole } = await backoffice(b);
+      const c1 = rnd(), c2 = rnd();
+      LAGE.pakete = [];
+      await anlegen(p, "Anna Beispiel", c1);
+      await warte(p, 9200);                       /* die 8-s-Frist von kurz() */
+      await anlegen(p, "Bernd Zweiter", c2);
+
+      const sp = await speicherAbzug(p);
+      const alleWerte = JSON.stringify(sp);
+      urteil("K1 · der Code steht in KEINEM Browserspeicher",
+        !alleWerte.includes(c1) && !alleWerte.includes(c2),
+        "Codes " + c1 + "/" + c2);
+      urteil("K1 · der Code steht in keiner Konsolenzeile",
+        !konsole.some(z => z.includes(c1) || z.includes(c2)),
+        konsole.slice(0, 2).join(" | "));
+
+      const roh = sp.lokal["hh_nkennung_v1"];
+      let karte = null; try { karte = JSON.parse(roh); } catch (e) {}
+      /* Seit der elften Jagd traegt jeder Eintrag zusaetzlich, OB der
+         Server den Anlauf bestaetigt hat — daran haengt, ob dieselbe
+         Kennung noch einmal hinaus darf. */
+      urteil("K1 · `hh_nkennung_v1` ist eine Karte Name → {id, ok}",
+        karte && typeof karte === "object" && !Array.isArray(karte)
+        && Object.values(karte).every(v => v && typeof v === "object"
+             && typeof v.id === "string" && typeof v.ok === "boolean"),
+        roh);
+      urteil("K1 · sie enthaelt NUR Name und Kennung, keine Rolle, keinen Code",
+        karte && Object.keys(karte).length === 2
+        && !!karte["anna beispiel"] && !!karte["bernd zweiter"],
+        JSON.stringify(karte));
+      /* Die Kennung muss die vom Paket sein — sonst merkt sich das
+         Fenster etwas anderes, als es geschrieben hat. */
+      urteil("K1 · die gemerkte Kennung ist die gesendete",
+        LAGE.pakete.length === 2
+        && karte["anna beispiel"].id === LAGE.pakete[0].id
+        && karte["bernd zweiter"].id === LAGE.pakete[1].id,
+        "Pakete: " + LAGE.pakete.length);
+      urteil("K1 · und sie steht als BESTAETIGT da (der Server hat geantwortet)",
+        karte["anna beispiel"].ok === true && karte["bernd zweiter"].ok === true,
+        JSON.stringify(karte));
+      urteil("K1 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── K2 · ECHTES Neuladen des Tabs ──────────────────────────── */
+    /* Szene 8 in ui-runde16.cjs drueckt „Aktualisieren"; das ist
+       `zeichne()`, nicht `location.reload()`. Der Unterschied ist der
+       ganze Zweck der Spiegelung: nach einem Neuladen ist der
+       Arbeitsspeicher leer, und nur der `localStorage` traegt noch. */
+    {
+      LAGE.postStumm = true;      /* Paket kommt an, Antwort geht verloren */
+      const { ctx, p, fehler } = await backoffice(b);
+      LAGE.pakete = [];
+      await anlegen(p, "Clara Dritte", rnd());
+      await warte(p, 9200);
+      await p.reload({ waitUntil: "load" });
+      await warte(p, 900);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 400);
+      await anlegen(p, "Clara Dritte", rnd());
+      const k = new Set(LAGE.pakete.map(x => x.id));
+      urteil("K2 · nach echtem Neuladen: zweimal derselbe Mensch → EINE Kennung",
+        LAGE.pakete.length === 2 && k.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + k.size);
+      urteil("K2 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── K3 · privates Fenster: der Speicher wirft bei jedem Griff ─ */
+    {
+      LAGE.postStumm = true;      /* unbestaetigter Anlauf, wie in K2 */
+      const { ctx, p, fehler } = await backoffice(b, SPEICHER_TOT);
+      LAGE.pakete = [];
+      urteil("K3 · die Seite baut sich trotzdem auf",
+        await p.locator("#nAdd").count() === 1);
+      await anlegen(p, "Dora Vierte", rnd());
+      await warte(p, 9200);
+      await p.click("#bNeu"); await warte(p, 700);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 400);
+      await anlegen(p, "Dora Vierte", rnd());
+      const k = new Set(LAGE.pakete.map(x => x.id));
+      urteil("K3 · ohne Speicher traegt der Arbeitsspeicher: EINE Kennung",
+        LAGE.pakete.length === 2 && k.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + k.size);
+      urteil("K3 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── K4 · Fremdmuell unter demselben Schluessel ─────────────── */
+    for (const [satz, saat] of [["kein JSON", SPEICHER_MUELL],
+                                ["ein Array", SPEICHER_ARRAY]]) {
+      const { ctx, p, fehler } = await backoffice(b, saat);
+      LAGE.pakete = [];
+      urteil("K4 · " + satz + ": die Seite baut sich auf",
+        await p.locator("#nAdd").count() === 1);
+      await anlegen(p, "Emil Fuenfter", rnd());
+      urteil("K4 · " + satz + ": das Paket geht mit einer Kennung hinaus",
+        LAGE.pakete.length === 1 && typeof LAGE.pakete[0].id === "string"
+        && LAGE.pakete[0].id.length > 3,
+        JSON.stringify(LAGE.pakete[0] && LAGE.pakete[0].id));
+      urteil("K4 · " + satz + ": keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── K5 · zwei Tabs, ein Mensch ────────────────────── */
+    /* Hier stand ein Befund ohne Urteil: `sessionStorage` ist je Tab
+       eigen, zwei offene `leitung.html` am MacBook ergaben damit zwei
+       Kennungen. Seit dem Wechsel auf `localStorage` ist das ein Urteil.
+       WICHTIG: zwei SEITEN in EINEM Kontext — zwei Kontexte sind zwei
+       Browserprofile, also der Fall „zweites Geraet", und den deckt kein
+       Browserspeicher. Dafuer wacht der Worker (`personSchreiben`,
+       Namenspruefung, `tests/runde16.test.mjs`). */
+    {
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const fehler = [];
+      const tab = async () => {
+        const q = await ctx.newPage();
+        q.on("pageerror", e => fehler.push(String(e)));
+        await q.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+        await warte(q, 800);
+        await q.evaluate(() => { SEITE = "team"; zeichne(); });
+        await warte(q, 400);
+        return q;
+      };
+      LAGE.postStumm = true;      /* unbestaetigter Anlauf */
+      LAGE.pakete = [];
+      const p1 = await tab();
+      await anlegen(p1, "Frida Sechste", rnd());
+      await warte(p1, 9200);
+      const p2 = await tab();
+      await anlegen(p2, "Frida Sechste", rnd());
+      const k = new Set(LAGE.pakete.map(x => x.id));
+      urteil("K5 · zwei Tabs im selben Browser → EINE Kennung",
+        LAGE.pakete.length === 2 && k.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + k.size);
+      urteil("K5 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    LAGE.postStumm = false;   /* ab hier antwortet der Server wieder */
+
+    /* ── K6 · das Abmelden raeumt das Gedaechtnis ───────────── */
+    /* `localStorage` vergeht nicht von selbst. Die Namen der Mitarbeiter
+       gehoeren der Person, die angemeldet war — nicht der naechsten. */
+    {
+      const { ctx, p, fehler } = await backoffice(b);
+      LAGE.pakete = [];
+      await anlegen(p, "Gerda Siebte", rnd());
+      await warte(p, 9200);
+      const vorher = (await speicherAbzug(p)).lokal["hh_nkennung_v1"];
+      urteil("K6 · vor dem Abmelden steht die Kennung da", !!vorher, vorher);
+      await p.evaluate(() => abmelden());
+      await warte(p, 1500);
+      const nachher = await p.evaluate(() => {
+        try { return localStorage.getItem("hh_nkennung_v1"); } catch (e) { return "FEHLER"; }
+      });
+      urteil("K6 · nach dem Abmelden ist sie weg", nachher === null, String(nachher));
+      urteil("K6 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── K7 · Die Absage muss lesbar sein und stehenbleiben ───── */
+    /* qa-guardian, zweite Schlusskontrolle: Die wichtigste neue Meldung
+       des Systems stand 2,2 s in einer Sprechblase, und bei 390 px machte
+       `--radius-pill` (999px = halbe Hoehe) aus dem elfzeiligen Kasten
+       einen KREIS — erste und letzte Zeile hell auf hellem Seitengrund,
+       unlesbar. Jetzt steht ein Serverfehler in `#nFehler` ueber dem
+       Formular und bleibt bis zum naechsten Versuch. */
+    {
+      LAGE.personenStumm = false;
+      const ctx = await b.newContext({ viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      LAGE.absage = "„Asad Karakiri“ ist schon angelegt. Einen zweiten Eintrag gibt es "
+        + "nicht — wer wirklich so heißt wie jemand im Haus, braucht einen "
+        + "unterscheidenden Namen. Einen neuen Code für die bestehende Person gibt es "
+        + "über „PIN zurücksetzen“.";
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen(p, "Asad Karakiri", rnd());
+      await warte(p, 600);
+
+      const lage = await p.evaluate(() => {
+        const f = document.querySelector("#nFehler");
+        const t = document.querySelector("#toast");
+        const r = t ? t.getBoundingClientRect() : null;
+        const st = t ? getComputedStyle(t) : null;
+        return {
+          steht: !!(f && !f.hidden && /schon angelegt/.test(f.textContent)),
+          toastB: r ? Math.round(r.width) : 0,
+          toastH: r ? Math.round(r.height) : 0,
+          radius: st ? parseFloat(st.borderTopLeftRadius) : 0,
+          docBreit: document.documentElement.scrollWidth,
+          fenster: window.innerWidth
+        };
+      });
+      urteil("K7 · die Absage steht am Formular, nicht nur im Toast",
+        lage.steht, JSON.stringify(lage.steht));
+      /* Und sie steht UEBER dem Knopf, nicht darunter: der Kasten lag im
+         Markup nach der Zeile mit „Speichern" und damit ausserhalb des
+         Blicks, waehrend Log und Morgenbrief „ueber dem Formular"
+         behaupteten (qa-guardian, dritte Schlusskontrolle). */
+      const platz = await p.evaluate(() => {
+        const f = document.querySelector("#nFehler");
+        const b = document.querySelector("#nAdd");
+        if (!f || !b) return null;
+        return { f: Math.round(f.getBoundingClientRect().top),
+                 b: Math.round(b.getBoundingClientRect().top) };
+      });
+      urteil("K7 · und sie steht über dem Knopf, nicht darunter",
+        !!platz && platz.f < platz.b,
+        platz ? "Hinweis y=" + platz.f + " · Knopf y=" + platz.b : "nicht gefunden");
+      /* BERICHTIGT (zehnte Jagd Runde 16 · C): Gemessen wurde hier der
+         Toast „Nicht gespeichert" — 39 px hoch, und die Bedingung
+         `toastH <= 48` war damit immer wahr. Ein zurueckgedrehtes
+         `--radius-pill` waere gruen durchgegangen. Der lange Satz wird
+         deshalb jetzt AUSDRUECKLICH in den Toast gegeben und dort
+         gemessen. */
+      const geo = await p.evaluate((satz) => {
+        toast(satz);
+        const t = document.querySelector("#toast");
+        const r = t.getBoundingClientRect();
+        const st = getComputedStyle(t);
+        return { b: Math.round(r.width), h: Math.round(r.height),
+                 radius: parseFloat(st.borderTopLeftRadius),
+                 links: Math.round(r.left), rechts: Math.round(innerWidth - r.right),
+                 zeilen: Math.round(r.height / parseFloat(st.lineHeight)) };
+      }, LAGE.absage);
+      urteil("K7 · der lange Satz im Toast ist kein Kreis",
+        geo.radius * 2 < geo.h,
+        "Radius " + geo.radius + " · Höhe " + geo.h);
+      /* 195 px waren es vorher bei 390 px Fenster — exakt 50 vw, weil
+         `left:50%` das `max-width` aushebelte. */
+      urteil("K7 · und er nutzt die Breite (frueher 195 px = 50 vw)",
+        geo.b > 250, geo.b + " px breit · " + geo.zeilen + " Zeilen");
+      urteil("K7 · er steht mittig zwischen zwei Rändern",
+        Math.abs(geo.links - geo.rechts) <= 2,
+        "links " + geo.links + " · rechts " + geo.rechts);
+      urteil("K7 · der Toast ist kein Kreis mehr (Radius unter der halben Höhe)",
+        lage.radius * 2 < lage.toastH || lage.toastH <= 48,
+        "Radius " + lage.radius + " · Höhe " + lage.toastH);
+      urteil("K7 · kein waagrechter Überlauf bei 390 px",
+        lage.docBreit <= lage.fenster, lage.docBreit + " / " + lage.fenster);
+      fs.mkdirSync(BELEG, { recursive: true });
+      await p.screenshot({ path: BELEG + "/k7-absage-390.png", fullPage: true });
+
+      /* Und sie bleibt stehen, nachdem der Toast laengst weg ist. */
+      await warte(p, 9500);
+      const spaeter = await p.evaluate(() => {
+        const f = document.querySelector("#nFehler");
+        const t = document.querySelector("#toast");
+        return { steht: !!(f && !f.hidden && /schon angelegt/.test(f.textContent)),
+                 toastAn: !!(t && t.classList.contains("on")) };
+      });
+      urteil("K7 · nach zehn Sekunden steht sie immer noch da", spaeter.steht);
+      urteil("K7 · der Toast ist dann weg", !spaeter.toastAn);
+      urteil("K7 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.absage = null;
+    }
+
+    /* ── K8 · Das Formular legt AN, es schreibt nicht um ──────── */
+    /* Zehnte Jagd Runde 16 · A. Steht der Mensch in der Liste, ging bis
+       eben SEINE Kennung ins Paket — und damit war der Namenswaechter im
+       Worker stumm. `ON CONFLICT(id) DO UPDATE` schrieb die Zeile um:
+       Code tot, Rolle zurueck auf „Service" (das Auswahlfeld wird nie
+       vorbelegt), `aktiv:1` hob eine Sperre auf, und die einzige Leitung
+       stufte sich damit selbst ab. Hier wird geklickt, nicht gelesen. */
+    {
+      LAGE.personenStumm = false;
+      LAGE.personen = [{ id: "p-asad", name: "Asad Karakiri",
+                         rolle: "wirtschaft", aktiv: 1 }];
+      LAGE.pakete = [];
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 600);
+
+      urteil("K8 · die Liste steht (sonst prueft diese Szene nichts)",
+        /Asad Karakiri/.test(await p.locator("#teamL").innerText()));
+
+      await anlegen(p, "Asad Karakiri", rnd());
+      urteil("K8 · es geht KEIN Paket hinaus",
+        LAGE.pakete.length === 0, "Pakete: " + JSON.stringify(LAGE.pakete));
+      const f = await p.locator("#nFehler").innerText().catch(() => "");
+      urteil("K8 · und es steht da, warum", /schon angelegt/.test(f), f.slice(0, 90));
+      urteil("K8 · der Satz nennt den Weg, der wirklich hilft",
+        /PIN zur\u00fccksetzen/.test(f) || /zur\u00fccksetzen/.test(f), f.slice(0, 90));
+
+      /* Auch in der Schreibweise, die der Waechter im Worker abfaengt. */
+      await anlegen(p, "  asad karakiri  ", rnd());
+      urteil("K8 · auch in anderer Schreibweise geht nichts hinaus",
+        LAGE.pakete.length === 0, "Pakete: " + LAGE.pakete.length);
+
+      /* Und ein wirklich neuer Mensch geht weiterhin durch. */
+      await anlegen(p, "Ian Lauchbein", rnd());
+      urteil("K8 · ein neuer Mensch wird weiterhin angelegt",
+        LAGE.pakete.length === 1 && LAGE.pakete[0].name === "Ian Lauchbein",
+        "Pakete: " + LAGE.pakete.length);
+      urteil("K8 · und nicht unter der Kennung eines anderen",
+        LAGE.pakete.length === 1 && LAGE.pakete[0].id !== "p-asad",
+        String(LAGE.pakete[0] && LAGE.pakete[0].id));
+      urteil("K8 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.personen = [];
+      LAGE.personenStumm = true;
+    }
+
+    /* ── K9 · Bestaetigt heisst: nie wieder ueberschreiben ────── */
+    /* Elfte Jagd Runde 16 · A. Die Absage der zehnten Runde hing an
+       `LEUTE` — und `LEUTE` ist leer, sobald `hole()` in die Frist
+       laeuft, also genau dann, wenn man sie braucht. Die gemerkte
+       Kennung ging dann mit dem NEUEN Formularinhalt hinaus, der Worker
+       sah seine eigene `id` und schwieg, und `ON CONFLICT(id) DO UPDATE`
+       schrieb Rolle, Pruefsumme und `aktiv` neu. Jetzt merkt sich das
+       Fenster, OB der Server den Anlauf bestaetigt hat. */
+    {
+      LAGE.personenStumm = false;      /* erster Anlauf glueckt */
+      LAGE.personen = [];
+      LAGE.pakete = []; LAGE.zeilen = {};
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen(p, "Asad Karakiri", rnd());
+      urteil("K9 · der erste Anlauf glueckt",
+        LAGE.pakete.length === 1, "Pakete: " + LAGE.pakete.length);
+
+      /* Jetzt schweigt die Liste — und die Seite wird neu geladen, damit
+         nur noch das Gedaechtnis traegt. */
+      LAGE.personenStumm = true;
+      await p.reload({ waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      urteil("K9 · die Liste kommt nicht (sonst prueft das hier nichts)",
+        !/Asad Karakiri/.test(await p.locator("#teamL").innerText()),
+        (await p.locator("#teamL").innerText()).slice(0, 50));
+
+      /* Die Zeile, wie sie am „Server" steht — daran wird gemessen. */
+      const meineId = LAGE.pakete[0] && LAGE.pakete[0].id;
+      /* Verglichen wird die VOLLE Zeile (sonst faellt ein geaenderter
+         Code nicht auf), gedruckt die geschwaerzte. */
+      const vorher = JSON.stringify(LAGE.zeilen[meineId]);
+      await anlegen(p, "Asad Karakiri", rnd());
+      urteil("K9 · der bestaetigte Mensch wird NICHT ueberschrieben",
+        LAGE.pakete.length === 1,
+        "Pakete: " + ohneCode(LAGE.pakete.slice(1)));
+      urteil("K9 · und die Zeile am Server ist unveraendert",
+        JSON.stringify(LAGE.zeilen[meineId]) === vorher,
+        "vorher " + ohneCode(JSON.parse(vorher))
+        + " · nachher " + ohneCode(LAGE.zeilen[meineId]));
+      const f = await p.locator("#nFehler").innerText().catch(() => "");
+      urteil("K9 · und es steht da, warum", /schon angelegt/.test(f), f.slice(0, 80));
+      urteil("K9 · der Satz sagt auch, warum die Zeile oben fehlt",
+        /Liste nicht durch|neu laden/.test(f), f.slice(0, 160));
+      urteil("K9 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.personen = [];
+      LAGE.personenStumm = true;
+    }
+
+    /* ── K10 · Unbestaetigt heisst: wiederholen ist erlaubt ────── */
+    /* Die andere Haelfte — der Fund der fuenften Jagd muss behoben
+       bleiben: Kommt die ANTWORT nicht an, darf derselbe Anlauf noch
+       einmal hinaus, und zwar mit derselben Kennung. */
+    {
+      LAGE.personenStumm = true;
+      LAGE.postStumm = true;   /* das Paket kommt an, die Antwort nicht */
+      LAGE.pakete = [];
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen(p, "Ian Lauchbein", rnd());
+      await warte(p, 9200);
+      await anlegen(p, "Ian Lauchbein", rnd());
+      const k = new Set(LAGE.pakete.map(x => x.id));
+      urteil("K10 · zweimal derselbe Anlauf → zwei Pakete, EINE Kennung",
+        LAGE.pakete.length === 2 && k.size === 1,
+        "Pakete: " + LAGE.pakete.length + " · Kennungen: " + k.size);
+      urteil("K10 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── K11 · Die Falle heilt, sobald die Liste den Menschen zeigt ─ */
+    /* Zwoelfte Jagd Runde 16 · A: `ok:false` wurde NIE fortgeschrieben.
+       Erster Anlauf: Paket kommt an, Antwort geht verloren — die Zeile
+       steht am Server, das Gedaechtnis sagt „unbestaetigt". Danach kommt
+       die Liste EINMAL durch und zeigt den Menschen; ab da ist bewiesen,
+       dass die Zeile da ist. Schweigt die Liste spaeter wieder und tippt
+       jemand denselben Namen mit anderer Rolle, ging bis eben dieselbe
+       Kennung mit dem NEUEN Inhalt hinaus und schrieb die Zeile um:
+       Rolle „Service", Pruefsumme neu, Sperre aufgehoben, Toast
+       „Gespeichert". Gemessen wird an der ZEILE, nicht am Paket. */
+    {
+      LAGE.zeilen = {}; LAGE.pakete = [];
+      LAGE.personenStumm = true; LAGE.postStumm = true;
+      const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+
+      /* Anlauf 1: Rolle „Leitung", Antwort geht verloren. */
+      await p.selectOption("#nRolle", "leitung").catch(() => {});
+      await anlegen(p, "Eva Lang", rnd());
+      await warte(p, 9200);
+      const id1 = LAGE.pakete[0] && LAGE.pakete[0].id;
+      urteil("K11 · die Zeile steht am Server, obwohl die Antwort verloren ging",
+        !!id1 && LAGE.zeilen[id1] && LAGE.zeilen[id1].rolle === "leitung",
+        ohneCode(LAGE.zeilen));
+
+      /* Jetzt kommt die Liste EINMAL durch und zeigt Eva. */
+      LAGE.personen = [{ id: id1, name: "Eva Lang", rolle: "leitung", aktiv: 1 }];
+      LAGE.personenStumm = false;
+      await p.click("#bNeu"); await warte(p, 900);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 700);
+      urteil("K11 · die Liste zeigt sie",
+        /Eva Lang/.test(await p.locator("#teamL").innerText()));
+      urteil("K11 · und das Gedaechtnis ist damit geheilt",
+        await p.evaluate(() => {
+          try { return JSON.parse(localStorage.getItem("hh_nkennung_v1") || "{}")["eva lang"].ok === true; }
+          catch (e) { return false; }
+        }));
+
+      /* Danach schweigt die Liste wieder — und jemand tippt denselben
+         Namen mit anderer Rolle. */
+      LAGE.personenStumm = true;
+      LAGE.personen = [];
+      await p.reload({ waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      const vorher = JSON.stringify(LAGE.zeilen);
+      const vorherPakete = LAGE.pakete.length;
+      await anlegen(p, "Eva Lang", rnd());
+      urteil("K11 · es geht kein Paket mehr hinaus",
+        LAGE.pakete.length === vorherPakete,
+        "Pakete: " + ohneCode(LAGE.pakete.slice(vorherPakete)));
+      urteil("K11 · die Zeile behaelt ihre Rolle und ihren Code",
+        JSON.stringify(LAGE.zeilen) === vorher,
+        "vorher " + ohneCode(JSON.parse(vorher))
+        + " · nachher " + ohneCode(LAGE.zeilen));
+      urteil("K11 · und es steht da, warum",
+        /schon angelegt/.test(await p.locator("#nFehler").innerText().catch(() => "")),
+        (await p.locator("#nFehler").innerText().catch(() => "")).slice(0, 70));
+      urteil("K11 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.postStumm = false; LAGE.personenStumm = true; LAGE.zeilen = {};
+    }
+
+  } finally {
+    await b.close();
+    srv.close();
+  }
+  console.log("");
+  console.log(nein ? nein + " Prüfung(en) sagen NEIN." : "Alle Prüfungen ja.");
+  process.exit(nein ? 1 : 0);
+})();

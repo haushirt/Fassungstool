@@ -18,6 +18,11 @@ function umgebung(antwortet) {
   const gesendet = [];
   const sandkasten = {
     console, crypto,
+    /* Seit Runde 16 hat jede Anfrage eine Frist (`holeKurz`). Die Uhr
+       und der Abbrecher gehoeren damit in jede Umgebung, in der der
+       Ausschnitt laeuft — sonst prueft die Pruefung etwas anderes als
+       das, was ausgeliefert wird. */
+    setTimeout, clearTimeout, AbortController, Response,
     localStorage: {
       getItem: k => (speicher.has(k) ? speicher.get(k) : null),
       setItem: (k, v) => speicher.set(k, String(v)),
