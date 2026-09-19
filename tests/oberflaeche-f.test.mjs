@@ -94,16 +94,23 @@ describe("F6 · der Kopf beginnt unter der Statusleiste", () => {
 describe("F7 · „offen“ gehört der Aufgabe, nicht der Warteschlange", () => {
   /* Runde 14: „Alles übertragen“ war weiterhin zweideutig — darüber stand,
      die Tagesfassung stehe noch aus. Beide Zeilen sagen jetzt ausdrücklich,
-     dass es um dieses GERÄT geht, nicht um die Arbeit. */
-  test("das grüne Feld spricht nur noch von Übertragung", () => {
+     dass es um die ÜBERTRAGUNG geht, nicht um die Arbeit.
+     Runde 16 (4a): Dieselbe Trennung, nur knapper. Aus „Nichts liegt mehr
+     auf diesem Gerät" wird „Verbunden" — die Zeile beantwortet die Frage,
+     die im Keller gestellt wird, und beschreibt nicht den Speicher. Das
+     Wort „offen" bleibt der Aufgabe; das ist der Kern dieser Prüfung und
+     er gilt unverändert. */
+  test("das grüne Feld spricht nur noch von der Leitung", () => {
     assert.doesNotMatch(APP, /Nichts offen – alles übertragen/);
     assert.doesNotMatch(APP, /t="Alles übertragen"/);
-    assert.match(APP, /t="Nichts liegt mehr auf diesem Gerät"/);
+    assert.doesNotMatch(APP, /t="Nichts liegt mehr auf diesem Gerät"/,
+      "die alte, lange Fassung wird noch gesetzt");
+    assert.match(APP, /z==="verbunden"\)\{ t="Verbunden"; k="ok"; \}/);
   });
   test("die Wartezeile nennt den Vorgang, nicht „offen“", () => {
     assert.doesNotMatch(APP, /warten auf Übertragung/);
-    assert.match(APP, /o===1\?"1 Vorgang liegt noch auf diesem Gerät"/);
-    assert.match(APP, /o\+" Vorgänge liegen noch auf diesem Gerät"/);
+    assert.match(APP, /o===1\?"1 Vorgang noch zu übertragen"/);
+    assert.match(APP, /o\+" Vorgänge noch zu übertragen"/);
     assert.match(APP, /else if\(o>0\)\{ t=viele; k="wartet"; \}/);
   });
 });

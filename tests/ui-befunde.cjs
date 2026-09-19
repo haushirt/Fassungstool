@@ -177,11 +177,15 @@ const SZENEN = {
             setTagWahl(g); renderMenu();
           }); await warte(p, 350); }],
         ["startseite-quittieren", async p => { await grussZu(p); await warte(p, 300); },
-         SAAT_UEBERHOLT]],
-
-  /* Runde 15 · Anmeldeseite, vier Stellen, Tastatur.
-     Ohne Saat steht die Anmeldung — genau darum geht es hier. */
-  r15: [["anmeldung", async p => { await warte(p, 400); }, " "],
+         SAAT_UEBERHOLT],
+        /* Runde 15 · Anmeldeseite, vier Stellen, Tastatur.
+           Ohne Saat steht die Anmeldung — genau darum geht es hier.
+           BERICHTIGUNG (Runde 16): Hier stand ein ZWEITES `r15:` im selben
+           Objekt. In JavaScript gewinnt der letzte Schlüssel — die drei
+           Lagen darüber (Grund im Getränkezweig, gewählter Tag,
+           Quittieren) wurden seit Runde 15 nie aufgenommen, ohne dass
+           irgendwo ein Fehler erschien. Jetzt eine Liste. */
+        ["anmeldung", async p => { await warte(p, 400); }, " "],
         ["anmeldung-getippt", async p => { await warte(p, 400);
           await p.keyboard.press("1"); await p.keyboard.press("2");
           await warte(p, 250); }, " "],

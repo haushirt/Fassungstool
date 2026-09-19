@@ -205,6 +205,24 @@
 .deutung{font-size:var(--text-sm);color:var(--fg-secondary);line-height:var(--leading-normal)}
 .neg{color:var(--danger-fg);font-weight:var(--weight-bold)}
 
+/* ═══════════════ Finger am Glas ═══════════════
+   Runde 16 · Zwei Dinge, die Safari am iPhone von sich aus tut und die im
+   Keller stören:
+
+   · Ein Doppeltipp zoomt. Genau das passiert beim Zählen: zwei Flaschen,
+     zweimal schnell auf dieselbe Zeile — und statt der zweiten Zahl steht
+     die Seite vergrössert da. `manipulation` nimmt GENAU diese Geste weg.
+     Wischen und Zwei-Finger-Zoom bleiben; `none` oder `pan-x pan-y` würden
+     beides mitnehmen und kommen deshalb nicht in Frage.
+   · Ein Feld unter 16px zoomt beim Fokus. Am Schreibtisch
+     (data-dichte="maus") sind die kleinen Grade gewollt — dort zählt
+     Dichte und es wird nicht getippt. Gehoben wird deshalb nur, wo
+     wirklich ein Finger im Spiel ist (pointer:coarse). */
+html{touch-action:manipulation}
+@media(pointer:coarse){
+  input,select,textarea{font-size:var(--text-base)}
+}
+
 /* ═══════════════ Fokus ═══════════════ */
 :where(button,input,select,textarea,a,[tabindex]):focus-visible{
   outline:var(--ring-width) solid var(--ring);
@@ -274,6 +292,12 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .card2 .row button:active,.drwb button:active,.exprow .secondary:active{
   background:var(--surface-3)}
 
+/* `display:inline-flex` oben schlaegt das `display:none`, das `hidden`
+   mitbringt — ein verstecktes „Abbrechen" stand deshalb weiter da. Das
+   Abschlussfenster (Runde 16) blendet es aus, also muss es auch weg
+   sein. */
+.card2 .row button[hidden]{display:none}
+
 /* primär */
 .finishbtn,.exprow .primary,.card2 .row .ok,.prueft.weiter,.drwb button.weiter{
   background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
@@ -305,6 +329,32 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .prueft.on .ps{color:var(--success-fg)}
 .finishbtn{min-height:var(--control-h-lg);font-size:var(--text-base);
   margin-top:var(--space-6)}
+/* Runde 16 · 4b: Ohne Verbindung ist „Fertig – Speichern" nicht drueckbar.
+   Ausgegraut, nicht versteckt — der Knopf bleibt an seinem Platz, damit
+   klar ist, dass er wiederkommt. Der Grund steht direkt darunter. */
+.finishbtn:disabled{background:var(--surface-4);border-color:var(--border-strong);
+  color:var(--fg-muted);cursor:default}
+.finishhint{margin:var(--space-2) 0 0;text-align:center;
+  font-size:var(--text-sm);color:var(--fg-muted)}
+/* Der Abgleich im Abschlussfenster: eine Zeile je Artikel, die Zahlen
+   rechts und untereinander lesbar. */
+.abgl{margin:var(--space-3) 0 0;border-top:1px solid var(--border)}
+.abglz{display:flex;align-items:baseline;gap:var(--space-3);
+  padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
+.abglz .nm{flex:1;min-width:0}
+.abglz .za{font-variant-numeric:tabular-nums;white-space:nowrap;
+  font-size:var(--text-sm);color:var(--fg-muted)}
+.abglz .df{font-variant-numeric:tabular-nums;white-space:nowrap;
+  font-weight:var(--weight-bold);min-width:44px;text-align:right}
+.abglz .df.plus{color:var(--warn-fg)}
+.abglz .df.minus{color:var(--danger)}
+.abglfuss{margin:var(--space-3) 0 0;font-size:var(--text-sm);color:var(--fg-muted)}
+/* Der Notweg am Fuss der Startseite: da, aber leise. */
+.notweg{margin-top:var(--space-7);padding-top:var(--space-4);
+  border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center}
+.notweg .mgrp{margin-bottom:var(--space-2)}
+.notweg .adminlink{margin-top:0}
+.notweg .adminlink.del{color:var(--danger)}
 .recheck{margin-top:var(--space-3)}
 .fullbtn{margin-top:var(--space-2)}
 .addbtn{margin-top:var(--space-4)}
@@ -380,9 +430,26 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
 .grp{--ton:var(--fg-subtle); --tonbg:var(--surface)}
 .grp .mgrp{color:var(--ton)}
 .grp .mi{background:var(--tonbg)}
-.grp--service{--ton:var(--accent); --tonbg:var(--accent-tint)}
+/* Runde 16 · Die beiden Gruenne getauscht. Bisher lag der getoente Grund
+   auf „Service" und das reine Weiss auf „Bestand" — und damit sprang im
+   Kellerlicht die falsche Gruppe ins Auge: Weiss ist der hellste Grund,
+   den diese Palette hat, und „Kellerzaehlung / Lieferung" stach damit vor
+   „Tagesfassung". Service ist die Gruppe, wegen der die App aufgemacht
+   wird; sie bekommt jetzt den hellsten Grund UND den kraeftigsten Ton
+   (Haus-Teal an Ueberschrift und Trennstrich). „Bestand" ist Buchhaltung,
+   steht selten an und tritt auf einem gedaempften Cream-Ton zurueck.
+   Hausfarben bleiben — getauscht wird die Zuteilung, nicht die Palette.
+
+   GEMESSEN: `--surface-4` waere der dunkelste und damit der naechstliegende
+   Grund — er bringt den Beschreibungstext der Kacheln (`--fg-muted`) aber
+   auf 4,43:1 und damit unter das Mass des Hauses; dieselbe Rechnung steht
+   schon bei `nav.seite .zahl` in leitung.html. `--surface-3` bringt
+   4,85:1 und tritt gegen das Weiss der Servicegruppe deutlich genug
+   zurueck. Dunkler geht nur mit dunklerem Text, und der waere dann
+   staerker als der von Service — genau verkehrt herum. */
+.grp--service{--ton:var(--accent); --tonbg:var(--surface)}
 .grp--ausser{--ton:var(--warn-fg); --tonbg:var(--warn-bg)}
-.grp--bestand{--ton:var(--fg-subtle); --tonbg:var(--surface)}
+.grp--bestand{--ton:var(--fg-subtle); --tonbg:var(--surface-3)}
 /* Ein angefangener Vorgang bleibt rot, in jeder Gruppe — er ist der
    einzige Zustand, der die Gruppenfarbe schlagen darf. */
 .grp .mi.run{background:var(--danger-surface)}
@@ -1781,7 +1848,6 @@ const WINES = [{"id":"w001","f":"WEISS","r":"Grüner Veltliner","winzer":"Leindl
 const PLAN = {"soll":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":2,"w007":2,"w008":3,"w009":3,"w010":3,"w011":3,"w013":3,"w014":3,"w016":3,"w015":3,"w017":3,"w018":3,"w019":3,"w020":3,"w023":2,"w022":2,"w060":2,"w021":2,"w045":2,"w043":2,"w046":2,"w026":3,"w027":3,"w025":3,"w024":3,"w031":3,"w030":3,"w028":3,"w032":3,"w035":3,"w033":3,"w034":3,"w036":3,"w041":3,"w042":3,"w038":3,"w039":3,"w037":3,"w040":3,"w048":2,"w050":2,"w049":2,"w052":3,"w047":2,"w051":3,"w053":3,"w065":3,"w066":3},"schrank":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":3,"w007":3,"w008":3,"w009":3,"w010":3,"w011":3,"w013":3,"w014":3,"w016":4,"w015":4,"w017":4,"w018":4,"w019":4,"w020":4,"w023":4,"w022":4,"w060":4,"w021":4,"w045":4,"w043":4,"w046":4,"w026":1,"w027":1,"w025":1,"w024":1,"w031":1,"w030":1,"w028":1,"w032":2,"w035":2,"w033":2,"w034":2,"w036":1,"w041":2,"w042":2,"w038":2,"w039":2,"w037":2,"w040":2,"w048":4,"w050":4,"w049":4,"w052":2,"w047":4,"w051":4,"w053":2,"w065":1,"w066":3},"restorder":{"w024":0,"w026":1,"w025":2,"w027":3,"w028":4,"w030":5,"w031":6,"w065":7,"w036":8,"w032":9,"w035":10,"w033":11,"w034":12,"w041":13,"w042":14,"w037":15,"w039":16,"w040":17,"w038":18,"w053":19,"w052":20,"w001":21,"w002":22,"w003":23,"w004":24,"w005":25,"w006":26,"w007":27,"w008":28,"w009":29,"w010":30,"w011":31,"w066":32,"w013":33,"w014":34,"w015":35,"w016":36,"w017":37,"w018":38,"w019":39,"w020":40,"w021":41,"w022":42,"w023":43,"w060":44,"w043":45,"w045":46,"w046":47,"w047":48,"w051":49,"w049":50,"w048":51,"w050":52},"zone":{"w001":3,"w003":3,"w002":3,"w004":3,"w005":3,"w006":3,"w007":3,"w008":3,"w009":3,"w010":3,"w011":3,"w013":3,"w014":3,"w016":3,"w015":3,"w017":3,"w018":3,"w019":3,"w020":3,"w023":4,"w022":4,"w060":4,"w021":4,"w045":2,"w043":2,"w046":2,"w026":1,"w027":1,"w025":1,"w024":1,"w031":1,"w030":1,"w028":1,"w032":1,"w035":1,"w033":1,"w034":1,"w036":1,"w041":1,"w042":1,"w038":1,"w039":1,"w037":1,"w040":1,"w055":6,"w056":6,"w057":6,"serena":6,"w048":5,"w050":5,"w049":5,"w052":5,"w047":5,"w051":5,"w053":5,"w065":1,"w066":3},"zonen":{"1":{"t":"Rot","s":"Linker Raum · Hauptregal"},"2":{"t":"Rosé","s":"Eingang · Frontregal"},"3":{"t":"Weiss","s":"Rechter Raum · Hauptregal"},"4":{"t":"Cuvée Weiss","s":"Rechter Raum · Seitenregal links"},"5":{"t":"Natural","s":"Rechter Raum · Seitenregal rechts"},"6":{"t":"Bubbles","s":"Eingang · Frontregal"},"7":{"t":"Einzelgänger","s":"Oben auf dem Regal"}},"kiste":{"w003":12},"barrot":[{"id":"w026","soll":3},{"id":"w065","soll":3},{"id":"w053","soll":3}],"bar":[{"id":"serena","soll":6},{"id":"w055","soll":2},{"id":"w056","soll":1},{"id":"w001","soll":3},{"id":"w009","soll":3},{"id":"w005","soll":3},{"id":"w043","soll":3}],"backup":[{"id":"serena","soll":2}]};
 const KISTE_STD=6;
 const kg=p=>+(p&&p.kistengr)||KISTE_STD;
-const MAIL="casimir.ikrath@haus-hirt.com";
 /* P8 · Es gibt nur noch eine Codeebene: den persönlichen Zugangscode.
    Verwaltung und Freigabe hatten bis v12 einen eigenen vierstelligen Code,
    der als Konstante in dieser Datei stand. Klartext in einer öffentlich
@@ -1816,6 +1882,60 @@ async function bekannterCode(code){
   const k=await codeSumme(code);
   try{ return (JSON.parse(localStorage.getItem(K_BEKANNT))||{})[k]||null; }catch(e){ return null; }
 }
+/* B3 · Ein Code, den der Server nicht mehr kennt, hat auf diesem Geraet
+   nichts mehr verloren. Ohne dieses Vergessen gaebe ein zurueckgesetzter
+   Code beim naechsten Mal OHNE NETZ wieder frei. */
+async function vergissCode(code){
+  const k=await codeSumme(code);
+  try{
+    const m=JSON.parse(localStorage.getItem(K_BEKANNT))||{};
+    if(!(k in m))return;
+    delete m[k]; localStorage.setItem(K_BEKANNT,JSON.stringify(m));
+  }catch(e){}
+}
+/* B3 (Jagd 15) · „Wer gehoert zu diesem Code?" — und zwar JETZT, nicht
+   „irgendwann einmal auf diesem Geraet".
+
+   Bis Runde 15 fragten Freigabe und Wein-Editor allein den Geraetespeicher.
+   Der kennt jeden Code, der hier je geglueckt ist, auch einen, den die
+   Leitung laengst zurueckgesetzt hat: Der alte Code gab weiter frei, und
+   im append-only Journal stand dauerhaft der falsche Name — dort ist er
+   nicht mehr herauszubekommen (Regel 6).
+
+   Antwortet der Server, gilt SEINE Antwort, auch das Nein; der tote Code
+   fliegt dabei aus dem Geraetespeicher. Antwortet er nicht, bleibt der
+   Speicher die Rueckfallebene — im Keller ist kein Netz, und eine
+   Freigabe, die dort gar nicht mehr geht, waere die schlechtere Loesung.
+   Welcher Weg es war, sagt `quelle`; der Dialog schreibt es dazu. */
+async function werHatDenCode(code){
+  try{
+    const r=await fetch(API+"/code",{method:"POST",credentials:"same-origin",
+      headers:{"content-type":"application/json"},body:JSON.stringify({code})});
+    if((r.headers.get("content-type")||"").includes("json")){
+      const j=await r.json().catch(()=>({}));
+      if(r.ok&&j.name){ await merkeCode(code,j.name); return {name:j.name,quelle:"server"}; }
+      if(r.status===401){ await vergissCode(code); return {name:null,quelle:"server"}; }
+      if(r.status===429) return {name:null,quelle:"gesperrt",
+        wartenBis:+j.wartenBis||0, minuten:+j.minuten||0};
+    }
+  }catch(e){}
+  const n=await bekannterCode(code);
+  return {name:n, quelle:"geraet"};
+}
+/* Was der Dialog sagt, wenn der Code nicht gilt. Eine Quelle fuer beide
+   Stellen (Freigabe und Wein-Editor), damit dasselbe Nein nicht zweimal
+   verschieden klingt. */
+function codeAbsage(erg){
+  if(erg.quelle==="gesperrt"){
+    const uhr=erg.wartenBis?new Date(erg.wartenBis).toLocaleTimeString("de-AT",
+      {hour:"2-digit",minute:"2-digit"}):"";
+    return "Zu viele Fehlversuche."+(uhr?" Wieder m\u00f6glich ab "+uhr+" Uhr.":"");
+  }
+  if(erg.quelle==="server")
+    return "Dieser Code gilt nicht. Wurde er zur\u00fcckgesetzt, gilt nur noch der neue.";
+  return "Code stimmt nicht. Ohne Netz geht hier nur ein Code, der auf diesem "
+        +"Ger\u00e4t schon einmal angemeldet war.";
+}
 const USER={};   /* bleibt leer — nur noch Rückwärtskompatibilität */
 const UKEY="hh_user";
 function whoAmI(){try{return sessionStorage.getItem(UKEY)||"";}catch(e){return "";}}
@@ -1823,10 +1943,17 @@ function whoAmI(){try{return sessionStorage.getItem(UKEY)||"";}catch(e){return "
    Blieb `hh_rolle` stehen, sah die naechste Person am selben Geraet den
    Backoffice-Link der Leitung — oder die Leitung bekam ihn nicht, weil
    noch „service" darin stand. Die Rolle haengt am Namen, nicht am Geraet. */
+/* BERICHTIGUNG (Jagd 15, B2): Der Fehler wurde geschluckt. Ist der
+   sessionStorage nicht schreibbar (privates Fenster, gesperrter Speicher,
+   volles Kontingent), gab `whoAmI()` danach weiter "" zurueck — die
+   Anmeldung glueckte, `renderMenu()` fand niemanden und zeichnete wieder
+   die Anmeldung. Der Schirm sprang stumm auf Anfang, beliebig oft, ohne
+   ein Wort dazu. Diese Funktion sagt jetzt, ob es angekommen ist; wer sie
+   ruft, entscheidet, was er der Person sagt. */
 function setUser(n){try{
-  if(n)sessionStorage.setItem(UKEY,n);
-  else {sessionStorage.removeItem(UKEY);setRolle("");}
-}catch(e){}}
+  if(n){sessionStorage.setItem(UKEY,n); return sessionStorage.getItem(UKEY)===n;}
+  sessionStorage.removeItem(UKEY);setRolle("");return true;
+}catch(e){return !n;}}
 const KEY="hh_keller_v12";
 const $=s=>document.querySelector(s);
 /* Zurück/Weiter wandern bei jedem Aufbau in den Inhalt. Die Knoten
@@ -2023,6 +2150,26 @@ const API="/api";
    fuehrt. Die Rolle liegt in der Sitzung, nicht dauerhaft — beim
    Personenwechsel ist sie damit von selbst weg. */
 const RKEY="hh_rolle";
+/* A1 (Jagd 15) · „abmelden" leerte bis Runde 15 nur den sessionStorage.
+   Der Sitzungskeks (`hh_sitz`, httpOnly) blieb bis zu zwoelf Stunden
+   gueltig: Am geteilten iPad war die naechste Person ueber /leitung.html
+   weiter volle Leitung — samt „PIN zuruecksetzen". Nur der Server kann
+   den Keks nehmen (`POST /api/abmelden` setzt ihn auf Max-Age=0), also
+   wird er gerufen und auf die Antwort gewartet.
+   Ohne Netz geht das nicht. Dann wird die Abmeldung VORGEMERKT und beim
+   naechsten Empfang nachgeholt; gesagt wird es auch, statt eine
+   Sicherheit vorzutaeuschen, die es noch nicht gibt. */
+const K_ABMELDUNG="hh_abmeldung_offen_v1";
+async function serverAbmelden(){
+  const r=await fetch(API+"/abmelden",{method:"POST",credentials:"same-origin",
+    headers:{accept:"application/json"}});
+  if(!r.ok)throw new Error("abmelden "+r.status);
+  return true;
+}
+async function holeAbmeldungNach(){
+  try{ if(!localStorage.getItem(K_ABMELDUNG))return; }catch(e){ return; }
+  try{ await serverAbmelden(); localStorage.removeItem(K_ABMELDUNG); }catch(e){}
+}
 function meineRolle(){try{return sessionStorage.getItem(RKEY)||"";}catch(e){return "";}}
 function setRolle(r){try{r?sessionStorage.setItem(RKEY,r):sessionStorage.removeItem(RKEY);}catch(e){}}
 async function zieheRolle(){
@@ -2313,8 +2460,11 @@ function netzChip(){
      Gemeint war immer: auf diesem GERÄT liegt nichts mehr, was noch
      hinaus muss. Genau das steht jetzt da. Die Zeile spricht vom Gerät,
      die Zeile darüber von der Arbeit. */
-  const viele=o===1?"1 Vorgang liegt noch auf diesem Gerät"
-                   :o+" Vorgänge liegen noch auf diesem Gerät";
+  /* Runde 16 · 4a: knapper. Die Zeile wird im Vorbeigehen gelesen, mit
+     einer Flasche in der Hand — sie sagt den Zustand, nicht den Satz
+     darum herum. */
+  const viele=o===1?"1 Vorgang noch zu übertragen"
+                   :o+" Vorgänge noch zu übertragen";
   const ueb=ueberholtOffen();
   let t="", k="", quittierbar=false;
   /* „Nicht angemeldet" steht davor: solange das gilt, geht überhaupt
@@ -2323,12 +2473,14 @@ function netzChip(){
   if(z==="kein-server"&&!ueb.length){ t=""; }
   else if(z==="abgemeldet"){ t="Nicht angemeldet – bitte neu anmelden"; k="fehler"; }
   else if(ueb.length){ t=ueberholtSatz(ueb); k="fehler"; quittierbar=true; }
-  else if(weg&&o>0){ t=viele+" – kein Netz"; k="wartet"; }
-  else if(weg){ t="Kein Netz – alles ist im Gerät gespeichert"; k="offline"; }
+  else if(weg&&o>0){ t="Kein Netz – "+viele; k="wartet"; }
+  else if(weg){ t="Kein Netz – alles im Gerät gespeichert"; k="offline"; }
   else if(z==="serverfehler"){ t=o>0?"Server antwortet nicht – "+viele
                                     :"Server antwortet nicht"; k="fehler"; }
   else if(o>0){ t=viele; k="wartet"; }
-  else if(z==="verbunden"){ t="Nichts liegt mehr auf diesem Gerät"; k="ok"; }
+  /* Runde 16 · 4a: „Nichts liegt mehr auf diesem Gerät" beschrieb den
+     Speicher. Gefragt wird aber nach der Leitung — ein Wort genügt. */
+  else if(z==="verbunden"){ t="Verbunden"; k="ok"; }
   els.forEach(el=>{
     /* Der Block auf der Startseite bleibt stehen, solange er wenigstens
        eine der beiden Zeilen zu sagen hat — die Frage „ist die
@@ -2356,6 +2508,42 @@ function netzChip(){
     const btn=el.querySelector(".netzok");
     if(btn){ btn.hidden=!quittierbar; btn.onclick=ueberholtQuittieren; }
   });
+  finishNetz();
+}
+
+/* Runde 16 · 4b · Ist der Server gerade erreichbar?
+   „Fertig – Speichern" hängt daran: Der Abschluss holt den Z-Bericht des
+   Vorabends und schliesst den Vorgang ab — beides braucht die Leitung.
+   Ein Abschluss, den unterwegs niemand bestätigt hat, ist im Keller
+   schlimmer als ein Knopf, der wartet. Was bis dahin gefasst wurde, liegt
+   unverändert im Gerät (`save()` bei jeder Änderung) und geht nicht
+   verloren; nur das Abschliessen wartet.
+   „unbekannt" gilt als erreichbar: Das ist der Zustand vor der ersten
+   Antwort, und dann soll der Knopf nicht grundlos grau sein — der Griff
+   danach fragt ohnehin den Server. */
+const OHNE_NETZ=["offline","kein-server","serverfehler","abgemeldet"];
+function verbunden(){
+  if(navigator.onLine===false)return false;
+  return OHNE_NETZ.indexOf(NETZ.zustand)<0;
+}
+/* Den Knopf der Lage nachführen. Läuft aus netzChip(), also bei jedem
+   online/offline-Ereignis, nach jeder Übertragung und in der 45-s-Runde —
+   kommt die Verbindung zurück, wird er von selbst wieder drückbar. */
+function finishNetz(){
+  const fb=document.querySelector(".finishbtn[data-netz]");
+  if(!fb)return;
+  const an=verbunden();
+  fb.disabled=!an;
+  const h=document.querySelector(".finishhint");
+  if(!h)return;
+  h.hidden=an;
+  /* Der Grund muss der richtige sein. Eine abgelaufene Sitzung ist keine
+     fehlende Verbindung — wer daraufhin das WLAN sucht, sucht am
+     falschen Ort. Beide Lagen sperren den Abschluss, beide gehen vorbei,
+     aber nur eine geht durch Neuanmelden vorbei. */
+  h.textContent = NETZ.zustand==="abgemeldet"
+    ? "Nicht angemeldet – bitte neu anmelden"
+    : "Keine Verbindung";
 }
 
 /* Fertige und laufende Vorgänge einsammeln, die noch nicht draußen sind. */
@@ -2380,7 +2568,7 @@ function netzStart(){
   netzChip();
   zieheFern().then(schiebe);
   zieheRolle();
-  window.addEventListener("online",()=>{ NETZ.zustand="unbekannt"; schiebe(); zieheFern(); });
+  window.addEventListener("online",()=>{ NETZ.zustand="unbekannt"; holeAbmeldungNach(); schiebe(); zieheFern(); });
   window.addEventListener("offline",()=>{ NETZ.zustand="offline"; netzChip(); });
   setInterval(()=>{ sammle(); zwischenstand(); schiebe(); }, 45000);
   setInterval(zieheFern, 180000);
@@ -2535,19 +2723,27 @@ function renderLogin(){
              nichts geht. Also: mitzaehlen, ab vier verbleibenden warnen,
              und im Sperrfall sagen, wann es wieder geht. */
           laeuftPruefung=false; inp.value=""; male();
+          /* B1 (Jagd 15): Hier stand in allen drei Stufen „15 Minuten",
+             und die Zahl der Restversuche kam aus einer anderen Rechnung
+             als die Sperre selbst. Beides sagt jetzt der Worker
+             (`uebrig`, `minuten`, `wartenBis`); diese Zeilen erfinden
+             nichts mehr dazu. */
+          const uhrAus=t=>t?new Date(t).toLocaleTimeString("de-AT",
+            {hour:"2-digit",minute:"2-digit"}):"";
+          const dauer=(+j.minuten||0)?(+j.minuten)+" Minuten":"eine Weile";
           if(r.status===429){
-            const bis=+j.wartenBis||0;
-            const uhr=bis?new Date(bis).toLocaleTimeString("de-AT",
-              {hour:"2-digit",minute:"2-digit"}):"";
+            const uhr=uhrAus(+j.wartenBis||0);
             $("#pinFehler").textContent=uhr
               ? "Zu viele Fehlversuche. Wieder möglich ab "+uhr+" Uhr."
-              : "Zu viele Fehlversuche. In einer Viertelstunde wieder probieren.";
+              : "Zu viele Fehlversuche. In "+dauer+" wieder probieren.";
           } else {
             const u=(j.uebrig===undefined)?null:+j.uebrig;
+            const uhr=uhrAus(+j.wartenBis||0);
             $("#pinFehler").textContent=
-              (u===0) ? "Code stimmt nicht. Die Anmeldung ist jetzt für 15 Minuten gesperrt."
+              (u===0) ? "Code stimmt nicht. Die Anmeldung ist jetzt für "+dauer+
+                " gesperrt"+(uhr?" — wieder möglich ab "+uhr+" Uhr.":".")
               : (u!==null&&u<=4) ? "Code stimmt nicht. Noch "+u+
-                (u===1?" Versuch":" Versuche")+", dann ist für 15 Minuten gesperrt."
+                (u===1?" Versuch":" Versuche")+", dann ist für "+dauer+" gesperrt."
               : "Dieser Code ist nicht hinterlegt.";
           }
           return;
@@ -2557,7 +2753,24 @@ function renderLogin(){
     if(!name&&!serverHat) name=await bekannterCode(code);  /* Rückfallebene */
     if(name&&serverHat) await merkeCode(code,name);        /* fürs nächste Mal */
     laeuftPruefung=false;
-    if(name){ setUser(name);setRolle("");L.style.display="none";renderMenu();
+    if(name){
+      /* Eine neue Anmeldung ist eine NEUE Sitzung. Stand noch eine
+         vorgemerkte Abmeldung offen (A1, ohne Netz abgemeldet), muss sie
+         jetzt weg — sonst nimmt `holeAbmeldungNach()` beim naechsten
+         Empfang der frisch Angemeldeten den Keks wieder weg. */
+      try{ localStorage.removeItem(K_ABMELDUNG); }catch(e){}
+      /* B2 (Jagd 15): Nimmt der sessionStorage nichts an, ist der Name
+         nach `setUser` immer noch leer — `renderMenu()` zeichnete dann
+         wieder die Anmeldung, stumm und beliebig oft. Jetzt steht da,
+         was los ist, statt dass der Schirm von vorn beginnt. */
+      if(!setUser(name)){
+        inp.value="";male();
+        $("#pinFehler").textContent=
+          "Dieses Geraet speichert die Anmeldung nicht. Im privaten Fenster "
+          +"oder bei gesperrtem Speicher geht das Fassungstool nicht \u2014 "
+          +"bitte ein normales Fenster oeffnen.";
+        return; }
+      setRolle("");L.style.display="none";renderMenu();
       window.scrollTo(0,0);netzStart();zieheRolle();return; }
     inp.value="";male();
     $("#pinFehler").textContent=
@@ -2609,6 +2822,30 @@ function fernZeile(){
   const t=o.map(v=>`${esc(v.name||"Jemand")} · ${esc(MODES[v.modus]?MODES[v.modus].t:v.modus)}`).join("<br>");
   return `<div class="fernzeile"><b>Läuft gerade woanders</b><div>${t}</div></div>`;
 }
+/* A1 · Der ganze Abmeldeweg an EINER Stelle. Erst der Server, dann das
+   Geraet — nie umgekehrt: Waere der Speicher zuerst leer und der Ruf
+   schluege fehl, staende die Anmeldung wieder da, waehrend der Keks
+   weiterlebt. Genau die Lage hat der Jaeger gefunden. */
+let laeuftAbmelden=false;
+async function abmelden(){
+  if(laeuftAbmelden)return; laeuftAbmelden=true;
+  const b=$("#bWechseln"), beschriftung=b?b.textContent:"";
+  if(b){ b.disabled=true; b.textContent="meldet ab \u2026"; }
+  let amServer=false;
+  try{ amServer=await serverAbmelden(); }catch(e){}
+  laeuftAbmelden=false;
+  if(b){ b.disabled=false; b.textContent=beschriftung; }
+  /* Ohne Netz bleibt die Sitzung am Server stehen. Das Geraet wird
+     trotzdem freigegeben — sonst kaeme die naechste Person hier gar nicht
+     hinein —, die Abmeldung aber vorgemerkt und beim naechsten Empfang
+     nachgeholt (`holeAbmeldungNach`). Und es steht dabei. */
+  if(!amServer){ try{ localStorage.setItem(K_ABMELDUNG,"1"); }catch(e){} }
+  setUser(""); setRolle("");
+  renderLogin(); window.scrollTo(0,0);
+  if(!amServer)$("#pinFehler").textContent=
+    "Ohne Netz konnte die Anmeldung am Server nicht beendet werden. "
+    +"Sie wird beendet, sobald wieder Empfang da ist.";
+}
 function renderMenu(){
   if(!whoAmI())return renderLogin();
   $("#login").style.display="none";
@@ -2652,6 +2889,12 @@ function renderMenu(){
     ${meineRolle()==="leitung"
       ? `<a class="adminlink" id="bBackoffice" href="leitung.html">Backoffice</a>` : ""}
     <button class="adminlink" id="bArch" style="margin-top:2px">Letzte Protokolle (${Object.keys(loadArch()).length})</button>
+    <div class="notweg">
+      <div class="mgrp">Wenn etwas klemmt</div>
+      <button class="adminlink" id="bJsonAlles">Rohdaten sichern (JSON)</button>
+      ${angefangene().length
+        ? `<button class="adminlink del" id="bResetAlles">Zurücksetzen</button>` : ""}
+    </div>
     </div>`;
   document.querySelectorAll(".mi").forEach(b=>b.onclick=()=>start(b.dataset.m));
   /* Das Statusfeld führt zur Begrüßung: dort steht ausführlich, was heute
@@ -2668,8 +2911,10 @@ function renderMenu(){
     const mehr=nb.querySelector(".netzmehr");
     if(mehr)mehr.onclick=e=>{ e.stopPropagation(); grussZeigen(); };
   }
-  $("#bWechseln").onclick=()=>{setUser("");renderLogin();window.scrollTo(0,0);};
+  $("#bWechseln").onclick=()=>abmelden();
   $("#bArch").onclick=openArchList;
+  $("#bJsonAlles").onclick=rohdatenSichern;
+  const br=$("#bResetAlles"); if(br)br.onclick=allesZuruecksetzen;
   netzChip();
 }
 /* 2.2 · Liste der archivierten Vorgänge */
@@ -2706,15 +2951,16 @@ function openArchDoc(k){
     sec.classList.add("collapsible","closed");
     const c=document.createElement("span");c.className="secarrow";c.textContent="\u203a";h3.appendChild(c);
     h3.style.cursor="pointer";h3.onclick=()=>sec.classList.toggle("closed");});
-  const ex=document.createElement("div");ex.className="exprow";
-  ex.innerHTML=`<button class="primary" id="aMail">Protokoll senden</button>`;
-  box.appendChild(ex);
+  /* Runde 16 · „Protokoll senden", „Als PDF sichern" und „Auch als CSV"
+     sind im Frontoffice ersatzlos entfallen — auch im Archiv, sonst
+     stuenden sie hier weiter und die Regel gaelte nur halb. Was das
+     Protokoll zeigte, zeigt das Backoffice. „Rohdaten sichern (JSON)"
+     bleibt als Notweg. */
   const le=document.createElement("div");le.className="explesser";
-  le.innerHTML=`<button id="aView">Als PDF sichern</button><button id="aCsv">Auch als CSV</button>
-    <button id="aJson">Rohdaten sichern (JSON)</button><button id="aBack">Zurück zur Liste</button>`;
+  le.innerHTML=`<button id="aJson">Rohdaten sichern (JSON)</button>`
+    +`<button id="aBack">Zurück zur Liste</button>`;
   box.appendChild(le);m.appendChild(box);
-  $("#aMail").onclick=doSenden;$("#aView").onclick=openHtml;
-  $("#aCsv").onclick=expCsv;$("#aJson").onclick=expJson;
+  $("#aJson").onclick=expJson;
   $("#aBack").onclick=()=>{ARCHREC=null;openArchList();};
 }
 /* ── Verwaltung: ab F5 (18.09.2026) ohne Eingang in der App ──────────────
@@ -2755,9 +3001,10 @@ function askPin(){
      Satz. „Nimm deinen eigenen Code" stand hier und klang nach Ertappen;
      an einem iPad, das sich vier Leute teilen, ist das der falsche Ton. */
   $("#ovOk").onclick=async()=>{
-    if(!(await bekannterCode(inp.value))){
+    const erg=await werHatDenCode(inp.value);
+    if(!erg.name){
       inp.value="";
-      $("#pinMeld").textContent="Code stimmt nicht. Hier geht nur ein Code, der auf diesem Gerät schon einmal angemeldet war.";
+      $("#pinMeld").textContent=codeAbsage(erg);
       inp.focus();return;}
     $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";openAdmin();
   };
@@ -5051,19 +5298,29 @@ function rDoc(m){
     /* Runde 14: Der Knopf nannte bisher das Protokoll, seit es eines
        gibt. Gespeichert wird aber zuerst der Vorgang; das
        Protokoll ist die Folge davon, nicht die Handlung. Blass bleibt er
-       weiterhin, solange Punkte offen sind — gesperrt ist er nie. */
-    fb.textContent=mode==="nach"?"Entnahme melden"
-      :mode==="ware"?"Lieferung melden":"Fertig – Speichern";
+       weiterhin, solange Punkte offen sind — gesperrt ist er nie.
+       Runde 16: Ein Wort für alle Modi. „Entnahme melden" und „Lieferung
+       melden" waren dieselbe Handlung unter drei Namen; wer zwischen den
+       Modi wechselt, sucht dann jedes Mal neu. Gesperrt ist er jetzt doch,
+       aber nur an einer Bedingung, die vorübergeht: der Verbindung
+       (`data-netz`, siehe finishNetz()). */
+    fb.setAttribute("data-netz","1");
+    fb.textContent="Fertig – Speichern";
     fb.onclick=()=>{
-      if(!offen.length){geholteGetraenke(d);d.finished=true;save();
-        inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
-        render();window.scrollTo(0,0);return;}
+      if(fb.disabled)return;
+      if(!offen.length)return abschlussSchritt(d);
       freigabe(offen);};
     m.appendChild(fb);
+    /* Der Grund steht unter dem Knopf, nicht in einem Toast: Er gilt,
+       solange er gilt, und verschwindet erst mit der Ursache. */
+    const hn=document.createElement("p");hn.className="finishhint";
+    hn.textContent="Keine Verbindung";hn.hidden=true;
+    m.appendChild(hn);
     const rc=document.createElement("button");rc.className="recheck";
     rc.textContent="Noch mal nachsehen";
     rc.onclick=()=>go(Math.max(0,step-1));
     m.appendChild(rc);
+    finishNetz();
     return;
   }
   const box=document.createElement("div");box.className="doc";
@@ -5079,29 +5336,216 @@ function rDoc(m){
     h3.style.cursor="pointer";
     h3.onclick=()=>sec.classList.toggle("closed");
   });
-  /* P8/3 · Der Name steht seit der Anmeldung fest. Nur die Notiz bleibt. */
-  const nb=document.createElement("div");nb.className="namebox";
-  nb.innerHTML=`<label class="f"><span>Notiz (optional)</span><input id="fNotiz" value="${esc(d.notiz)}" placeholder="z. B. Bruch, Verkostung"></label>`;
-  box.appendChild(nb);
-  const ex=document.createElement("div");ex.className="exprow";
-  ex.innerHTML=`<button class="primary" id="bMail">Protokoll senden</button>`;
-  box.appendChild(ex);
-  const le=document.createElement("div");le.className="explesser";
-  le.innerHTML=`<button id="bView">Als PDF sichern</button>
-    <button id="bCsv">Auch als CSV</button>
-    <button id="bJson">Rohdaten sichern (JSON)</button>
-    <button class="del" id="bReset">Zurücksetzen</button>`;
-  box.appendChild(le);
+  /* Runde 16 · Der Abschluss ist eine Handlung, keine Ausgabestelle.
+     Weg sind hier: „Protokoll senden" (der Vorgang geht über die
+     Warteschlange an den Server, nicht über die Mail-App), „Als PDF
+     sichern" und „Auch als CSV" (das Backoffice zeigt und rechnet, was
+     hier stand), das Feld „Notiz (optional)" (die Notiz wird jetzt EINMAL
+     im Abschlussfenster gefragt, dort, wo sie hingehört) und
+     „Zurücksetzen".
+     „Rohdaten sichern (JSON)" und „Zurücksetzen" sind NICHT gelöscht:
+     Sie sind der Notweg, wenn ein Gerät offline klemmt und der Stand von
+     Hand herausmuss. Sie stehen jetzt dezent am Ende des Menüs. */
   m.appendChild(box);
-
-  $("#fNotiz").oninput=e=>{d.notiz=e.target.value;save();};
-  $("#bMail").onclick=doSenden;
-  $("#bView").onclick=openHtml;
-  $("#bCsv").onclick=expCsv;
-  $("#bJson").onclick=expJson;
-  $("#bReset").onclick=()=>ask("Zurücksetzen","<p>Dieser Vorgang wird gelöscht und vorher ins Archiv gelegt.</p>",
-    ()=>{archive(S[mode]);S[mode]=blank(mode);save();step=0;render();window.scrollTo(0,0);toast("Archiviert und zurückgesetzt");});
+  const zur=document.createElement("button");zur.className="recheck";
+  zur.textContent="Zur Startseite";
+  zur.onclick=()=>{ARCHREC=null;mode=null;renderMenu();window.scrollTo(0,0);};
+  m.appendChild(zur);
 }
+/* ══════ Runde 16 · Der Abschluss ══════════════════════════════════════
+   Ein Knopf, ein Fenster, zurück zur Startseite. Was hier passiert:
+
+     1. Der Vorgang wird abgeschlossen und geht in den Ausgang (wie bisher).
+     2. Liegt zum VORTAG des Vorgangsdatums ein Z-Bericht vor, zeigt das
+        Fenster den Abgleich: was gefasst wurde gegen das, was die Kasse
+        verkauft hat — und zwar NUR die Abweichungen. Darunter EIN Feld
+        für eine Notiz zu allem zusammen.
+     3. Liegt keiner vor, steht dort ein kurzes „Fertig".
+
+   Warum der Vortag: Gefasst wird in der Früh, was am ABEND davor über den
+   Tresen ging. Der Z-Bericht dieses Abends ist die Gegenrechnung.
+
+   Warum nur „tag" und „fuellen": Nur diese beiden ersetzen Verkauftes.
+   Eine Sonderentnahme (Küche, Bruch, Verkostung) ist ausdrücklich KEIN
+   Verkauf, eine Kellerzählung ist ein Stand und ein Wareneingang geht in
+   die andere Richtung — bei ihnen wäre jede Zeile eine „Abweichung" und
+   das Fenster reine Zumutung. Dort kommt das kurze „Fertig". Entschieden
+   in der Nacht auf den 19.09., Begründung in review/LOG.md. */
+
+function vortagVon(tag){
+  const d=new Date(tag+"T12:00:00Z");
+  d.setUTCDate(d.getUTCDate()-1);
+  return d.toISOString().slice(0,10);
+}
+
+/* Was dieser Vorgang aus dem Keller genommen hat, je Artikel. Dieselbe
+   Rechnung wie `ereignisseAbleiten()` im Worker (src/index.js) — sie muss
+   es sein, sonst zeigt der Abgleich etwas anderes als der Bestand.
+   `holtN` schlägt die Summe der Fächer, wo die Person die Zahl von Hand
+   berichtigt hat. */
+function gefassteMengen(d){
+  const t={};
+  const zu=(id,n)=>{ n=+n||0; if(n)t[id]=(t[id]||0)+n; };
+  if(d.mode==="tag"||d.mode==="fuellen"){
+    const w={};
+    ["barrot","bar","backup","rest"].forEach(k=>
+      Object.keys(d[k]||{}).forEach(id=>w[id]=(w[id]||0)+(+d[k][id]||0)));
+    Object.keys(w).forEach(id=>
+      zu(id,(d.holtN&&d.holtN[id]!=null)?d.holtN[id]:w[id]));
+    Object.keys(d.zusatz||{}).forEach(id=>zu(id,d.zusatz[id]));
+  }
+  if(d.mode==="nach")Object.keys(d.ent||{}).forEach(id=>zu(id,d.ent[id]));
+  if(d.mode!=="ware")Object.keys(d.gent||{}).forEach(id=>zu(id,d.gent[id]));
+  Object.keys(d.gzusatz||{}).forEach(id=>zu(id,d.gzusatz[id]));
+  return t;
+}
+
+/* Der Z-Bericht zu einem Betriebstag. 404 heisst „keiner da" und ist kein
+   Fehler — an den meisten Tagen kommt er erst spaeter per Mail. */
+async function holeZBericht(tag){
+  try{
+    const r=await fetch(API+"/fassungsliste?tag="+encodeURIComponent(tag),
+      {credentials:"same-origin",headers:{accept:"application/json"}});
+    if(!r.ok)return null;
+    if(!(r.headers.get("content-type")||"").includes("json"))return null;
+    const j=await r.json();
+    return (j&&Array.isArray(j.positionen)&&j.positionen.length)?j:null;
+  }catch(e){ return null; }
+}
+
+/* Gefasst gegen verkauft, je Artikel — und nur, was auseinandergeht.
+
+   Zwei Arten von Kassenzeilen bleiben absichtlich draussen:
+     · Zeilen OHNE zugeordneten Artikel. Die kann niemand im Keller
+       zuordnen; das macht die Leitung im Backoffice („Zuordnung").
+     · Zeilen mit Ausschankmenge (`ausschankMl`), also Offenausschank im
+       Glas. Aus Glaesern Flaschen zu rechnen braucht die Gebindegroesse,
+       und die steht nur im Backoffice. Hier zu raten hiesse, eine falsche
+       Abweichung zu behaupten — der Fuss sagt stattdessen, wie viele es
+       sind und wer sie rechnet. */
+function abgleichZeilen(d,z){
+  const gef=gefassteMengen(d);
+  const verk={}, glas={};
+  let ohneZuordnung=0;
+  (z.positionen||[]).forEach(p=>{
+    if(!p.artikel){ ohneZuordnung++; return; }
+    if(+p.ausschankMl>0){ glas[p.artikel]=(glas[p.artikel]||0)+1; return; }
+    verk[p.artikel]=(verk[p.artikel]||0)+(+p.anzahl||0);
+  });
+  const rund=n=>Math.round((+n||0)*10)/10;
+  const ids=Object.keys(gef).concat(Object.keys(verk))
+    .filter((x,i,a)=>a.indexOf(x)===i);
+  const zeilen=[];
+  ids.forEach(id=>{
+    if(glas[id])return;
+    const a=rund(gef[id]), b=rund(verk[id]);
+    if(Math.abs(a-b)<0.05)return;
+    zeilen.push({id, gefasst:a, verkauft:b, diff:rund(a-b)});
+  });
+  zeilen.sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
+  return {zeilen, imGlas:Object.keys(glas).length, ohneZuordnung,
+          geprueft:ids.length-Object.keys(glas).filter(i=>ids.indexOf(i)>=0).length};
+}
+
+/* Abschliessen — an EINER Stelle, damit der gewoehnliche Weg und die
+   Freigabe („trotzdem abschliessen") dasselbe tun. */
+function vorgangFestschreiben(d){
+  geholteGetraenke(d);
+  d.finished=true; save();
+  inDenAusgang(d,"fertig"); d._gesendet=1; schiebe();
+}
+function zurStartseite(){
+  ARCHREC=null; mode=null; renderMenu(); window.scrollTo(0,0);
+}
+
+let laeuftAbschluss=false;
+async function abschlussSchritt(d){
+  if(laeuftAbschluss)return; laeuftAbschluss=true;
+  const fb=document.querySelector(".finishbtn[data-netz]");
+  const wort=fb?fb.textContent:"";
+  if(fb){ fb.disabled=true; fb.textContent="speichert \u2026"; }
+  /* Erst den Z-Bericht holen, dann festschreiben: Ist der Server gerade
+     doch nicht da, bleibt der Vorgang offen und der Knopf wartet — statt
+     dass ein abgeschlossener Vorgang ohne Fenster dasteht. */
+  let z=null;
+  if(d.mode==="tag"||d.mode==="fuellen"){
+    if(!verbunden()){
+      laeuftAbschluss=false;
+      if(fb){ fb.textContent=wort; }
+      finishNetz(); return;
+    }
+    z=await holeZBericht(vortagVon(d.tag));
+  }
+  laeuftAbschluss=false;
+  if(fb){ fb.textContent=wort; fb.disabled=false; }
+  vorgangFestschreiben(d);
+  if(z)popupAbgleich(d,z); else popupFertig(d);
+}
+
+/* Das Fenster mit dem Abgleich. Ein Notizfeld fuer alles — nicht eines je
+   Zeile: Was im Keller auffaellt, ist ein Satz („zwei Cola fuer die
+   Kueche"), keine Tabelle. */
+function popupAbgleich(d,z){
+  const a=abgleichZeilen(d,z);
+  $("#ovT").textContent="Abgleich";
+  const zeile=x=>{
+    const v=x.diff>0?"plus":"minus";
+    return `<div class="abglz"><span class="nm">${esc(GN(x.id))}</span>`
+      +`<span class="za">gefasst ${x.gefasst} \u00b7 verkauft ${x.verkauft}</span>`
+      +`<span class="df ${v}">${x.diff>0?"+":""}${x.diff}</span></div>`;
+  };
+  const fuss=[];
+  if(a.imGlas)fuss.push(a.imGlas+(a.imGlas===1?" Position wird":" Positionen werden")
+    +" offen im Glas ausgeschenkt \u2014 die rechnet das Backoffice.");
+  if(a.ohneZuordnung)fuss.push(a.ohneZuordnung
+    +(a.ohneZuordnung===1?" Kassenposition ist":" Kassenpositionen sind")
+    +" keinem Artikel zugeordnet.");
+  $("#ovBody").innerHTML=
+    `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}.`
+    +(a.zeilen.length?" Nur die Abweichungen:":"")+`</p>`
+    +(a.zeilen.length
+      ? `<div class="abgl">${a.zeilen.map(zeile).join("")}</div>`
+      : `<div class="box" style="margin-top:0"><b>Keine Abweichung.</b></div>`)
+    +(fuss.length?`<p class="abglfuss">${fuss.map(esc).join("<br>")}</p>`:"")
+    +`<label class="f" style="margin-top:var(--space-4)"><span>Notiz (optional)</span>`
+    +`<input id="abglNotiz" value="${esc(d.notiz||"")}" `
+    +`placeholder="z. B. zwei Cola f\u00fcr die K\u00fcche"></label>`;
+  $("#ovNo").hidden=true;
+  $("#ovOk").textContent="Speichern";
+  $("#ov").classList.add("on");
+  $("#ovOk").onclick=()=>{
+    const feld=$("#abglNotiz");
+    d.notiz=feld?feld.value:(d.notiz||"");
+    /* Die Notiz haengt am Vorgang, also muss der Vorgang noch einmal
+       hinaus — der Ausgang haelt je Schluessel nur den juengsten Stand,
+       es entsteht also kein zweiter Vorgang. */
+    save(); inDenAusgang(d,"fertig"); schiebe();
+    fensterZu(); zurStartseite();
+  };
+}
+
+/* Kein Z-Bericht: ein Satz, ein Knopf, weg. */
+function popupFertig(d){
+  $("#ovT").textContent="Fertig";
+  $("#ovBody").innerHTML=`<p>${esc(MODES[d.mode].t)} f\u00fcr `
+    +`${esc(deTagKurz(d.tag))} ist abgeschlossen und gespeichert.</p>`
+    +`<p class="abglfuss">Kein Z-Bericht zum Vorabend \u2014 der Abgleich `
+    +`steht im Backoffice, sobald er da ist.</p>`;
+  $("#ovNo").hidden=true;
+  $("#ovOk").textContent="Zur Startseite";
+  $("#ov").classList.add("on");
+  $("#ovOk").onclick=()=>{ fensterZu(); zurStartseite(); };
+}
+
+/* Das Fenster hinterlaesst nichts: „Abbrechen" ist danach wieder da, der
+   Ja-Knopf heisst wieder „Ja". Sonst steht im naechsten Dialog noch
+   „Speichern" — und ein Fenster ohne Abbrechen. */
+function fensterZu(){
+  $("#ov").classList.remove("on");
+  $("#ovOk").textContent="Ja";
+  $("#ovNo").hidden=false;
+}
+
 /* P14/28 · Trotzdem abschliessen \u2014 nur mit dem persönlichen Code,
    und es bleibt im Protokoll sichtbar, wer freigegeben hat.
    „Freigabecode" hieß das Feld, solange es dafür einen eigenen Code gab.
@@ -5133,17 +5577,19 @@ function freigabe(offen){
        ohnehin mit Namen im Protokoll. Der frühere Verwaltungscode stand als
        Klartext in dieser Datei und fällt deshalb weg; es zählt nur noch ein
        Code, der sich auf diesem Gerät schon einmal angemeldet hat. */
-    const wer=await bekannterCode(inp.value);
-    if(!wer){
+    const erg=await werHatDenCode(inp.value);
+    if(!erg.name){
       inp.value="";
-      $("#fgMeld").textContent="Code stimmt nicht. Hier geht nur ein Code, der auf diesem Ger\u00e4t schon einmal angemeldet war.";
+      $("#fgMeld").textContent=codeAbsage(erg);
       inp.focus();return;}
+    const wer=erg.name;
     const d=D();
     d.uebersteuert={von:wer,zeit:new Date().toISOString(),offen:offen};
-    geholteGetraenke(d);d.finished=true;save();
-    inDenAusgang(d,"fertig");d._gesendet=1;schiebe();
-    $("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
-    render();window.scrollTo(0,0);};
+    /* Runde 16: Auch die Freigabe endet im Abschlussfenster und auf der
+       Startseite — ein Weg für beide, sonst stünde nach dem einen ein
+       Abgleich und nach dem anderen nicht. */
+    fensterZu();
+    abschlussSchritt(d);};
 }
 /* P14/30 · Im Protokoll ganz oben, vor den Kennzahlen. */
 function docUeber(){
@@ -5313,193 +5759,58 @@ function docWare(){
   return h;
 }
 
-/* ── Export: Titel, HTML-Seite, Teilen, Mail, CSV ── */
+/* ── Export: nur noch die Rohdaten (JSON) ── */
 function protoTitel(){const d=D();return `Fassungsprotokoll ${MODES[mode].t} – ${kurzTag(d.tag)} – ${d.name||"—"}`;}
-/* 2.5 · Klartext-Ergebnis in zwei Sätzen */
-function resultText(){
-  const d=D();
-  if(mode==="fuellen"){const g2=gFehlt().filter(x=>!WEINLAGER.includes(x.id));
-    const offen=g2.filter(x=>!(d.gholt||{})[x.id]).length;
-    return [g2.reduce((a,x)=>a+x.n,0)+" Getränke nachzufüllen.",
-      offen?offen+" Position"+(offen===1?"":"en")+" noch offen.":"Alles geholt und eingeräumt."];}
-  if(mode==="tag"){const fl=sum(d.rest)+sum(d.barrot)+sum(d.bar)+sum(d.backup);
-    const zu=sum(d.zusatz);
-    /* `holt` fehlt in Vorgaengen aelterer Fassungen; resultText() laeuft
-       auch ueber das Archiv. */
-    const off=holList().filter(x=>!(d.holt||{})[x.w.id]).length;
-    return [fl+" Flaschen aus dem Keller geholt"+(zu?", dazu "+zu+" zusätzlich entnommen.":"."),
-      off?off+(off===1?" Wein ist noch nicht geholt.":" Weine sind noch nicht geholt.")
-         :"Alles geholt und eingeräumt."];}
-  if(mode==="keller"){const gez=WINES.filter(w=>d.zdone[w.id]).length;
-    const tot=WINES.reduce((a,w)=>a+g(d.reihen,w.id)*6+g(d.einzel,w.id),0);
-    return [gez+" von "+WINES.length+" Positionen gezählt, "+tot+" Flaschen.",
-      gez===WINES.length?"Vollständig gezählt.":(WINES.length-gez)+" Positionen fehlen noch."];}
-  if(mode==="nach"){const n=WINES.filter(w=>g(d.ent,w.id)).length;
-    return [sum(d.ent)+" Flaschen aus dem Keller geholt"+
-              (d.grund?" · "+grundText(d.grund):"")+".",
-      n+" Position"+(n===1?"":"en")+(sum(d.gent)?" · dazu "+sum(d.gent)+" Getränke.":".")];}
-  const pos=(d.pos||[]).filter(x=>x.id&&x.kisten>0);
-  const fl=pos.reduce((a,x)=>a+x.kisten*kg(x),0);
-  const chg=pos.filter(x=>{const w=byId(x.id);const j2=d.jneu[x.id]!=null?d.jneu[x.id]:x.jg;return w&&j2&&j2!==w.jg;}).length;
-  return [pos.length+" Positionen, "+fl+" Flaschen geliefert.",
-    chg?chg+" Jahrgangswechsel.":"Keine Jahrgangsänderung."];
+/* ══ Runde 16 · Hier standen PDF, CSV und „Protokoll senden" ══════════
+   `fullHtml()`, `openHtml()`, `protoDateien()`, `doSenden()`, `expCsv()`
+   und `csvText()` sind ersatzlos entfallen — mit ihnen der Empfaenger
+   `MAIL` und `resultText()`, das nur sie brauchten. Grund: Im Frontoffice
+   wird gefasst, nicht ausgegeben. Der Vorgang geht ueber die
+   Warteschlange an den Server; was das Protokoll zeigte, zeigt das
+   Backoffice — mit den Zahlen aller Tage statt denen eines einzigen, und
+   ohne dass jemand im Keller eine Datei durch die Mail-App traegt.
+   Was bleibt: „Rohdaten sichern (JSON)" als Notweg, wenn ein Geraet
+   offline klemmt und der Stand von Hand heraus muss. */
+
+/* ══ Runde 16 · Der Notweg am Ende des Menues ══════════════════════════
+   „Rohdaten sichern (JSON)" und „Zuruecksetzen" standen bis Runde 15 im
+   Abschluss, zwischen PDF und CSV. Dort waren sie im Weg: Wer fertig ist,
+   will fertig sein, nicht exportieren. Geloescht sind sie trotzdem nicht —
+   sie sind der Notweg, wenn ein Geraet offline klemmt und der Stand von
+   Hand heraus muss oder ein Vorgang sich verhakt hat. Deshalb stehen sie
+   jetzt dezent unter den Kacheln, wo man sie sucht, wenn man sie braucht,
+   und sonst nicht sieht. Beide arbeiten auf dem ganzen Geraet, nicht auf
+   einem Vorgang — vom Menue aus gibt es keinen „aktuellen". */
+function angefangene(){
+  return Object.keys(MODES).filter(k=>{
+    const d=S[k]; return d&&hasData(k,d)&&!d.finished; });
 }
-function fullHtml(){
-  const d=D();
-  let inner=(mode==="tag"?docTag():mode==="fuellen"?docFuellen():mode==="keller"?docKeller()
-     :mode==="nach"?docNach():docWare());
-  if(mode==="tag"||(mode==="keller"&&branch==="getr"))inner+=gDocSec();
-  const kpi=(inner.match(/<div class="kpi">[\s\S]*?<\/div>\s*<\/div>/)||[""])[0];
-  const rest=inner.replace(kpi,"").replace(/<div class="dh">[\s\S]*?<\/div><\/div>/,"");
-  const [s1,s2]=resultText();
-  return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(protoTitel())}</title><style>
-@page{size:A4;margin:16mm 14mm}
-*{box-sizing:border-box}
-body{font:11pt/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1C1C1E;
-  max-width:186mm;margin:0 auto;padding:18px 16px 70px;background:#fff;
-  font-variant-numeric:tabular-nums}
-.ph{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
-.ph .brand{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6A6A70}
-.ph h1{font-size:22px;font-weight:600;margin:4px 0 0}
-.ph dl{margin:0;font-size:11px;color:#6A6A70;display:grid;grid-template-columns:auto auto;
-  gap:2px 10px;text-align:right;align-content:start}
-.ph dt{font-weight:600}.ph dd{margin:0;color:#1C1C1E}
-.rule{height:2px;background:#1C1C1E;margin:10px 0 18px}
-.lead{margin:0 0 6px;font-size:13pt;line-height:1.4}
-.lead b{font-weight:600}
-.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 6px;break-inside:avoid}
-.kpi div{flex:1;min-width:88px;border:1px solid #E6E4DE;border-radius:8px;padding:10px 12px}
-.kpi span{display:block;font-size:10px;color:#6A6A70;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-.kpi b{font-size:34px;font-weight:700;line-height:1.05;display:block;margin-top:2px}
-.kpi div.w2{border-left:3px solid #B4471F}
-.sec{margin-top:20px;break-inside:avoid-page}
-.sec>h3{font-size:11px;margin:0 0 4px;padding-bottom:5px;border-bottom:2px solid #1C1C1E;
-  text-transform:uppercase;letter-spacing:.06em}
-table{width:100%;border-collapse:collapse;font-size:10.5pt}
-thead{display:table-header-group}
-tr{break-inside:avoid}
-th{text-align:left;font-size:9px;color:#6A6A70;border-bottom:1px solid #1C1C1E;padding:5px 4px;
-  font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-th.r,td.r{text-align:right}
-td{padding:6px 4px;border-bottom:1px solid #E6E4DE;vertical-align:top}
-td.grp{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6A6A70;
-  padding-top:10px;border-bottom:1px solid #1C1C1E}
-tr.flag td:first-child{border-left:3px solid #B4471F;padding-left:7px}
-tr.tot td{border-top:2px solid #1C1C1E;border-bottom:0;font-weight:700}
-.box{border-left:3px solid #B4471F;padding:8px 12px;margin-top:14px;font-size:10.5pt;break-inside:avoid}
-.box.good{border-left-color:#1C1C1E}
-.pr{margin:0 0 18px}
-.pr button{padding:12px 20px;border:0;background:#1C1C1E;color:#fff;border-radius:9px;
-  font-size:15px;font-weight:600;cursor:pointer}
-.pf{display:none}
-@media print{
-  .pr{display:none}body{padding:0}
-  .pf{display:block;position:fixed;bottom:0;left:0;right:0;font-size:8.5pt;color:#6A6A70;
-    border-top:1px solid #E6E4DE;padding-top:4px}
+function rohdatenSichern(){
+  const alles={
+    gesichert:new Date().toISOString(),
+    geraet:GERAET, wer:whoAmI(),
+    stand:S,
+    ausgang:jlese(K_AUSGANG,[]),
+    ueberholt:ueberholtAlle(),
+    archiv:loadArch()
+  };
+  dl("fassungstool_"+GERAET.slice(0,8)+"_"+today()+".json",
+     JSON.stringify(alles,null,2),"application/json");
+  toast("Rohdaten gespeichert");
 }
-</style></head><body>
-<div class="pr"><button onclick="window.print()">Drucken / als PDF sichern</button></div>
-<div class="ph">
-  <div><div class="brand">Haus Hirt · Weinkeller</div><h1>${esc(MODES[mode].t)}</h1></div>
-  <dl><dt>Datum</dt><dd>${deTag(d.tag)}</dd><dt>Name</dt><dd>${esc(d.name)||"—"}</dd>
-  ${d.notiz?`<dt>Notiz</dt><dd>${esc(d.notiz)}</dd>`:""}</dl>
-</div>
-<div class="rule"></div>
-${kpi}
-<p class="lead"><b>${esc(s1)}</b> ${esc(s2)}</p>
-${rest}
-<div class="pf">${deTag(d.tag)} · ${esc(d.name)||"—"} · Haus Hirt, Bad Gastein</div>
-</body></html>`;
+function allesZuruecksetzen(){
+  const a=angefangene();
+  if(!a.length)return toast("Es ist nichts angefangen.");
+  ask("Zurücksetzen",
+    "<p>"+(a.length===1?"Dieser angefangene Vorgang wird":a.length+" angefangene Vorgänge werden")
+    +" gelöscht und vorher ins Archiv gelegt:</p><div class=\"box\" style=\"margin-top:0\">"
+    +a.map(k=>esc(MODES[k].t)).join("<br>")+"</div>"
+    +"<p>Was schon übertragen wurde, bleibt am Server.</p>",
+    ()=>{ a.forEach(k=>{ archive(S[k]); S[k]=blank(k); });
+      save(); renderMenu(); window.scrollTo(0,0);
+      toast("Archiviert und zurückgesetzt"); });
 }
-function openHtml(){
-  const w=window.open("","_blank");
-  if(!w){dl(protoTitel()+".html",fullHtml(),"text/html");toast("Als Datei gespeichert");return;}
-  w.document.write(fullHtml());w.document.close();
-}
-/* P11 · Das Protokoll geht als Datei mit, nicht als Fliesstext im
-   Mailkoerper. Seit F4 (18.09.2026) haengt kein Foto der Fassungsliste
-   mehr daran. */
-async function protoDateien(){
-  const d=D(),basis=mode+"_"+d.tag;
-  const f=[];
-  try{f.push(new File([fullHtml()],"protokoll_"+basis+".html",{type:"text/html"}));}
-  catch(e){console.error("HTML-Protokoll",e);}
-  try{f.push(new File(["\ufeff"+csvText()],"protokoll_"+basis+".csv",{type:"text/csv"}));}
-  catch(e){console.error("CSV-Protokoll",e);}
-  return f;
-}
-async function doSenden(){
-  const title=protoTitel();
-  let files=[];
-  try{files=await protoDateien();}catch(e){}
-  if(!files.length){toast("Protokoll konnte nicht erstellt werden");return;}
-  if(navigator.canShare&&navigator.canShare({files})){
-    try{await navigator.share({title,files});return;}
-    catch(e){if(e.name==="AbortError")return;}
-  }
-  files.forEach(f=>{const a=document.createElement("a");
-    a.href=URL.createObjectURL(f);a.download=f.name;
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href),2000);});
-  toast("Dateien gespeichert – bitte anhängen");
-  const sub=encodeURIComponent(title);
-  const body=encodeURIComponent("Das Protokoll liegt im Download-Ordner: "+
-    files.map(f=>f.name).join(", ")+"\n\nBitte die Dateien hier anhängen.\n");
-  setTimeout(()=>{location.href=`mailto:${MAIL}?subject=${sub}&body=${body}`;},600);
-}
-function expCsv(){
-  dl(protoTitel()+".csv","\ufeff"+csvText(),"text/csv");toast("CSV gespeichert");
-}
-function csvText(){
-  const d=D(),e=s=>'"'+String(s??"").replace(/"/g,'""')+'"';
-  const L=[];
-  if(d.uebersteuert)L.push(["OHNE BESTÄTIGUNG FREIGEGEBEN",d.uebersteuert.von,
-    d.uebersteuert.offen.join(" · ")].map(e).join(";"));
-  L.push([protoTitel()].map(e).join(";"),
-    ["Datum",d.tag,"Von",d.name||"—","Notiz",d.notiz||"—"].map(e).join(";"),"");
-  if(mode==="tag"){
-    L.push(["Aus dem Keller"].map(e).join(";"),["Bereich","Winzer","Wein","Anzahl","Wohin"].map(e).join(";"));
-    holList().forEach(x=>L.push([PLAN.zonen[PLAN.zone[x.w.id]].t,x.w.winzer,x.w.wein,x.n,x.q.join(" / ")].map(e).join(";")));
-  }else if(mode==="keller"){
-    L.push(["Bereich","Farbe","Winzer","Wein","Jahrgang","Reihen","Einzeln","Flaschen","Status"].map(e).join(";"));
-    WINES.slice().sort(wegCmp).forEach(w=>{const R=g(d.reihen,w.id),E=g(d.einzel,w.id);
-      L.push([PLAN.zonen[PLAN.zone[w.id]].t,w.f,w.winzer,w.wein,w.jg,R,E,R*6+E,d.zdone[w.id]?"gezählt":"NICHT GEZÄHLT"].map(e).join(";"));});
-  }else if(mode==="nach"){
-    L.push(["Bereich","Winzer","Wein","Flaschen"].map(e).join(";"));
-    WINES.filter(w=>g(d.ent,w.id)).sort(wegCmp)
-      .forEach(w=>L.push([PLAN.zonen[PLAN.zone[w.id]].t,w.winzer,w.wein,g(d.ent,w.id)].map(e).join(";")));
-  }else if(mode==="fuellen"){
-    /* Eigener Zweig \u2013 sonst greift der Wareneingang auf d.pos zu,
-       das es in diesem Modus gar nicht gibt. */
-    const gf2=gFehlt();
-    L.push(["GETR\u00c4NKE NACHF\u00dcLLEN"].map(e).join(";"),
-      ["Position","Soll","Ist","Fehlt"].map(e).join(";"));
-    gf2.forEach(x=>L.push([GN(x.id),GSOLL[x.id],GSOLL[x.id]-x.n,x.n].map(e).join(";")));
-    L.push(["Summe","","",gf2.reduce((a,x)=>a+x.n,0)].map(e).join(";"));
-  }else{
-    L.push(["Winzer","Wein","Jg. bisher","Jg. neu","Kisten","Kistengröße","Flaschen","Status"].map(e).join(";"));
-    d.pos.filter(p=>p.id&&p.id!=="__neu"&&p.kisten>0).forEach(p=>{const w=byId(p.id);if(!w)return;
-      const j=d.jneu[p.id]!=null?d.jneu[p.id]:p.jg;
-      L.push([w.winzer,w.wein,w.jg,j,p.kisten,kg(p),p.kisten*kg(p),(j&&j!==w.jg)?"JG GEÄNDERT":"ok"].map(e).join(";"));});
-    const neu=d.pos.filter(p=>p.id==="__neu"&&p.kisten>0);
-    if(neu.length){L.push("",["Neue Weine"].map(e).join(";"),["Winzer","Wein","Rebsorte","Region","Farbe","Jg.","Kisten","Kistengröße","Fl."].map(e).join(";"));
-      neu.forEach(p=>{const n=p.neu||{};L.push([n.winzer,n.wein,n.reb,n.region,n.f,p.jg,p.kisten,kg(p),p.kisten*kg(p)].map(e).join(";"));});}
-  }
-  const zu=WINES.filter(w=>g(d.zusatz||{},w.id));
-  if(zu.length){L.push("",["ZUSÄTZLICH ENTNOMMEN"].map(e).join(";"),
-    ["Bereich","Winzer","Wein","Flaschen"].map(e).join(";"));
-    zu.sort(wegCmp).forEach(w=>L.push([PLAN.zonen[PLAN.zone[w.id]].t,w.winzer,w.wein,
-      g(d.zusatz,w.id)].map(e).join(";")));}
-  const gi=Object.keys(d.gent||{}).filter(id=>+d.gent[id]>0);
-  if(gi.length){L.push("",["GETRÄNKE"].map(e).join(";"),["Position","Anzahl"].map(e).join(";"));
-    gi.forEach(id=>L.push([GN(id),d.gent[id]].map(e).join(";")));}
-  const gf=(mode==="tag"||(mode==="keller"&&branch==="getr"))?gFehlt():[];
-  if(gf.length){L.push("",["GETRÄNKE NACHFÜLLEN"].map(e).join(";"),["Position","Soll","Ist","Fehlt"].map(e).join(";"));
-    gf.forEach(x=>L.push([GN(x.id),GSOLL[x.id],GSOLL[x.id]-x.n,x.n].map(e).join(";")));}
-  return L.join("\r\n");
-}
+
 /* 2.4 · Rohdaten */
 function expJson(){
   dl(protoTitel()+".json",JSON.stringify(D(),null,2),"application/json");toast("JSON gespeichert");
@@ -5512,7 +5823,7 @@ function ask(t,html,fn){$("#ovT").textContent=t;$("#ovBody").innerHTML=html;$("#
   $("#ovOk").onclick=()=>{$("#ov").classList.remove("on");fn();};}
 $("#ovNo").onclick=()=>{$("#ov").classList.remove("on");
   /* Sonst steht im naechsten Dialog noch "Freigeben" oder "\u00d6ffnen". */
-  $("#ovOk").textContent="Ja";};
+  $("#ovOk").textContent="Ja";$("#ovNo").hidden=false;};
 
 /* ── Fußleiste ── */
 /* Die feste Fussleiste ist entfallen \u2013 jede Karte traegt ihre
@@ -5609,6 +5920,11 @@ if("serviceWorker" in navigator){
 
 (whoAmI()?renderMenu():renderLogin());measure();aufraeumenFotospeicher();
 if(whoAmI())netzStart();
+/* A1 · Eine ohne Netz vorgemerkte Abmeldung wird beim naechsten Start
+   nachgeholt — aber nur, solange hier niemand angemeldet ist. Wer schon
+   wieder drin ist, hat eine neue Sitzung, und die geht die alte Vormerkung
+   nichts an (die Marke ist beim Anmelden ohnehin gefallen). */
+if(!whoAmI())holeAbmeldungNach();
 /* F9: Die Begrüßung kommt nach dem ersten Aufbau. Steht sie schon, bevor
    der Server geantwortet hat, fehlt ihr nur die dritte Zeile — das ist
    gewollt (siehe `grussFuellen`), und `zieheFern` trägt sie nach. */

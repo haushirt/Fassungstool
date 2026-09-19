@@ -190,16 +190,28 @@ describe("Codelänge: was der Worker vergibt, muss die App annehmen", () => {
     assert.equal(+m[1], LAENGE, "App und Worker sind sich uneinig");
   });
 
-  test("das Backoffice prüft dieselbe Länge wie der Worker", () => {
-    assert.match(leitung, new RegExp("\\^\\\\d\\{" + LAENGE + "\\}\\$"),
-      "das Backoffice liesse eine Länge durch, die der Worker ablehnt");
+  /* Runde 16 (B5): Das Backoffice trug vier harte Vieren. Jetzt nennt es
+     die Zahl wie die beiden anderen Dateien genau einmal, als
+     `PIN_LAENGE`, und leitet Muster, Feldlänge und Vorschlag daraus ab. */
+  test("das Backoffice nennt dieselbe Länge — und nur einmal", () => {
+    const m = /const PIN_LAENGE=(\d+);/.exec(leitung);
+    assert.ok(m, "PIN_LAENGE fehlt in public/leitung.html");
+    assert.equal(+m[1], LAENGE, "Backoffice und Worker sind sich uneinig");
+    assert.match(leitung, /PIN_MUSTER\.test\(code\)/,
+      "das Backoffice prüft die Länge nicht über PIN_MUSTER");
+    assert.doesNotMatch(leitung, /\^\\d\{\d+\}\$/,
+      "es steht noch eine fest eingetragene Länge im Backoffice");
+    assert.doesNotMatch(leitung, /maxlength="\d+"[^>]*id="nCode"|id="nCode"[^>]*maxlength="\d+"/,
+      "das Codefeld deckelt auf eine fest eingetragene Zahl");
   });
 
   test("die Taste zum Vorschlagen bietet einen Code der richtigen Länge", () => {
-    const m = /#nCode"\)\.value=String\(a\[0\]%spanne\)\.padStart\((\d+),"0"\)/.exec(leitung);
-    assert.ok(m, "der Vorschlag ist weg oder umgebaut");
-    assert.equal(+m[1], LAENGE);
-    assert.match(leitung, /spanne=10000/, "der Vorschlag würfelt nicht über 0000…9999");
+    assert.match(leitung, /\$\("#nCode"\)\.value=wuerfelPin\(\);/,
+      "der Vorschlag ist weg oder umgebaut");
+    assert.match(leitung, /spanne=Math\.pow\(10,PIN_LAENGE\)/,
+      "der Vorschlag würfelt nicht über die ganze Spanne");
+    assert.match(leitung, /padStart\(PIN_LAENGE,"0"\)/,
+      "der Vorschlag füllt nicht auf PIN_LAENGE auf");
   });
 
   test("jedes Codefeld der App nimmt genau diese Länge", () => {

@@ -67,6 +67,33 @@ function sperreBis(fehl, jetzt) {
   return bis > jetzt ? bis : 0;
 }
 
+/* Wie lange eine Sperre haelt, die bei `anzahl` Fehlversuchen greift.
+   B1 (Runde 16): Die Meldung an der Tuer nannte in allen drei Stufen
+   „15 Minuten". Sie liest die Dauer jetzt aus derselben Staffel wie
+   `sperreBis()` — eine Quelle, kein zweiter Text daneben. */
+function sperrDauer(anzahl) {
+  const stufe = Math.min(SPERRE.stufen.length,
+                         Math.max(1, Math.floor(anzahl / SPERRE.versuche)));
+  return SPERRE.stufen[stufe - 1];
+}
+
+/* Wie viele weitere Fehlversuche bis zur Sperre? 0 heisst: jetzt gesperrt.
+
+   B1 (Runde 16): Vorher stand hier `SPERRE.versuche - fehl.length`. Das
+   zaehlte ALLE Fehlversuche der letzten zwei Stunden, waehrend die Sperre
+   am ZEHNTJUENGSTEN haengt und laengst abgelaufen sein kann. Auf dem
+   Schirm stand dann „jetzt gesperrt", obwohl die Tuer offen war — und
+   umgekehrt. Gerechnet wird deshalb mit `sperreBis()` selbst: einmal
+   probieren, was passierte, wenn jetzt noch ein Fehlversuch daraufkaeme. */
+function versucheBisSperre(fehl, jetzt) {
+  const probe = fehl.slice();
+  for (let i = 0; i < SPERRE.versuche; i++) {
+    if (sperreBis(probe, jetzt)) return i;
+    probe.push(jetzt);
+  }
+  return SPERRE.versuche;
+}
+
 /* ── Betriebstag ────────────────────────────────────────────────────────
    F1 (18.09.2026): Der Worker läuft in UTC. Wo er selbst einen Betriebstag
    bildete (`notiz`, Wochenbrief), stand deshalb ab 22:00 Ortszeit der
@@ -152,7 +179,8 @@ async function anmelden(request, env) {
   const fehl = letzte.filter(r => !r.ok).map(r => +r.ts).sort((a, b) => a - b);
 
   const wartenBis = sperreBis(fehl, jetzt);
-  if (wartenBis) return json({ fehler: "zu viele Versuche", wartenBis }, 429);
+  if (wartenBis) return json({ fehler: "zu viele Versuche", wartenBis,
+    minuten: Math.round(sperrDauer(fehl.length) / 60000) }, 429);
 
   let code = "";
   try { code = (await request.json()).code || ""; } catch {}
@@ -169,13 +197,25 @@ async function anmelden(request, env) {
 
   await env.DB.prepare(
     `INSERT INTO anmeldeversuch (ip, ts, ok) VALUES (?1, ?2, ?3)`
-  ).bind(ip, Date.now(), treffer ? 1 : 0).run();
+  ).bind(ip, jetzt, treffer ? 1 : 0).run();
 
   /* Wieviele Versuche bleiben? Die Antwort verrät nichts über den Code —
      nur über die Sperre. Ohne diese Zahl merkt niemand, dass er auf sie
-     zuläuft, und steht dann ohne Erklärung vor der verschlossenen Tür. */
-  if (!treffer) return json(
-    { fehler: "unbekannt", uebrig: Math.max(0, SPERRE.versuche - (fehl.length + 1)) }, 401);
+     zuläuft, und steht dann ohne Erklärung vor der verschlossenen Tür.
+
+     B1 (Runde 16): Gezaehlt wird mit DEMSELBEN Mass wie die Sperre —
+     einschliesslich des Fehlversuchs, der eben eingetragen wurde. Dazu
+     die Dauer, die dann wirklich gilt (15/30/60), und, wenn es jetzt
+     zugefallen ist, die Uhrzeit, ab der es wieder geht. */
+  if (!treffer) {
+    const fehlNeu = fehl.concat(jetzt);
+    const uebrig = versucheBisSperre(fehlNeu, jetzt);
+    const wartet = sperreBis(fehlNeu, jetzt);
+    const antwort = { fehler: "unbekannt", uebrig,
+      minuten: Math.round(sperrDauer(fehlNeu.length + uebrig) / 60000) };
+    if (wartet) antwort.wartenBis = wartet;
+    return json(antwort, 401);
+  }
 
   /* Eine geglückte Anmeldung räumt die Fehlversuche dieser IP weg. Sonst
      bleibt das Haus an einer geteilten IP hängen: Wer sich richtig
@@ -185,6 +225,61 @@ async function anmelden(request, env) {
 
   return json({ name: treffer.name, rolle: treffer.rolle }, 200,
     { "set-cookie": keks(await tokenBauen(env, treffer)) });
+}
+
+/* ── Wer gehört zu diesem Code? ────────────────────────────────────────
+   B3 (Jagd 15). Zwei Stellen in der App verlangen einen persönlichen Code,
+   ohne dass jemand die Person wechselt: die Freigabe („trotzdem
+   abschliessen") und der Wein-Editor. Beide fragten bis Runde 15 NUR den
+   Gerätespeicher (`hh_bekannt_v1` in public/index.html). Der kennt jeden
+   Code, der auf diesem Gerät einmal geglückt ist — auch einen, den die
+   Leitung längst zurückgesetzt hat. Damit gab ein toter Code weiter frei,
+   und im append-only Journal stand dauerhaft der falsche Name.
+
+   Dieser Endpunkt beantwortet genau eine Frage und tut sonst nichts:
+     · Er setzt KEINEN Keks. Wer freigibt, wechselt nicht die Sitzung —
+       die Freigabe steht mit seinem Namen im Protokoll, angemeldet bleibt,
+       wer angemeldet war.
+     · Er verlangt eine bestehende Sitzung (der Router prüft das vor dem
+       Aufruf). Ein Orakel für vierstellige Codes steht damit nicht offen
+       im Netz.
+     · Er zählt auf DIESELBE Sperre ein wie die Anmeldung. Sonst wäre er
+       der Weg an ihr vorbei. */
+async function codeNachschlagen(request, env) {
+  const ip = request.headers.get("cf-connecting-ip") || "?";
+  const jetzt = Date.now();
+
+  const { results: letzte } = await env.DB.prepare(
+    `SELECT ok, ts FROM anmeldeversuch WHERE ip = ?1 AND ts > ?2`
+  ).bind(ip, jetzt - SPERRE.gedaechtnis).all();
+  const fehl = letzte.filter(r => !r.ok).map(r => +r.ts).sort((a, b) => a - b);
+
+  const wartenBis = sperreBis(fehl, jetzt);
+  if (wartenBis) return json({ fehler: "zu viele Versuche", wartenBis,
+    minuten: Math.round(sperrDauer(fehl.length) / 60000) }, 429);
+
+  let code = "";
+  try { code = (await request.json()).code || ""; } catch {}
+
+  /* Wie beim Anmelden: jeder Code gegen jede Person, kein früher Ausstieg. */
+  const { results: leute } = await env.DB.prepare(
+    `SELECT name, rolle, code_hash, salt FROM person WHERE aktiv = 1`).all();
+  let treffer = null;
+  for (const q of leute) {
+    if (gleich(await hashe(code, q.salt), q.code_hash)) treffer = q;
+  }
+
+  await env.DB.prepare(
+    `INSERT INTO anmeldeversuch (ip, ts, ok) VALUES (?1, ?2, ?3)`
+  ).bind(ip, jetzt, treffer ? 1 : 0).run();
+
+  if (!treffer) {
+    const fehlNeu = fehl.concat(jetzt);
+    const uebrig = versucheBisSperre(fehlNeu, jetzt);
+    return json({ fehler: "unbekannt", uebrig,
+      minuten: Math.round(sperrDauer(fehlNeu.length + uebrig) / 60000) }, 401);
+  }
+  return json({ name: treffer.name, rolle: treffer.rolle });
 }
 
 /* ── Vorgänge ──────────────────────────────────────────────────────────
@@ -597,7 +692,38 @@ async function mappingSchreiben(env, p, body) {
   return json({ ok: true });
 }
 
-/* ── Personen ────────────────────────────────────────────────────────── */
+/* ── Personen ──────────────────────────────────────────────────────────
+
+   Zwei Personen mit demselben Code darf es nicht geben. `anmelden()`
+   rechnet jeden Code gegen JEDE Person und behaelt den LETZTEN Treffer
+   (src/index.js, Schleife ueber `leute`) — bei zwei gleichen Codes
+   entscheidet also die Reihenfolge der Zeilen, wer man ist. Was daraus
+   folgt, steht dauerhaft im append-only Journal: der falsche Name an
+   einer Fassung, und niemand kann ihn dort wieder herausnehmen (Regel 6).
+
+   A2 (Runde 16): `pinZuruecksetzen()` prueft das seit Runde 15, diese
+   Funktion nicht — und sie ist der Weg, ueber den Codes im Haus vergeben
+   werden („Selbst eintragen", „Vorschlagen", POST /api/anlage). Geprueft
+   wird gegen ALLE anderen Personen, auch gesperrte: eine gesperrte Person
+   wird wieder freigegeben, und dann stuenden zwei gleiche Codes da. */
+async function anderePersonen(env, id) {
+  /* Die eigene Zeile zaehlt nicht mit — wer seinen Code behaelt oder neu
+     setzt, kollidiert nicht mit sich selbst. `id != ?1` mit NULL faende
+     gar nichts (NULL ist weder gleich noch ungleich), deshalb steht bei
+     einer neuen Person der leere String da; eine UUID ist er nie. */
+  const { results } = await env.DB.prepare(
+    `SELECT id, code_hash, salt FROM person WHERE id != ?1`).bind(id || "").all();
+  return results;
+}
+/* Einmal gelesen, mehrfach gerechnet: `pinZuruecksetzen()` probiert bis zu
+   vierzig Codes durch und darf dafuer nicht vierzigmal die Tabelle holen. */
+async function codeSchonVergeben(andere, code) {
+  for (const a of andere) {
+    if (gleich(await hashe(code, a.salt), a.code_hash)) return true;
+  }
+  return false;
+}
+
 async function personSchreiben(env, body) {
   const { id, name, rolle, code, aktiv } = body || {};
   if (!name || !rolle) return json({ fehler: "name und rolle nötig" }, 422);
@@ -608,6 +734,9 @@ async function personSchreiben(env, body) {
        gültig, sonst käme niemand mehr hinein, um sie zu ersetzen. */
     if (!PIN_MUSTER.test(code))
       return json({ fehler: "Code: genau " + PIN_LAENGE + " Ziffern" }, 422);
+    if (await codeSchonVergeben(await anderePersonen(env, id), code))
+      return json({ fehler: "Diesen Code hat schon jemand. Bitte einen anderen "
+        + "wählen — oder den Code über „PIN zurücksetzen“ würfeln lassen." }, 409);
     const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
     const hash = await hashe(code, salt);
     await env.DB.prepare(
@@ -644,8 +773,22 @@ function wuerfelPin() {
   }
 }
 
-async function pinZuruecksetzen(env, id) {
-  if (!id) return json({ fehler: "id nötig" }, 422);
+/* B4 (Jagd 15): Würfelt der Server, und bricht die Verbindung NACH dem
+   UPDATE ab, ist der Code vergeben und niemand hat ihn je gesehen — die
+   Person ist ausgesperrt, und das Backoffice meldete „Keine Verbindung".
+   Deshalb darf der Anrufer den Code MITBRINGEN: Das Backoffice würfelt
+   ihn selbst (dieselbe Gleichverteilung, `crypto.getRandomValues`) und
+   weiss ihn damit schon, bevor die Antwort unterwegs ist. Bricht sie ab,
+   kennt es den Code trotzdem und sagt das. Geprüft wird er hier genauso
+   wie ein selbst vergebener: Form und Dopplung. Ohne `code` würfelt
+   weiterhin der Server — der alte Weg bleibt offen. */
+async function pinZuruecksetzen(env, id, mit) {
+  /* Eine krumme `id` (`{}`, `[]`, eine Zahl) ging ungeprüft in `bind()`;
+     die Meldung der Datenbank kam dann als 500 zurück und stand mit
+     Stapel im Log. Eine falsche Eingabe ist kein Serverfehler. */
+  if (!id || typeof id !== "string") return json({ fehler: "id nötig" }, 422);
+  if (mit !== undefined && mit !== null && !PIN_MUSTER.test(mit))
+    return json({ fehler: "Code: genau " + PIN_LAENGE + " Ziffern" }, 422);
   const ziel = await env.DB.prepare(
     `SELECT id, name FROM person WHERE id = ?1`).bind(id).first();
   if (!ziel) return json({ fehler: "unbekannte Person" }, 404);
@@ -654,18 +797,25 @@ async function pinZuruecksetzen(env, id) {
      Personen mit demselben PIN hiessen: die erste gewinnt, und im Protokoll
      steht der falsche Name. Bei vier Ziffern und einem Haus voller Leute
      ist das kein Gedankenspiel — also wird geprüft und neu gewürfelt. */
-  const { results: andere } = await env.DB.prepare(
-    `SELECT id, code_hash, salt FROM person WHERE id != ?1 AND aktiv = 1`).bind(id).all();
-
+  /* A2 (Runde 16): Gezaehlt werden ALLE anderen Personen, nicht nur die
+     freigegebenen. Bis Runde 15 stand hier `aktiv = 1` — eine gesperrte
+     Person konnte damit denselben Code bekommen, und beim Freigeben
+     standen zwei gleiche da. Dieselbe Pruefung wie in `personSchreiben()`,
+     damit es nur EINE Regel gibt. */
+  const andere = await anderePersonen(env, id);
   let pin = "", frei = false;
-  for (let i = 0; i < 40 && !frei; i++) {
-    pin = wuerfelPin();
-    frei = true;
-    for (const a of andere) {
-      if (gleich(await hashe(pin, a.salt), a.code_hash)) { frei = false; break; }
+  if (mit) {
+    pin = mit;
+    frei = !(await codeSchonVergeben(andere, pin));
+    if (!frei) return json({ fehler: "Diesen Code hat schon jemand — "
+      + "bitte noch einmal zurücksetzen." }, 409);
+  } else {
+    for (let i = 0; i < 40 && !frei; i++) {
+      pin = wuerfelPin();
+      frei = !(await codeSchonVergeben(andere, pin));
     }
+    if (!frei) return json({ fehler: "kein freier Code gefunden" }, 503);
   }
-  if (!frei) return json({ fehler: "kein freier Code gefunden" }, 503);
 
   const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
   const hash = await hashe(pin, salt);
@@ -722,6 +872,7 @@ export default {
       if (!p) return json({ fehler: "nicht angemeldet" }, 401);
 
       if (pfad === "/api/ich") return json({ name: p.name, rolle: p.rolle });
+      if (pfad === "/api/code" && m === "POST") return await codeNachschlagen(request, env);
 
       if (pfad === "/api/stamm") {
         /* Die Spalte heisst live `wert`, nicht `daten`. */
@@ -781,7 +932,7 @@ export default {
       if (pfad === "/api/person/pin" && m === "POST") {
         if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
         const b = await koerper(request);
-        return b ? await pinZuruecksetzen(env, b.id) : keinJson();
+        return b ? await pinZuruecksetzen(env, b.id, b.code) : keinJson();
       }
 
       return json({ fehler: "unbekannter Endpunkt" }, 404);

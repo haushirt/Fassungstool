@@ -202,6 +202,24 @@
 .deutung{font-size:var(--text-sm);color:var(--fg-secondary);line-height:var(--leading-normal)}
 .neg{color:var(--danger-fg);font-weight:var(--weight-bold)}
 
+/* ═══════════════ Finger am Glas ═══════════════
+   Runde 16 · Zwei Dinge, die Safari am iPhone von sich aus tut und die im
+   Keller stören:
+
+   · Ein Doppeltipp zoomt. Genau das passiert beim Zählen: zwei Flaschen,
+     zweimal schnell auf dieselbe Zeile — und statt der zweiten Zahl steht
+     die Seite vergrössert da. `manipulation` nimmt GENAU diese Geste weg.
+     Wischen und Zwei-Finger-Zoom bleiben; `none` oder `pan-x pan-y` würden
+     beides mitnehmen und kommen deshalb nicht in Frage.
+   · Ein Feld unter 16px zoomt beim Fokus. Am Schreibtisch
+     (data-dichte="maus") sind die kleinen Grade gewollt — dort zählt
+     Dichte und es wird nicht getippt. Gehoben wird deshalb nur, wo
+     wirklich ein Finger im Spiel ist (pointer:coarse). */
+html{touch-action:manipulation}
+@media(pointer:coarse){
+  input,select,textarea{font-size:var(--text-base)}
+}
+
 /* ═══════════════ Fokus ═══════════════ */
 :where(button,input,select,textarea,a,[tabindex]):focus-visible{
   outline:var(--ring-width) solid var(--ring);
@@ -314,6 +332,9 @@ nav.seite .zahl{font-size:var(--text-xs);font-weight:var(--weight-medium);
   background:var(--surface-4);color:var(--fg-secondary);font-variant-numeric:tabular-nums}
 nav.seite button.on .zahl{background:var(--surface-3)}
 nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
+/* Der Ausgang steht unten, abgesetzt und leise — er ist kein Menuepunkt. */
+nav.seite button.ausgang{margin-top:var(--space-6);border-top:1px solid var(--border);
+  border-radius:0;padding-top:var(--space-4);color:var(--fg-muted)}
 main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
 
 /* ═══════════════ Überschriften ═══════════════ */
@@ -879,6 +900,25 @@ function nachZeit(a,b){
 
 /* ════════════ 3 · Quelle ════════════ */
 let QUELLE="—", VORGAENGE=[], STAND=null;
+
+/* Wie viele Ziffern ein Code hat. Genau eine Stelle nennt die Zahl — im
+   Worker (`PIN_LAENGE` in src/index.js) und in der App (`PIN_LAENGE` in
+   public/index.html) heisst die Konstante genauso, und alle drei muessen
+   dasselbe sagen. Runde 16: die vier harten Vieren in dieser Datei sind
+   dadurch ersetzt. */
+const PIN_LAENGE=4;
+const PIN_MUSTER=new RegExp("^\\d{"+PIN_LAENGE+"}$");
+/* Gleichverteilt ueber 0000…9999 (bzw. so viele Stellen, wie PIN_LAENGE
+   sagt). Der Rest einer 32-Bit-Zahl geteilt durch die Spanne bevorzugt die
+   niedrigen Werte leicht; was ueber der letzten vollen Runde liegt, wird
+   deshalb verworfen und neu gewuerfelt. Dieselbe Rechnung wie
+   `wuerfelPin()` im Worker. */
+function wuerfelPin(){
+  const a=new Uint32Array(1), spanne=Math.pow(10,PIN_LAENGE);
+  const grenze=Math.floor(4294967296/spanne)*spanne;
+  do{ crypto.getRandomValues(a); }while(a[0]>=grenze);
+  return String(a[0]%spanne).padStart(PIN_LAENGE,"0");
+}
 
 let ICH=null;
 async function werBinIch(){
@@ -1533,6 +1573,40 @@ function zeichneNav(){
       zeichne(); window.scrollTo(0,0); };
     n.appendChild(b);
   });
+  /* A1 · Der Ausgang steht am Fuss der Navigation, nicht in der Leiste:
+     Unter 900 px ist die Leiste mit Marke, „Aktualisieren" und
+     „Fassungstool" schon voll — ein vierter Knopf schob sie 24 px aus dem
+     Fenster (gemessen mit tests/ui-mass.cjs). In der Navigation ist Platz,
+     er steht am selben Ort wie in jeder anderen Verwaltung, und am
+     MacBook liegt er dauerhaft offen. */
+  const ab=document.createElement("button");
+  ab.id="bAb"; ab.className="ausgang";
+  ab.innerHTML='<span>abmelden</span>';
+  ab.onclick=abmelden;
+  n.appendChild(ab);
+}
+
+/* A1 (Jagd 15) · Diese Seite hatte keinen Ausgang. Wer sie am geteilten
+   iPad offen liess, liess die naechste Person als Leitung hier stehen —
+   der Sitzungskeks gilt zwoelf Stunden, und „PIN zuruecksetzen" haengt an
+   ihm. Der Keks kann nur vom SERVER genommen werden (`POST /api/abmelden`
+   setzt ihn auf Max-Age=0), also wird er gerufen und auf die Antwort
+   gewartet; erst danach faellt der Name aus der Sitzung dieses Fensters
+   (`hh_user`/`hh_rolle` teilen sich beide Seiten im selben Tab) und die
+   Anmeldung kommt wieder. Ohne Netz bleibt die Sitzung stehen — dann wird
+   das gesagt, statt eine Sicherheit vorzutaeuschen, die es nicht gibt. */
+async function abmelden(){
+  const b=$("#bAb"); if(b)b.disabled=true;
+  let weg=false;
+  try{
+    const r=await fetch("/api/abmelden",{method:"POST",credentials:"same-origin"});
+    weg=r.ok;
+  }catch(e){}
+  if(!weg){ if(b)b.disabled=false;
+    return toast("Keine Verbindung — die Anmeldung gilt weiter. Bitte mit Netz noch einmal."); }
+  try{ sessionStorage.removeItem("hh_user"); sessionStorage.removeItem("hh_rolle"); }catch(e){}
+  ICH=null;
+  location.href="index.html";
 }
 
 function letzterTag(){
@@ -2569,7 +2643,7 @@ function vTeam(m){
         <span class="deutung" id="nHint">${esc(RECHTETEXT.service)}</span></div>
       <div class="reihe" style="margin-bottom:16px">
         <label style="width:140px">Code</label>
-        <input type="text" id="nCode" placeholder="vier Ziffern" maxlength="4"
+        <input type="text" id="nCode" placeholder="${PIN_LAENGE} Ziffern" maxlength="${PIN_LAENGE}"
           inputmode="numeric" style="width:180px">
         <button class="b klein" id="nWuerfel">Vorschlagen</button></div>
       <div class="reihe">
@@ -2579,16 +2653,7 @@ function vTeam(m){
   m.appendChild(s);
 
   $("#nRolle").onchange=e=>{ $("#nHint").textContent=RECHTETEXT[e.target.value]||""; };
-  $("#nWuerfel").onclick=()=>{
-    /* Runde 15: wieder vier Ziffern, 0000 bis 9999.
-       Der Rest einer 32-Bit-Zahl geteilt durch 10000 bevorzugt die
-       niedrigen Werte leicht; was über der letzten vollen Runde liegt,
-       wird deshalb verworfen und neu gewürfelt. */
-    const a=new Uint32Array(1), spanne=10000;
-    const grenze=Math.floor(4294967296/spanne)*spanne;
-    do{ crypto.getRandomValues(a); }while(a[0]>=grenze);
-    $("#nCode").value=String(a[0]%spanne).padStart(4,"0");
-  };
+  $("#nWuerfel").onclick=()=>{ $("#nCode").value=wuerfelPin(); };
 
   let LEUTE=[];
   const male=()=>{
@@ -2611,8 +2676,12 @@ function vTeam(m){
        nächste Anfrage kommt als 401 zurück. Ist man die einzige Leitung im
        Haus, kommt danach NIEMAND mehr hinein: `ich()` im Worker findet nur
        `aktiv = 1`, und den Weg zurück gibt es nur über die D1-Konsole.
-       Der Worker weist beides zusätzlich ab; hier steht es, damit die
-       Leitung den Grund liest und nicht einen Fehler. */
+       BERICHTIGUNG (Jagd 15): Hier stand „Der Worker weist beides
+       zusätzlich ab". Das ist falsch und war es immer — `personSchreiben()`
+       bekommt gar nicht mit, WER schreibt, und kann es deshalb nicht
+       prüfen. Der Riegel liegt allein in diesem Browser. Er gehört in den
+       Worker; das steht als eigener Punkt in review/BACKLOG.md und ist
+       nicht Sache dieser Runde. */
     $("#teamL").querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>{
       const p=LEUTE.find(x=>x.id===b.dataset.ap);
       if(p.aktiv && ICH && p.name===ICH.name)
@@ -2639,28 +2708,44 @@ function vTeam(m){
         (ichSelbst ? "\n\nDas bist DU. Notiere ihn, sonst kommst du beim "+
           "nächsten Anmelden nicht mehr herein." : "")))return;
       b.disabled=true;
+      /* B4 (Jagd 15) · Bis Runde 15 würfelte der Server. Brach die
+         Verbindung NACH dem UPDATE ab, war der Code vergeben und niemand
+         hatte ihn je gesehen: die Person ausgesperrt, auf dem Schirm nur
+         „Keine Verbindung". Jetzt würfelt diese Seite ihn selbst
+         (`wuerfelPin()`, dieselbe Gleichverteilung wie im Worker) und
+         schickt ihn mit. Sie kennt ihn damit, bevor die Antwort unterwegs
+         ist — bricht sie ab, steht er trotzdem da, samt dem einen Satz,
+         der dann zählt. Geprüft wird er im Worker wie jeder vergebene
+         Code: Form und Dopplung. */
+      let vorschlag=null;
+      try{ vorschlag=wuerfelPin(); }catch(e){ vorschlag=null; }
       try{
         const r=await fetch("/api/person/pin",{method:"POST",
           headers:{"content-type":"application/json"},
-          body:JSON.stringify({id:p.id})});
+          body:JSON.stringify(vorschlag?{id:p.id,code:vorschlag}:{id:p.id})});
         const j=await r.json();
         if(!r.ok){ b.disabled=false; return toast(j.fehler||"Nicht zurückgesetzt"); }
         zeigePin(p.name, j.pin);
-      }catch(e){ toast("Keine Verbindung"); }
+      }catch(e){
+        if(vorschlag) zeigePin(p.name, vorschlag,
+          "Die Verbindung brach ab. Ist der Code angekommen, ist es DIESER. "
+         +"Geht er beim Anmelden nicht, einfach noch einmal zurücksetzen.");
+        else toast("PIN wurde evtl. geändert – bitte erneut zurücksetzen");
+      }
       b.disabled=false;
     });
   };
   /* Der neue Code, gross und genau einmal. Kein Speichern, kein zweites
      Anzeigen, kein Log — wer ihn hier nicht notiert, würfelt neu. */
-  const zeigePin=(name,pin)=>{
+  const zeigePin=(name,pin,unsicher)=>{
     const w=document.createElement("div");
     w.className="pinzeig";
     w.innerHTML=`<div class="pinzeig-karte" role="dialog" aria-modal="true"
         aria-label="Neuer Code für ${esc(name)}">
       <p class="pinzeig-wer">Neuer Code für <b>${esc(name)}</b></p>
       <p class="pinzeig-zahl">${esc(pin)}</p>
-      <p class="pinzeig-warn">Nur jetzt zu sehen. Notiere ihn und gib ihn
-        weiter — er lässt sich nicht noch einmal anzeigen.</p>
+      <p class="pinzeig-warn">${unsicher ? esc(unsicher) : `Nur jetzt zu sehen. Notiere ihn und gib ihn
+        weiter — er lässt sich nicht noch einmal anzeigen.`}</p>
       <button class="b stark">Notiert</button></div>`;
     w.querySelector("button").onclick=()=>w.remove();
     document.body.appendChild(w);
@@ -2697,7 +2782,7 @@ function vTeam(m){
   $("#nAdd").onclick=()=>{
     const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();
     if(!nm) return toast("Ohne Namen geht es nicht");
-    if(!/^\d{4}$/.test(code)) return toast("Der Code hat vier Ziffern");
+    if(!PIN_MUSTER.test(code)) return toast("Der Code hat "+PIN_LAENGE+" Ziffern");
     const da=LEUTE.find(p=>p.name.toLowerCase()===nm.toLowerCase());
     sende({id:da?da.id:undefined, name:nm, rolle:$("#nRolle").value, code, aktiv:1});
     $("#nName").value=""; $("#nCode").value="";
