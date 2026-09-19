@@ -1,8 +1,8 @@
 # Morgenbrief · Nacht auf den 19.09.2026 · Runde 16
 
 Eine Runde, ohne dich, durchgearbeitet. Ausgangsstand: **`ac8d93a`**
-(`sw.js` v38), live. Neuer Stand: **`sw.js` v41** — die Runde und die
-Jagd danach.
+(`sw.js` v38), live. Neuer Stand: **`sw.js` v42** — die Runde, die
+Jagd danach und die Gegenprobe des qa-guardian.
 
 Der Brief der Nacht auf den 18.09. ist abgelöst — er beschrieb einen Pull
 Request, der inzwischen gemergt ist, und schickte dich auf **sechs bis acht

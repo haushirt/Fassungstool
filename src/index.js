@@ -292,6 +292,17 @@ async function codeNachschlagen(request, env) {
     return json({ fehler: "unbekannt", uebrig,
       minuten: Math.round(sperrDauer(fehlNeu.length + uebrig) / 60000) }, 401);
   }
+
+  /* Wie bei `anmelden()`: Eine geglückte Anfrage räumt die Fehlversuche
+     dieser IP weg. Ohne diese Zeile blieb A3 halb offen — zehn richtig
+     GEFORMTE Vertipper im Freigabedialog (der häufigste Dialog im Haus,
+     an einer geteilten WLAN-IP) sperrten die Anmeldung für alle, und
+     nichts räumte sie wieder frei ausser einer geglückten Anmeldung,
+     die nun gerade nicht mehr ging. Wer hier einen gültigen Code trifft,
+     beweist genauso wie an der Anmeldung, dass kein Fremder probiert. */
+  await env.DB.prepare(
+    `DELETE FROM anmeldeversuch WHERE ip = ?1 AND ok = 0`).bind(ip).run();
+
   return json({ name: treffer.name, rolle: treffer.rolle });
 }
 

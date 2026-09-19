@@ -639,9 +639,34 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     assert.match(fenster, /a\.geprueft===0/,
       "das Fenster unterscheidet nicht zwischen nichts-verglichen und nichts-gefunden");
     assert.match(fenster, /Nichts zu vergleichen/);
-    /* Und die unzugeordneten Kassenpositionen gehören nicht in den Keller. */
-    assert.doesNotMatch(fenster, /ohneZuordnung/,
-      "44 Kassenpositionen aus der Küche stehen wieder im Kellerfenster");
+    /* BERICHTIGT (qa-guardian, Gegenprobe Runde 16): Hier stand
+       `doesNotMatch(/ohneZuordnung/)` — „44 Kassenpositionen aus der
+       Küche gehören nicht in den Keller". Der Anspruch war zu breit und
+       hat einen schlimmeren Fall gedeckt: Ein Artikel, der GEFASST wurde
+       und dessen Kassenposition keinem Artikel zugeordnet ist, steht in
+       der Liste mit „verkauft 0" und der vollen Menge als Abweichung —
+       im Browser nachgestellt (`tests/qa-runde16-gegenprobe.cjs`, G1).
+       Ohne die Zahl im Fuss ist das eine Falschaussage. Geprüft wird
+       deshalb nicht mehr das Schweigen, sondern die Bedingung: genannt
+       wird sie nur, wenn es eine Abweichung gibt, die sie erklärt. */
+    assert.match(fenster, /a\.ohneZuordnung&&a\.zeilen\.length/,
+      "die unzugeordneten Kassenpositionen werden gar nicht oder immer genannt");
+    assert.match(fenster, /keinem Artikel zugeordnet/);
+  });
+
+  test("eine gefasste Ware ohne zugeordnete Kassenposition ist erklärbar", () => {
+    /* Der Live-Normalfall: 13 Zuordnungen, alles andere unzugeordnet.
+       Der Artikel `g7` wurde gefasst, seine Kassenzeile trägt keinen
+       Artikel — er steht mit „verkauft 0" da, und `ohneZuordnung` ist
+       die einzige Zahl, die das erklärt. */
+    const v = { mode: "tag", barrot: { g7: 6 }, bar: {}, backup: {}, rest: {},
+                holtN: {}, zusatz: {}, gent: {}, gzusatz: {} };
+    const z = { positionen: [
+      { rohbez: "Almdudler 0,35 l", artikel: null, anzahl: 6, ausschankMl: 350 }
+    ]};
+    const a = rechne.abgleichZeilen(v, z, {});
+    assert.equal(a.ohneZuordnung, 1);
+    assert.deepEqual(a.zeilen, [{ id: "g7", gefasst: 6, verkauft: 0, diff: 6 }]);
   });
 });
 

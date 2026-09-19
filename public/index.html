@@ -5490,14 +5490,17 @@ async function holeZBericht(tag){
 
 /* Gefasst gegen verkauft, je Artikel — und nur, was auseinandergeht.
 
-   Zwei Arten von Kassenzeilen bleiben absichtlich draussen:
-     · Zeilen OHNE zugeordneten Artikel. Die kann niemand im Keller
-       zuordnen; das macht die Leitung im Backoffice („Zuordnung").
-     · Zeilen mit Ausschankmenge (`ausschankMl`), also Offenausschank im
-       Glas. Aus Glaesern Flaschen zu rechnen braucht die Gebindegroesse,
-       und die steht nur im Backoffice. Hier zu raten hiesse, eine falsche
-       Abweichung zu behaupten — der Fuss sagt stattdessen, wie viele es
-       sind und wer sie rechnet. */
+   Zwei Arten von Kassenzeilen bleiben draussen, und beide werden gezählt,
+   damit der Fuss sie benennen kann:
+     · Zeilen OHNE zugeordneten Artikel (`ohneZuordnung`). Die kann
+       niemand im Keller zuordnen; das macht die Leitung im Backoffice.
+     · Zeilen, deren Gebindegrösse nicht bestätigt ist (`ohneGroesse`) —
+       samt dem ganzen Artikel, zu dem sie gehören. Hier zu raten hiesse,
+       eine falsche Abweichung zu behaupten.
+   (Bis zur Jagd Runde 16 stand an dieser Stelle, Zeilen mit
+   `ausschankMl` blieben als „Offenausschank" draussen. Das war falsch —
+   siehe die Berichtigung bei `verkaufteFlaschen()` — und der Satz hat
+   den Fehler zwei Runden lang getragen.) */
 /* Wieviele FLASCHEN steckt eine Kassenzeile? — dieselbe Rechnung wie
    `flaschen()` in public/leitung.html:1344, seit Runde 6:
 
@@ -5514,10 +5517,21 @@ async function holeZBericht(tag){
    schlimmste Art von Falschaussage gegenüber jemandem, der gerade
    gezählt hat.)
 
-   Fehlt eine der beiden Zahlen, wird KEINE erfunden: Die Position bleibt
-   aus der Rechnung heraus und wird gezählt. Genau das tut das Backoffice
-   auch, und es ist der heutige Normalfall — live hat keine der dreizehn
-   Zuordnungen eine bestätigte Gebindegrösse. */
+   Fehlt die Gebindegrösse, wird KEINE erfunden: Die Position bleibt aus
+   der Rechnung heraus und wird gezählt. Das ist der heutige Normalfall —
+   live hat keine der dreizehn Zuordnungen eine bestätigte Gebindegrösse.
+
+   ZWEI UNTERSCHIEDE zum Backoffice, damit sie niemand für Zufall hält
+   (qa-guardian, Gegenprobe Runde 16; `flaschen()` in leitung.html:1344):
+     · Steht im Kassennamen GAR KEINE Menge („Almdudler"), rechnet die
+       App hier Stück = Flasche; das Backoffice weist die Position als
+       „Größe fehlt" aus und vergleicht sie nicht.
+     · Das Backoffice kennt neben der Größe je Kassenposition noch die
+       je ARTIKEL bestätigte und zwei Vorschläge (Größe im Artikelnamen,
+       Standard-Weinflasche). Hier zählt nur `mapping.gebinde_ml` —
+       diese Seite ist also strenger, nie großzügiger.
+   Solange beide Rechnungen nebeneinander stehen, gehört jede Änderung an
+   der einen an der anderen nachgezogen (Backlog, mittel). */
 function verkaufteFlaschen(p,groessen){
   const aus=+p.ausschankMl||0;
   const geb=+((groessen||{})[p.kassenname||p.rohbez])||0;
@@ -5641,15 +5655,28 @@ function popupAbgleich(d,z,groessen){
       : `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}</p>`
         +`<div class="box good" style="margin-top:0"><b>Keine Abweichung.</b><br>`
         +a.geprueft+(a.geprueft===1?" Artikel verglichen.":" Artikel verglichen.")+`</div>`;
-  /* Der Fuss nennt nur, was DIESES Fenster nicht rechnen konnte. Die
-     unzugeordneten Kassenpositionen stehen NICHT mehr dabei: Bericht 37
-     hat 44 davon (Omelett, Espresso, Schnittlauch), im Keller kann
-     niemand etwas damit anfangen, und sie haben den eigentlichen Befund
-     zugedeckt. Das ist Arbeit der Leitung und steht im Backoffice. */
+  /* Der Fuss nennt nur, was DIESES Fenster nicht rechnen konnte.
+
+     BERICHTIGUNG (qa-guardian, Gegenprobe Runde 16): Die unzugeordneten
+     Kassenpositionen standen hier gar nicht mehr \u2014 sie seien Arbeit der
+     Leitung und deckten im Keller den eigentlichen Befund zu. Das gilt,
+     solange sie nichts erklaeren. Sie erklaeren aber den haeufigsten
+     Befund ueberhaupt: Ein Artikel, der gefasst wurde und dessen
+     Kassenposition niemandem zugeordnet ist, steht in der Liste mit
+     \u201everkauft 0" und der vollen Menge als Abweichung. Gemessen mit
+     Bericht 37 und dem Live-Stand (13 Zuordnungen, 44 Positionen ohne)
+     ist das der Regelfall, nicht die Ausnahme \u2014 und \u201everkauft 0" ist
+     dann keine Auskunft, sondern eine Falschaussage gegenueber jemandem,
+     der gerade gezaehlt hat. Genannt wird die Zahl deshalb wieder, aber
+     nur wenn es eine Abweichung gibt, die sie erklaeren kann. */
   const fuss=[];
   if(a.ohneGroesse)fuss.push(a.ohneGroesse
     +(a.ohneGroesse===1?" Kassenposition hat":" Kassenpositionen haben")
     +" keine best\u00e4tigte Gebindegr\u00f6\u00dfe und bleibt aus der Rechnung.");
+  if(a.ohneZuordnung&&a.zeilen.length)fuss.push(a.ohneZuordnung
+    +(a.ohneZuordnung===1?" Kassenposition ist":" Kassenpositionen sind")
+    +" keinem Artikel zugeordnet \u2014 was darunter verkauft wurde, fehlt "
+    +"oben. Das ordnet die Leitung im Backoffice zu.");
   $("#ovBody").innerHTML= kopf
     +(fuss.length?`<p class="abglfuss">${fuss.map(esc).join("<br>")}</p>`:"")
     +`<label class="f" style="margin-top:var(--space-4)"><span>Notiz (optional)</span>`

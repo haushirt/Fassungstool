@@ -225,9 +225,21 @@ async function tagesfassungBisAbschluss(p) {
       urteil("R16/2 · die Position ohne Gebindegröße steht im Fuß, nicht als Zeile",
         /keine best.tigte Gebindegr/.test(await p.locator(".abglfuss").textContent() || ""),
         (await p.locator(".abglfuss").textContent() || "").slice(0, 70));
-      urteil("R16/2 · die Küchenposition steht NICHT im Kellerfenster",
-        !/keinem Artikel zugeordnet/.test(await p.locator("#ovBody").textContent() || ""),
+      /* BERICHTIGT (qa-guardian, Gegenprobe Runde 16): Hier stand, im
+         Fenster dürfe „keinem Artikel zugeordnet" überhaupt nicht
+         vorkommen. Das deckte den Fall, dass eine GEFASSTE Ware ohne
+         zugeordnete Kassenposition mit „verkauft 0" als Abweichung
+         dasteht und niemand sagt, warum (G1 der Gegenprobe). Der
+         Anspruch lautet jetzt: die Küchenpositionen stehen nicht mit
+         NAMEN und nicht als ZEILE im Keller — genannt wird nur ihre
+         Zahl, und nur im Fuß. */
+      urteil("R16/2 · die Küchenposition steht nicht mit Namen im Kellerfenster",
+        !/Omelett/.test(await p.locator("#ovBody").textContent() || ""),
         (await p.locator("#ovBody").textContent() || "").slice(0, 60));
+      urteil("R16/2 · und nur als Zahl im Fuß, nicht als Zeile",
+        /1 Kassenposition ist keinem Artikel zugeordnet/
+          .test(await p.locator(".abglfuss").textContent() || "") && zeilen === 1,
+        (await p.locator(".abglfuss").textContent() || "").slice(0, 120));
       urteil("R16/2 · EIN Notizfeld für alles",
         await p.locator("#abglNotiz").count() === 1);
       urteil("R16/2 · kein „Abbrechen“ neben dem Speichern",
