@@ -3158,3 +3158,129 @@ Gegenprobe noch einmal.
 **Rundenfazit:** Der Auftrag und die harten Regeln desselben Hauses haben
 einander widersprochen. Aufgelöst hat es nicht mein Geschmack, sondern die
 Prüfreihenfolge, die derselbe Auftrag vorgibt.
+
+### Runde 16 · Gegenprobe – qa-guardian (zweite Schlusskontrolle vor dem Livegang)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — die Verbindungssperre am Abschluss ist draußen und die
+  Begründung trägt. `finishNetz()` (`public/index.html:2582`) setzt kein
+  `disabled` mehr, der `if(!verbunden())`-Block in `abschlussSchritt()`
+  ist fort, `holeZBericht()` liefert offline `null`, `popupFertig()` sagt
+  den richtigen Satz. Gemessen, nicht gelesen: `tests/qa-runde16-schluss.cjs`
+  **18/18**, Q1 und Q2 grün. **Mein Veto vom ersten Zug ist damit erledigt.**
+* ✅ übernommen — `POST /api/code` weist eine krumme Eingabe mit 422 ab,
+  **bevor** sie in `anmeldeversuch` zählt (`src/index.js:274`), und zwar
+  nach der 429-Prüfung und vor jedem Schreibzugriff. Am echten Schema
+  nachgestellt: neun formrichtige Fehlgriffe zählen, eine krumme Eingabe
+  kostet nichts (0 neue Zeilen).
+* ✅ übernommen — die vorgemerkte Abmeldung fällt nur noch bei einer vom
+  Server bestätigten Anmeldung (`public/index.html:2821`, `if(serverHat)`).
+  Folge, die dabeisteht und stimmt: Wer sich ohne Netz anmeldet, erbt den
+  alten Keks nicht mehr — beim nächsten Empfang wird er beendet, und der
+  Ausgang wartet dann auf eine echte Anmeldung. Nichts geht verloren (G4).
+* ↩️ geändert — `abgleichZeilen()`/`popupAbgleich()`: Der Fuß nannte die
+  unzugeordneten Kassenpositionen gar nicht mehr („Arbeit der Leitung").
+  Das deckt den häufigsten Live-Fall zu: Ein Artikel, der **gefasst** wurde
+  und dessen Kassenposition keinem Artikel zugeordnet ist, steht in der
+  Liste mit „verkauft 0" und der vollen Menge als Abweichung. Im Browser
+  nachgestellt (`tests/qa-runde16-gegenprobe.cjs`, G1): „Tomate · gefasst 6
+  · verkauft 0 · +6", ohne ein Wort dazu. Das ist dieselbe Art von
+  Falschaussage, die A2 an „Keine Abweichung" gerügt hat, nur andersherum.
+  Der Fuß nennt die Zahl jetzt wieder — aber nur, wenn es eine Abweichung
+  gibt, die sie erklärt.
+* ↩️ geändert — zwei Kommentare, die das Gegenteil des Codes behaupteten:
+  der Block über `abgleichZeilen()` sagte weiterhin, Zeilen mit
+  `ausschankMl` blieben als „Offenausschank" draußen (genau der Irrtum, den
+  A2 berichtigt hat), und `verkaufteFlaschen()` behauptete „genau das tut
+  das Backoffice auch". Tut es nicht — siehe Backlog.
+* ❌ abgelehnt — nichts. Die Abweichung von Punkt 4b halte ich für richtig
+  und für sauber dokumentiert (ERGEBNIS, MORGENBRIEF, LOG, je mit Rückweg).
+
+**Umgesetzt:**
+1. Der Fuß im Abgleichfenster nennt die unzugeordneten Kassenpositionen
+   wieder — nur dann, wenn eine Abweichung dasteht, die sie erklärt
+   (`public/index.html:5676`). `sw.js` v41 → **v42**, ERGEBNIS und
+   MORGENBRIEF auf v42 nachgezogen.
+2. `tests/qa-runde16-gegenprobe.cjs` neu (Playwright, 390 und 320 px):
+   G1/G1b unzugeordnete Ware im Fenster + kein Überlauf, G2 offline
+   abschließen → Empfang → genau ein PUT und nichts nachgeschickt, G3
+   Serverfehler 500, G4 abgelaufene Sitzung, G5 krumme Eingabe an der
+   Freigabe. **18/18 ja.**
+3. Zwei Prüfungen umgeschrieben statt weggenommen (`tests/runde16.test.mjs`
+   „das Fenster behauptet nichts, was es nicht gerechnet hat";
+   `tests/ui-runde16.cjs` „die Küchenposition steht NICHT im Kellerfenster").
+   Beide hielten den Fehlstand fest; sie prüfen jetzt die Bedingung.
+
+**Geprüft:**
+* `npm test` **424/424**. `tests/qa-runde16-schluss.cjs` 18/18,
+  `tests/ui-runde16.cjs` alle ja, `tests/ui-nachjagd.cjs` 31/31,
+  `tests/qa-schluss.cjs` alle ja, `tests/qa-runde16-gegenprobe.cjs` 18/18.
+  `node --check` für `src/index.js` und `public/sw.js` sauber, beide
+  `<script>`-Blöcke in `public/` parsen (`tests/projektregeln.test.mjs`).
+* Persona (iPhone 390 px, neue Servicekraft, nach dem Abendservice):
+  läuft ohne JS-Fehler bis zum Abschluss durch; „Fertig – Speichern" ist
+  drückbar, der Hinweis darunter nennt den richtigen Grund. Es bleiben die
+  zwei alten Stellen: Hilfe-Blatt in Schritt 1 und Begrüßung nach dem
+  Neuladen legen sich ungefragt über den Schirm.
+* Randfälle einzeln: offline → online (ein PUT, Ausgang leer, zweiter
+  Anlauf schickt nichts nach), doppeltes Absenden (ein Schlüssel, ein
+  Eintrag), 500 beim Leeren (bleibt liegen, danach genau einmal hinaus),
+  401/abgelaufene Sitzung (fertiger Vorgang bleibt im Ausgang), Abbruch
+  mitten in der Eingabe (Zählstand überlebt), krumme Eingabe an der
+  Freigabe (geht gar nicht erst hinaus).
+* Z-Bericht gegen `tests/fixtures/zbericht-37-extended.csv` gerechnet:
+  Betriebstag 2026-09-16, Z 37, 48 Positionen, Rabatt 3/−52, Storno 1/4,20.
+  Die vier gastronovi-Eigenheiten halten: doppelte Namen summiert (2 Fälle,
+  u. a. „CH Gesellmann 1/8 l" aus Bar und Restaurant), 12 Zeilen mit 0 €
+  zählen als Verbrauch, Größensuffixe gelesen („1/8 l" → 125, „2 cl" → 20),
+  keine Warengruppe je Zeile.
+* SQL gegen `docs/live-schema.sql`: `tests/live-schema-durchlauf.test.mjs`
+  fährt den ganzen Worker gegen echtes SQLite mit dem Live-Schema — grün.
+  Der neue `DELETE FROM anmeldeversuch WHERE ip = ?1 AND ok = 0` in
+  `codeNachschlagen()` eigens nachgestellt: 9 Fehlversuche → 0, die
+  Anmeldung geht danach wieder, eine krumme Eingabe zählt weiter nicht.
+  `mapping.gebinde_ml` existiert live; `GET /api/mapping` hat keine
+  Rollenschranke, die App darf die Größen also auch als `service` holen.
+* **Regeln 1–14.** 1: weiter gebrochen — gearbeitet wird auf
+  `claude/runde16`, `origin/v2-review` (`c84a4bf`) ist nicht einmal
+  Vorfahr. Alt bekannt, nicht von mir zu lösen. 2: kein Deploy, kein
+  Schreiben, keine Live-D1 in dieser Sitzung erreichbar. 3: `schema.sql`
+  und `migrations/` unberührt, kein CREATE/ALTER/DROP im Diff. 4: siehe
+  oben. 5: `gnmap.js` unberührt. 6: Journal append-only, Offline-Queue
+  gemessen unversehrt (G2–G4). 7: `gnparse.js` unberührt, Eigenheiten am
+  echten Bericht bestätigt. 8: keine neue Abhängigkeit. 9: keine Codes im
+  Diff. 11: `RUNDEN = 1000`. 12: `wrangler.jsonc` unberührt. 13: nichts
+  Dashboard-seitiges nötig. 14: `schluessel`/`zaehlnr`/`geraet` auf
+  `vorgang` weder gelesen noch geschrieben (der Treffer `schluessel` ist
+  die Spalte der Tabelle `stamm`).
+* Vier Dateien in `public/`, Gestaltungsschicht wortgleich, `sw.js` erhöht.
+* **UNGEPRÜFT:** echtes Safari auf iPhone/iPad; die Live-D1 selbst (kein
+  Cloudflare-Zugang in dieser Sitzung, gerechnet wurde gegen
+  `docs/live-schema.sql`, Stand 17.09.).
+
+**Für die Nächsten:**
+* An **Casimir**: Zwei A-Funde der zweiten Jagd stehen im Commit `272d3cb`
+  ausdrücklich als NOCH NICHT behoben. Beide bestätige ich unabhängig, und
+  beide sind der Grund für das erneute Veto — siehe unten. Der Stand ist
+  trotzdem deutlich besser als das, was gerade live ist.
+* An den **software-engineer**: `verkaufteFlaschen()` braucht denselben
+  Ausgang wie `flaschen()` in `leitung.html:1344` — ohne Menge im
+  Kassennamen wird NICHT verglichen, statt „Stück = Flasche". Und
+  `holeZBericht()`/`holeGebindeGroessen()` brauchen die Zeitgrenze, die
+  `serverAbmelden()` seit dieser Runde hat (`public/index.html:2202`).
+
+**Phase/Thema:** Runde 16 / Gegenprobe zum Veto, vor dem Livegang
+
+**Backlog:** neu unter „hoch": `verkaufteFlaschen()` rechnet ohne Menge im
+Kassennamen Stück = Flasche; Abschluss ohne Zeitgrenze am Server. Neu unter
+„niedrig": Einzahl/Mehrzahl im Satz „N Artikel verglichen" ist zweimal
+derselbe Text; Artikelnamen brechen im Abgleich bei 320 px mitten im Wort.
+Erledigt: „Abschluss ohne Netz gesperrt" (meine Merge-Sperre), „/api/code
+räumt die Sperre nicht auf".
+
+**STATUS:** BLOCKER — **VETO**, eng begrenzt auf die zwei benannten
+A-Funde. Alles andere ist aus meiner Rolle sauber.
+
+**Rundenfazit:** Die Tür, die ich zugehalten habe, ist offen und richtig
+gebaut; stehen geblieben sind zwei Zahlen, die im Keller etwas behaupten,
+was der Bericht nicht hergibt.

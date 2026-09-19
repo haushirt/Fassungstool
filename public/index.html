@@ -339,8 +339,15 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
    Rechnung steht bei `nav.seite .zahl` in leitung.html. */
 .finishbtn:disabled{background:var(--surface-4);border-color:var(--border-strong);
   color:var(--fg-secondary);cursor:default}
-/* Dieser Satz erklaert als einziger, warum der Abgleich ausbleibt —
-   `--fg-muted` auf `--surface` sind 3,66:1 und zu leise dafuer. */
+/* Dieser Satz erklaert als einziger, warum der Abgleich ausbleibt, und
+   steht deshalb auf der zweiten Stufe statt auf der leisesten.
+   BERICHTIGUNG (zweite Jagd Runde 16 · C): Die erste Fassung dieses
+   Kommentars nannte „3,66:1 auf --surface". Nachgemessen steht der Satz
+   nicht auf --surface (#FFFFFF), sondern auf dem Seitengrund (#ECE9E2);
+   dort sind es 4,73:1 und damit ueber dem Mass des Hauses. Der Wechsel
+   auf --fg-secondary bleibt trotzdem richtig — er ist eine Frage des
+   Gewichts, nicht der Barrierefreiheit. Eine erfundene Zahl in einem
+   Kommentar ist so schlecht wie eine erfundene Zahl im Fenster. */
 .finishhint{margin:var(--space-2) 0 0;text-align:center;
   font-size:var(--text-sm);color:var(--fg-secondary)}
 /* Der Abgleich im Abschlussfenster: eine Zeile je Artikel, die Zahlen
@@ -1922,7 +1929,7 @@ async function werHatDenCode(code){
   if(!new RegExp("^\\d{"+PIN_LAENGE+"}$").test(code||""))
     return {name:null, quelle:"form"};
   try{
-    const r=await fetch(API+"/code",{method:"POST",credentials:"same-origin",
+    const r=await holeKurz(API+"/code",{method:"POST",
       headers:{"content-type":"application/json"},body:JSON.stringify({code})});
     if((r.headers.get("content-type")||"").includes("json")){
       const j=await r.json().catch(()=>({}));
@@ -2193,20 +2200,39 @@ const RKEY="hh_rolle";
    naechsten Empfang nachgeholt; gesagt wird es auch, statt eine
    Sicherheit vorzutaeuschen, die es noch nicht gibt. */
 const K_ABMELDUNG="hh_abmeldung_offen_v1";
-async function serverAbmelden(){
-  /* Mit Zeitgrenze: Bei totem WLAN antwortet `fetch` nicht und bricht
-     nicht ab — der Knopf bliebe auf „meldet ab …" stehen, bis der Browser
-     von sich aus aufgibt. Acht Sekunden sind lang genug fuer ein
-     schwaches Netz und kurz genug, um im Keller nicht zu warten; danach
-     gilt es als „ohne Netz" und wird vorgemerkt. */
+/* Ein `fetch` mit Zeitgrenze.
+
+   BERICHTIGUNG (zweite Jagd Runde 16 · A): Der Keller hat selten gar kein
+   Netz — er hat ein WLAN, das die Verbindung ANNIMMT und nicht antwortet
+   (schwacher Access Point, Hotelportal). `fetch` bricht dann von sich aus
+   nicht ab. Am Abschluss hiess das: Der Knopf stand auf „speichert …",
+   `laeuftAbschluss` blieb `true`, ein zweiter Tipp tat nichts, und der
+   Vorgang wurde weder abgeschlossen noch in den Ausgang gelegt — genau
+   der Zustand, den das Veto gegen die Verbindungssperre beenden sollte,
+   nur durch eine andere Tür.
+
+   Acht Sekunden sind lang genug für ein schwaches Netz und kurz genug,
+   um im Keller nicht zu warten. Läuft die Zeit ab, gilt es wie „keine
+   Antwort": Der Abschluss geht ohne Z-Bericht weiter, die Freigabe fällt
+   auf den Gerätespeicher zurück. Kein Weg im Haus darf an einer Antwort
+   hängen, die nie kommt. */
+async function holeKurz(pfad,opt,ms){
   const ab=("AbortController" in window)?new AbortController():null;
-  const uhr=ab?setTimeout(()=>ab.abort(),8000):0;
+  const uhr=ab?setTimeout(()=>ab.abort(),ms||8000):0;
   try{
-    const r=await fetch(API+"/abmelden",{method:"POST",credentials:"same-origin",
-      headers:{accept:"application/json"}, signal:ab?ab.signal:undefined});
-    if(!r.ok)throw new Error("abmelden "+r.status);
-    return true;
+    return await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
+      ab?{signal:ab.signal}:{}));
   } finally { if(uhr)clearTimeout(uhr); }
+}
+
+async function serverAbmelden(){
+  /* Ohne Zeitgrenze bliebe der Knopf auf „meldet ab …" stehen, bis der
+     Browser von sich aus aufgibt; danach gilt es als „ohne Netz" und
+     wird vorgemerkt. */
+  const r=await holeKurz(API+"/abmelden",
+    {method:"POST",headers:{accept:"application/json"}});
+  if(!r.ok)throw new Error("abmelden "+r.status);
+  return true;
 }
 async function holeAbmeldungNach(){
   try{ if(!localStorage.getItem(K_ABMELDUNG))return; }catch(e){ return; }
@@ -5479,8 +5505,8 @@ function gefassteMengen(d){
    Fehler — an den meisten Tagen kommt er erst spaeter per Mail. */
 async function holeZBericht(tag){
   try{
-    const r=await fetch(API+"/fassungsliste?tag="+encodeURIComponent(tag),
-      {credentials:"same-origin",headers:{accept:"application/json"}});
+    const r=await holeKurz(API+"/fassungsliste?tag="+encodeURIComponent(tag),
+      {headers:{accept:"application/json"}});
     if(!r.ok)return null;
     if(!(r.headers.get("content-type")||"").includes("json"))return null;
     const j=await r.json();
@@ -5521,22 +5547,35 @@ async function holeZBericht(tag){
    der Rechnung heraus und wird gezählt. Das ist der heutige Normalfall —
    live hat keine der dreizehn Zuordnungen eine bestätigte Gebindegrösse.
 
-   ZWEI UNTERSCHIEDE zum Backoffice, damit sie niemand für Zufall hält
-   (qa-guardian, Gegenprobe Runde 16; `flaschen()` in leitung.html:1344):
-     · Steht im Kassennamen GAR KEINE Menge („Almdudler"), rechnet die
-       App hier Stück = Flasche; das Backoffice weist die Position als
-       „Größe fehlt" aus und vergleicht sie nicht.
-     · Das Backoffice kennt neben der Größe je Kassenposition noch die
-       je ARTIKEL bestätigte und zwei Vorschläge (Größe im Artikelnamen,
-       Standard-Weinflasche). Hier zählt nur `mapping.gebinde_ml` —
-       diese Seite ist also strenger, nie großzügiger.
-   Solange beide Rechnungen nebeneinander stehen, gehört jede Änderung an
-   der einen an der anderen nachgezogen (Backlog, mittel). */
+   BERICHTIGUNG (zweite Jagd Runde 16 · A): Hier stand
+   `if(!aus) return +p.anzahl||0` — „steht keine Menge im Namen, ist ein
+   Stück eine Flasche". Das ist WORTWÖRTLICH der Fehler, den das
+   Backoffice in v24 abgestellt hat; der Kommentar bei `GEBINDE_STANDARD`
+   (leitung.html) nennt ihn beim Namen: „ein Getränk ohne Größe im Namen
+   zählte je verkaufter Einheit als ganze Flasche — ein 2-cl-Stamperl
+   wurde so zur Flasche." Im echten Bericht 37 haben 26 von 48 Positionen
+   keine Menge im Namen: „Aperol Spritz 1 Glas" (6 Stück), „Pisco Sour
+   1 Glas", „Gin Basil Smash 1 Glas". Sobald die Leitung eine davon
+   zuordnet — und genau dazu fordert der Morgenbrief auf —, hätte das
+   Kellerfenster „verkauft 6 Flaschen Aperol" behauptet.
+
+   Es wird deshalb NICHTS mehr geraten, an keiner der beiden Stellen:
+   Fehlt die Menge im Namen ODER die bestätigte Gebindegrösse, bleibt die
+   Position aus der Rechnung und wird gezählt. Genau das tut `flaschen()`
+   im Backoffice auch (`{ok:false, fehlt:"ausschank"}` bzw. `"gebinde"`).
+
+   EIN Unterschied bleibt, und er ist gewollt: Das Backoffice kennt neben
+   der Grösse je Kassenposition noch die je ARTIKEL bestätigte und zwei
+   Vorschläge (Grösse im Artikelnamen, Standard-Weinflasche). Hier zählt
+   nur `mapping.gebinde_ml` — diese Seite ist also strenger, nie
+   grosszügiger. Solange beide Rechnungen nebeneinander stehen, gehört
+   jede Änderung an der einen an der anderen nachgezogen (Backlog). */
 function verkaufteFlaschen(p,groessen){
   const aus=+p.ausschankMl||0;
-  const geb=+((groessen||{})[p.kassenname||p.rohbez])||0;
-  if(!aus)return +p.anzahl||0;      /* keine Menge im Namen: Stück = Flasche */
-  if(!geb)return null;              /* Menge da, Gebinde unbekannt: nicht rechenbar */
+  /* `/api/fassungsliste` nennt die Kassenzeile `rohbez`; dasselbe Wort
+     steht in `mapping.fremd` und kommt als `kassenname` zurück. */
+  const geb=+((groessen||{})[p.rohbez])||0;
+  if(!aus||!geb)return null;        /* Menge oder Gebinde fehlt: nicht rechenbar */
   return (+p.anzahl||0)*aus/geb;
 }
 
@@ -5546,8 +5585,7 @@ function verkaufteFlaschen(p,groessen){
    das Fenster sagt genau das. */
 async function holeGebindeGroessen(){
   try{
-    const r=await fetch(API+"/mapping",{credentials:"same-origin",
-      headers:{accept:"application/json"}});
+    const r=await holeKurz(API+"/mapping",{headers:{accept:"application/json"}});
     if(!r.ok)return {};
     if(!(r.headers.get("content-type")||"").includes("json"))return {};
     const j=await r.json();
@@ -5643,18 +5681,29 @@ function popupAbgleich(d,z,groessen){
      Abweichung" ist dann keine Auskunft, sondern eine Falschaussage
      gegenueber jemandem, der gerade gezaehlt hat. Es gibt jetzt drei
      Lagen, und sie heissen verschieden. */
+  /* Der Grund muss der sein, der wirklich gilt (C, zweite Jagd): „die
+     Gebindegrössen fehlen" stimmt nur, wenn Positionen daran scheitern.
+     Ist der Bericht schlicht keinem Artikel zugeordnet — oder wurde
+     nichts gefasst, was darin vorkommt —, ist das etwas anderes. */
+  const warum = a.ohneGroesse
+    ? "Zum Z-Bericht vom " + deTagKurz(vortagVon(d.tag)) + " fehlen die "
+      + "Gebindegr\u00f6\u00dfen \u2014 ohne sie l\u00e4sst sich aus \u201e1/8 l\u201c oder "
+      + "\u201e2 cl\u201c keine Flaschenzahl rechnen. Die Leitung best\u00e4tigt sie "
+      + "im Backoffice unter \u201eVerkauf \u2194 Fassung\u201c."
+    : a.ohneZuordnung
+      ? "Keine Position des Z-Berichts vom " + deTagKurz(vortagVon(d.tag))
+        + " ist einem Artikel zugeordnet. Das macht die Leitung im Backoffice."
+      : "Zum Z-Bericht vom " + deTagKurz(vortagVon(d.tag))
+        + " gibt es nichts, was zu dieser Fassung passt.";
   const kopf = a.geprueft===0
     ? `<div class="box warn" style="margin-top:0"><b>Nichts zu vergleichen.</b><br>`
-      +`Zum Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))} fehlen die `
-      +`Gebindegr\u00f6\u00dfen \u2014 ohne sie l\u00e4sst sich aus „1/8 l" oder „0,75 l" `
-      +`keine Flaschenzahl rechnen. Die Leitung best\u00e4tigt sie im Backoffice `
-      +`unter „Verkauf \u2194 Fassung".</div>`
+      +esc(warum)+`</div>`
     : a.zeilen.length
       ? `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))} `
         +`Nur die Abweichungen:</p><div class="abgl">${a.zeilen.map(zeile).join("")}</div>`
       : `<p>Gefasst gegen den Z-Bericht vom ${esc(deTagKurz(vortagVon(d.tag)))}</p>`
         +`<div class="box good" style="margin-top:0"><b>Keine Abweichung.</b><br>`
-        +a.geprueft+(a.geprueft===1?" Artikel verglichen.":" Artikel verglichen.")+`</div>`;
+        +(a.geprueft===1?"Ein Artikel verglichen.":a.geprueft+" Artikel verglichen.")+`</div>`;
   /* Der Fuss nennt nur, was DIESES Fenster nicht rechnen konnte.
 
      BERICHTIGUNG (qa-guardian, Gegenprobe Runde 16): Die unzugeordneten
@@ -5670,9 +5719,11 @@ function popupAbgleich(d,z,groessen){
      der gerade gezaehlt hat. Genannt wird die Zahl deshalb wieder, aber
      nur wenn es eine Abweichung gibt, die sie erklaeren kann. */
   const fuss=[];
-  if(a.ohneGroesse)fuss.push(a.ohneGroesse
-    +(a.ohneGroesse===1?" Kassenposition hat":" Kassenpositionen haben")
-    +" keine best\u00e4tigte Gebindegr\u00f6\u00dfe und bleibt aus der Rechnung.");
+  if(a.ohneGroesse)fuss.push(a.ohneGroesse===1
+    ? "Eine Kassenposition hat keine Menge im Namen oder keine best\u00e4tigte "
+      +"Gebindegr\u00f6\u00dfe und bleibt aus der Rechnung."
+    : a.ohneGroesse+" Kassenpositionen haben keine Menge im Namen oder keine "
+      +"best\u00e4tigte Gebindegr\u00f6\u00dfe und bleiben aus der Rechnung.");
   if(a.ohneZuordnung&&a.zeilen.length)fuss.push(a.ohneZuordnung
     +(a.ohneZuordnung===1?" Kassenposition ist":" Kassenpositionen sind")
     +" keinem Artikel zugeordnet \u2014 was darunter verkauft wurde, fehlt "
@@ -5702,11 +5753,21 @@ function popupFertig(d){
   /* `deTagKurz()` endet selbst auf einem Punkt („Freitag, 18.09.") — ein
      zweiter davor gaebe „18.09..". (Jagd Runde 16 · C) */
   const wann=esc(deTagKurz(d.tag));
+  /* BERICHTIGUNG (zweite Jagd Runde 16 · B): Hier stand in JEDEM Modus
+     „Kein Z-Bericht zum Vorabend — der Abgleich steht im Backoffice".
+     Einen Z-Bericht holt der Abschluss aber nur bei „tag" und „fuellen"
+     (siehe abschlussSchritt); nach Kellerzählung, Wareneingang und
+     Sonderentnahme versprach der Satz einen Abgleich, den es für diese
+     Modi gar nicht gibt. */
+  const holtAbgleich = d.mode==="tag"||d.mode==="fuellen";
   const nachsatz = !verbunden()
     ? "Ohne Netz \u2014 der Vorgang liegt im Ger\u00e4t und geht hinaus, sobald "
-      +"wieder Empfang da ist. Der Abgleich kommt dann im Backoffice."
-    : "Kein Z-Bericht zum Vorabend \u2014 der Abgleich steht im Backoffice, "
-      +"sobald er da ist.";
+      +"wieder Empfang da ist."+(holtAbgleich
+        ? " Der Abgleich kommt dann im Backoffice." : "")
+    : holtAbgleich
+      ? "Kein Z-Bericht zum Vorabend \u2014 der Abgleich steht im Backoffice, "
+        +"sobald er da ist."
+      : "Die Zahlen stehen im Backoffice.";
   $("#ovBody").innerHTML=`<p>${esc(MODES[d.mode].t)} f\u00fcr `
     +`${wann} ist abgeschlossen und gespeichert.</p>`
     +`<p class="abglfuss">${esc(nachsatz)}</p>`;

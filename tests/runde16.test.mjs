@@ -593,8 +593,13 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     assert.equal(f(zBericht.positionen[0]), 6);
     /* Ohne bestätigte Grösse wird NICHTS geraten. */
     assert.equal(f(zBericht.positionen[3]), null);
-    /* Ohne Menge im Namen ist ein Stück eine Flasche. */
-    assert.equal(f({ rohbez: "X", anzahl: 2, ausschankMl: null }, groessen), 2);
+    /* Ohne Menge im Namen wird NICHTS geraten (zweite Jagd Runde 16 · A).
+       „Aperol Spritz 1 Glas" ist kein Stück Flasche — genau dieser Zweig
+       hat im Backoffice bis v24 aus einem 2-cl-Stamperl eine Flasche
+       gemacht. `flaschen()` in leitung.html gibt dort `fehlt:"ausschank"`
+       zurück und vergleicht die Position nicht. */
+    assert.equal(f({ rohbez: "Aperol Spritz 1 Glas", anzahl: 6, ausschankMl: null }), null);
+    assert.equal(f({ rohbez: "X", anzahl: 2, ausschankMl: null }, groessen), null);
   });
 
   test("nur, was auseinandergeht — hier eine Zeile", () => {

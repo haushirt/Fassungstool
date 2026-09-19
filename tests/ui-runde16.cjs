@@ -35,7 +35,7 @@ const LAGE = {
   /* Der Z-Bericht zum Vorabend — oder keiner (404), je nach Szene.
      Gefüllt wird er von der Szene selbst, sobald sie die echten
      Artikelkennungen der App kennt. */
-  zbericht: null, mapping: [],
+  zbericht: null, mapping: [], stumm: false,
   abgemeldet: 0, gesendet: []
 };
 
@@ -54,6 +54,10 @@ const srv = http.createServer((q, a) => {
     if (u === "/api/mapping") { a.writeHead(200, kopf);
       return a.end(JSON.stringify({ mapping: LAGE.mapping || [] })); }
     if (u === "/api/fassungsliste") {
+      /* `stumm` nimmt die Anfrage an und antwortet nie — das ist der
+         Kellerfall: WLAN da, kein Durchsatz. `fetch` bricht von sich aus
+         nicht ab; nur die Zeitgrenze in `holeKurz()` beendet das. */
+      if (LAGE.stumm) return;
       if (!LAGE.zbericht) { a.writeHead(404, kopf);
         return a.end(JSON.stringify({ fehler: "nicht vorhanden" })); }
       a.writeHead(200, kopf); return a.end(JSON.stringify(LAGE.zbericht));
@@ -364,6 +368,52 @@ async function tagesfassungBisAbschluss(p) {
         !/Keine Abweichung/.test(text));
       await bild(p, "12-abgleich-ohne-groessen");
       urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── 4c · Der Server nimmt an und antwortet nie ────────────────────
+       Der Keller hat selten gar kein Netz — er hat ein WLAN, das die
+       Verbindung annimmt und schweigt. Ohne Zeitgrenze blieb der Knopf
+       auf „speichert …" stehen, `laeuftAbschluss` auf true, und der
+       Vorgang wurde weder abgeschlossen noch in den Ausgang gelegt:
+       derselbe Zustand wie unter der Verbindungssperre, nur durch eine
+       andere Tür (zweite Jagd Runde 16 · A). */
+    {
+      LAGE.zbericht = null; LAGE.mapping = []; LAGE.gesendet = [];
+      LAGE.stumm = true;
+      const { ctx, p, fehler } = await seite(b);
+      await tagesfassungBisAbschluss(p);
+      const knopf = p.locator(".finishbtn[data-netz]");
+      const t0 = Date.now();
+      await knopf.click();
+      /* Die Zeitgrenze steht auf acht Sekunden; zwölf sind Luft genug. */
+      await p.waitForSelector("#ov.on", { timeout: 12000 }).catch(() => {});
+      const dauer = Date.now() - t0;
+      urteil("A · der schweigende Server hält den Abschluss nicht auf",
+        await p.locator("#ov").evaluate(el => el.classList.contains("on")),
+        Math.round(dauer / 1000) + " s bis zum Fenster");
+      urteil("A · und der Knopf steht nicht mehr auf „speichert …“",
+        (await knopf.textContent() || "").trim() === "Fertig – Speichern" &&
+        await knopf.isEnabled(),
+        (await knopf.textContent() || "").trim());
+      await p.locator("#ovOk").click();
+      await warte(p, 600);
+      const lage = await p.evaluate(() => ({
+        stand: JSON.parse(localStorage.getItem("hh_keller_v12") || "{}"),
+        ausgang: JSON.parse(localStorage.getItem("hh_ausgang_v1") || "[]")
+      }));
+      /* Abgeschlossen — und entweder schon hinaus oder in der Reihe.
+         Der Prüfserver nimmt `PUT /api/vorgang/…` an (nur die Liste
+         schweigt), also leert `schiebe()` den Ausgang sofort wieder.
+         Beides ist richtig; verloren sein darf er nicht. */
+      urteil("A · der Vorgang ist abgeschlossen und nicht verloren",
+        !!lage.stand.tag && lage.stand.tag.finished === true &&
+        (lage.ausgang.some(x => (x.schluessel || "").indexOf("tag_") === 0) ||
+         LAGE.gesendet.some(v => v.finished === true)),
+        "fertig: " + JSON.stringify(lage.stand.tag && lage.stand.tag.finished) +
+        " · Ausgang " + lage.ausgang.length + " · PUTs " + LAGE.gesendet.length);
+      urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      LAGE.stumm = false;
       await ctx.close();
     }
 
