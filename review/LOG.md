@@ -4209,3 +4209,40 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
 **Phase/Thema:** Runde 16 / letzte Runde vor dem Livegang
 
 **STATUS:** FERTIG
+
+---
+
+### Runde 17 – Werkzeugkasten (Plugin `c` wird nicht geladen)
+
+**Kritik am Vorgänger:** keine – eigenständige Werkzeugaufgabe, kein Eingriff
+in App, Worker oder Schema.
+
+**Umgesetzt:**
+* Ursache belegt: `extraKnownMarketplaces` aus `.claude/settings.json`
+  (Projektebene) wird im Web-Container nicht ausgewertet – nur die
+  Benutzerebene `~/.claude/settings.json`. Startlog: `installPluginsForHeadless:
+  no marketplaces declared` → `Skipping orphaned enabledPlugins entry c@casimir:
+  marketplace not registered`.
+* `.claude/hooks/plugin-bereitstellen.sh` angelegt: registriert die Marketplace
+  `haushirt/casimir-claude` und installiert `c@casimir`. Idempotent, ohne
+  Rückfragen, schlägt nie fehl.
+* `.claude/settings.json` um den SessionStart-Hook ergänzt
+  (`startup|resume|clear`, Zeitgrenze 240 s).
+
+**Geprüft:** Gegenprobe in einer Sandbox mit eigenem `CLAUDE_CONFIG_DIR` –
+Deklaration nur auf Projektebene: ignoriert; auf Benutzerebene: `installed
+marketplace casimir`. Kaltlauf mit dem neuen Hook: Plugin wird installiert;
+zweiter Lauf lädt **7 von 7** Skills (`plan, tag, nacht, fix, mockup, zurueck,
+neu`). Leerlauf des Hooks bei bereits installiertem Plugin: 0,4 s, Rückgabe 0.
+
+**Für die Nächsten:** Plugins werden vor den Hooks geladen – der Hook wirkt
+erst in der jeweils nächsten Sitzung. Nichts in `public/` berührt, `VERSION` in
+`sw.js` bleibt unverändert.
+
+**Phase/Thema:** Werkzeug / Claude-Code-Einrichtung
+
+**Backlog:** niedrig – falls die Web-Umgebung ein Setup-Skript im Dashboard
+bekommt, dort dieselben zwei Befehle eintragen; dann greift das Plugin schon in
+der ersten Sitzung.
+
+**STATUS:** FERTIG

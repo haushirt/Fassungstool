@@ -4,5 +4,19 @@
       "source": { "source": "github", "repo": "haushirt/casimir-claude" }
     }
   },
-  "enabledPlugins": { "c@casimir": true }
+  "enabledPlugins": { "c@casimir": true },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/plugin-bereitstellen.sh\"",
+            "timeout": 240
+          }
+        ]
+      }
+    ]
+  }
 }
