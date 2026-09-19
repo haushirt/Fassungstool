@@ -360,7 +360,17 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
    „unvollst/ändig"), 158 px hoch (fuenfte Jagd Runde 16 · B, gemessen). */
 .abglz{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);
   padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
-.abglz .nm{flex:1;min-width:0}
+/* BERICHTIGUNG (sechste Jagd Runde 16 · B): `.nm` hatte `flex:1` und
+   damit `flex-basis:0` — es schrumpfte bei 390 px auf 60–102 px,
+   waehrend „gefasst 12,5 · verkauft 13,8" (nowrap) 182 px bekam. Der
+   Artikelname stand dann als 7-zeilige Leiter da: ausgerechnet das
+   Einzige, das im Keller sagt, WELCHER Wein die Luecke hat, war das
+   Kleinste im Fenster. Die fuenfte Jagd hat dieselbe Diagnose fuer den
+   Vorbehalt gestellt und nur dort angewandt.
+   Der Name bekommt jetzt seine eigene, volle Zeile — darunter die
+   Zahlen, darunter der Vorbehalt. */
+.abglz .nm{flex-basis:100%;min-width:0;font-weight:var(--weight-medium)}
+.abglz .za{flex:1;min-width:0}
 .abglz .za{font-variant-numeric:tabular-nums;white-space:nowrap;
   font-size:var(--text-sm);color:var(--fg-muted)}
 .abglz .df{font-variant-numeric:tabular-nums;white-space:nowrap;

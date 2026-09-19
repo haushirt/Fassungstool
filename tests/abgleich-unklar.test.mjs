@@ -69,8 +69,17 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
 
     assert.equal(Object.keys(a.verk).length, 0, "die Ausgangslage: verk ist leer");
     assert.ok(a.zeilen.length > 0, "die Entnahme steht weiterhin da");
+    /* BERICHTIGT (sechste Jagd Runde 16): Hier stand für JEDE Zeile
+       „Größe fehlt". Das war zu grob — `flaschen()` unterscheidet seit je
+       zwei Ursachen, und in Bericht 37 haben 26 von 48 Positionen gar
+       keine Menge im Kassennamen („Aperol Spritz 1 Glas"). Für die ist
+       „Größe fehlt" eine Falschauskunft: Sie schickt die Leitung ins
+       Backoffice, wo es nichts zu bestätigen gibt — was fehlt, fehlt der
+       KASSE. Geprüft wird jetzt beides: dass keine Differenz entsteht
+       (das ist der Kern) UND dass der Grund der richtige ist. */
     for (const r of a.zeilen) {
-      assert.equal(r.unklar, "groesse", r.name + " müsste „Größe fehlt“ sagen");
+      assert.ok(["groesse", "menge"].includes(r.unklar),
+        r.name + ": unerwarteter Grund " + r.unklar);
       assert.equal(r.diff, null, r.name + ": keine Differenz ohne Verkauf");
       assert.ok(r.entnahme > 0, r.name + ": die Entnahme bleibt sichtbar");
     }
@@ -87,7 +96,33 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
        (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9) — siehe die Prüfung
        „eine nicht zugeordnete Kassenposition nimmt keinem Artikel den
        Befund" weiter unten. Es bleiben zwei Gründe. */
-    assert.deepEqual(Object.keys(f.UNKLAR_GRUND).sort(), ["groesse", "keinbericht"]);
+    /* Seit der sechsten Jagd ein dritter: „menge" — im Kassennamen steht
+       keine Menge. Das ist eine andere Aufgabe als eine fehlende Größe
+       und gehört anders benannt. */
+    assert.equal(f.UNKLAR_GRUND.menge, "keine Menge im Kassennamen");
+    assert.equal(f.unklarSatz("menge"),
+      "kein Abgleich möglich — keine Menge im Kassennamen");
+    assert.deepEqual(Object.keys(f.UNKLAR_GRUND).sort(),
+      ["groesse", "keinbericht", "menge"]);
+  });
+
+  /* Die beiden Ursachen dürfen nicht durcheinandergeraten: Eine Position
+     MIT Menge im Namen, aber ohne bestätigte Größe, ist Arbeit der
+     Leitung; eine OHNE Menge im Namen ist es nicht. */
+  test("die beiden Ursachen werden auseinandergehalten", () => {
+    const mitMenge = umgebung();
+    mitMenge.setzte({ "GV Leindl Langenlois 1/8 l": "w001" }, {},
+      bericht([{ name: "GV Leindl Langenlois 1/8 l", anzahl: 4 }]),
+      [vorgang({ w001: 1 }, {})]);
+    assert.equal(zeile(mitMenge.abgleich(TAG, 1), "w001").unklar, "groesse",
+      "Menge im Namen, Größe nicht bestätigt → Arbeit der Leitung");
+
+    const ohneMenge = umgebung();
+    ohneMenge.setzte({ "Aperol Spritz 1 Glas": "w001" }, {},
+      bericht([{ name: "Aperol Spritz 1 Glas", anzahl: 4 }]),
+      [vorgang({ w001: 1 }, {})]);
+    assert.equal(zeile(ohneMenge.abgleich(TAG, 1), "w001").unklar, "menge",
+      "keine Menge im Namen → das fehlt der Kasse, nicht dem Backoffice");
   });
 
   test("bestätigte Größe → die Zeile bekommt ihren Befund zurück", () => {

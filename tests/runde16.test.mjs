@@ -116,13 +116,22 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
      Der Client bringt jetzt seine eigene Kennung mit; zweimal dasselbe
      Paket schreibt dieselbe Zeile (`ON CONFLICT(id) DO UPDATE`). */
   test("der zweite Anlauf am Team-Formular wiederholt dieselbe Anfrage", () => {
-    assert.match(BO, /let nAnlauf=null;/);
-    assert.match(BO, /nAnlauf=\{name:nm, code, rolle, id:\(da\?da\.id:uuid\(\)\)\};/,
-      "die Kennung wird nicht einmal vergeben und festgehalten");
-    assert.match(BO, /sende\(\{id:nAnlauf\.id,/,
+    /* BERICHTIGT (sechste Jagd Runde 16): Die Kennung hing am
+       FORMULARINHALT (Name + Code + Rolle). Damit war die Dublette nur
+       verschoben: Wer nach einem stummen Server den Code neu würfelt,
+       bekam eine neue Kennung — zwei aktive Zeilen, gleicher Name, zwei
+       gültige Anmeldecodes, und „Sperren" wirkt danach nicht mehr. Und
+       nach einem geglückten Anlauf war sie auf `null` gesetzt, während
+       `LEUTE` veraltet blieb. Sie hängt jetzt am NAMEN und überlebt den
+       geglückten Anlauf. */
+    assert.match(BO, /const nKennung=\{\};/);
+    assert.match(BO, /const schl=nm\.toLowerCase\(\);/);
+    assert.match(BO, /else if\(!nKennung\[schl\]\)nKennung\[schl\]=uuid\(\);/,
+      "die Kennung wird nicht je Mensch einmal vergeben");
+    assert.match(BO, /sende\(\{id:nKennung\[schl\],/,
       "der Anlauf schickt seine Kennung nicht mit");
-    assert.match(BO, /if\(gut\)\{ nAnlauf=null;/,
-      "die Kennung faellt nicht, wenn es angekommen ist");
+    assert.doesNotMatch(BO, /nAnlauf/,
+      "die Kennung haengt wieder am Formularinhalt");
     assert.match(BO, /function uuid\(\)/);
   });
 });
