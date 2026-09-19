@@ -4137,3 +4137,47 @@ Zeichen unverändert.
 **Phase/Thema:** Runde 16 / dreizehnte Runde, vor dem Livegang
 
 **STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – software-engineer (vierzehnte Runde, nach der dreizehnten Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **C**: `kennungHeilen()` heilt nach NAMEN, ohne die `id` zu
+  vergleichen. Die Richtung ist die vorsichtige (geheilt heißt: schreibt nicht
+  mehr), aber der Satz danach war falsch: „von diesem Fenster, und der Server
+  hat es bestätigt" — auch für eine Kennung, die nie geschrieben wurde. Der
+  Satz behauptet jetzt nur noch, was hier gewusst wird.
+* ✅ übernommen — **C**: Die Absage fragte die frische Liste nicht. Stand
+  `ok:true`, refüsierte das Formular auch dann, wenn eine durchgekommene Liste
+  diese Person gar nicht führte — und der Ausweg war nur das Abmelden. Eine
+  frische Liste ohne diesen Menschen räumt den Eintrag jetzt.
+* ✅ übernommen — **C**: Mein Prüfserver „führte Zeilen wie der Worker" an drei
+  Stellen nicht: ein Paket ohne `id` legte keine Zeile an (der Worker legt
+  eine an — genau der A der fünften Jagd), die Zeile wurde vor der 409-Prüfung
+  geschrieben, und einen Namenswächter hatte er gar nicht.
+* ✅ übernommen — **C**: `ui-runde16.cjs` Szene 8 zählte weiter nur Pakete.
+* ✅ übernommen — **C**: Der neue Satz im Abgleich war der einzige Ort auf dem
+  Schirm mit ISO-Datum, während der Mittagsblick daneben `deTag` schreibt.
+* ✅ übernommen — **C**: Das Urteil „Kontrast mindestens 4,5:1" behauptete mehr,
+  als es misst (3:1 bei großer/fetter Schrift, `.gpt` ganz ausgenommen) —
+  dasselbe Muster wie beim Überlauf-Urteil, das ich eine Runde vorher
+  berichtigt hatte.
+* ✅ übernommen — **C**: Die Zeilen-Nachbildung nahm `code` mit auf, und die
+  Urteile druckten ihn — während K1 derselben Datei urteilt „der Code steht in
+  keiner Konsolenzeile". Gewürfelte Codes, also kein Bruch von Regel 9, aber
+  ein Widerspruch im selben Lauf.
+* ✅ zur Kenntnis — die springende Gerätuhr (`t` in der Zukunft hält die Frist
+  länger offen). Der Jäger führt es nicht als Fund, weil `kennungHeilen()` die
+  Lage begrenzt. Ich sehe es genauso und lasse es stehen.
+
+**Umgesetzt:** alle sieben. Verglichen wird in den Prüfungen weiter die VOLLE
+Zeile (sonst fiele ein geänderter Code nicht auf), gedruckt die geschwärzte.
+
+**Geprüft:** `npm test` **440/440**, `qa-runde16-kennung` K1–K11 ja,
+`ui-runde16` ja (Szene 8 misst jetzt auch die Zeile), `ui-mass` zehn Urteile.
+`sw.js` v55 → **v56**.
+
+**Phase/Thema:** Runde 16 / vierzehnte Runde, vor dem Livegang
+
+**STATUS:** FERTIG — aus meiner Rolle nichts mit Priorität hoch/mittel offen.

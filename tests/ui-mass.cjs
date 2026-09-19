@@ -637,7 +637,22 @@ async function grussWeg(p) {
   urteil("Schrift im Service nie unter 15 px", winzig === 0, winzig + " Stellen");
   urteil("Trefferflächen mindestens 44 px (Service)", griffSvc === 0,
          griffSvc + " Knöpfe ohne Griff · " + kleinSvc + " sichtbar kleiner (erlaubt)");
-  urteil("Kontrast mindestens 4,5:1", schwachGes === 0, schwachGes + " Stellen");
+  /* BERICHTIGT (dreizehnte Jagd Runde 16 · C): Der Satz nannte 4,5:1 fuer
+     alles. Gemessen wird 4,5:1 fuer gewoehnliche Schrift und 3:1 fuer
+     grosse oder fette (WCAG), und die Ziffern auf den Zaehlpunkten
+     (`.gpt`) sind ausdruecklich ausgenommen — sie stehen absichtlich
+     leise bei 1,9:1 und werden im Hinweis darunter genannt. Dasselbe
+     Muster wie beim Ueberlauf-Urteil: das Urteil nennt jetzt, was es
+     misst. Was uebersprungen wurde, steht dabei. */
+  urteil("Kontrast mindestens 4,5:1 (3:1 bei grosser/fetter Schrift, "
+         + "Ziffern auf Zählpunkten ausgenommen)",
+         schwachGes === 0, schwachGes + " Stellen");
+  {
+    const uebersprungen = Object.values(erg.seiten)
+      .reduce((a, m) => a + (m.kontrastUebersprungen || 0), 0);
+    if (uebersprungen) console.log("  (nicht messbar, deshalb übersprungen: "
+      + uebersprungen + " Stellen)");
+  }
   /* Am iPad ist „voll" unter den Namen gerutscht, und kein Urteil hat es
      gesehen. Seit Runde 14 ist das eines. */
   urteil("die Zählzeile bleibt eine Zeile", umbruchSvc === 0,

@@ -63,13 +63,30 @@ const srv = http.createServer((q, a) => {
              „dieselbe Zeile still ueberschrieben" sehen an einem
              Paketzaehler gleich aus — genau daran ist der A-Fund der
              zwoelften Jagd durch zehn gruene Urteile gelaufen. Der
-             Pruefserver fuehrt deshalb Zeilen wie der Worker:
-             `ON CONFLICT(id) DO UPDATE`. */
-          if (b && b.id) LAGE.zeilen[b.id] = Object.assign({}, LAGE.zeilen[b.id], b);
+             Pruefserver fuehrt deshalb Zeilen wie `personSchreiben()`.
+
+             BERICHTIGT (dreizehnte Jagd · C): Drei Abweichungen vom
+             echten Worker sind weg. (a) Ein Paket OHNE `id` legt dort
+             eine Zeile an (`id || crypto.randomUUID()`) — genau der
+             A-Fund der fuenften Jagd; hier wurde gar nichts angelegt.
+             (b) Die 409-Absage kommt VOR dem Schreiben, nicht danach.
+             (c) Der Namenswaechter fehlte ganz: zwei Kennungen unter
+             einem Namen ergaben hier zwei Zeilen, am Worker unmoeglich. */
+          if (!b) { a.writeHead(400, kopf); return a.end("{}"); }
+          const schl = n => String(n == null ? "" : n)
+            .normalize("NFKC").replace(/[\u00ad\u200b-\u200f\u2060\u202a-\u202e\ufeff]/g, "")
+            .toLowerCase().replace(/\s+/g, " ").trim();
+          const fremd = Object.values(LAGE.zeilen)
+            .some(z => schl(z.name) === schl(b.name) && z.id !== b.id);
+          if (fremd || LAGE.absage) {
+            if (LAGE.postStumm) return;
+            a.writeHead(409, kopf);
+            return a.end(JSON.stringify({ fehler: LAGE.absage
+              || "„" + b.name + "“ ist schon angelegt." }));
+          }
+          const id = b.id || ("srv-" + Math.random().toString(36).slice(2, 10));
+          LAGE.zeilen[id] = Object.assign({}, LAGE.zeilen[id], b, { id });
           if (LAGE.postStumm) return;          /* angekommen, nie beantwortet */
-          /* `absage` spielt die 409-Antwort des Namenswaechters. */
-          if (LAGE.absage) { a.writeHead(409, kopf);
-            return a.end(JSON.stringify({ fehler: LAGE.absage })); }
           a.writeHead(200, kopf); a.end(JSON.stringify({ ok: true }));
         });
       }
@@ -86,6 +103,10 @@ const srv = http.createServer((q, a) => {
 });
 
 let nein = 0;
+/* Die Zeilen-Nachbildung traegt `code`. Gewuerfelt zwar, aber K1
+   urteilt in derselben Datei „der Code steht in keiner Konsolenzeile" —
+   also wird beim Drucken geschwaerzt (dreizehnte Jagd · C). */
+const ohneCode = x => JSON.stringify(x, (k, v) => k === "code" ? "\u2026" : v);
 const urteil = (satz, gut, dazu) => {
   if (!gut) nein++;
   console.log((gut ? "  ✓ " : "  ✗ ") + satz + (dazu ? "  (" + dazu + ")" : ""));
@@ -496,14 +517,17 @@ const speicherAbzug = p => p.evaluate(() => {
 
       /* Die Zeile, wie sie am „Server" steht — daran wird gemessen. */
       const meineId = LAGE.pakete[0] && LAGE.pakete[0].id;
+      /* Verglichen wird die VOLLE Zeile (sonst faellt ein geaenderter
+         Code nicht auf), gedruckt die geschwaerzte. */
       const vorher = JSON.stringify(LAGE.zeilen[meineId]);
       await anlegen(p, "Asad Karakiri", rnd());
       urteil("K9 · der bestaetigte Mensch wird NICHT ueberschrieben",
         LAGE.pakete.length === 1,
-        "Pakete: " + JSON.stringify(LAGE.pakete.slice(1)));
+        "Pakete: " + ohneCode(LAGE.pakete.slice(1)));
       urteil("K9 · und die Zeile am Server ist unveraendert",
         JSON.stringify(LAGE.zeilen[meineId]) === vorher,
-        "vorher " + vorher + " · nachher " + JSON.stringify(LAGE.zeilen[meineId]));
+        "vorher " + ohneCode(JSON.parse(vorher))
+        + " · nachher " + ohneCode(LAGE.zeilen[meineId]));
       const f = await p.locator("#nFehler").innerText().catch(() => "");
       urteil("K9 · und es steht da, warum", /schon angelegt/.test(f), f.slice(0, 80));
       urteil("K9 · der Satz sagt auch, warum die Zeile oben fehlt",
@@ -570,7 +594,7 @@ const speicherAbzug = p => p.evaluate(() => {
       const id1 = LAGE.pakete[0] && LAGE.pakete[0].id;
       urteil("K11 · die Zeile steht am Server, obwohl die Antwort verloren ging",
         !!id1 && LAGE.zeilen[id1] && LAGE.zeilen[id1].rolle === "leitung",
-        JSON.stringify(LAGE.zeilen));
+        ohneCode(LAGE.zeilen));
 
       /* Jetzt kommt die Liste EINMAL durch und zeigt Eva. */
       LAGE.personen = [{ id: id1, name: "Eva Lang", rolle: "leitung", aktiv: 1 }];
@@ -599,10 +623,11 @@ const speicherAbzug = p => p.evaluate(() => {
       await anlegen(p, "Eva Lang", rnd());
       urteil("K11 · es geht kein Paket mehr hinaus",
         LAGE.pakete.length === vorherPakete,
-        "Pakete: " + JSON.stringify(LAGE.pakete.slice(vorherPakete)));
+        "Pakete: " + ohneCode(LAGE.pakete.slice(vorherPakete)));
       urteil("K11 · die Zeile behaelt ihre Rolle und ihren Code",
         JSON.stringify(LAGE.zeilen) === vorher,
-        "vorher " + vorher + " · nachher " + JSON.stringify(LAGE.zeilen));
+        "vorher " + ohneCode(JSON.parse(vorher))
+        + " · nachher " + ohneCode(LAGE.zeilen));
       urteil("K11 · und es steht da, warum",
         /schon angelegt/.test(await p.locator("#nFehler").innerText().catch(() => "")),
         (await p.locator("#nFehler").innerText().catch(() => "")).slice(0, 70));

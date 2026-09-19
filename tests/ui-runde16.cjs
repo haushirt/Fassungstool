@@ -42,7 +42,7 @@ const LAGE = {
      Genau die Lage, in der die Kennung gebraucht wird: geschrieben ist
      geschrieben, aber die Liste kommt nicht zurueck, also kann der
      Client aus `LEUTE` nicht mehr ablesen, ob er schon geschrieben hat. */
-  personen: [], personenStumm: false, postStumm: false, pakete: []
+  personen: [], personenStumm: false, postStumm: false, pakete: [], zeilen: {}
 };
 
 const srv = http.createServer((q, a) => {
@@ -72,7 +72,13 @@ const srv = http.createServer((q, a) => {
       if (q.method === "POST") {
         let leib = ""; q.on("data", c => leib += c);
         return q.on("end", () => {
-          try { LAGE.pakete.push(JSON.parse(leib)); } catch (e) {}
+          let b = null;
+          try { b = JSON.parse(leib); LAGE.pakete.push(b); } catch (e) {}
+          /* Auch hier Zeilen statt nur Pakete (dreizehnte Jagd · C):
+             „dieselbe Zeile still ueberschrieben" gegen „nichts
+             geschrieben" ist an einem Paketzaehler nicht zu erkennen. */
+          if (b) { const id = b.id || ("srv-" + Math.random().toString(36).slice(2, 10));
+                   LAGE.zeilen[id] = Object.assign({}, LAGE.zeilen[id], b, { id }); }
           /* Das Paket KOMMT AN, die Antwort geht verloren — der Fall der
              fuenften Jagd. Nur so bleibt der Anlauf unbestaetigt, und nur
              dann darf dieselbe Kennung noch einmal hinaus (elfte Jagd). */
@@ -621,7 +627,8 @@ async function tagesfassungBisAbschluss(p) {
        Live-D1 zwei aktive Zeilen mit zwei gültigen Anmeldecodes — und es
        gibt kein Löschen und keine Sicherung (Projektanleitung §8). */
     {
-      LAGE.personenStumm = true; LAGE.postStumm = true; LAGE.pakete = [];
+      LAGE.personenStumm = true; LAGE.postStumm = true;
+      LAGE.pakete = []; LAGE.zeilen = {};
       const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
       const p = await ctx.newPage();
       const fehler = []; p.on("pageerror", e => fehler.push(String(e)));
@@ -708,11 +715,14 @@ async function tagesfassungBisAbschluss(p) {
          (zwoelfte Jagd Runde 16 · C). */
       urteil("A/11 · der unbestaetigte Anlauf darf noch einmal hinaus",
         LAGE.pakete.length === 5, "Pakete: " + LAGE.pakete.length);
+      const zeileVorher = JSON.stringify(LAGE.zeilen);
       await anlegen("2468");
       urteil("A/11 · aber sobald der Server geantwortet hat, nicht mehr",
         LAGE.pakete.length === 5,
-        "Pakete: " + LAGE.pakete.length + " · "
-        + JSON.stringify(LAGE.pakete.slice(5)));
+        "Pakete: " + LAGE.pakete.length);
+      urteil("A/11 · und die Zeile am Server bleibt, wie sie ist",
+        JSON.stringify(LAGE.zeilen) === zeileVorher,
+        Object.keys(LAGE.zeilen).length + " Zeile(n)");
       urteil("A/11 · und es steht da, warum",
         /schon angelegt/.test(await p.locator("#nFehler").innerText().catch(() => "")),
         (await p.locator("#nFehler").innerText().catch(() => "")).slice(0, 70));

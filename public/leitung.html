@@ -2207,7 +2207,7 @@ function vAbgleich(m){
   if(a.offen.length){
     const s=document.createElement("section");
     s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenname${a.offen.length===1?"":"n"} ohne Zuordnung
-      im Zeitraum ${a.von} bis ${a.bis} —
+      im Zeitraum ${deTag(a.von)} bis ${deTag(a.bis)} —
       ${a.offen.length===1?"sein":"ihr"} Verkauf fehlt in dieser Rechnung.
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
@@ -3117,6 +3117,12 @@ function vTeam(m){
   $("#nWuerfel").onclick=()=>{ $("#nCode").value=wuerfelPin(); };
 
   let LEUTE=[];
+  /* Ob die Liste, die dasteht, wirklich vom Server kam. Nur dann ist ihr
+     Fehlen ein Beweis: Steht der Mensch NICHT in einer frischen Liste,
+     gibt es seine Zeile nicht, und ein Gedaechtniseintrag dazu ist Schrott
+     (dreizehnte Jagd Runde 16 · C — vorher kam man da nur ueber
+     „abmelden" wieder heraus). */
+  let listeFrisch=false;
   /* Das Gedaechtnis `nKennung` liegt auf Modulebene (siehe dort) — die
      Kennung haengt am MENSCHEN, nicht am Formularinhalt, nicht am
      einzelnen Anlauf und nicht an dieser Ansicht. */
@@ -3230,7 +3236,8 @@ function vTeam(m){
       if(!r.ok){ $("#teamL").innerHTML=
         `<div class="hinweis warn">Der Server antwortet nicht. Mitarbeiter lassen sich
          nur mit Verbindung pflegen.</div>`; return; }
-      LEUTE=((r.daten||{}).personen)||[]; kennungHeilen(LEUTE); male();
+      LEUTE=((r.daten||{}).personen)||[]; listeFrisch=true;
+      kennungHeilen(LEUTE); male();
     }catch(e){
       /* Steht schon eine Liste, bleibt sie stehen: Nach einem geglueckten
          Speichern lief `hole()` in die Frist und ueberschrieb die Liste
@@ -3365,11 +3372,19 @@ function vTeam(m){
        zusammen auch die Lage ab, in der die Liste schweigt (elfte Jagd
        Runde 16 · A): der Mensch steht in der Liste — ODER dieses Fenster
        hat ihn schon einmal angelegt und der Server hat das bestätigt. */
-    const merk=kennungLesen(schl);
+    let merk=kennungLesen(schl);
+    /* Eine FRISCHE Liste ohne diesen Menschen ist der Gegenbeweis: Dann
+       gibt es seine Zeile nicht, und was das Gedaechtnis dazu sagt, ist
+       veraltet (dreizehnte Jagd Runde 16 · C). Der Eintrag geht weg, und
+       das Anlegen laeuft wie bei einem neuen Menschen. */
+    if(merk && listeFrisch && !da){ delete nKennung[schl]; kennungSchreiben(); merk=null; }
     if(da || (merk && merk.ok)){
       const wer=da?da.name:nm;
+      /* Kein Satz, der mehr behauptet, als hier gewusst wird: Das
+         Gedächtnis sagt nur, dass DIESES Fenster den Namen schon einmal
+         mit Erfolg abgeschickt hat — ob die Zeile von hier stammt, weiss
+         es nicht (dreizehnte Jagd Runde 16 · C). */
       formFehler("„"+wer+"“ ist schon angelegt"
-        +(da?"":" — von diesem Fenster, und der Server hat es bestätigt")
         +". Dieses Formular legt nur NEUE Menschen an. Die Rolle änderst du in der "
         +"Zeile oben in der Liste, einen neuen Code gibt es dort über „PIN "
         +"zurücksetzen“. Wer wirklich so heißt wie jemand im Haus, braucht einen "

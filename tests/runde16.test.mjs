@@ -152,8 +152,16 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
        steht der Mensch schon in der Liste, schreibt es nichts. */
     assert.doesNotMatch(BO, /if\(da\)kennungMerken\(schl,da\.id\)/,
       "das Anlegen-Formular schreibt die vorhandene Person wieder um");
-    assert.match(BO, /const wer=da\?da\.name:nm;\n\s*formFehler\(/,
+    assert.match(BO, /const wer=da\?da\.name:nm;/,
       "das Anlegen-Formular sagt nicht ab, wenn es den Menschen schon gibt");
+    /* Dreizehnte Jagd · C: Eine FRISCHE Liste ohne diesen Menschen ist
+       der Gegenbeweis — dann ist der Gedächtniseintrag Schrott, und ohne
+       diese Zeile kam man nur über „abmelden" wieder heraus. */
+    assert.match(BO, /if\(merk && listeFrisch && !da\)\{ delete nKennung\[schl\];/,
+      "ein veralteter Gedächtniseintrag sperrt das Anlegen dauerhaft");
+    /* Und kein Satz, der mehr behauptet, als hier gewusst wird. */
+    assert.doesNotMatch(BO, /von diesem Fenster, und der Server hat es best\u00e4tigt/,
+      "die Absage behauptet, die Zeile stamme von diesem Fenster");
     assert.match(BO, /sende\(\{id:kennung, name:nm, rolle, code, aktiv:1\}\)/,
       "der Anlauf schickt seine Kennung nicht mit");
     assert.doesNotMatch(BO, /nAnlauf/,
