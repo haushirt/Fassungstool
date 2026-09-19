@@ -7,9 +7,10 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
 
-**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v39.**
-Ein Commit. Er bringt die A- und B-Funde der fünften Jagd und die vier
-Punkte der Runde 16 hinaus.
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v41.**
+Er bringt die A- und B-Funde der fünften Jagd und die vier Punkte der
+Runde 16 hinaus — und die Funde der sechsten Jagd, die auf diese Runde
+folgte.
 
 **Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
 `wrangler.jsonc`, `package.json` unberührt, kein `ALTER`, kein `CREATE`,
@@ -49,11 +50,34 @@ sind im Frontoffice ersatzlos entfallen. Beim Drücken:
 „Rohdaten sichern (JSON)" und „Zurücksetzen" sind **nicht** gelöscht: Sie
 stehen jetzt dezent am Ende des Menüs, als Notweg bei Offline-Problemen.
 
-**4 · Ohne Verbindung wartet der Abschluss.** „Fertig – Speichern" ist
-ohne Netz ausgegraut, darunter steht der Grund, und sobald die Verbindung
-zurück ist, wird der Knopf von selbst wieder drückbar. Was bis dahin
-gefasst wurde, liegt unverändert im Gerät und geht nicht verloren — nur
-das Abschließen wartet.
+**4 · Ohne Verbindung wird trotzdem abgeschlossen — anders als bestellt.**
+Der Auftrag der Nacht sagte: „‚Fertig – Speichern' ist nur bei bestehender
+Verbindung drückbar." So war es gebaut, und genau so hat es gemessen
+funktioniert — **auch bei der Kellerzählung**, die weder Z-Bericht noch
+Abgleich kennt und die derselbe Auftrag unter „Nicht anfassen" führt.
+
+Im Keller ist kein Netz. Eine fertige Tagesfassung war damit dort nicht
+abzuschließen: Der Vorgang blieb „läuft", ging nicht in den Ausgang, und
+es entstand keine Journalzeile — genau der Weg, für den der Ausgang gebaut
+wurde. Das bricht harte Regel 6 („Offline-Queue nicht aufweichen") und
+Projektanleitung §9 („Offline ist der Normalfall"); die Hilfe der App
+selbst sagt zwei Bildschirme weiter das Gegenteil.
+
+Derselbe Auftrag hat das Urteil von **Jäger und qa-guardian zur
+Merge-Bedingung** gemacht. Beide haben diesen Punkt gemeldet — der Jäger
+als A-Fund, der qa-guardian als Veto. **Die Sperre ist deshalb draußen.**
+
+Was vom Punkt 4b gebaut bleibt: Der Hinweis steht unter dem Knopf, solange
+keine Verbindung da ist („Keine Verbindung – der Abgleich kommt nach"), und
+verschwindet von selbst, sobald sie zurück ist. Ohne Netz gibt es keinen
+Abgleich — der Z-Bericht liegt am Server —, also kommt das kurze „Fertig",
+und es steht dabei, dass der Vorgang im Gerät wartet und hinausgeht, sobald
+Empfang da ist.
+
+**Das ist die eine Stelle, an der dieser Stand von deinem Auftrag
+abweicht.** Willst du die Sperre doch, ist sie in zwei Zeilen zurück —
+dann gehört aber „Offline ist der Normalfall" mit derselben Runde aus
+Projektanleitung, Hilfe und CLAUDE.md gestrichen.
 
 **5 · Kleinigkeiten, die den Tag ausmachen.** Der Doppeltipp zoomt nicht
 mehr (Zwei-Finger-Zoom bleibt), kein Eingabefeld unter 16 px, damit Safari
@@ -62,7 +86,24 @@ beim Fokus nicht hineinspringt. Die Statuszeile sagt „Verbunden" statt
 Gruppentöne getauscht: Service steht auf dem hellsten Grund, Bestand tritt
 zurück.
 
-**6 · Behoben, ohne dass man es sieht.** Die Sperrmeldung an der Tür nannte
+**6 · Der Abgleich rechnet — oder sagt, dass er es nicht kann.** Die erste
+Fassung dieser Nacht las das Feld `ausschankMl` als „wird offen im Glas
+ausgeschenkt" und nahm jede solche Position aus der Rechnung. Das Feld ist
+aber die **Menge aus dem Kassennamen**: „1/8 l" ergibt 125, „0,75 l" ergibt
+750 — das eine ein Glas, das andere eine ganze Flasche. Gegen den echten
+Bericht 37 fielen damit **alle vier** zugeordneten Positionen heraus, und
+das Fenster meldete „Keine Abweichung", ohne eine einzige Zahl verglichen
+zu haben. Gefunden von der Jagd nach dieser Runde.
+
+Jetzt gilt dieselbe Rechnung wie im Backoffice: `anzahl × Ausschank ÷
+Gebindegröße`, die Größen kommen aus der Zuordnung (`GET /api/mapping`).
+Fehlt eine Größe, wird keine erfunden — die Position bleibt draußen und
+wird gezählt. Und wenn **gar nichts** vergleichbar war, sagt das Fenster
+„Nichts zu vergleichen" statt „Keine Abweichung". Das ist heute der
+Regelfall: live hat keine der dreizehn Zuordnungen eine bestätigte
+Gebindegröße — siehe „Danach".
+
+**7 · Behoben, ohne dass man es sieht.** Die Sperrmeldung an der Tür nannte
 in allen drei Stufen „15 Minuten" und zählte die Restversuche mit einer
 anderen Rechnung als die Sperre selbst — beides kommt jetzt aus einer
 Quelle. Ein nicht schreibbarer Speicher (privates Fenster) ließ die
@@ -72,6 +113,16 @@ und Wein-Editor fragen den **Server**, wer zu einem Code gehört
 zurückgesetzter Code gibt damit nicht mehr frei. Und der neue Code beim
 Zurücksetzen kann nicht mehr verloren gehen: Das Backoffice würfelt ihn
 selbst und kennt ihn, bevor die Antwort unterwegs ist.
+
+Aus der Jagd nach dieser Runde dazu: Ein **leeres oder krummes Feld** im
+Freigabedialog kostet keinen Anmeldeversuch mehr — vorher hätten zwölf
+ungeduldige Klicks die Anmeldung für das ganze Haus sperren können, weil
+die Sperre je IP zählt. Eine **abgelaufene Sitzung** nimmt dem Gerät nicht
+mehr den gültigen Code aus dem Vorrat (beide Fälle antworten mit 401, aber
+nur einer heißt „diesen Code gibt es nicht"). Und eine **ohne Netz
+vorgemerkte Abmeldung** überlebt jetzt eine Offline-Anmeldung der nächsten
+Person — vorher erbte sie zwölf Stunden lang die Sitzung der vorigen, samt
+Personenverwaltung und „PIN zurücksetzen".
 
 ## Erkennungszeichen nach dem Deploy
 
@@ -90,6 +141,11 @@ Nichts. Keine Migration, kein Dashboard-Schritt, kein Codewechsel.
 * **Asad Karakiri** (service), **Ian Lauchbein** (service) und **Marinus**
   (wirtschaft) im Backoffice unter „Team" anlegen und den PIN über „PIN
   zurücksetzen" vergeben.
+* **Die Gebindegrößen bestätigen** — Backoffice → „Verkauf ↔ Fassung" →
+  „Größe fehlt" → „Alle N Vorschläge übernehmen". Solange keine einzige
+  bestätigt ist, kann der Abgleich im Keller nichts rechnen und sagt genau
+  das. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still)
+  haben keinen Vorschlag und brauchen die Zahl von Hand.
 * **Gasteiner 0,25 l in der Lade nachzählen.** Das Soll steht auf 8; steht
   dort in Wirklichkeit Platz für 7, bucht jedes Nachfüllen dauerhaft eine
   Flasche zu viel ins append-only Journal.

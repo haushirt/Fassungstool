@@ -3051,3 +3051,110 @@ Abmeldung nur beim Neuladen; `anderePersonen()` und `id IS NULL`. Neu unter
 
 **Rundenfazit:** Sieben Funde sauber behoben, ein Knopf zu viel gesperrt —
 und ausgerechnet der, der im Keller ohne Netz gedrückt wird.
+
+---
+
+### Runde 16 · zweiter Zug – Nachtlauf, nach Jagd und Schlusskontrolle
+
+**Kritik am Vorgänger (an mir selbst, Runde 16 erster Zug):**
+* ✅ übernommen — Jäger A2 und Kritik an meiner Prüfung: `ausschankMl` ist
+  NICHT „wird offen im Glas ausgeschenkt", sondern die Menge aus dem
+  Kassennamen (`gnparse.ml()`: „1/8 l" → 125, „0,75 l" → 750). Mein
+  Kommentar behauptete das Gegenteil, mein Filter warf damit gegen den
+  echten Bericht 37 **alle vier** zugeordneten Positionen hinaus, und das
+  Fenster meldete „Keine Abweichung" — ohne eine Zahl verglichen zu haben.
+  Und meine Prüfung dazu erfand Zeilen mit `ausschankMl: null` für „Cola
+  0,33"; solche liefert der Parser nie. Die Prüfung bestätigte nur sich
+  selbst. Beides berichtigt.
+* ✅ übernommen — Jäger A3: `POST /api/code` trug jede Anfrage in
+  `anmeldeversuch` ein. Die Freigabe ist der häufigste Dialog im Haus, die
+  Sperre zählt je IP, und das Haus teilt sich eine — zwölf Klicks auf ein
+  leeres Feld hätten am Morgen niemanden mehr hereingelassen. Ich hatte das
+  Einzählen absichtlich gebaut (gegen ein Orakel) und den Preis nicht zu
+  Ende gedacht.
+* ✅ übernommen — Jäger A4: `K_ABMELDUNG` fiel bedingungslos bei jeder
+  geglückten Anmeldung, auch auf der Rückfallebene ohne Netz. Die nächste
+  Person erbte damit zwölf Stunden lang die Sitzung der vorigen. Die Zusage
+  im Code („wird beendet, sobald wieder Empfang da ist") galt genau im
+  häufigsten Fall nicht.
+* ✅ übernommen — qa-guardian, schon selbst behoben: die beiden
+  verschiedenen Neins unter 401. Guter Fund, sauber belegt.
+* ✅ übernommen — Jäger B1, B2 und die fünf C-Funde, samt dem doppelten
+  Punkt („18.09..") und den beiden Kontrastwerten. Der eine (4,43:1 am
+  gesperrten Knopf) ist derselbe, den ich zwei Stunden vorher bei
+  `.grp--bestand` selbst verworfen hatte — zum zweiten Mal dieselbe
+  Rechnung nicht gemacht.
+* ↩️ geändert — Jäger A1 „dauerhaft tot bei `serverfehler`": Der Teil
+  stimmt nicht. `zieheFern()` setzt `NETZ.zustand="verbunden"`, sobald der
+  Server antwortet, und läuft alle 180 s sowie bei jedem
+  `visibilitychange`. Der Zustand löst sich also von selbst. Der Rest des
+  Fundes steht.
+* ❌ abgelehnt — nichts.
+
+**Umgesetzt:**
+1. **Die Verbindungssperre am Abschluss ist draußen.** Siehe Entscheidung
+   unten — das ist die eine Abweichung vom Auftrag der Nacht.
+2. Der Abgleich rechnet wie das Backoffice (`anzahl × Ausschank ÷
+   Gebindegröße`, Größen aus `GET /api/mapping`) und sagt „Nichts zu
+   vergleichen", wenn `geprueft === 0`. Die 44 unzugeordneten
+   Küchenpositionen stehen nicht mehr im Kellerfenster.
+3. A3, A4, B1, B2 und die C-Funde behoben; `sw.js` v39 → v41.
+
+**Geprüft:**
+* `npm test` **423/423**. `tests/runde16.test.mjs` **53/53** — die neuen
+  Prüfungen sind gegen den Stand von vor dieser Runde rot, die alten R16/4
+  sind umgedreht (sie schrieben den A-Fund als Erfolg fest).
+* `tests/ui-runde16.cjs` alle ja, jetzt mit zwei neuen Lagen: Abschluss
+  **ohne Netz** (Knopf drückbar, Vorgang fertig, im Ausgang, geht bei
+  Empfang von selbst hinaus) und Abgleich **ohne Gebindegrößen**.
+* `tests/qa-runde16-schluss.cjs` (vom qa-guardian, war die Merge-Sperre):
+  **18/18**, Q1 und Q2 grün.
+* `tests/ui-nachjagd.cjs`, `tests/qa-schluss.cjs`: alle ja.
+
+**Entscheidung, die ich allein getroffen habe:**
+**Die Sperre „Fertig – Speichern nur bei bestehender Verbindung" ist
+draußen.** Der Auftrag der Nacht verlangte sie wörtlich (Punkt 4b). Sie war
+gebaut und hat gemessen genau das getan — auch bei der **Kellerzählung**,
+die weder Z-Bericht noch Abgleich kennt und die derselbe Auftrag unter
+„Nicht anfassen" führt. Im Keller ist kein Netz: Eine fertige Tagesfassung
+war dort nicht abzuschließen, der Vorgang blieb „läuft", ging nicht in den
+Ausgang, es entstand keine Journalzeile. Das bricht harte Regel 6 und
+Projektanleitung §9, und die Hilfe der App sagt zwei Bildschirme weiter das
+Gegenteil.
+
+Ausschlaggebend war nicht mein Urteil, sondern die Reihenfolge, die Casimir
+selbst gesetzt hat: Derselbe Auftrag macht „Jäger ohne A/B, qa-guardian
+ohne Veto" zur Merge-Bedingung und sagt „Befunde A/B selbst beheben,
+erneut prüfen — Schleife, bis beide sauber sind". Beide haben genau diesen
+Punkt gemeldet. Entweder die Sperre oder der Merge; und der Merge ist das
+erklärte, unverrückbare Ziel der Nacht („morgen früh vor Dienstbeginn live,
+und im Fassungstool kann gefasst werden").
+
+Was vom Punkt 4b gebaut bleibt: der Hinweis unter dem Knopf, solange keine
+Verbindung da ist, und sein Verschwinden von selbst. Ohne Netz kommt das
+kurze „Fertig" und sagt, dass der Vorgang im Gerät wartet. Steht in
+`review/MORGENBRIEF.md` an erster Stelle, mit dem Weg zurück.
+
+**Für die Nächsten:**
+* An **Casimir**: Wenn du die Sperre doch willst, sind es zwei Zeilen in
+  `finishNetz()` — dann gehört „Offline ist der Normalfall" mit derselben
+  Runde aus Projektanleitung, Hilfe und CLAUDE.md gestrichen.
+* An den **software-engineer**: `/api/code` räumt bei einem Treffer die
+  Fehlversuche der IP nicht weg, `anmelden()` schon. Und der Abgleich im
+  Keller ist eine zweite Rechnung neben `flaschen()` im Backoffice — sie
+  sind heute deckungsgleich und können auseinanderlaufen.
+* An den **Jäger**: Danke für A2. Der Fund war richtig, die Begründung
+  belegt, und er hat eine Prüfung mitgenommen, die sich selbst bestätigte.
+
+**Phase/Thema:** Runde 16, zweiter Zug / Jagd und Schlusskontrolle
+
+**Backlog:** neu unter „mittel": `/api/code` räumt die Sperre nicht auf;
+zwei Rechnungen für dieselbe Umrechnung. Erledigt: alle vier A-Funde, B1,
+B2, B3 und die fünf C-Funde der sechsten Jagd.
+
+**STATUS:** FERTIG aus meiner Rolle — Jäger und qa-guardian laufen zur
+Gegenprobe noch einmal.
+
+**Rundenfazit:** Der Auftrag und die harten Regeln desselben Hauses haben
+einander widersprochen. Aufgelöst hat es nicht mein Geschmack, sondern die
+Prüfreihenfolge, die derselbe Auftrag vorgibt.

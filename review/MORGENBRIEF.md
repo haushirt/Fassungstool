@@ -1,7 +1,8 @@
 # Morgenbrief · Nacht auf den 19.09.2026 · Runde 16
 
 Eine Runde, ohne dich, durchgearbeitet. Ausgangsstand: **`ac8d93a`**
-(`sw.js` v38), live. Neuer Stand: **`sw.js` v39**.
+(`sw.js` v38), live. Neuer Stand: **`sw.js` v41** — die Runde und die
+Jagd danach.
 
 Der Brief der Nacht auf den 18.09. ist abgelöst — er beschrieb einen Pull
 Request, der inzwischen gemergt ist, und schickte dich auf **sechs bis acht
@@ -17,6 +18,7 @@ falsch: Es sind **vier**. Dieser Brief gilt.
 | ☐ | **Jedes Gerät einmal mit Netz neu laden.** iPhone/iPad: Seite herunterziehen. Als Web-App vom Startbildschirm: einmal ganz schließen und neu öffnen. | 5 |
 | ☐ | **Erkennungszeichen prüfen:** Auf der Startseite steht ganz unten, unter den Kacheln, der Block **„Wenn etwas klemmt"** mit „Rohdaten sichern (JSON)". Steht er nicht da, läuft noch die alte App — dann noch einmal laden. | 1 |
 | ☐ | **Drei Leute anlegen** im Backoffice unter „Team": **Asad Karakiri** (service), **Ian Lauchbein** (service), **Marinus** (wirtschaft). Namen und Rolle eintragen, Code irgendeinen vierstelligen — dann in der Zeile **„PIN zurücksetzen"** drücken und den gewürfelten Code notieren. Er ist **nur einmal** zu sehen. | 10 |
+| ☐ | **Gebindegrößen bestätigen:** Backoffice → „Verkauf ↔ Fassung" → „Größe fehlt" → „Alle N Vorschläge übernehmen". Ohne sie rechnet der Abgleich im Keller nichts. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still) haben keinen Vorschlag und brauchen die Zahl von Hand. | 5 |
 | ☐ | **Gasteiner 0,25 l in Lade 1 nachzählen.** Das Soll steht auf **8**. Passen dort acht Flaschen in die Spalte oder sieben? Die Zahl geht über das Nachfüllen ins Journal, und das Journal lässt sich nicht zurücknehmen. Sag mir die Zahl, dann ändere ich sie — ich habe sie ausdrücklich **nicht** angefasst. | 3 |
 
 Mehr nicht. **Keine Migration, kein Dashboard-Schritt, kein Codewechsel.**
@@ -72,6 +74,12 @@ als CSV" und das Notizfeld auf der Seite sind weg. Beim Drücken:
   Notizfeld für alles. Speichern → fertig, zurück zur Startseite.
 * Liegt keiner vor: ein kurzes **„Fertig"**, dann die Startseite.
 
+Gerechnet wird wie im Backoffice: `anzahl × Ausschank ÷ Gebindegröße`.
+**Solange du die Gebindegrößen nicht bestätigt hast** (heute hat keine der
+dreizehn Zuordnungen eine), kann das Fenster nichts rechnen — dann sagt es
+das auch: „Nichts zu vergleichen". Es behauptet nie „Keine Abweichung",
+wo es nichts verglichen hat.
+
 „Rohdaten sichern (JSON)" und „Zurücksetzen" sind nicht gelöscht — sie
 stehen jetzt dezent am Ende des Menüs, als Notweg, wenn ein Gerät offline
 klemmt.
@@ -80,28 +88,47 @@ klemmt.
 Ton, Bestand tritt zurück.
 
 **4 · Die Verbindung.** Die Statuszeile sagt **„Verbunden"** statt „Nichts
-liegt mehr auf diesem Gerät". „Fertig – Speichern" ist ohne Netz
-ausgegraut, darunter steht der Grund, und sobald die Verbindung zurück ist,
-wird der Knopf **von selbst** wieder drückbar. **Das Gefasste bleibt
-unterdessen im Gerät gespeichert** — es geht nichts verloren, nur das
-Abschließen wartet.
+liegt mehr auf diesem Gerät". Unter „Fertig – Speichern" steht ohne Netz
+ein Hinweis („Keine Verbindung – der Abgleich kommt nach"), der von selbst
+verschwindet, sobald wieder Empfang da ist.
+
+**Hier bin ich von deinem Auftrag abgewichen — bitte lies das.** Du hast
+geschrieben: „‚Fertig – Speichern' ist nur bei bestehender Verbindung
+drückbar." So war es gebaut. Gemessen hat es genau das getan, **auch bei
+der Kellerzählung**, die weder Z-Bericht noch Abgleich kennt und die du
+unter „Nicht anfassen" geführt hast. Im Keller ist kein Netz: Eine fertige
+Tagesfassung war dort **nicht abzuschließen** — der Vorgang blieb „läuft",
+ging nicht in die Warteschlange, es entstand keine Journalzeile.
+
+Das bricht deine harte Regel 6 („Offline-Queue nicht aufweichen") und
+§9 der Projektanleitung („Offline ist der Normalfall"), und die Hilfe der
+App sagt zwei Bildschirme weiter das Gegenteil. Du hast in derselben Nacht
+das Urteil von Jäger und qa-guardian zur Merge-Bedingung gemacht; beide
+haben genau diesen Punkt gemeldet — der Jäger als A-Fund, der qa-guardian
+als Veto. **Deshalb ist die Sperre draußen**, der Rest von Punkt 4 steht.
+
+Willst du sie doch: zwei Zeilen, und sie ist zurück. Dann gehört „Offline
+ist der Normalfall" mit derselben Runde aus Projektanleitung, Hilfe und
+CLAUDE.md gestrichen — sonst widersprechen sich die Unterlagen.
 
 ---
 
 ## 3 · Was ich allein entschieden habe
 
-Du warst nicht erreichbar; hier sind die vier Entscheidungen, die ich
-getroffen habe, und wie du sie zurückdrehst.
+Du warst nicht erreichbar; hier sind die Entscheidungen, die ich getroffen
+habe, und wie du sie zurückdrehst.
 
+0. **Die Verbindungssperre am Abschluss ist draußen** — die eine Abweichung
+   von deinem Auftrag, ausführlich oben unter Punkt 4. *Zurückdrehen: zwei
+   Zeilen in `finishNetz()`.*
 1. **Der Abgleich kommt nur bei Tagesfassung und Nachfüllen.** Bei
    Kellerzählung, Wareneingang und Sonderentnahme wäre jede Zeile eine
    „Abweichung" — dort kommt das kurze „Fertig". *Zurückdrehen: drei Zeilen
    in `abschlussSchritt`.*
-2. **Der Abgleich rechnet den Offenausschank nicht mit.** Aus Gläsern
-   Flaschen zu rechnen braucht die Gebindegröße, und live hat **keine** der
-   13 Zuordnungen eine. Lieber eine ehrliche Fußzeile („die rechnet das
-   Backoffice") als eine geratene Abweichung im Keller. *Sobald du die
-   Größen bestätigt hast, lohnt der Ausbau — steht im Backlog.*
+2. **Ohne bestätigte Gebindegröße wird nichts geraten.** Die Position
+   bleibt aus der Rechnung und wird im Fuß gezählt; sind es alle, sagt das
+   Fenster „Nichts zu vergleichen". *Sobald du die Größen bestätigt hast,
+   rechnet es von selbst.*
 3. **„Fertig – Speichern" heißt in jedem Modus so**, auch wo bisher
    „Entnahme melden" / „Lieferung melden" stand.
 4. **Ohne Netz meldet sich das Gerät trotzdem ab** und holt die Abmeldung
@@ -129,6 +156,9 @@ getroffen habe, und wie du sie zurückdrehst.
 ---
 
 ## 5 · Wenn etwas klemmt
+
+**Erkennungszeichen** noch einmal: der Block **„Wenn etwas klemmt"** ganz
+unten auf der Startseite.
 
 **Zurückdrehen** (der Merge ist der Livegang, das Zurückdrehen auch):
 
