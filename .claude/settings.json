@@ -1,0 +1,8 @@
+{
+  "extraKnownMarketplaces": {
+    "casimir": {
+      "source": { "source": "github", "repo": "haushirt/casimir-claude" }
+    }
+  },
+  "enabledPlugins": { "c@casimir": true }
+}
