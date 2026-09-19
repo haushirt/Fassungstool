@@ -318,6 +318,18 @@ describe("A2 · Ein Code gehört genau einer Person", () => {
       assert.equal(r.status, 409, JSON.stringify(v) + " kam durch");
     }
 
+    /* Zeichen, die gar nichts anzeigen (qa-guardian, dritte
+       Schlusskontrolle): weiches Trennzeichen, Nullbreiten-Leerzeichen,
+       Wortverbinder, Schreibrichtungs-Marken. Tippen kann man sie nicht,
+       aus einer Tabelle oder einer Nachricht kopiert man sie leicht mit
+       — und jedes erzeugte eine zweite aktive Zeile mit eigenem Code. */
+    for (const v of ["A\u00adsad", "A\u200bsad", "\u200eAsad", "Asad\u2060",
+                     "\ufeffAsad", "\u202aAsad\u202c"]) {
+      const r = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+        body: { name: v, rolle: "service", code: wuerfel() } }), env);
+      assert.equal(r.status, 409, JSON.stringify(v) + " kam durch");
+    }
+
     /* Doppelter Leerraum ZWISCHEN Vor- und Nachnamen ist derselbe
        Mensch, ein Leerzeichen MITTEN im Wort ist ein anderer Name. Die
        Wache zieht Leerraum zusammen, sie entfernt ihn nicht — raten

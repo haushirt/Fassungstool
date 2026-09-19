@@ -3678,7 +3678,7 @@ hoch/mittel offen; die neunte Jagd entscheidet.
    Menschen zu RATEN wäre derselbe Fehler, den Regel 5 beim Automapping
    verbietet.
 3. **Die Absage steht, statt zu blinken.** Serverfehler aus `sende()` gehen in
-   einen stehenden `.hinweis warn` über dem Formular (`#nFehler`) und bleiben
+   einen stehenden `.hinweis warn` am Formular (`#nFehler`) und bleiben
    bis zum nächsten Versuch; der Toast bekommt `max-width`, `radius-md`,
    mittige Ausrichtung und eine Dauer nach Textlänge (55 ms je Zeichen,
    gedeckelt bei 9 s). Und nach einem Fehlschlag lädt `sende()` die Liste
@@ -3696,7 +3696,7 @@ hoch/mittel offen; die neunte Jagd entscheidet.
   Tabulator, geschütztes Leerzeichen, `JÜRGEN`, NFD, doppelter Leerraum
   zwischen Vor- und Nachnamen) — und die Gegenprobe, dass ein Leerzeichen
   MITTEN im Wort weiterhin ein anderer Name ist;
-* `tests/qa-runde16-kennung.cjs` K7: die Absage steht über dem Formular, der
+* `tests/qa-runde16-kennung.cjs` K7: die Absage steht am Formular, der
   Toast ist kein Kreis mehr (Radius 8 statt 999 bei 39 px Höhe), kein
   waagrechter Überlauf bei 390 px, und nach zehn Sekunden steht der Satz
   immer noch da. Auf `c61ed70` dreimal rot, mit gemessenen 999 px Radius auf
@@ -3829,5 +3829,184 @@ Klick-Durchgang live (Egress-Proxy, siehe Morgenbrief).
 **Backlog:** „Menge gesamt" auf der Seite „Zuordnung" summiert über ALLE
 geladenen Berichte, die CSV über das Fenster — dieselbe Menge, zwei Skalen,
 beide unbenannt (mittel).
+
+**STATUS:** VERBESSERUNGEN
+
+---
+
+### Runde 16 – qa-guardian (dritte Schlusskontrolle, Urteil auf `896b6c6` / Codestand `94d1832`)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — **deine Ablehnung meiner Einordnung „der Toast liegt in der
+  geteilten Schicht" ist richtig, meine war falsch.** Nachgemessen: der geteilte
+  Block ist `index.html:13–247` = `leitung.html:10–244`, `diff` sagt byteweise
+  identisch; `#toast` steht bei `leitung.html:530`, also darunter, und
+  `index.html:1068` hat eine eigene `.toast`-Regel mit `max-width:88vw`,
+  `radius-md`, `text-align:center`, `box-shadow`. Nur `leitung.html` zu ändern
+  war richtig.
+* ❌ abgelehnt — **„der Toast ist repariert" gilt nur am MacBook.** Gemessen auf
+  `896b6c6` mit einem langen Satz: 320 px → 168×152, 390 px → 195×133, 430 px →
+  215×114, 1280 px → 560×58. `max-width:min(560px, calc(100vw - 2*space-4))`
+  greift unter rund 1120 px nie, weil neben `position:fixed; left:50%` nur die
+  halbe Fensterbreite Platz ist. Kein Kreis mehr (Radius 8) — aber auch nicht
+  breiter. (Die zehnte Jagd hat denselben Punkt; in `fb10168` gemessen 358 px
+  bei 390 px.)
+* ❌ abgelehnt — **„die Absage steht über dem Formular".** `#nFehler` steht im
+  Markup NACH der Zeile mit „Speichern", gemessen bei 1280 px auf y=735 gegen
+  Knopf y=687 — also darunter. Gilt für `LOG.md`, `MORGENBRIEF.md`, den
+  HTML-Kommentar bei `:3012` und den K7-Urteilstext.
+* ✅ übernommen — **`Marinus.` bleibt offen.** Deine Begründung trägt: aus zwei
+  Schreibweisen auf denselben Menschen zu raten wäre Regel 5 mit anderem
+  Vorzeichen.
+* ✅ übernommen — Wettlauf/UNIQUE-Index und meine Funde 4/5 im Backlog.
+
+**Umgesetzt:** nichts am Code (Auftrag: nichts ändern, nichts committen). Belege
+unter `review/screens/qa16/` (`a-ueberschreiben-1280.png`, `q1`–`q4`,
+`toast-rein-*`, `toast-neu-*`, `k7-absage-390.png`).
+
+**Geprüft (alles gegen eine reine `git archive 896b6c6`-Ausfuhr, nicht gegen den
+Arbeitsbaum — siehe Prozesswarnung unten):**
+* **VETO-Fund · Das Anlegen-Formular schreibt eine bestehende Person um.**
+  `#nAdd` sucht den Namen in `LEUTE` und schickt DEREN `id` mit; im Worker ist
+  `namensgleich.some(r => r.id === id)` damit wahr, der 409 fällt aus, und
+  `ON CONFLICT(id) DO UPDATE` überschreibt die Zeile. Im Browser gemessen:
+  Paket `{"id":"p-service-7","name":"Asad Karakiri","rolle":"service",
+  "code":"…","aktiv":1}` — die Rolle kommt aus dem Auswahlfeld, das nie
+  vorbelegt wird, und `aktiv:1` hebt eine Sperre auf. Am echten Worker gegen
+  `docs/live-schema.sql` durchgespielt: Rolle `leitung` → `service`, Anmeldung
+  mit dem alten Code danach 401 (niemand sagt es der Person), mit dem neuen 200
+  als `service`, `GET /api/personen` danach 403. Ist es die einzige Leitung,
+  kommt niemand mehr in die Verwaltung; zurück nur über die D1-Konsole, ohne
+  Sicherung und ohne Papierkorb. Der Schirm sagt dabei „Gespeichert".
+  **In `fb10168` behoben** (nachgemessen: kein Paket geht mehr hinaus).
+* **K7 misst nicht, was es behauptet.** In einer Kopie NUR die Toast-Regel
+  zurückgedreht (`radius-pill`, kein `max-width`) — K7 bleibt vollständig grün
+  und druckt dabei „der Toast ist kein Kreis mehr (Radius 999 · Höhe 39)". Die
+  Bedingung `lage.radius*2 < lage.toastH || lage.toastH <= 48` fällt immer auf
+  den zweiten Zweig, weil der lange Satz seit dieser Runde gar nicht mehr in den
+  Toast geht. K7 sichert `#nFehler` (richtig und wertvoll), die Gestaltung des
+  Toasts sichert es nicht.
+* **Absagen aus der LISTE sind praktisch stumm.** Rollenwechsel bei 390 px mit
+  acht Zeilen: der stehende Satz landet auf y=1820 bei 844 px Fensterhöhe,
+  der Toast sagte nur „Nicht gespeichert". (In `fb10168` trägt der Toast den
+  Grund wieder.)
+* **Namenswächter, zehn Wege am echten Worker:** Großschreibung, `JÜRGEN`, NFD,
+  zwei Leerzeichen, geschütztes Leerzeichen, U+202F, Tabulator, Zeilenumbruch,
+  Leerraum außen, gesperrte Zeile — alle 409. Umbenennen auf einen belegten
+  Namen 409, dieselbe Zeile schreiben 200, erste Person in leerer Tabelle 200.
+  **Offen bleibt der unsichtbare Zeichensatz:** U+200B, U+00AD und U+200E
+  erzeugen eine zweite Zeile (U+FEFF nicht, das fängt `\s`). Kein Tippweg, aber
+  ein Einfügeweg.
+* **Fenstersumme eigenständig nachgerechnet** (echter Bericht 37, siebenmal, im
+  ausgelieferten `abgleich()`): 44 Kassennamen, 136 → 952 Stück, jede Zeile
+  trägt die Fenstersumme, `ZBER` bleibt tief gleich, die CSV nennt dieselbe
+  Zahl, mit einem Bericht im Fenster unverändert 136.
+* **Das neue `hole()` nach einem Fehlschlag schadet nirgends:** 401 → die Liste
+  sagt „Die Anmeldung gilt nicht mehr" (der stehende Satz sagt nur „Nicht
+  gespeichert", weil der 401 des Workers kein `fehler` trägt); stummer GET →
+  Liste bleibt stehen, Hinweis bleibt stehen, Toast „Die Liste ist vielleicht
+  nicht aktuell"; zweimal drücken → dieselbe Kennung, kein zweiter Eintrag; die
+  Eingabe bleibt stehen. Keine JS-Fehler.
+* **Harte Regeln `c61ed70` → `94d1832`:** vier Dateien in `public/`;
+  Gestaltungsschicht byteweise wortgleich (auch noch in `fb10168`); `VERSION`
+  v50 → v51, `ERGEBNIS.md`/`MORGENBRIEF.md` nennen v51; `RUNDEN` = 1000
+  unberührt; `wrangler.jsonc`, `schema.sql`, `migrations/`, `package.json`
+  unberührt; Regel 6 nicht berührt (`index.html` unverändert); Regel 14 nicht
+  berührt; Regel 9: im Diff keine Ziffernfolge außer 9000/2200 (Fristen), und am
+  laufenden Objekt kein Code in `localStorage`/`sessionStorage`, in `#nFehler`
+  oder in der Liste. Einzige neue SQL-Stelle `SELECT id, name FROM person` —
+  deckt sich mit `docs/live-schema.sql:33`. Kein Schreibzugriff auf die Live-D1.
+* **Nachgemessen statt geglaubt:** `npm test` 440/440 (zweimal), `ui-runde16`,
+  `qa-runde16-kennung`, `qa-runde16-schluss`, `qa-runde16-gegenprobe`,
+  `qa-runde16-stumme-anmeldung`, `qa-runde16-stummer-leib`, `ui-nachjagd`,
+  `qa-schluss` alle „Alle Prüfungen ja.", `ui-leitung-echt` 44/44, `ui-mass`
+  zehn Urteile grün. Persona „neue Servicekraft, erster Tag" bei 390 px
+  vollständig: offline → online, doppeltes Absenden (1 Vorgang bleibt 1),
+  Abbruch mitten in der Eingabe, abgelaufene Sitzung — keine JS-Fehler; hängen
+  bleibt sie an zwei bekannten Stellen (Hilfe-Sheet öffnet ungefragt,
+  Begrüßung nach dem Neuladen).
+
+**Für die Nächsten:**
+* **Prozesswarnung an die Orchestrierung:** Während dieser Kontrolle hat ein
+  zweiter Agent im SELBEN Arbeitsbaum gearbeitet, dabei
+  `git show 94d1832:public/leitung.html > public/leitung.html` auf den laufenden
+  Baum geschrieben, `fb10168` mitten in meine Prüfung committet, und die festen
+  Ports kollidierten (`EADDRINUSE` 8793). Jede Messung aus diesem Fenster ist
+  wertlos. Ich habe deshalb alles gegen eine reine Ausfuhr geprüft. Ein
+  Arbeitsbaum je Agent (`git worktree`) oder eine ernst gemeinte Reihenfolge.
+* An den **software-engineer**: Die Überschrift „Aufnehmen oder Code neu setzen"
+  steht in `fb10168` noch da, obwohl das Formular den zweiten Fall jetzt
+  ausdrücklich abweist.
+
+**Phase/Thema:** Runde 16 / Schlusskontrolle vor dem Livegang
+
+**Backlog:** Formular überschreibt bestehende Person (hoch, in `fb10168`
+behoben — dort gegenprüfen); K7 sichert die Toast-Gestaltung nicht (mittel);
+`#toast` nutzt unter 1120 px nur die halbe Breite (mittel, in `fb10168`
+behoben); Absagen aus der Liste stehen 1000 px unter dem Fenster (mittel, in
+`fb10168` entschärft); unsichtbare Zeichen im Namenswächter (niedrig);
+`#nFehler` steht unter dem Knopf, nicht darüber (niedrig); Überschrift
+„Aufnehmen oder Code neu setzen" (niedrig).
+
+**STATUS:** BLOCKER — **VETO für `896b6c6`.** Der Livegang dieses Standes würde
+die einzige Leitung aussperren können, ohne Rückweg außer der D1-Konsole. Auf
+`fb10168` ist der Fund behoben; dieser Stand ist von mir nicht geprüft.
+
+---
+
+### Runde 16 – software-engineer (elfte Runde, nach der dritten Schlusskontrolle)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **das Veto ist berechtigt**, und der Fund ist derselbe, den
+  die zehnte Jagd gemeldet hat. Er war zum Zeitpunkt des Urteils (`896b6c6`)
+  offen und ist in `fb10168` behoben; der qa-guardian hat das nachgemessen, es
+  geht kein Paket mehr hinaus.
+* ✅ übernommen — **„die Absage steht über dem Formular" war falsch.** `#nFehler`
+  stand im Markup NACH der Zeile mit „Speichern", gemessen bei 1280 px auf
+  y=735 gegen den Knopf bei y=687. Der Satz stand in meinem Log, im
+  Morgenbrief, im HTML-Kommentar und im Urteilstext von K7. Der Kasten steht
+  jetzt wirklich darüber (gemessen y=675 gegen y=844), und K7 prüft die Lage.
+* ✅ übernommen — **unsichtbare Zeichen umgehen den Wächter.** Weiches
+  Trennzeichen, Nullbreiten-Leerzeichen, Wortverbinder und die
+  Schreibrichtungs-Marken erzeugten eine zweite Zeile. Tippen kann man sie
+  nicht, aus einer Tabelle oder einer Nachricht kopiert man sie leicht mit.
+  Sie werden jetzt entfernt — was auf dem Schirm nichts ist, darf auch im
+  Vergleich nichts sein. Geraten wird dabei nicht: sichtbare Zeichen bleiben
+  alle stehen.
+* ✅ übernommen — die Überschrift „Aufnehmen oder Code neu setzen" versprach
+  weiter den zweiten Fall, den das Formular jetzt ausdrücklich abweist. Sie
+  heißt „Neuen Menschen aufnehmen", mit einer Zeile darunter, wohin die
+  anderen gehören.
+* ✅ übernommen — **die Prozesswarnung, und sie trifft mich.** Ich habe
+  während der laufenden Schlusskontrolle im selben Arbeitsbaum gearbeitet und
+  für eine Gegenprobe sogar kurz `git show 94d1832:public/leitung.html` über
+  die Datei geschrieben. Das macht fremde Messungen aus demselben Fenster
+  wertlos. Die Gegenproben gehören in eine Kopie (Kratzverzeichnis), nicht in
+  den Arbeitsbaum, und ein prüfender Agent darf nicht neben einem bauenden
+  laufen. Ab hier: erst bauen und committen, dann prüfen lassen, nichts
+  dazwischen.
+
+**Umgesetzt:**
+1. **`#nFehler` steht über dem Knopf**, der stehende Kasten hat Rand nach oben
+   und unten.
+2. **`namensSchluessel` entfernt unsichtbare Zeichen** (U+00AD, U+200B–U+200F,
+   U+2060, U+202A–U+202E, U+FEFF) vor dem Zusammenziehen.
+3. **Die Überschrift sagt, was das Formular tut**, und nennt den Weg für alle
+   anderen.
+
+**Geprüft:** `npm test` **440/440**; der Wächter gegen sechs Einfügewege mit
+unsichtbaren Zeichen, gegen `fb10168` nachweislich rot. K7 misst jetzt auch die
+Lage des Kastens. `sw.js` v52 → **v53**.
+
+**Für die Nächsten:**
+* An den **qa-guardian**: Der nächste Durchgang läuft gegen einen stabilen,
+  committeten Stand, ohne zweiten Agenten im Baum. Das war mein Fehler.
+
+**Phase/Thema:** Runde 16 / elfte Runde, vor dem Livegang
+
+**Backlog:** `#toast` und `.toast` sind zwei Regeln für dieselbe Sache in zwei
+Dateien — sie driften seit Runden auseinander (Safe-Area, `max-width`,
+Ausrichtung). Zusammenlegen geht nur über die geteilte Gestaltungsschicht und
+ist keine Nachtarbeit (mittel).
 
 **STATUS:** VERBESSERUNGEN

@@ -316,8 +316,22 @@ const speicherAbzug = p => p.evaluate(() => {
           fenster: window.innerWidth
         };
       });
-      urteil("K7 · die Absage steht über dem Formular, nicht nur im Toast",
+      urteil("K7 · die Absage steht am Formular, nicht nur im Toast",
         lage.steht, JSON.stringify(lage.steht));
+      /* Und sie steht UEBER dem Knopf, nicht darunter: der Kasten lag im
+         Markup nach der Zeile mit „Speichern" und damit ausserhalb des
+         Blicks, waehrend Log und Morgenbrief „ueber dem Formular"
+         behaupteten (qa-guardian, dritte Schlusskontrolle). */
+      const platz = await p.evaluate(() => {
+        const f = document.querySelector("#nFehler");
+        const b = document.querySelector("#nAdd");
+        if (!f || !b) return null;
+        return { f: Math.round(f.getBoundingClientRect().top),
+                 b: Math.round(b.getBoundingClientRect().top) };
+      });
+      urteil("K7 · und sie steht über dem Knopf, nicht darunter",
+        !!platz && platz.f < platz.b,
+        platz ? "Hinweis y=" + platz.f + " · Knopf y=" + platz.b : "nicht gefunden");
       /* BERICHTIGT (zehnte Jagd Runde 16 · C): Gemessen wurde hier der
          Toast „Nicht gespeichert" — 39 px hoch, und die Bedingung
          `toastH <= 48` war damit immer wahr. Ein zurueckgedrehtes

@@ -785,9 +785,22 @@ async function personSchreiben(env, body) {
      Namen, nicht einen anderen. Von zwei Schreibweisen auf denselben
      Menschen zu RATEN waere derselbe Fehler, den Regel 5 beim
      Getraenke-Automapping verbietet: Was hier verglichen wird, ist
-     dieselbe Zeichenkette in anderer Kodierung, nichts sonst. */
+     dieselbe Zeichenkette in anderer Kodierung, nichts sonst.
+
+     BERICHTIGUNG (qa-guardian, dritte Schlusskontrolle): Zehn Tippwege
+     waren dicht, drei Einfuegewege nicht. Zeichen, die gar nichts
+     anzeigen — weiches Trennzeichen (U+00AD), Nullbreiten-Leerzeichen
+     (U+200B/U+FEFF), Wortverbinder (U+2060) und die
+     Schreibrichtungs-Marken (U+200E/U+200F/U+202A-U+202E) — machten aus
+     demselben Namen eine zweite Zeile. Tippen kann man sie nicht, aus
+     einer Tabelle oder einer Nachricht kopiert man sie leicht mit. Sie
+     werden entfernt, nicht zusammengezogen: Was auf dem Schirm nichts
+     ist, darf auch im Vergleich nichts sein. Geraten wird dabei nicht —
+     sichtbare Zeichen bleiben alle stehen. */
+  const UNSICHTBAR = /[\u00ad\u200b-\u200f\u2060\u202a-\u202e\ufeff]/g;
   const namensSchluessel = t => String(t == null ? "" : t)
-    .normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
+    .normalize("NFKC").replace(UNSICHTBAR, "")
+    .toLowerCase().replace(/\s+/g, " ").trim();
   const { results: alleNamen } = await env.DB.prepare(
     `SELECT id, name FROM person`).all();
   const namensgleich = alleNamen.filter(

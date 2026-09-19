@@ -2987,7 +2987,10 @@ function vTeam(m){
 
   const s=document.createElement("section");
   s.innerHTML=`<div id="teamL"><div class="karte leer">Wird geladen \u2026</div></div>
-    <h3 style="margin-top:32px">Aufnehmen oder Code neu setzen</h3>
+    <h3 style="margin-top:32px">Neuen Menschen aufnehmen</h3>
+    <div class="unter">Nur für Menschen, die noch nicht in der Liste stehen. Bei allen
+      anderen änderst du die Rolle in ihrer Zeile und holst den Code dort über
+      „PIN zurücksetzen“.</div>
     <div class="karte">
       <div class="reihe" style="margin-bottom:12px">
         <label style="width:140px">Name</label>
@@ -3002,14 +3005,18 @@ function vTeam(m){
         <input type="text" id="nCode" placeholder="${PIN_LAENGE} Ziffern" maxlength="${PIN_LAENGE}"
           inputmode="numeric" style="width:180px">
         <button class="b klein" id="nWuerfel">Vorschlagen</button></div>
-      <div class="reihe">
-        <button class="b stark" id="nAdd">Speichern</button>
-        <span class="mini rechts">Der Code erscheint danach nirgends mehr. Jetzt notieren.</span></div>
       <!-- Was der Server zurückweist, steht hier und BLEIBT stehen, bis
            der nächste Versuch läuft. Im Toast war es nach 2,2 s weg —
            gerade die Meldung „diesen Namen gibt es schon" braucht man
-           länger als das (qa-guardian, zweite Schlusskontrolle). -->
+           länger als das (qa-guardian, zweite Schlusskontrolle).
+           BERICHTIGT (qa-guardian, dritte Schlusskontrolle): Der Kasten
+           stand UNTER dem Knopf — gemessen bei 1280 px auf y=735 gegen
+           den Knopf bei y=687, während Log und Morgenbrief „über dem
+           Formular" behaupteten. Er steht jetzt wirklich darüber. -->
       <div id="nFehler" hidden></div>
+      <div class="reihe">
+        <button class="b stark" id="nAdd">Speichern</button>
+        <span class="mini rechts">Der Code erscheint danach nirgends mehr. Jetzt notieren.</span></div>
     </div>`;
   m.appendChild(s);
 
@@ -3156,7 +3163,7 @@ function vTeam(m){
     const f=$("#nFehler"); if(!f)return;
     if(!txt){ f.hidden=true; f.innerHTML=""; return; }
     f.hidden=false;
-    f.innerHTML=`<div class="hinweis warn" style="margin-top:var(--space-3)">${esc(txt)}</div>`;
+    f.innerHTML=`<div class="hinweis warn" style="margin:var(--space-3) 0">${esc(txt)}</div>`;
   };
   const sende=async(body)=>{
     formFehler("");
