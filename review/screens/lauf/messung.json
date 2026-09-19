@@ -1,6 +1,6 @@
 {
  "lauf": "lauf",
- "zeit": "2026-09-19T05:38:15.753Z",
+ "zeit": "2026-09-19T05:48:09.700Z",
  "seiten": {
   "leitung/heute@390": {
    "vw": 390,
@@ -536,13 +536,25 @@
     },
     {
      "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
      "b": 94,
      "h": 36,
      "text": "Vorschlagen"
     }
    ],
-   "kleinN": 2,
+   "kleinN": 3,
    "griff": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
     {
      "was": "BUTTON.b",
      "b": 149,
@@ -556,7 +568,7 @@
      "text": "Vorschlagen"
     }
    ],
-   "griffN": 2,
+   "griffN": 3,
    "schrift": {
     "11": [
      "BUTTON.k",
@@ -1167,13 +1179,25 @@
     },
     {
      "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
      "b": 94,
      "h": 36,
      "text": "Vorschlagen"
     }
    ],
-   "kleinN": 2,
+   "kleinN": 3,
    "griff": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
     {
      "was": "BUTTON.b",
      "b": 149,
@@ -1187,7 +1211,7 @@
      "text": "Vorschlagen"
     }
    ],
-   "griffN": 2,
+   "griffN": 3,
    "schrift": {
     "11": [
      "BUTTON.k",
@@ -1816,13 +1840,25 @@
     },
     {
      "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
+    {
+     "was": "BUTTON.b",
      "b": 94,
      "h": 36,
      "text": "Vorschlagen"
     }
    ],
-   "kleinN": 2,
+   "kleinN": 3,
    "griff": [
+    {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 36,
+     "text": "Warum so gerechnet?"
+    },
     {
      "was": "BUTTON.b",
      "b": 149,
@@ -1836,7 +1872,7 @@
      "text": "Vorschlagen"
     }
    ],
-   "griffN": 2,
+   "griffN": 3,
    "schrift": {
     "11": [
      "BUTTON.k",
@@ -4484,6 +4520,12 @@
      "text": "Warum so gerechnet?"
     },
     {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 28,
+     "text": "Warum so gerechnet?"
+    },
+    {
      "was": "INPUT.",
      "b": 280,
      "h": 36,
@@ -4514,7 +4556,7 @@
      "text": "Speichern"
     }
    ],
-   "kleinN": 21,
+   "kleinN": 22,
    "griff": [
     {
      "was": "BUTTON.k",
@@ -4607,6 +4649,12 @@
      "text": "Warum so gerechnet?"
     },
     {
+     "was": "BUTTON.b",
+     "b": 149,
+     "h": 28,
+     "text": "Warum so gerechnet?"
+    },
+    {
      "was": "INPUT.",
      "b": 280,
      "h": 36,
@@ -4637,7 +4685,7 @@
      "text": "Speichern"
     }
    ],
-   "griffN": 20,
+   "griffN": 21,
    "schrift": {
     "11": [
      "DIV.haus",
@@ -19862,9 +19910,9 @@
  },
  "summe": {
   "ueberGes": 0,
-  "kleinGes": 2852,
+  "kleinGes": 2856,
   "kleinSvc": 2604,
-  "griffGes": 229,
+  "griffGes": 233,
   "griffSvc": 0,
   "schwachGes": 0,
   "winzig": 0,
