@@ -229,3 +229,32 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 - **mittel** · **`/api/person/pin` antwortet auf eine krumme `id` mit 500 statt 422.** `{"id":{…}}` oder `{"id":[…]}` gehen ungeprüft in `bind()`; der Fehler der Datenbank kommt als `fehler` zurück und landet mit Stapel im Log. Nur für die Leitung erreichbar, also kein Loch — aber 500 ist keine Antwort auf eine falsche Eingabe. Ein `typeof id !== "string"` genügt. Verwandt und älter: ein Keks, der kein Base64 ist, ergibt 500 statt 401 (`vonB64` in `tokenPruefen`). | `src/index.js:646`, `:121`
 - **niedrig** · **Die Meldung am Anmeldeschirm nennt immer 15 Minuten.** Seit der Staffelung können es 30 oder 60 sein. Dazu: nach Ablauf der ersten Sperre bleiben die alten zehn Zeilen zwei Stunden im Gedächtnis, `uebrig` rechnet dann `max(0, 10−11)` = 0 und die App sagt „jetzt für 15 Minuten gesperrt", obwohl noch zehn Versuche frei sind (nachgestellt). | `public/index.html:2540`, `:2545`, `src/index.js:176`
 - **niedrig** · **`anmeldeversuch` wächst unbegrenzt und hat keinen Index.** Geräumt werden nur die Fehlzeilen (`ok = 0`) und nur bei geglückter Anmeldung; die `ok = 1`-Zeilen bleiben für immer. Jede Anmeldung liest die Tabelle ohne Index auf `(ip, ts)` — heute ohne Wirkung, auf Jahre eine Bremse auf dem heissen Weg. Ein Index wäre additiv, also eine Migration. | `src/index.js:150`, `:184`
+
+## Runde 16 (Nacht auf den 19.09.2026)
+
+### Neu
+- **mittel** · **Der Abgleich im Keller lässt den Offenausschank draußen.** `abgleichZeilen()` vergleicht Flaschen gegen `anzahl` des Z-Berichts und überspringt jede Position mit `ausschankMl` — aus Gläsern Flaschen zu rechnen braucht `mapping.gebinde_ml`, und die kennt `index.html` nicht (live hat ohnehin keine der 13 Zuordnungen eine Größe). Die Fußzeile sagt, wie viele es sind und wer sie rechnet. Sobald die Größen bestätigt sind, lohnt die Erweiterung: `gebinde_ml` über `/api/stamm` oder `/api/mapping` in die App, dann rechnet der Abgleich auch den Ausschank. | `public/index.html` (`abgleichZeilen`), `src/index.js` (`/api/mapping`)
+- **niedrig** · **`POST /api/code` ist ein Orakel für vierstellige Codes — für Angemeldete.** Der Endpunkt verlangt eine Sitzung und zählt auf dieselbe IP-Sperre wie die Anmeldung ein (nachgestellt: zehn Fehlversuche dort sperren auch die Anmeldung). Wer schon drin ist, kann damit trotzdem Codes durchprobieren und stiehlt dabei dem ganzen Haus die Versuche. Sauberer wäre ein eigenes, engeres Maß je Sitzung. | `src/index.js` (`codeNachschlagen`)
+- **niedrig** · **`.exprow` ist ungenutzt.** Die Klasse trug „Protokoll senden"; der Knopf ist in Runde 16 entfallen, die Regeln stehen noch. Mit ihr `.explesser button.del` (nur noch im Archiv gebraucht). | `public/index.html` (`.exprow`)
+- **niedrig** · **Der Abgleich zeigt Artikel, die gefasst, aber nie verkauft wurden, als volle Abweichung.** Das ist richtig gerechnet (gefasst 2, verkauft 0 → +2), im Keller aber der häufigste Fall bei allem, was selten über den Tresen geht. Nach ein paar Tagen Betrieb prüfen, ob eine Schwelle („erst ab Differenz 2 zeigen") das Fenster nicht lesbarer macht. Braucht eine Antwort aus dem Service, nicht aus dem Code. | `public/index.html` (`abgleichZeilen`)
+
+### Erledigt in Runde 16 (aus „Hoch"/„Runde 15" hierher verschoben)
+- ~~**`abmelden` meldet nicht ab** (A1)~~ — der Knopf ruft `POST /api/abmelden` und wartet auf die Antwort; `leitung.html` hat einen eigenen Ausgang am Fuß der Navigation. Beleg: `review/screens/runde16/08…10`, Prüfung: `tests/runde16.test.mjs`, `tests/ui-runde16.cjs`.
+- ~~**Zwei Personen dürfen denselben Code haben** (A2)~~ — `personSchreiben()` lehnt mit 409 ab, gezählt werden alle anderen Personen (auch gesperrte); `pinZuruecksetzen()` benutzt dieselbe Prüfung.
+- ~~**Falsche Sperrmeldung / „immer 15 Minuten"** (B1)~~ — `versucheBisSperre()` und `sperrDauer()` im Worker, die App liest `uebrig`, `minuten` und `wartenBis` aus der Antwort.
+- ~~**Stumme Schleife bei nicht schreibbarem `sessionStorage`** (B2)~~ — `setUser()` sagt, ob es angekommen ist; die Anmeldung meldet es.
+- ~~**Zurückgesetzter Code gibt weiter frei** (B3)~~ — neuer Endpunkt `POST /api/code`; die App vergisst den toten Code dabei aus `hh_bekannt_v1`.
+- ~~**Neuer Code geht bei Verbindungsabbruch verloren** (B4)~~ — das Backoffice würfelt ihn selbst und schickt ihn mit; `POST /api/person/pin` nimmt ihn optional entgegen und prüft Form und Dopplung.
+- ~~**Veraltete Anweisung in den Unterlagen** (B5)~~ — `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 13 auf vier Stellen berichtigt und als ENTSCHIEDEN markiert, `review/MORGENBRIEF.md` neu geschrieben, `leitung.html` hat `PIN_LAENGE`.
+- ~~**`/api/person/pin` antwortet auf eine krumme `id` mit 500**~~ — `typeof id !== "string"` → 422.
+- ~~**`tests/qa-schluss.cjs` schlägt falschen Alarm**~~ — nachgeprüft: läuft grün, war schon in Runde 15 behoben.
+- ~~**Der Persona-Durchlauf fällt**~~ — nachgeprüft: läuft durch; nur der Kommentar nannte noch sechs Ziffern, berichtigt.
+- ~~**`review/ERGEBNIS.md` weist beim Livegang falsch an**~~ — die Datei beginnt jetzt mit Runde 16; der alte Runbook-Teil steht als „Vorgeschichte" darunter.
+- ~~**`tests/ui-befunde.cjs` hatte zweimal den Schlüssel `r15`**~~ — drei Lagen wurden nie aufgenommen. Zu einer Liste zusammengezogen.
+
+### Weiter offen, ausdrücklich nicht in dieser Runde angefasst
+- **hoch** · **Gasteiner 0,25 l steht auf Soll 8.** Von Casimir physisch nachzuzählen. Die Zahl geht über `gFehlt()` ins append-only Journal; stimmt sie nicht, bucht jedes Nachfüllen dauerhaft falsch. In der Abschlussnachricht genannt. | `src/stamm.json`, `public/index.html`, `public/leitung.html`
+- **hoch** · Anmeldesperre zählt pro IP (siehe Runde 15) — unverändert.
+- **mittel** · Die Selbstschutz-Abfragen stehen nur im Browser. Der falsche Kommentar in `public/leitung.html` ist in Runde 16 berichtigt; der Riegel gehört weiter in den Worker und braucht `p` in `personSchreiben()`. | `src/index.js` (`personSchreiben`), `public/leitung.html`
+- **mittel** · „PIN zurücksetzen" hat keinen Selbstschutz wie „Sperren" — unverändert. Die Rückfrage warnt inzwischen, wenn es die eigene Zeile trifft.
+- **mittel** · Der Abgleich im Backoffice paart dauerhaft um einen Tag versetzt (Entscheidung Casimir nötig) — unverändert. Der neue Abgleich IM KELLER paart richtig (Z-Bericht des Vortags gegen die Fassung des Tages); die beiden widersprechen sich damit, bis das Backoffice nachzieht.

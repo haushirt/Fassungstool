@@ -2784,3 +2784,146 @@ mehr in sein Werkzeug.
 
 **Rundenfazit:** Der Riegel ist gut gebaut; der Zettel daneben beschreibt
 noch das alte Schloss.
+
+---
+
+### Runde 16 – Nachtlauf (ohne Casimir, Auftrag vom 19.09.2026)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — `public/index.html:2669` („abmelden" leert nur den
+  `sessionStorage", Fund A1): stimmt, und es ist der schwerste der Nacht.
+  Der Knopf ruft jetzt `POST /api/abmelden` und wartet auf die Antwort.
+* ✅ übernommen — `src/index.js:591` (`personSchreiben()` prüft keine
+  Dopplung, A2). Behoben, und die Prüfung liegt jetzt in EINER Funktion,
+  die sich `pinZuruecksetzen()` mit ihr teilt.
+* ↩️ geändert — A2 verlangte „gegen alle anderen Personen". Umgesetzt
+  wörtlich: **auch gegen gesperrte.** `pinZuruecksetzen()` prüfte bis
+  heute nur `aktiv = 1` — eine gesperrte Person konnte damit denselben
+  Code bekommen, und beim Freigeben stünden zwei gleiche da. Beide Wege
+  zählen jetzt alle.
+* ✅ übernommen — B1: `uebrig` zählte alle Fehlversuche aus zwei Stunden,
+  die Sperre hing am zehntjüngsten. Gerechnet wird jetzt mit
+  `sperreBis()` selbst (`versucheBisSperre`), und die Dauer kommt aus
+  derselben Staffel (`sperrDauer`, 15/30/60).
+* ✅ übernommen — B2, B3, B4, B5.
+* ❌ abgelehnt — B4 „Mindestens: Meldung ‚PIN wurde evtl. geändert'".
+  Das ist die schwächere Hälfte des Auftrags; die stärkere war ausdrücklich
+  erlaubt und ging ohne Schemaänderung: Das Backoffice **würfelt den Code
+  selbst** (`wuerfelPin()` in leitung.html, dieselbe Gleichverteilung wie
+  im Worker) und schickt ihn mit. `POST /api/person/pin` nimmt ihn
+  optional entgegen und prüft ihn wie jeden vergebenen Code (Form,
+  Dopplung). Bricht die Verbindung nach dem UPDATE ab, kennt das
+  Backoffice den Code trotzdem und zeigt ihn mit dem einen Satz, der dann
+  zählt. Die schwache Meldung bleibt als Rückfallebene, falls ein Browser
+  kein `crypto.getRandomValues` hat.
+* ❌ abgelehnt — A1 „Gleiches für jeden Abmelde-Weg in `leitung.html`".
+  Es gab dort keinen: `leitung.html` hatte überhaupt keinen Ausgang. Einer
+  ist gebaut worden — nicht in der Kopfleiste (dort schob der vierte Knopf
+  die Leiste unter 900 px 24 px aus dem Fenster, gemessen), sondern am Fuß
+  der Navigation.
+
+**Umgesetzt:**
+1. A1/A2/B1–B5 behoben; dazu der neue Endpunkt `POST /api/code` („wer
+   gehört zu diesem Code?" — kein Keks, Sitzung nötig, zählt auf dieselbe
+   Sperre ein), damit ein zurückgesetzter Code nicht mehr freigibt.
+2. Der Abschluss umgebaut: ein Knopf, das Fenster „Abgleich" gegen den
+   Z-Bericht des Vorabends (nur Abweichungen, EIN Notizfeld) bzw. ein
+   kurzes „Fertig", danach die Startseite. PDF, CSV, „Protokoll senden"
+   und das Notizfeld auf der Seite sind weg; Rohdaten und Zurücksetzen
+   stehen als Notweg am Menüende.
+3. `touch-action:manipulation`, Felder am Finger nie unter 16 px,
+   Gruppentöne getauscht, Statuszeile „Verbunden", Abschlussknopf an der
+   Verbindung.
+
+**Geprüft:**
+* `npm test` **415/415** (vorher 370). Neu: `tests/runde16.test.mjs`,
+  45 Prüfungen — davon **31 nachweislich rot** gegen `ac8d93a`
+  (Arbeitsbaum aus `origin/main`, dieselbe Datei hineinkopiert: 9 grün,
+  31 rot). Die neun, die auch vorher grün sind, prüfen Dinge, die schon
+  stimmten (`/api/abmelden` selbst, „ohne Sitzung kein Orakel", die
+  Hausfarben, dass `save()` nicht am Netz hängt).
+* `tests/ui-runde16.cjs` (neu, Playwright): **alle ja**, 42 Prüfungen in
+  sieben Lagen, und es legt dabei die Belege in 390 px ab.
+* `node tests/ui-nachjagd.cjs` **31/31**. `node tests/qa-schluss.cjs`
+  **alle ja**. `tests/persona-tagesfassung.cjs` läuft durch, keine
+  JS-Fehler.
+* `LAUF=r16 node tests/ui-mass.cjs`: alle zehn Urteile ✓, darunter
+  „kein waagrechter Überlauf" und „Kontrast mindestens 4,5:1" — beide
+  waren im ersten Durchgang durch meine Änderungen rot (siehe unten) und
+  sind es nach der Nachbesserung nicht mehr. Gestaltungsschicht wortgleich.
+* Zwei eigene Fehler, gefunden vom Messgerät, nicht von mir:
+  (a) Der Abmeldeknopf in der Kopfleiste von `leitung.html` schob sie bei
+  390 px auf 414 px — deshalb steht er jetzt in der Navigation.
+  (b) `--surface-4` als Grund der Gruppe „Bestand" brachte den
+  Beschreibungstext der Kacheln auf **4,43:1** und damit unter das Maß des
+  Hauses. Dieselbe Rechnung steht seit Runde 13 bei `nav.seite .zahl` in
+  `leitung.html` — ich habe sie zum zweiten Mal gemacht. `--surface-3`
+  bringt 4,85:1 und tritt gegen das Weiß der Servicegruppe deutlich genug
+  zurück.
+
+**Entscheidungen, die ich allein getroffen habe (Casimir war nicht erreichbar):**
+1. **Der Abgleich kommt nur bei „Tagesfassung" und „Nachfüllen".** Der
+   Auftrag sagt „Abschluss aller Modi". Für Kellerzählung (ein Stand),
+   Wareneingang (die andere Richtung) und Sonderentnahme (ausdrücklich
+   KEIN Verkauf) wäre jede Zeile eine „Abweichung" — das Fenster wäre
+   reine Zumutung und würde ab dem dritten Mal weggetippt. Dort kommt das
+   kurze „Fertig". Revidierbar in drei Zeilen (`abschlussSchritt`).
+2. **Der Abgleich rechnet in Flaschen gegen `anzahl` des Z-Berichts und
+   lässt den Offenausschank draußen.** Aus Gläsern Flaschen zu rechnen
+   braucht die Gebindegröße; die liegt nur im Backoffice, und live hat
+   **keine einzige** der 13 Zuordnungen eine. Eine geratene Umrechnung
+   hieße, im Keller eine falsche Abweichung zu behaupten. Positionen mit
+   `ausschankMl` und Positionen ohne zugeordneten Artikel stehen deshalb
+   als Fußzeile („die rechnet das Backoffice"), nicht als Abweichung.
+3. **„Fertig – Speichern" heißt in JEDEM Modus so**, auch dort, wo bisher
+   „Entnahme melden" und „Lieferung melden" stand. Der Auftrag sagt
+   „einziger Knopf ist ‚Fertig – Speichern'"; drei Namen für dieselbe
+   Handlung lassen jeden, der zwischen den Modi wechselt, neu suchen.
+4. **Ohne Netz meldet sich das Gerät trotzdem ab**, die Abmeldung am
+   Server wird vorgemerkt und nachgeholt. Das Gegenteil (Abmelden
+   verweigern) hätte im Keller ohne Empfang niemanden mehr an das Gerät
+   gelassen. Die Vormerkung fällt bei der nächsten Anmeldung — sonst
+   nähme sie der frisch Angemeldeten den Keks wieder weg.
+5. **Der Abschlussknopf hängt an der Verbindung, das Speichern nicht.**
+   Gefasst wird weiter offline, `save()` läuft bei jeder Änderung; nur das
+   Abschließen wartet. So steht es im Auftrag, und `tests/ui-runde16.cjs`
+   belegt es (der Stand liegt nach dem Offline-Versuch unverändert im
+   Gerät).
+6. **`fullHtml`, `openHtml`, `protoDateien`, `doSenden`, `expCsv`,
+   `csvText`, `resultText` und die Konstante `MAIL` sind gelöscht**, nicht
+   nur ihre Knöpfe — samt denen im Archiv. Ein toter Ausgabeweg, den
+   nichts mehr ruft, ist der nächste, den jemand versehentlich wiederbelebt.
+
+**Für die Nächsten:**
+* An die **Leitung**: Der Abgleich im Keller zeigt nur, was ohne
+  Gebindegröße ehrlich zu zeigen ist. Sobald die 13 Zuordnungen ihre
+  Größe haben, lohnt es, den Offenausschank mit hineinzunehmen — dann
+  braucht `index.html` aber `gebinde_ml`, und das heißt eine Erweiterung
+  von `/api/stamm` oder `/api/mapping`. Als Backlog-Punkt notiert.
+* An den **software-engineer**: Die Selbstschutz-Abfragen („dich selbst
+  kannst du nicht sperren", „die einzige Leitung") stehen weiter NUR im
+  Browser. Der Kommentar, der das Gegenteil behauptete, ist berichtigt;
+  der Riegel selbst gehört in den Worker und braucht `p` in
+  `personSchreiben()`. Bleibt im Backlog.
+* An den **Jäger**: `tests/ui-befunde.cjs` hatte zweimal denselben
+  Schlüssel `r15` im selben Objekt — drei Lagen sind seit Runde 15 nie
+  aufgenommen worden, ohne dass irgendwo ein Fehler erschien. Behoben.
+  Es lohnt, in den Prüfwerkzeugen selbst nach solchen stillen Löchern zu
+  suchen.
+
+**Phase/Thema:** Runde 16 / Jägerfunde + Zoom, Abschluss, Startseite, Verbindung
+
+**Backlog:** neu unter „mittel": Offenausschank im Abgleich braucht
+`gebinde_ml` in der App. Neu unter „niedrig": `.exprow` ist nach dem
+Ausbau der Ausgabeknöpfe ungenutzt; `POST /api/code` lässt eine
+angemeldete Person Codes durchprobieren (an der Sperre, aber ohne eigenes
+Maß). Erledigt und verschoben: A1, A2, B1–B5, „Meldung nennt immer 15
+Minuten", „`/api/person/pin` antwortet auf krumme `id` mit 500",
+„`qa-schluss.cjs` schlägt falschen Alarm", „Persona-Durchlauf fällt".
+
+**STATUS:** FERTIG — aus meiner Rolle keine Punkte mit Priorität
+hoch/mittel mehr offen. Merge-Bedingung geprüft, Jäger und qa-guardian
+danach.
+
+**Rundenfazit:** Der Riegel von Runde 15 war gut gebaut; diese Runde hat
+die Tür daneben zugemacht, durch die man ohne ihn hereinkam.

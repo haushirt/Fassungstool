@@ -5,7 +5,98 @@ Phase gefüllt, nicht laufend.
 
 ---
 
-# Was mit diesem Merge live geht
+# Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
+
+**Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v39.**
+Ein Commit. Er bringt die A- und B-Funde der fünften Jagd und die vier
+Punkte der Runde 16 hinaus.
+
+**Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
+`wrangler.jsonc`, `package.json` unberührt, kein `ALTER`, kein `CREATE`,
+kein `INSERT` in die Live-D1. `RUNDEN` unverändert — bestehende
+Anmeldungen bleiben gültig. Die Spalten `schluessel`, `zaehlnr`, `geraet`
+sind nicht angefasst (Regel 14).
+
+## Was im Betrieb anders ist
+
+**1 · „abmelden" meldet wirklich ab.** Bis heute leerte der Knopf nur den
+Speicher des Geräts; die Sitzung am Server galt weitere zwölf Stunden. Am
+geteilten iPad war die nächste Person damit über `/leitung.html` volle
+Leitung — samt „PIN zurücksetzen". Der Knopf ruft jetzt `POST
+/api/abmelden`, wartet auf die Antwort und gibt das Gerät erst danach
+frei. Ohne Netz wird die Abmeldung vorgemerkt, gesagt und beim nächsten
+Empfang nachgeholt. Das Backoffice hat einen eigenen Ausgang bekommen: am
+Fuß der Navigation, „abmelden".
+
+**2 · Ein Code gehört genau einer Person.** „Selbst eintragen",
+„Vorschlagen" und `POST /api/anlage` prüften bisher nicht auf Dopplung.
+Zwei gleiche Codes hießen: beim Anmelden gewinnt die letzte Zeile, und im
+append-only Journal steht dauerhaft der falsche Name. Ein doppelter Code
+wird jetzt mit einer klaren Meldung abgelehnt — gezählt werden alle
+anderen Personen, auch gesperrte.
+
+**3 · Der Abschluss ist eine Handlung, keine Ausgabestelle.** Es gibt nur
+noch **einen** Knopf, „Fertig – Speichern", in jedem Modus. „Protokoll
+senden", „Als PDF sichern", „Auch als CSV" und das Feld „Notiz (optional)"
+sind im Frontoffice ersatzlos entfallen. Beim Drücken:
+
+* Liegt zum **Vorabend** ein Z-Bericht vor, kommt das Fenster **Abgleich**:
+  gefasst gegen verkauft, **nur die Abweichungen**, darunter **ein**
+  Notizfeld für alles. Speichern → Vorgang abgeschlossen, Notiz am
+  Vorgang, zurück zur Startseite.
+* Liegt keiner vor, kommt ein kurzes **Fertig** und dann die Startseite.
+
+„Rohdaten sichern (JSON)" und „Zurücksetzen" sind **nicht** gelöscht: Sie
+stehen jetzt dezent am Ende des Menüs, als Notweg bei Offline-Problemen.
+
+**4 · Ohne Verbindung wartet der Abschluss.** „Fertig – Speichern" ist
+ohne Netz ausgegraut, darunter steht der Grund, und sobald die Verbindung
+zurück ist, wird der Knopf von selbst wieder drückbar. Was bis dahin
+gefasst wurde, liegt unverändert im Gerät und geht nicht verloren — nur
+das Abschließen wartet.
+
+**5 · Kleinigkeiten, die den Tag ausmachen.** Der Doppeltipp zoomt nicht
+mehr (Zwei-Finger-Zoom bleibt), kein Eingabefeld unter 16 px, damit Safari
+beim Fokus nicht hineinspringt. Die Statuszeile sagt „Verbunden" statt
+„Nichts liegt mehr auf diesem Gerät". Auf der Startseite sind die
+Gruppentöne getauscht: Service steht auf dem hellsten Grund, Bestand tritt
+zurück.
+
+**6 · Behoben, ohne dass man es sieht.** Die Sperrmeldung an der Tür nannte
+in allen drei Stufen „15 Minuten" und zählte die Restversuche mit einer
+anderen Rechnung als die Sperre selbst — beides kommt jetzt aus einer
+Quelle. Ein nicht schreibbarer Speicher (privates Fenster) ließ die
+Anmeldung stumm auf Anfang springen; jetzt steht da, was los ist. Freigabe
+und Wein-Editor fragen den **Server**, wer zu einem Code gehört
+(`POST /api/code`, ohne Sitzungswechsel, an derselben Sperre) — ein
+zurückgesetzter Code gibt damit nicht mehr frei. Und der neue Code beim
+Zurücksetzen kann nicht mehr verloren gehen: Das Backoffice würfelt ihn
+selbst und kennt ihn, bevor die Antwort unterwegs ist.
+
+## Erkennungszeichen nach dem Deploy
+
+Auf der Startseite steht unter den Kacheln der Block **„Wenn etwas klemmt"**
+mit „Rohdaten sichern (JSON)". Steht er nicht da, läuft noch die alte App —
+dann mit Netz neu laden (iPhone: Seite herunterziehen; als Web-App: einmal
+schließen und neu öffnen).
+
+## Vor dem Merge
+
+Nichts. Keine Migration, kein Dashboard-Schritt, kein Codewechsel.
+
+## Danach
+
+* Auf **jedem** Gerät die App einmal **mit Netz** neu laden.
+* **Asad Karakiri** (service), **Ian Lauchbein** (service) und **Marinus**
+  (wirtschaft) im Backoffice unter „Team" anlegen und den PIN über „PIN
+  zurücksetzen" vergeben.
+* **Gasteiner 0,25 l in der Lade nachzählen.** Das Soll steht auf 8; steht
+  dort in Wirklichkeit Platz für 7, bucht jedes Nachfüllen dauerhaft eine
+  Flasche zu viel ins append-only Journal.
+
+---
+
+# Vorgeschichte · Was mit dem Merge von Runde 13–15 live ging
 
 **Stand davor: `50c1123` (`sw.js` v31). Stand danach: `sw.js` v37.**
 Der Merge bringt **drei Runden zusammen** hinaus: Runde 13 (elf Befunde vom
