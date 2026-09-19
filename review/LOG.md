@@ -2927,3 +2927,127 @@ danach.
 
 **Rundenfazit:** Der Riegel von Runde 15 war gut gebaut; diese Runde hat
 die Tür daneben zugemacht, durch die man ohne ihn hereinkam.
+
+### Runde 16 – qa-guardian (Schlusskontrolle vor dem Livegang)
+
+**Kritik am Vorgänger:**
+* ❌ abgelehnt — Runde 16, Punkt 4: „„Fertig – Speichern" ist ohne Verbindung
+  ausgegraut". Das ist kein Feinschliff, das ist der Grundsatz des Hauses
+  umgedreht. `finishNetz()` (`public/index.html:2549`) sperrt den einzigen
+  Abschlussknopf ALLER Modi, `abschlussSchritt()` (`:5489`) steigt zusätzlich
+  vor dem Festschreiben aus. Gemessen: offline bleibt `S.tag.finished` auf
+  `false` und **0 fertige Einträge** liegen in `hh_ausgang_v1`. Auch die
+  Kellerzählung ist gesperrt, die den Server an keiner Stelle braucht.
+  Projektanleitung §9: „Im Weinkeller gibt es kein Netz."
+* ❌ abgelehnt — die Begründung im Kommentar (`:2531`) trägt nicht: „Der
+  Abschluss holt den Z-Bericht des Vorabends und schliesst den Vorgang ab —
+  beides braucht die Leitung." `holeZBericht()` (`:5422`) fängt jeden
+  Fehlschlag selbst ab und gibt `null` zurück; ohne Bericht kommt ohnehin
+  `popupFertig()`. Die Sperre verhindert nichts, was nicht schon abgefangen
+  wäre.
+* ❌ abgelehnt — die App widerspricht sich in derselben Datei: Hilfe,
+  Kapitel „Abschluss" (`:2031`): „ohne Netz geht sie hinaus, sobald wieder
+  Empfang da ist." Und der F4-Kommentar von Runde 15 (`:5678`): „Der
+  Vortagsabgleich … gehoert ins Backoffice, nicht in den Keller ohne Netz."
+  Genau der ist jetzt der Torwächter des Abschlusses.
+* ✅ übernommen, selbst behoben — B3 hat zwei verschiedene Neins unter
+  demselben Status 401 gleich behandelt. `werHatDenCode()` rief
+  `vergissCode(code)` auch dann, wenn der Router **vor** `codeNachschlagen()`
+  mit „nicht angemeldet" abgewiesen hatte (abgelaufene Sitzung, zwölf
+  Stunden). Nachgestellt: ein gültiger Code fiel dabei aus `hh_bekannt_v1` —
+  die Rückfallebene für den Keller ohne Netz war danach zerstört, und im
+  Dialog stand, der Code sei zurückgesetzt worden. Behoben, Gegenprobe
+  (toter Code fliegt weiter hinaus) steht.
+* ↩️ geändert — der Zähltest in `tests/runde16.test.mjs` (B3) zählte die Aufrufe von
+  `bekannterCode`. Zahl ist kein Mass für „entscheidet allein"; geprüft wird
+  jetzt der ORT (ausserhalb von `werHatDenCode` nur die Anmeldung).
+* ✅ bestätigt — A1, A2, B1, B2, B4, B5 halten der Nachrechnung stand.
+  `versucheBisSperre()` rechnet mit `sperreBis()` selbst, `sperrDauer()`
+  nennt 15/30/60 richtig (0 Fehl → 15, 19 → 30, 30 → 60 nachgestellt).
+  `anderePersonen()` zählt gesperrte Personen mit. Der Ausgang in
+  `leitung.html` sitzt in der Navigation, nicht in der Leiste.
+
+**Umgesetzt:**
+- `werHatDenCode()`: nur `j.fehler==="unbekannt"` vergisst den Code; eine
+  abgelaufene Sitzung fällt auf den Gerätespeicher zurück (`quelle:"sitzung"`,
+  eigener Satz in `codeAbsage()`). `sw.js` v39 → **v40**.
+- `tests/qa-runde16-schluss.cjs` neu (Playwright, 390 px): Q1/Q2 Abschluss
+  ohne Netz, Q3 abgelaufene Sitzung an der Freigabe, Q4 Freigabe ohne Netz,
+  Q5 doppelter Griff auf „Speichern". **Q1 und Q2 sind rot — das ist die
+  Merge-Sperre.**
+- Zwei Prüfungen in `tests/runde16.test.mjs` ergänzt (die beiden 401 müssen
+  sich unterscheiden lassen; die App darf nur das echte Nein vergessen).
+
+**Geprüft:**
+* `npm test` **417/417**, `node --test tests/runde16.test.mjs` **47/47**,
+  `tests/ui-runde16.cjs` alle ja, `tests/ui-nachjagd.cjs` alle ja,
+  `tests/qa-schluss.cjs` alle ja (Rückgabe 0), `tests/ui-befunde.cjs`
+  128 Bilder in 320/375/390/430 px, `node --check src/index.js` sauber,
+  beide `<script>`-Blöcke in `public/` parsen.
+* `tests/qa-runde16-schluss.cjs`: **3 von 18 nein** — Q1 (Tagesfassung ohne
+  Netz nicht abschliessbar, 0 Einträge im Ausgang), Q2 (Kellerzählung
+  ebenso). Q3/Q4/Q5 grün nach der Behebung.
+* Persona (iPhone 390 px, neue Servicekraft, nach dem Abendservice,
+  `tests/persona-tagesfassung.cjs`): läuft ohne JS-Fehler durch und endet im
+  Abschluss mit „Fertig – Speichern" GESPERRT und zweimal „Nicht angemeldet
+  – bitte neu anmelden". Sie käme aus dem Tool nicht heraus. Zwei alte
+  Stellen bleiben: Hilfe-Blatt und Begrüßung legen sich ungefragt über den
+  Schirm.
+* Randfälle einzeln: Anmeldung (Sperre gestaffelt, Meldung nennt jetzt die
+  richtige Dauer), Abmeldung (mit Netz, ohne Netz, vorgemerkt und beim
+  nächsten Start nachgeholt — `:5944` deckt das ab), Freigabe (Server
+  entscheidet, Gerät als Rückfall), PIN zurücksetzen (mitgebrachter Code,
+  Dopplung 409, krumme `id` 422), `POST /api/code` (kein Keks gesetzt,
+  Sitzung bleibt, zählt auf dieselbe Sperre, ohne Sitzung 401), Abschluss
+  mit und ohne Z-Bericht, doppeltes Absenden (1 PUT, 1 Schlüssel), Abbruch
+  mitten in der Eingabe, abgelaufene Sitzung (Ausgang bleibt liegen).
+* **Regeln 1–14.** 1: gebrochen — gearbeitet wird auf `claude/runde16`,
+  `origin/v2-review` steht bei `c84a4bf` und ist nicht einmal Vorfahr. Alt
+  bekannt, nicht von mir zu lösen. 2: kein Deploy, kein Schreiben, nur
+  lokale Läufe. 3: kein `CREATE/ALTER/DROP` im Diff, `migrations/` und
+  `schema.sql` unberührt, keine Migration in dieser Nacht nötig. 4: alle
+  SQL-Stellen des Workers gegen `docs/live-schema.sql` abgeglichen — die
+  neuen (`SELECT id, code_hash, salt FROM person WHERE id != ?1`,
+  `SELECT name, rolle, code_hash, salt FROM person WHERE aktiv = 1`,
+  `anmeldeversuch`) passen, Rollen unverändert. 5: Automapping aus,
+  `gnmap.js` nicht angefasst. 6: Journal append-only unberührt — die
+  **Offline-Queue aber aufgeweicht**, siehe Merge-Sperre. 7: `gnparse.js`
+  nicht im Diff. 8: keine neue Abhängigkeit (`package.json` unverändert).
+  9: keine Codes in Dateien, Commits oder Logs; einziger Fund ist ein
+  Beispiel `"code":"1234"` in `OFFENE-ENTSCHEIDUNGEN.md` (Backlog niedrig).
+  10: n. z. 11: `RUNDEN = 1000` unverändert. 12: `wrangler.jsonc` unberührt.
+  13: nichts Dashboard-seitiges nötig. 14: `schluessel`, `zaehlnr`, `geraet`
+  auf `vorgang` weder gelesen noch geschrieben; die Treffer im Diff sind ein
+  Feld im JSON-Notweg und das Paketfeld im Ausgang, beide alt.
+* Vier Dateien in `public/` (icon.png, index.html, leitung.html, sw.js),
+  Gestaltungsschicht wortgleich (`tests/projektregeln.test.mjs`, Zeile 13–247
+  gegen 10–244; `touch-action:manipulation` steht in beiden drin),
+  `sw.js` VERSION erhöht.
+* **UNGEPRÜFT:** echtes Safari auf iPhone/iPad; die Live-D1 selbst — in
+  dieser Sitzung gibt es keinen Cloudflare-Zugang, gerechnet wurde gegen
+  `docs/live-schema.sql` (Stand 17.09.).
+
+**Für die Nächsten:**
+* An **Casimir**: Die Entscheidung, die hinter der Merge-Sperre steht, ist
+  deine: Soll „Fertig – Speichern" ohne Verbindung warten? Wenn ja, ist der
+  Grundsatz „Offline ist der Normalfall" (Projektanleitung §9) hinfällig und
+  gehört mit derselben Runde aus der Doku, aus der Hilfe (`:2031`) und aus
+  CLAUDE.md gestrichen. Solange er dasteht, geht dieser Stand nicht live.
+* An die **Oberfläche**: Der Abgleich ist eine gute Sache am falschen Ort für
+  die Sperre. Er kann bleiben — er muss nur ausfallen dürfen.
+* An den **software-engineer**: `/api/code` räumt bei einem Treffer die
+  Fehlversuche der IP nicht weg, `anmelden()` schon. Eine Regel, zwei
+  Verhalten.
+
+**Phase/Thema:** Schlusskontrolle vor dem Livegang (Runde 16)
+
+**Backlog:** neu unter „hoch": Abschluss ohne Netz gesperrt (Merge-Sperre);
+`/api/code` räumt die Sperre nicht auf. Neu unter „mittel": vorgemerkte
+Abmeldung nur beim Neuladen; `anderePersonen()` und `id IS NULL`. Neu unter
+„niedrig": `code` als Zahl an `/api/person/pin`; Beispielcode in
+`OFFENE-ENTSCHEIDUNGEN.md`.
+
+**STATUS:** BLOCKER — **VETO gegen den Merge nach `main`.**
+
+**Rundenfazit:** Sieben Funde sauber behoben, ein Knopf zu viel gesperrt —
+und ausgerechnet der, der im Keller ohne Netz gedrückt wird.

@@ -286,6 +286,45 @@ describe("B3 · Der Server entscheidet, wer freigeben darf", () => {
     assert.equal(a.status, 401, "jeder darf Codes durchprobieren");
   });
 
+  /* qa-guardian, Schlusskontrolle Runde 16.
+     Unter 401 stehen zwei grundverschiedene Aussagen: „diesen Code gibt es
+     nicht" und „deine Sitzung ist abgelaufen". Die App nahm beides gleich
+     und loeschte daraufhin einen GUELTIGEN Code aus `hh_bekannt_v1` — die
+     Rueckfallebene fuer den Keller ohne Netz. Beide Seiten muessen sich
+     unterscheiden lassen; das Feld `fehler` ist das Merkmal. */
+  test("die beiden Neins unter 401 sind auseinanderzuhalten", async () => {
+    const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
+    const env = await haus(CL, CS);
+    const keks = keksAus(await anmelden(env, CL));
+
+    const falsch = wuerfel(7);
+    const toter = await worker.fetch(anfrage("/api/code",
+      { method: "POST", keks, body: { code: falsch } }), env);
+    assert.equal(toter.status, 401);
+    assert.equal((await toter.json()).fehler, "unbekannt",
+      "ein toter Code muss sich als solcher zu erkennen geben");
+
+    const ohne = await worker.fetch(anfrage("/api/code",
+      { method: "POST", body: { code: CL } }), env);
+    assert.equal(ohne.status, 401);
+    assert.equal((await ohne.json()).fehler, "nicht angemeldet",
+      "eine abgelaufene Sitzung sagt nichts ueber den Code");
+  });
+
+  test("die App vergisst nur das echte Nein, nicht die abgelaufene Sitzung", () => {
+    const a = APP.indexOf("async function werHatDenCode(code)");
+    const e = APP.indexOf("function codeAbsage(erg)", a);
+    const f = APP.slice(a, e);
+    assert.match(f, /r\.status===401&&j\.fehler==="unbekannt"/,
+      "vergissCode haengt weiter am blossen Status 401");
+    /* Und der unbedingte Fall darf danach NICHT mehr vergessen. */
+    const nachDem = f.slice(f.indexOf('j.fehler==="unbekannt"'));
+    const zweiter = nachDem.indexOf("r.status===401");
+    assert.ok(zweiter > 0, "der Fall „nicht angemeldet\" fehlt");
+    assert.equal(/vergissCode/.test(nachDem.slice(zweiter)), false,
+      "eine abgelaufene Sitzung nimmt dem Geraet weiter den gueltigen Code");
+  });
+
   test("der Nachschlag zählt auf dieselbe Sperre ein wie die Anmeldung", async () => {
     const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
     const env = await haus(CL, CS);
@@ -304,9 +343,22 @@ describe("B3 · Der Server entscheidet, wer freigeben darf", () => {
     assert.match(APP, /const erg=await werHatDenCode\(inp\.value\);/,
       "die Freigabe fragt weiter nur den Gerätespeicher");
     /* `bekannterCode` darf nur noch als Rückfallebene dastehen: in der
-       Anmeldung und innerhalb von werHatDenCode. */
-    const treffer = [...APP.matchAll(/await bekannterCode\(/g)].length;
-    assert.ok(treffer <= 2, "bekannterCode entscheidet noch an " + treffer + " Stellen");
+       Anmeldung und innerhalb von werHatDenCode.
+       qa-guardian (Schlusskontrolle Runde 16): Gezählt wurde bisher die
+       Zahl der Aufrufe. Das ist kein Mass für „entscheidet allein" —
+       werHatDenCode hat seit der Trennung der beiden 401 (toter Code /
+       abgelaufene Sitzung) zwei Rückfälle, beide innerhalb der Funktion.
+       Geprüft wird deshalb der ORT: ausserhalb von werHatDenCode darf nur
+       noch die Anmeldung fragen. */
+    const a = APP.indexOf("async function werHatDenCode(code)");
+    const e = APP.indexOf("function codeAbsage(erg)", a);
+    assert.ok(a > 0 && e > a, "werHatDenCode nicht gefunden");
+    const drinnen = [...APP.slice(a, e).matchAll(/await bekannterCode\(/g)].length;
+    const gesamt = [...APP.matchAll(/await bekannterCode\(/g)].length;
+    assert.ok(drinnen >= 1, "werHatDenCode hat keine Rückfallebene mehr");
+    assert.equal(gesamt - drinnen, 1,
+      "ausserhalb von werHatDenCode entscheidet bekannterCode an "
+      + (gesamt - drinnen) + " Stellen — erlaubt ist nur die Anmeldung");
   });
 });
 
