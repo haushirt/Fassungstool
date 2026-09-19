@@ -8,9 +8,10 @@ Phase gefüllt, nicht laufend.
 # Was mit diesem Merge live geht · Runde 16 (Nacht auf den 19.09.2026)
 
 **Stand davor: `ac8d93a` (`sw.js` v38, live). Stand danach: `sw.js` v56.**
-Er bringt die A- und B-Funde der fünften Jagd und die vier Punkte der
-Runde 16 hinaus — und die Funde der sechsten Jagd, die auf diese Runde
-folgte.
+Er bringt die vier Punkte der Runde 16 hinaus, die A- und B-Funde der
+fünften Jagd — und alles, was dreizehn weitere Jagden und vier
+Schlusskontrollen in derselben Nacht dazu gefunden haben. Die letzte Jagd
+meldet **0 A, 0 B**; die Schlusskontrolle gibt **frei**.
 
 **Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
 `wrangler.jsonc`, `package.json` unberührt, kein `ALTER`, kein `CREATE`,
