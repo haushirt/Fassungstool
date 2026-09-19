@@ -527,9 +527,20 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
 .balken i{display:block;height:100%;background:var(--accent)}
 .balken i.knapp{background:var(--danger)}
 .balken i.satt{background:var(--success)}
+/* BERICHTIGUNG (qa-guardian, zweite Schlusskontrolle · mittel): Der
+   Kasten hatte weder `max-width` noch `text-align`, und mit
+   `--radius-pill` (999px) ist der Radius immer die halbe Höhe. Bei
+   390 px und einem langen Satz wurde daraus ein KREIS: 195 × 208 px,
+   elf Zeilen, erste und letzte Zeile hell auf hellem Seitengrund und
+   damit unlesbar (gemessen am echten 409-Satz). Die App hat das seit
+   je richtig (`.toast` in index.html: `max-width:88vw`, `radius-md`,
+   mittig) — dasselbe hier. Es ist NICHT der geteilte Block; der endet
+   bei Zeile 244, und die beiden Regeln heißen auch verschieden. */
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);
   background:var(--fg);color:var(--fg-on-dark);padding:10px 18px;
-  border-radius:var(--radius-pill);font-size:var(--text-sm);opacity:0;
+  max-width:min(560px, calc(100vw - 2*var(--space-4)));
+  border-radius:var(--radius-md);text-align:center;box-shadow:var(--shadow-overlay);
+  font-size:var(--text-sm);opacity:0;
   pointer-events:none;transition:opacity .18s,transform .18s;z-index:var(--z-toast)}
 #toast.on{opacity:1;transform:translateX(-50%)}
 
@@ -631,8 +642,15 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const num = n => (Math.round(n * 10) / 10).toLocaleString("de-AT", {maximumFractionDigits:1});
 const eur = n => (+n||0).toLocaleString("de-AT", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €";
 
+/* 2,2 s reichen für „Gespeichert". Für einen Satz, der erklärt, WARUM
+   etwas nicht ging, reichen sie nicht — er ist weg, bevor man ihn
+   gelesen hat (qa-guardian, zweite Schlusskontrolle). Grob 55 ms je
+   Zeichen, gedeckelt bei neun Sekunden. Ein Satz, der bleiben MUSS,
+   gehört trotzdem nicht in den Toast, sondern in einen stehenden
+   Hinweis — siehe `nFehler` im Team-Formular. */
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");
-  clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),2200);}
+  const dauer=Math.min(9000,Math.max(2200,String(t||"").length*55));
+  clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),dauer);}
 
 /* ── Schlüssel der Fassungsseite. Ändern sie sich dort, hier nachziehen ── */
 const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
@@ -1624,7 +1642,28 @@ function abgleich(tag, spanne){
         return;
       }
       const zu=zuordnung(p);
-      if(zu.status==="offen"){ if(!offen.some(o=>o.name===p.name)) offen.push(p); return; }
+      if(zu.status==="offen"){
+        /* BERICHTIGUNG (neunte Jagd Runde 16 · A): Hier stand
+           `if(!offen.some(...)) offen.push(p)` — der ERSTE Tag gewann,
+           und sein `anzahl` ging unverändert in die CSV-Ausfuhr
+           (`csvAbgleich`, Abschnitt „Ohne Zuordnung"), während die
+           Ausfuhr über das ganze Fenster geht. Mit sieben Berichten im
+           Fenster (SPANNE steht auf 7) wies sie 136 Einheiten aus, wo
+           952 verkauft wurden — Faktor sieben auf jeder der 44 Zeilen.
+           Die Zuordnungsansicht daneben summiert richtig; dieselbe Zahl
+           stand an zwei Stellen mit zwei Werten. Solange nur EIN Bericht
+           im Fenster liegt, fallen beide zusammen — deshalb ist es so
+           lange niemandem aufgefallen.
+
+           `p` ist das Positionsobjekt aus `ZBER` und darf nicht
+           verändert werden (es liegt im Speicher des Geräts); es wird
+           deshalb eine eigene Zeile geführt. Dieselbe Summierung wie in
+           `merkeOhneGroesse()` gleich darunter. */
+        const da=offen.find(o=>o.name===p.name);
+        if(da){ da.anzahl+=(+p.anzahl||0); da.umsatz+=(+p.umsatz||0); }
+        else offen.push({name:p.name, anzahl:(+p.anzahl||0), umsatz:(+p.umsatz||0)});
+        return;
+      }
       if(zu.status==="ignoriert") return;
       const f=flaschen(p, zu.id);
       if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false,f.fehlt); return; }
@@ -1903,7 +1942,12 @@ function vHeute(m){
   if(!fassung) fehlt.push("Für "+deTag(tag)+" liegt keine Tagesfassung vor.");
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
-  if(a.offen.length) fehlt.push(a.offen.length+" Kassenpositionen sind keinem Artikel zugeordnet — sie fehlen im Abgleich.");
+  /* Auch das sind KASSENNAMEN, nicht Kassenzeilen — `abgleich()` führt
+     denselben Namen über alle Tage des Fensters als eine Zeile (neunte
+     Jagd · C: bei sieben Berichten 44 Namen gegen 308 Kassenzeilen). */
+  if(a.offen.length) fehlt.push(a.offen.length
+    +(a.offen.length===1?" Kassenname ist":" Kassennamen sind")
+    +" keinem Artikel zugeordnet — der Verkauf fehlt im Abgleich.");
   /* Das ist kein Befund, sondern eine offene Angabe. Deshalb steht die
      Zahl hier und nicht bei den Abweichungen — und getrennt nach dem,
      was zu TUN ist. Ein Satz, der alle ins Backoffice schickt, schickt
@@ -2050,14 +2094,22 @@ function vAbgleich(m){
   }
   if(a.offen.length){
     const s=document.createElement("section");
-    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenpositionen ohne Zuordnung —
-      ihr Verkauf fehlt in dieser Rechnung.
+    s.innerHTML=`<div class="hinweis bad">${a.offen.length} Kassenname${a.offen.length===1?"":"n"} ohne Zuordnung —
+      ${a.offen.length===1?"sein":"ihr"} Verkauf fehlt in dieser Rechnung.
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
   }
   /* Der dritte Zustand: zugeordnet, aber die Größe ist nicht bestätigt.
      Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
      Angabe, es fehlt keine Flasche. */
+  /* BERICHTIGUNG (neunte Jagd Runde 16 · C): Die Spalte „Vorschlag" in
+     der Tabelle weiter unten prüfte mit einer EIGENEN Bedingung (nicht
+     rezept, nicht ausschank, geb.ml da), während Kopf und Sammelknopf
+     `sammelbar()` benutzen. Heute zahlengleich — aber ein dritter
+     `fehlt`-Wert ergäbe dort einen Knopf, während der Kopf darüber „von
+     Hand eintragen" ankündigt. Vierte Stelle mit eigener Bedingung, und
+     genau das ist die Wurzel, an der diese Runde zweimal hängen blieb.
+     Sie fragt jetzt `sammelbar(o)`. */
   if(a.ohneGroesse.length){
     const t=teileOhneGroesse(a.ohneGroesse);
     /* „1 Einheiten" stand hier bis zur achten Jagd (C). */
@@ -2086,13 +2138,13 @@ function vAbgleich(m){
           : o.fehlt==="ausschank"
           ? "Die Ausschankmenge steht nicht im Kassennamen"
           : "Die Gebindegröße des Artikels ist nicht bestätigt"}</td>
-        <td>${o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
-          : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
-          : o.geb.ml
-            ? `<span class="vorschlag"><span>${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span></span>
+        <td>${sammelbar(o)
+          ? `<span class="vorschlag"><span>${o.geb.ml} ml <span class="mini">(${esc(o.geb.woher)})</span></span>
                <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
                  data-ml="${o.geb.ml}">Übernehmen</button></span>`
-            : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
+          : o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
+          : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
+          : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
       </tr>`).join("")}</tbody></table></div>`;
     m.appendChild(s);
     s.querySelectorAll("button[data-geb]").forEach(b=>b.onclick=()=>
@@ -2187,13 +2239,21 @@ function csvAbgleich(tag,a){
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
   /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
      des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
-  if(a.ohneGroesse.length){ L.push("",["Nicht gerechnet — Größe oder Menge fehlt"].map(e).join(";"),
-    ["Kassenname","Anzahl","Artikel","Was fehlt","Vorschlag ml"].map(e).join(";"));
+  /* Drei Zustände wie auf dem Schirm, nicht zwei (neunte Jagd · C): Die
+     Spalte sagte für „sammelbar" und für „ohne Vorschlag" dasselbe und
+     ließ den Unterschied nur an der leeren Spalte daneben erraten. Eine
+     eigene Spalte „Was zu tun ist" sagt es geradeheraus. */
+  if(a.ohneGroesse.length){ L.push("",["Nicht gerechnet"].map(e).join(";"),
+    ["Kassenname","Anzahl","Artikel","Was fehlt","Was zu tun ist","Vorschlag ml"].map(e).join(";"));
     a.ohneGroesse.forEach(o=>L.push([o.name,o.anzahl,
       (o.rezept?"Bestandteil ":"")+artName(o.id),
       o.rezept?"Gebindegröße des Bestandteils"
         :o.fehlt==="ausschank"?"Ausschankmenge im Kassennamen":"Gebindegröße des Artikels",
-      o.rezept?"":(o.geb.ml||"")].map(e).join(";"))); }
+      sammelbar(o)?"im Backoffice bestätigen (Vorschlag steht bereit)"
+        :o.fehlt==="ausschank"?"Kassenname mit Menge oder Rezeptur"
+        :o.rezept?"Größe am Bestandteil bestätigen"
+        :"Gebindegröße von Hand eintragen",
+      sammelbar(o)?(o.geb.ml||""):""].map(e).join(";"))); }
   hol("abgleich_"+tag+".csv", "\uFEFF"+L.join("\r\n"), "text/csv");
 }
 function hol(name, inhalt, typ){
@@ -2911,6 +2971,11 @@ function vTeam(m){
       <div class="reihe">
         <button class="b stark" id="nAdd">Speichern</button>
         <span class="mini rechts">Der Code erscheint danach nirgends mehr. Jetzt notieren.</span></div>
+      <!-- Was der Server zurückweist, steht hier und BLEIBT stehen, bis
+           der nächste Versuch läuft. Im Toast war es nach 2,2 s weg —
+           gerade die Meldung „diesen Namen gibt es schon" braucht man
+           länger als das (qa-guardian, zweite Schlusskontrolle). -->
+      <div id="nFehler" hidden></div>
     </div>`;
   m.appendChild(s);
 
@@ -3050,14 +3115,37 @@ function vTeam(m){
      schickt OHNE `id`; der Worker blockt nur denselben Code (409) — mit
      einem anderen entsteht die Person ZWEIMAL. Jetzt mit Frist, und der
      Aufrufer erfaehrt, ob es geklappt hat. */
+  /* Ein Satz, den man lesen und dem man folgen muss, gehört nicht in
+     eine Sprechblase, die nach Sekunden verschwindet. Er steht über dem
+     Formular, bis der nächste Versuch läuft. */
+  const formFehler=(txt)=>{
+    const f=$("#nFehler"); if(!f)return;
+    if(!txt){ f.hidden=true; f.innerHTML=""; return; }
+    f.hidden=false;
+    f.innerHTML=`<div class="hinweis warn" style="margin-top:var(--space-3)">${esc(txt)}</div>`;
+  };
   const sende=async(body)=>{
+    formFehler("");
     try{
       const r=await kurz("/api/personen",{method:"POST",
         headers:{"content-type":"application/json"},body:JSON.stringify(body)});
       const j=r.daten||{};
-      if(!r.ok){ toast(j.fehler||"Nicht gespeichert"); return false; }
+      if(!r.ok){
+        formFehler(j.fehler||"Nicht gespeichert"); toast("Nicht gespeichert");
+        /* Der Server hat GEANTWORTET — er ist also erreichbar, und die
+           Liste darunter ist vermutlich veraltet. Genau daher kommt die
+           häufigste Absage: „Diesen Namen gibt es schon", während die
+           Zeile auf dem Schirm fehlt und der Satz zu einem Knopf schickt
+           („PIN zurücksetzen"), den man dort nicht sieht (neunte Jagd
+           Runde 16 · B). Also nachladen. */
+        hole();
+        return false; }
       toast("Gespeichert"); hole(); return true;
-    }catch(e){ toast("Keine Verbindung — bitte noch einmal versuchen"); return false; }
+    }catch(e){
+      formFehler("Keine Verbindung zum Server. Die Eingabe steht noch da — "
+        +"mit Empfang noch einmal auf „Speichern“ drücken. Derselbe Mensch "
+        +"bekommt dabei dieselbe Zeile, es entsteht kein zweiter Eintrag.");
+      toast("Keine Verbindung — bitte noch einmal versuchen"); return false; }
   };
   $("#nAdd").onclick=async()=>{
     const nm=$("#nName").value.trim(), code=$("#nCode").value.trim();

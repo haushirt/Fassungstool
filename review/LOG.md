@@ -3630,3 +3630,107 @@ vergeht nicht mehr von selbst, nur beim Abmelden (niedrig).
 
 **STATUS:** VERBESSERUNGEN — aus meiner Rolle nichts mit Priorität
 hoch/mittel offen; die neunte Jagd entscheidet.
+
+---
+
+### Runde 16 – software-engineer (neunte Runde, nach der neunten Jagd und der zweiten Schlusskontrolle)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A (Jäger)**: Die CSV-Ausfuhr „Ohne Zuordnung" wies die
+  Stückzahl eines EINZIGEN Tages aus, während die Ausfuhr über das ganze
+  Fenster geht. `abgleich()` führt denselben Kassennamen über alle Tage als
+  eine Zeile, legte dabei aber das Positionsobjekt des ersten Tages ab. Mit
+  sieben Berichten im Fenster: 136 Einheiten ausgewiesen, 952 verkauft —
+  Faktor sieben auf jeder der 44 Zeilen. Die Zuordnungsansicht daneben
+  summierte richtig; dieselbe Zahl, zwei Werte, keiner gekennzeichnet. Nicht
+  aus dieser Runde, aber ein A — und heute unsichtbar, weil nur ein Bericht
+  im Fenster liegt.
+* ✅ übernommen — **B (Jäger)**: Der Namenswächter verglich in SQL. `lower()`
+  ist dort ASCII, `trim()` schneidet nur außen, NFC und NFD sind verschiedene
+  Zeichenketten. Am echten Worker kamen durch: doppeltes Leerzeichen,
+  geschütztes Leerzeichen, NFD-Umlaut, „MÜLLER" neben „Müller".
+* ✅ übernommen — **B (Jäger + qa-guardian, unabhängig)**: Die 409-Meldung ist
+  216 Zeichen lang und stand 2,2 s in einer Sprechblase; bei 390 px machte
+  `--radius-pill` daraus einen Kreis von 195 × 208 px, erste und letzte Zeile
+  hell auf hellem Grund. Und `sende()` lud nach einem Fehlschlag die Liste
+  nicht nach — die Zeile, zu deren „PIN zurücksetzen" der Satz schickt, stand
+  gar nicht auf dem Schirm.
+* ✅ übernommen — die drei C-Funde: `a.offen` hieß weiter „Kassenpositionen"
+  (dieselbe Berichtigung zwei Zeilen höher war an ihr vorbeigegangen), die
+  Vorschlag-Spalte prüfte mit einer vierten eigenen Bedingung, der CSV-Kopf
+  kannte zwei Zustände, während die Ansicht drei kennt.
+* ❌ abgelehnt — die Einordnung des qa-guardian, der Toast liege in der
+  geteilten Gestaltungsschicht. Er tut es nicht: Der geteilte Block endet bei
+  `leitung.html:244`, die Regel steht bei `:530`, und die App hat eine eigene
+  (`.toast` in `index.html:1068`, mit `max-width:88vw` und `radius-md` — dort
+  war es seit je richtig). Geändert habe ich deshalb nur `leitung.html`.
+
+**Umgesetzt:**
+1. **Die offene Kassenposition zählt über das Fenster.** `offen` summiert
+   jetzt wie `merkeOhneGroesse()` daneben — und führt eine eigene Zeile,
+   statt das Objekt aus `ZBER` abzulegen (das liegt im Speicher des Geräts
+   und darf nicht verändert werden).
+2. **Der Wächter vergleicht in JS statt in SQL:** `normalize("NFKC")`,
+   kleingeschrieben, Leerraum zusammengezogen. Nicht normalisiert werden
+   Satzzeichen — „Marinus." kommt weiter durch, und das ist Absicht: Der
+   Fall, den die Wache abfängt, ist der zweite Anlauf nach einem Abbruch, und
+   dabei tippt man denselben Namen. Von zwei Schreibweisen auf denselben
+   Menschen zu RATEN wäre derselbe Fehler, den Regel 5 beim Automapping
+   verbietet.
+3. **Die Absage steht, statt zu blinken.** Serverfehler aus `sende()` gehen in
+   einen stehenden `.hinweis warn` über dem Formular (`#nFehler`) und bleiben
+   bis zum nächsten Versuch; der Toast bekommt `max-width`, `radius-md`,
+   mittige Ausrichtung und eine Dauer nach Textlänge (55 ms je Zeichen,
+   gedeckelt bei 9 s). Und nach einem Fehlschlag lädt `sende()` die Liste
+   nach — der Server hat ja geantwortet, er ist erreichbar; die Zeile, zu der
+   der Satz schickt, steht danach da.
+4. **Die drei C-Funde**, dazu die Vorschlag-Spalte auf `sammelbar(o)`
+   umgestellt (vierte Stelle mit eigener Bedingung — genau die Wurzel, an der
+   diese Runde zweimal hängen blieb) und die CSV um eine Spalte „Was zu tun
+   ist" erweitert.
+
+**Geprüft:** `npm test` **440/440**. Neu und gegen `c61ed70` nachweislich rot:
+* die Fensterrechnung (drei Tage, derselbe Kassenname: 12 statt 5) samt der
+  Gegenprobe, dass der gespeicherte Z-Bericht dabei unverändert bleibt;
+* der Wächter gegen acht Schreibweisen (`asad`, `ASAD`, Leerraum außen,
+  Tabulator, geschütztes Leerzeichen, `JÜRGEN`, NFD, doppelter Leerraum
+  zwischen Vor- und Nachnamen) — und die Gegenprobe, dass ein Leerzeichen
+  MITTEN im Wort weiterhin ein anderer Name ist;
+* `tests/qa-runde16-kennung.cjs` K7: die Absage steht über dem Formular, der
+  Toast ist kein Kreis mehr (Radius 8 statt 999 bei 39 px Höhe), kein
+  waagrechter Überlauf bei 390 px, und nach zehn Sekunden steht der Satz
+  immer noch da. Auf `c61ed70` dreimal rot, mit gemessenen 999 px Radius auf
+  208 px Höhe.
+
+`sw.js` v50 → **v51**.
+
+**Nicht behoben, bewusst:**
+* **Der Wettlauf.** Zwei gleichzeitige `POST /api/personen` mit demselben
+  neuen Namen laufen beide am `SELECT` vorbei. Dicht macht das nur ein
+  UNIQUE-Index auf `person(name)` — eine Migration, und diese Nacht hat
+  ausdrücklich keine. Steht im Backlog samt der Abfrage, die vorher lesend
+  laufen muss (sonst scheitert der Index an schon bestehenden Dubletten).
+* **`ANLAGE_OFFEN`.** Der qa-guardian hat bemerkt, dass der Wächter nebenbei
+  ein altes Loch schließt: Solange `ANLAGE_OFFEN` gesetzt ist, konnte ein
+  unangemeldeter `POST /api/anlage` eine zweite Zeile „Casimir" mit
+  `rolle: leitung` anlegen. Das ist jetzt 409. Ob die Variable live noch
+  gesetzt ist, steht im Dashboard und ist für mich nicht erreichbar —
+  Aufgabe im Morgenbrief.
+
+**UNGEPRÜFT:** echtes Safari auf iPhone/iPad, Hardwaretastatur, Notch. Der
+Klick-Durchgang live (Egress-Proxy weist die Adresse ab, siehe Morgenbrief).
+
+**Für die Nächsten:**
+* An den **Jäger**: Dreimal in Folge hieß der Fund „eine Stelle rechnet
+  anders als die daneben". `sammelbar()` ist jetzt die einzige Bedingung, und
+  `offen` summiert wie `ohneGroesse`. Der nächste Fund dieser Art wäre eine
+  fünfte Stelle.
+
+**Phase/Thema:** Runde 16 / neunte Runde, vor dem Livegang
+
+**Backlog:** Wettlauf/UNIQUE-Index (niedrig, nach Live-Prüfung);
+`hh_nkennung_v1` auch beim `pagehide` räumen (niedrig); Prüfungsreihenfolge in
+`personSchreiben` (niedrig); feste Ports in den Prüfskripten (mittel).
+
+**STATUS:** VERBESSERUNGEN — aus meiner Rolle nichts mit Priorität hoch/mittel
+offen.

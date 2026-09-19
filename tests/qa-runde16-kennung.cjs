@@ -37,7 +37,8 @@ const TYPEN = { ".html": "text/html;charset=utf-8", ".js": "text/javascript",
 /* Bei jedem Lauf gewuerfelt (Regel 9): kein fester Code im Quelltext. */
 const rnd = () => String(require("crypto").randomInt(1000, 10000));
 
-const LAGE = { personenStumm: true, pakete: [], personen: [] };
+const BELEG = path.join(__dirname, "..", "review", "screens", "qa16");
+const LAGE = { personenStumm: true, pakete: [], personen: [], absage: null };
 
 const srv = http.createServer((q, a) => {
   let u = q.url.split("?")[0];
@@ -51,6 +52,9 @@ const srv = http.createServer((q, a) => {
         let leib = ""; q.on("data", c => leib += c);
         return q.on("end", () => {
           try { LAGE.pakete.push(JSON.parse(leib)); } catch (e) {}
+          /* `absage` spielt die 409-Antwort des Namenswaechters. */
+          if (LAGE.absage) { a.writeHead(409, kopf);
+            return a.end(JSON.stringify({ fehler: LAGE.absage })); }
           a.writeHead(200, kopf); a.end(JSON.stringify({ ok: true }));
         });
       }
@@ -271,6 +275,70 @@ const speicherAbzug = p => p.evaluate(() => {
       urteil("K6 · nach dem Abmelden ist sie weg", nachher === null, String(nachher));
       urteil("K6 · keine JS-Fehler", fehler.length === 0, fehler[0]);
       await ctx.close();
+    }
+
+    /* ── K7 · Die Absage muss lesbar sein und stehenbleiben ───── */
+    /* qa-guardian, zweite Schlusskontrolle: Die wichtigste neue Meldung
+       des Systems stand 2,2 s in einer Sprechblase, und bei 390 px machte
+       `--radius-pill` (999px = halbe Hoehe) aus dem elfzeiligen Kasten
+       einen KREIS — erste und letzte Zeile hell auf hellem Seitengrund,
+       unlesbar. Jetzt steht ein Serverfehler in `#nFehler` ueber dem
+       Formular und bleibt bis zum naechsten Versuch. */
+    {
+      LAGE.personenStumm = false;
+      const ctx = await b.newContext({ viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      LAGE.absage = "„Asad Karakiri“ ist schon angelegt. Einen zweiten Eintrag gibt es "
+        + "nicht — wer wirklich so heißt wie jemand im Haus, braucht einen "
+        + "unterscheidenden Namen. Einen neuen Code für die bestehende Person gibt es "
+        + "über „PIN zurücksetzen“.";
+      await p.goto("http://127.0.0.1:" + PORT + "/leitung.html", { waitUntil: "load" });
+      await warte(p, 800);
+      await p.evaluate(() => { SEITE = "team"; zeichne(); });
+      await warte(p, 500);
+      await anlegen(p, "Asad Karakiri", rnd());
+      await warte(p, 600);
+
+      const lage = await p.evaluate(() => {
+        const f = document.querySelector("#nFehler");
+        const t = document.querySelector("#toast");
+        const r = t ? t.getBoundingClientRect() : null;
+        const st = t ? getComputedStyle(t) : null;
+        return {
+          steht: !!(f && !f.hidden && /schon angelegt/.test(f.textContent)),
+          toastB: r ? Math.round(r.width) : 0,
+          toastH: r ? Math.round(r.height) : 0,
+          radius: st ? parseFloat(st.borderTopLeftRadius) : 0,
+          docBreit: document.documentElement.scrollWidth,
+          fenster: window.innerWidth
+        };
+      });
+      urteil("K7 · die Absage steht über dem Formular, nicht nur im Toast",
+        lage.steht, JSON.stringify(lage.steht));
+      urteil("K7 · der Toast ist kein Kreis mehr (Radius unter der halben Höhe)",
+        lage.radius * 2 < lage.toastH || lage.toastH <= 48,
+        "Radius " + lage.radius + " · Höhe " + lage.toastH);
+      urteil("K7 · kein waagrechter Überlauf bei 390 px",
+        lage.docBreit <= lage.fenster, lage.docBreit + " / " + lage.fenster);
+      fs.mkdirSync(BELEG, { recursive: true });
+      await p.screenshot({ path: BELEG + "/k7-absage-390.png", fullPage: true });
+
+      /* Und sie bleibt stehen, nachdem der Toast laengst weg ist. */
+      await warte(p, 9500);
+      const spaeter = await p.evaluate(() => {
+        const f = document.querySelector("#nFehler");
+        const t = document.querySelector("#toast");
+        return { steht: !!(f && !f.hidden && /schon angelegt/.test(f.textContent)),
+                 toastAn: !!(t && t.classList.contains("on")) };
+      });
+      urteil("K7 · nach zehn Sekunden steht sie immer noch da", spaeter.steht);
+      urteil("K7 · der Toast ist dann weg", !spaeter.toastAn);
+      urteil("K7 · keine JS-Fehler", fehler.length === 0, fehler[0]);
+      await ctx.close();
+      LAGE.absage = null;
     }
 
   } finally {

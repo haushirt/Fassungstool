@@ -770,11 +770,28 @@ async function personSchreiben(env, body) {
      `id` unter den namensgleichen. Abgelehnt wird nur das Anlegen einer
      NEUEN Zeile unter einem Namen, den es schon gibt.
 
-     `lower()` in SQLite ist ASCII — „Müller" und „müller" gelten ihm als
-     verschieden. Das ist die schwaechere Haelfte der Wache; die staerkere
-     ist die Kennung im Backoffice, die den Namen exakt trifft. */
-  const { results: namensgleich } = await env.DB.prepare(
-    `SELECT id FROM person WHERE lower(trim(name)) = lower(trim(?1))`).bind(name).all();
+     BERICHTIGUNG (qa-guardian, zweite Schlusskontrolle): Die erste
+     Fassung verglich in SQL mit `lower(trim(name))`. `lower()` in SQLite
+     ist ASCII — „JUERGEN" und „Juergen" fasste es zusammen, „JÜRGEN" und
+     „Jürgen" nicht. Gemessen kamen ausserdem durch: zwei Leerzeichen
+     mitten im Namen und dieselben Buchstaben in NFD statt NFC. Verglichen
+     wird deshalb in JS, nach `normalize("NFKC")`, kleingeschrieben und
+     mit zusammengezogenem Leerraum. Die Tabelle hat eine Handvoll Zeilen;
+     sie ganz zu holen kostet nichts.
+
+     Was NICHT normalisiert wird: Satzzeichen. „Marinus." kommt damit
+     durch. Das ist Absicht — der Fall, den diese Wache abfangen soll, ist
+     der ZWEITE Anlauf nach einem Abbruch, und dabei tippt man denselben
+     Namen, nicht einen anderen. Von zwei Schreibweisen auf denselben
+     Menschen zu RATEN waere derselbe Fehler, den Regel 5 beim
+     Getraenke-Automapping verbietet: Was hier verglichen wird, ist
+     dieselbe Zeichenkette in anderer Kodierung, nichts sonst. */
+  const namensSchluessel = t => String(t == null ? "" : t)
+    .normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
+  const { results: alleNamen } = await env.DB.prepare(
+    `SELECT id, name FROM person`).all();
+  const namensgleich = alleNamen.filter(
+    r => namensSchluessel(r.name) === namensSchluessel(name));
   if (namensgleich.length && !namensgleich.some(r => r.id === id))
     return json({ fehler: "„" + name + "“ ist schon angelegt. Einen zweiten Eintrag "
       + "gibt es nicht — wer wirklich so heißt wie jemand im Haus, braucht einen "

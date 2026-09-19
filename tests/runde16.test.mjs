@@ -275,6 +275,53 @@ describe("A2 · Ein Code gehört genau einer Person", () => {
     }
   });
 
+  /* qa-guardian, zweite Schlusskontrolle: `lower()` in SQLite ist ASCII.
+     „JUERGEN"/„Juergen" fasste es zusammen, „JÜRGEN"/„Jürgen" nicht;
+     ausserdem kamen zwei Leerzeichen mitten im Namen und dieselben
+     Buchstaben in NFD durch. Jedes Mal entstand eine zweite aktive Zeile
+     mit einem zweiten gültigen Code. Verglichen wird jetzt in JS nach
+     NFKC, kleingeschrieben, mit zusammengezogenem Leerraum. */
+  test("der Wächter lässt sich nicht mit Schreibweisen umgehen", async () => {
+    const CL = wuerfel(), CS = wuerfel() === CL ? wuerfel(5) : wuerfel();
+    const env = await haus(CL, CS);
+    const keks = keksAus(await anmelden(env, CL));
+    let frei = wuerfel();
+    while (frei === CL || frei === CS) frei = wuerfel();
+
+    /* „Asad" steht in `haus()`. Jede dieser Schreibweisen meint ihn. */
+    for (const v of ["asad", "ASAD", "  Asad  ", "\tAsad\n", "Asad\u00a0"]) {
+      const r = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+        body: { name: v, rolle: "service", code: frei } }), env);
+      assert.equal(r.status, 409, JSON.stringify(v) + " kam durch");
+    }
+
+    /* Umlaut in Gross- und Kleinschreibung und in NFD: daran scheiterte
+       `lower()` in SQL. */
+    const u = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+      body: { name: "J\u00fcrgen", rolle: "service", code: frei } }), env);
+    assert.equal(u.status, 200, "J\u00fcrgen liess sich nicht anlegen");
+    for (const v of ["J\u00dcRGEN", "J\u00fcrgen".normalize("NFD"), "  J\u00fcrgen  "]) {
+      const r = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+        body: { name: v, rolle: "service", code: wuerfel() } }), env);
+      assert.equal(r.status, 409, JSON.stringify(v) + " kam durch");
+    }
+
+    /* Doppelter Leerraum ZWISCHEN Vor- und Nachnamen ist derselbe
+       Mensch, ein Leerzeichen MITTEN im Wort ist ein anderer Name. Die
+       Wache zieht Leerraum zusammen, sie entfernt ihn nicht — raten
+       soll sie nicht. */
+    const m = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+      body: { name: "Ian Lauchbein", rolle: "service", code: wuerfel() } }), env);
+    assert.equal(m.status, 200);
+    const d = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+      body: { name: "Ian  Lauchbein", rolle: "service", code: wuerfel() } }), env);
+    assert.equal(d.status, 409, "doppelter Leerraum zwischen den Namen kam durch");
+    const anders = await worker.fetch(anfrage("/api/personen", { method: "POST", keks,
+      body: { name: "I an Lauchbein", rolle: "service", code: wuerfel() } }), env);
+    assert.equal(anders.status, 200,
+      "ein Leerzeichen mitten im Wort wurde als derselbe Mensch gelesen");
+  });
+
   test("ohne Namen und ohne Rolle bleibt es bei 422", async () => {
     /* Die Namensprüfung darf nicht vor der Formprüfung greifen: sonst
        führt ein leeres Feld zu einer Meldung über Dubletten. */

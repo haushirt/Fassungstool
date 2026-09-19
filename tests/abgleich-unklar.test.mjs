@@ -278,6 +278,48 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
      mit der Live-Zuordnung sind das 10 von 17 Positionen, die ins
      Backoffice geschickt werden, wo es für sie nichts zu tun gibt.
      Gezählt wird deshalb an einer Stelle: `teileOhneGroesse()`. */
+  /* Neunte Jagd Runde 16 · A. `abgleich()` führt eine offene
+     Kassenposition über alle Tage des Fensters als EINE Zeile — legte
+     dabei aber das Positionsobjekt des ERSTEN Tages ab. Die CSV-Ausfuhr
+     schrieb daraus `p.anzahl`, obwohl sie über das ganze Fenster geht:
+     mit sieben Berichten 136 Einheiten statt 952, Faktor sieben auf jeder
+     der 44 Zeilen. Die Zuordnungsansicht daneben summierte richtig —
+     dieselbe Zahl, zwei Werte, keiner gekennzeichnet. Solange nur EIN
+     Bericht im Fenster liegt, fallen beide zusammen. */
+  test("eine offene Kassenposition zählt über das ganze Fenster", () => {
+    const f = umgebung();
+    const tage = [TAG];
+    const d = new Date(TAG + "T12:00:00Z");
+    for (let i = 1; i < 3; i++) {
+      d.setUTCDate(d.getUTCDate() - 1);
+      tage.push(d.toISOString().slice(0, 10));
+    }
+    /* Derselbe Kassenname an drei Tagen, verschiedene Stückzahlen, keine
+       Zuordnung — also „offen". */
+    const zber = {};
+    [5, 3, 4].forEach((n, i) => {
+      zber[tage[i]] = { tag: tage[i], nr: 90 + i, umsatz: 0,
+        positionen: [{ name: "HP Omelett 1 Portion", anzahl: n, umsatz: n * 4 }] };
+    });
+    f.setzte({}, {}, zber, [vorgang({ w001: 1 }, {})]);
+    const a = f.abgleich(TAG, 3);
+    assert.equal(a.berichte, 3, "alle drei Tage liegen im Fenster");
+    assert.equal(a.offen.length, 1, "der Kassenname steht einmal");
+    assert.equal(a.offen[0].anzahl, 12,
+      "die Anzahl ist die eines einzigen Tages statt der des Fensters");
+    assert.equal(a.offen[0].umsatz, 48);
+
+    /* Und das Positionsobjekt im Z-Bericht darf dabei nicht verändert
+       worden sein — es liegt im Speicher des Geräts. */
+    assert.equal(zber[tage[0]].positionen[0].anzahl, 5,
+      "der gespeicherte Z-Bericht wurde mitverändert");
+
+    /* Die CSV-Ausfuhr liest genau dieses Feld. */
+    const BO = lies("public", "leitung.html");
+    assert.match(BO, /a\.offen\.forEach\(p=>L\.push\(\[p\.name,p\.anzahl\]/,
+      "die Ausfuhr liest ein anderes Feld als das geprüfte");
+  });
+
   test("die beiden Ursachen werden auch dort getrennt, wo nur gezählt wird", () => {
     const f = umgebung();
     f.setzte({ "MU Muster, Gelber Muskateller Styria 0,75 l": "w018",
@@ -351,6 +393,20 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     /* „1 Einheiten" (achte Jagd · C). */
     assert.match(BO, /x===1\?" Einheit":" Einheiten"/,
       "die Einheiten haben keine Einzahlform");
+    /* Neunte Jagd · C: `a.offen` zählt ebenfalls Kassennamen — dieselbe
+       Berichtigung zwei Zeilen höher war an ihr vorbeigegangen. */
+    assert.doesNotMatch(BO, /a\.offen\.length\+" Kassenpositionen/,
+      "die offenen Positionen heißen weiter Kassenpositionen");
+    assert.doesNotMatch(BO, /\$\{a\.offen\.length\} Kassenpositionen/,
+      "der Hinweis nennt sie weiter Kassenpositionen");
+    /* Neunte Jagd · C: die Vorschlag-Spalte hatte eine eigene Bedingung. */
+    assert.match(BO, /<td>\$\{sammelbar\(o\)/,
+      "die Vorschlag-Spalte prüft mit einer eigenen Bedingung");
+    /* Neunte Jagd · C: der CSV-Kopf kannte zwei Zustände, die Ansicht drei. */
+    assert.match(BO, /"Was zu tun ist"/,
+      "die Ausfuhr sagt nicht, was zu tun ist");
+    assert.match(BO, /sammelbar\(o\)\?"im Backoffice bestätigen/,
+      "die Ausfuhr unterscheidet sammelbar nicht von „von Hand“");
     assert.doesNotMatch(BO, /<h3>Größe fehlt · \$\{a\.ohneGroesse\.length\}/,
       "die Abschnittsüberschrift zählt beide Ursachen als „Größe fehlt“");
 

@@ -1,7 +1,7 @@
 # Morgenbrief · Nacht auf den 19.09.2026 · Runde 16
 
 Eine Runde, ohne dich, durchgearbeitet. Ausgangsstand: **`ac8d93a`**
-(`sw.js` v38), live. Neuer Stand: **`sw.js` v50** — die Runde, acht
+(`sw.js` v38), live. Neuer Stand: **`sw.js` v51** — die Runde, acht
 Jagden danach und zwei Gegenprüfungen des qa-guardian.
 
 Der Brief der Nacht auf den 18.09. ist abgelöst — er beschrieb einen Pull
@@ -22,6 +22,20 @@ falsch: Es sind **vier**. Dieser Brief gilt.
 | ☐ | **Gasteiner 0,25 l in Lade 1 nachzählen.** Das Soll steht auf **8**. Passen dort acht Flaschen in die Spalte oder sieben? Die Zahl geht über das Nachfüllen ins Journal, und das Journal lässt sich nicht zurücknehmen. Sag mir die Zahl, dann ändere ich sie — ich habe sie ausdrücklich **nicht** angefasst. | 3 |
 
 Mehr nicht. **Keine Migration, kein Dashboard-Schritt, kein Codewechsel.**
+
+### Zwei Dinge, die nur du nachsehen kannst
+
+* **`ANLAGE_OFFEN` im Dashboard.** Solange die Variable gesetzt ist, steht
+  `POST /api/anlage` ohne Anmeldung offen. `/api/ping` gibt `anlage: true`
+  oder `false` zurück — wenn `true`, gehört sie weg. (Der Namenswächter
+  dieser Nacht verhindert dort immerhin, dass jemand eine zweite Zeile
+  „Casimir" mit voller Leitung anlegt; vorher ging das.) Dashboard und
+  Secrets sind für mich nicht erreichbar.
+* **Stehen in der Datenbank schon zwei Personen mit demselben Namen?** Eine
+  Zeile in der D1-Konsole, nur lesend:
+  `SELECT lower(trim(name)) n, COUNT(*) c FROM person GROUP BY n HAVING c > 1;`
+  Kommt nichts zurück, ist alles sauber. Kommt etwas zurück, sag es mir —
+  dann sperren wir die überzählige Zeile (löschen geht nicht, §8).
 
 ### Was ich live NICHT prüfen konnte
 
