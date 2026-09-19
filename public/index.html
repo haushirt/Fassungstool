@@ -1914,7 +1914,21 @@ async function werHatDenCode(code){
     if((r.headers.get("content-type")||"").includes("json")){
       const j=await r.json().catch(()=>({}));
       if(r.ok&&j.name){ await merkeCode(code,j.name); return {name:j.name,quelle:"server"}; }
-      if(r.status===401){ await vergissCode(code); return {name:null,quelle:"server"}; }
+      /* qa-guardian, Schlusskontrolle Runde 16: Unter 401 stehen ZWEI
+         verschiedene Neins. „unbekannt" kommt aus `codeNachschlagen()` und
+         heisst wirklich: diesen Code gibt es nicht mehr. „nicht angemeldet"
+         kommt aus dem Router DAVOR (src/index.js, `if (!p) …`) und sagt
+         ueber den Code gar nichts — die Sitzung ist nach zwoelf Stunden
+         abgelaufen. Wurde beides gleich behandelt, nahm eine abgelaufene
+         Sitzung dem Geraet einen GUELTIGEN Code aus `hh_bekannt_v1`;
+         danach war auch die Rueckfallebene ohne Netz zerstoert, und im
+         Dialog stand, der Code sei zurueckgesetzt worden. Nur das echte
+         Nein darf vergessen. */
+      if(r.status===401&&j.fehler==="unbekannt"){
+        await vergissCode(code); return {name:null,quelle:"server"}; }
+      if(r.status===401){
+        const n0=await bekannterCode(code);
+        return {name:n0, quelle:n0?"geraet":"sitzung"}; }
       if(r.status===429) return {name:null,quelle:"gesperrt",
         wartenBis:+j.wartenBis||0, minuten:+j.minuten||0};
     }
@@ -1931,6 +1945,9 @@ function codeAbsage(erg){
       {hour:"2-digit",minute:"2-digit"}):"";
     return "Zu viele Fehlversuche."+(uhr?" Wieder m\u00f6glich ab "+uhr+" Uhr.":"");
   }
+  if(erg.quelle==="sitzung")
+    return "Die Anmeldung ist abgelaufen. Bitte oben abmelden und neu anmelden \u2014 "
+          +"der Code selbst gilt weiter.";
   if(erg.quelle==="server")
     return "Dieser Code gilt nicht. Wurde er zur\u00fcckgesetzt, gilt nur noch der neue.";
   return "Code stimmt nicht. Ohne Netz geht hier nur ein Code, der auf diesem "
