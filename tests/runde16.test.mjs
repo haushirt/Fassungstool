@@ -98,8 +98,11 @@ describe("A1 · Abmelden nimmt die Sitzung, nicht nur den Namen", () => {
   test("auch das Backoffice hat einen Ausgang", () => {
     assert.match(BO, /ab\.id="bAb"/, "leitung.html hat keinen Abmeldeknopf");
     assert.match(BO, /async function abmelden\(\)/);
-    assert.match(BO, /fetch\("\/api\/abmelden",\{method:"POST"/,
+    /* Seit der dritten Jagd mit Frist (`kurz()`), damit der Knopf am
+       geteilten iPad nicht am schweigenden WLAN haengen bleibt. */
+    assert.match(BO, /kurz\("\/api\/abmelden",\{method:"POST"\}\)/,
       "der Ausgang im Backoffice ruft den Endpunkt nicht");
+    assert.match(BO, /async function kurz\(pfad,opt,ms\)/);
     /* Er steht in der Navigation, nicht in der Leiste: dort war unter
        900 px kein Platz mehr und die Leiste lief aus dem Fenster. */
     assert.match(BO, /nav\.seite button\.ausgang\{/);
@@ -599,7 +602,9 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
        gemacht. `flaschen()` in leitung.html gibt dort `fehlt:"ausschank"`
        zurück und vergleicht die Position nicht. */
     assert.equal(f({ rohbez: "Aperol Spritz 1 Glas", anzahl: 6, ausschankMl: null }), null);
-    assert.equal(f({ rohbez: "X", anzahl: 2, ausschankMl: null }, groessen), null);
+    /* `f` nimmt nur EIN Argument — die Größen stehen schon darin. Die
+       erste Fassung hängte hier ein zweites an, das nie ankam (C). */
+    assert.equal(f({ rohbez: "X", anzahl: 2, ausschankMl: null }), null);
   });
 
   test("nur, was auseinandergeht — hier eine Zeile", () => {
@@ -611,10 +616,22 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
 
   test("ein Artikel ohne bestätigte Grösse bleibt aus der Rechnung — und wird gezählt", () => {
     const a = rechne.abgleichZeilen(vorgang, zBericht, groessen);
-    assert.equal(a.ohneGroesse, 1);
+    assert.equal(a.ohneGebinde, 1);
     assert.equal(a.ohneZuordnung, 1);
     assert.equal(a.zeilen.some(z => z.id === "w9"), false,
       "eine Position ohne Gebindegrösse wird als Abweichung behauptet");
+  });
+
+  /* Die beiden Ursachen werden getrennt gezählt (dritte Jagd Runde 16):
+     „keine Menge im Kassennamen" kann die Leitung nicht beheben, „keine
+     bestätigte Gebindegrösse" schon. Der Kopf des Fensters nennt sonst
+     einen Grund, den es nicht gibt. */
+  test("keine Menge im Namen und keine bestätigte Grösse zählen getrennt", () => {
+    const mitGlas = { tag: "2026-09-18", positionen: zBericht.positionen.concat(
+      [{ rohbez: "Aperol Spritz 1 Glas", artikel: "cola", anzahl: 6, ausschankMl: null }]) };
+    const a = rechne.abgleichZeilen(vorgang, mitGlas, groessen);
+    assert.equal(a.ohneMenge, 1, "die Position ohne Menge im Namen fehlt");
+    assert.equal(a.ohneGebinde, 1, "die Position ohne Gebindegrösse fehlt");
   });
 
   test("ohne JEDE Grösse wird nichts verglichen — und nichts behauptet", () => {
@@ -623,7 +640,21 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     const a = rechne.abgleichZeilen(vorgang, zBericht, {});
     assert.equal(a.geprueft, 0);
     assert.equal(a.zeilen.length, 0);
-    assert.equal(a.ohneGroesse, 4);
+    assert.equal(a.ohneGebinde, 4);
+    assert.equal(a.geholt, true, "geholt-aber-leer ist nicht nicht-geholt");
+  });
+
+  /* `null` heisst „die Größen konnten nicht geholt werden" — ein
+     Serverfehler darf nicht als unerledigte Arbeit der Leitung
+     erscheinen (dritte Jagd Runde 16 · B). */
+  test("nicht geholte Grössen sind etwas anderes als keine bestätigten", () => {
+    const a = rechne.abgleichZeilen(vorgang, zBericht, null);
+    assert.equal(a.geholt, false);
+    const fenster = APP.slice(APP.indexOf("function popupAbgleich"),
+                              APP.indexOf("function popupFertig"));
+    assert.match(fenster, /!a\.geholt/,
+      "das Fenster unterscheidet nicht zwischen nicht-geholt und nicht-bestätigt");
+    assert.match(fenster, /nicht geholt werden/);
   });
 
   test("`holtN` schlägt die Summe der Fächer — wie im Worker", () => {

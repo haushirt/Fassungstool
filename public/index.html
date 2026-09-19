@@ -1931,8 +1931,8 @@ async function werHatDenCode(code){
   try{
     const r=await holeKurz(API+"/code",{method:"POST",
       headers:{"content-type":"application/json"},body:JSON.stringify({code})});
-    if((r.headers.get("content-type")||"").includes("json")){
-      const j=await r.json().catch(()=>({}));
+    if(r.json){
+      const j=r.daten||{};
       if(r.ok&&j.name){ await merkeCode(code,j.name); return {name:j.name,quelle:"server"}; }
       /* qa-guardian, Schlusskontrolle Runde 16: Unter 401 stehen ZWEI
          verschiedene Neins. „unbekannt" kommt aus `codeNachschlagen()` und
@@ -2216,12 +2216,46 @@ const K_ABMELDUNG="hh_abmeldung_offen_v1";
    Antwort": Der Abschluss geht ohne Z-Bericht weiter, die Freigabe fällt
    auf den Gerätespeicher zurück. Kein Weg im Haus darf an einer Antwort
    hängen, die nie kommt. */
+/* BERICHTIGUNG (dritte Jagd Runde 16 · A): Die erste Fassung gab die
+   `Response` zurück und räumte die Uhr im `finally` weg. Das `finally`
+   läuft aber, sobald `fetch` auflöst — und das ist, sobald der KOPF da
+   ist. Der `AbortController` war danach zahnlos: `await r.json()` beim
+   Aufrufer lief ohne jede Frist. Gemessen: Ein Server, der `200` und
+   `content-type` sendet und den Leib nie, hielt den Abschluss über 40 s
+   auf „speichert …". Ein halb durchgekommenes Paket über schwaches WLAN
+   ist genau der Normalfall dieses Fehlerbilds.
+
+   Diese Fassung liest den Leib NOCH INNERHALB der Frist und gibt ihn
+   fertig zurück. Der Aufrufer bekommt nie eine halb gelesene Antwort.
+
+   Ohne `AbortController` (sehr alte Browser) bricht `fetch` selbst nicht
+   ab — dann sorgt das Rennen gegen die Uhr wenigstens dafür, dass der
+   AUFRUFER weiterkommt. Eine Frist, die es nur manchmal gibt, ist keine. */
+function nachFrist(ms){
+  return new Promise((_,weg)=>setTimeout(()=>weg(new Error("Frist")),ms));
+}
 async function holeKurz(pfad,opt,ms){
-  const ab=("AbortController" in window)?new AbortController():null;
-  const uhr=ab?setTimeout(()=>ab.abort(),ms||8000):0;
-  try{
-    return await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
+  const frist=+ms>0?+ms:8000;
+  /* `typeof`, nicht `in window`: Dieser Ausschnitt laeuft auch ausserhalb
+     eines Fensters — die Pruefungen schneiden ihn heraus und fahren ihn
+     in einer eigenen Umgebung (tests/ausgang.test.mjs). */
+  const ab=(typeof AbortController!=="undefined")?new AbortController():null;
+  const uhr=ab?setTimeout(()=>ab.abort(),frist):0;
+  const lauf=(async()=>{
+    const r=await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
       ab?{signal:ab.signal}:{}));
+    const typ=r.headers.get("content-type")||"";
+    /* Der Leib wird hier gelesen, nicht beim Aufrufer — sonst endet die
+       Frist am Kopf. `text()` statt `json()`, damit eine kaputte Antwort
+       nicht als Netzfehler durchgeht. */
+    let text="";
+    try{ text=await r.text(); }catch(e){ text=""; }
+    let daten=null;
+    if(typ.includes("json")){ try{ daten=JSON.parse(text); }catch(e){} }
+    return {ok:r.ok, status:r.status, json:typ.includes("json"), daten};
+  })();
+  try{
+    return ab ? await lauf : await Promise.race([lauf, nachFrist(frist)]);
   } finally { if(uhr)clearTimeout(uhr); }
 }
 
@@ -2229,9 +2263,9 @@ async function serverAbmelden(){
   /* Ohne Zeitgrenze bliebe der Knopf auf „meldet ab …" stehen, bis der
      Browser von sich aus aufgibt; danach gilt es als „ohne Netz" und
      wird vorgemerkt. */
-  const r=await holeKurz(API+"/abmelden",
+  const a=await holeKurz(API+"/abmelden",
     {method:"POST",headers:{accept:"application/json"}});
-  if(!r.ok)throw new Error("abmelden "+r.status);
+  if(!a.ok)throw new Error("abmelden "+a.status);
   return true;
 }
 async function holeAbmeldungNach(){
@@ -2243,10 +2277,9 @@ function setRolle(r){try{r?sessionStorage.setItem(RKEY,r):sessionStorage.removeI
 async function zieheRolle(){
   if(!whoAmI())return;
   try{
-    const r=await fetch(API+"/ich",{credentials:"same-origin",
-      headers:{accept:"application/json"}});
-    if(!r.ok||!(r.headers.get("content-type")||"").includes("json"))return;
-    const j=await r.json();
+    const r=await holeKurz(API+"/ich",{headers:{accept:"application/json"}});
+    if(!r.ok||!r.json)return;
+    const j=r.daten||{};
     const alt=meineRolle();
     setRolle(j.rolle||"");
     /* Erst der Server, dann der Link: die Startseite steht beim ersten
@@ -2349,11 +2382,23 @@ async function schiebe(){
         /* Der Schlüssel modus_tag IST die Kennung des Vorgangs. Zweimal
            dasselbe Paket schreibt damit dieselbe Zeile \u2014 doppeltes
            Senden nach einem Netzabbruch kann keine Geistervorgänge
-           erzeugen, ganz ohne Idempotenzschlüssel. */
-        r=await fetch(API+"/vorgang/"+encodeURIComponent(e.schluessel),
-          {method:"PUT",credentials:"same-origin",
-           headers:{"content-type":"application/json"},
-           body:JSON.stringify(e.daten)});
+           erzeugen, ganz ohne Idempotenzschlüssel.
+
+           BERICHTIGUNG (dritte Jagd Runde 16 · A): Hier stand ein nacktes
+           `fetch`. Das ist der EINZIGE Weg, auf dem die Daten das Gerät
+           verlassen — und der einzige, der keine Frist hatte. Nimmt der
+           Server die Anfrage an und antwortet nie (schwacher Access
+           Point), löst dieses `await` nie auf: Das `finally` unten läuft
+           nie, `NETZ.laeuft` bleibt `true`, und ALLE Anstösse danach
+           (online-Ereignis, 45-s-Runde, visibilitychange) prallen an
+           `if(NETZ.laeuft)return` ab. Gemessen: null weitere Versuche für
+           den Rest der Sitzung, während der Chip „Verbunden" sagte und
+           ein Vorgang in der Reihe lag. Nur ein Neuladen holte ihn heraus.
+           Die Frist ist grosszügiger als anderswo — hier geht ein ganzes
+           Paket hinaus, nicht eine kurze Frage. */
+        r=await holeKurz(API+"/vorgang/"+encodeURIComponent(e.schluessel),
+          {method:"PUT",headers:{"content-type":"application/json"},
+           body:JSON.stringify(e.daten)}, 20000);
       }catch(err){ NETZ.zustand="offline"; break; }
       if(r.status===401){ NETZ.zustand="abgemeldet"; break; }
       if(r.status>=500||r.status===429){ NETZ.zustand="serverfehler"; break; }
@@ -2361,9 +2406,8 @@ async function schiebe(){
       /* 409: nicht verloren, sondern überholt — der Stand geht ins
          Sackfach, bevor er die Reihe verlässt. */
       if(r.status===409){
-        let fremd=null;
-        try{ const j=await r.json(); fremd=(j&&j.server)||null; }catch(err){}
-        insSackfach(e,fremd);
+        const j=r.daten;
+        insSackfach(e,(j&&j.server)||null);
       }
       a=jlese(K_AUSGANG,[]).filter(x=>x.id!==e.id);
       jschreib(K_AUSGANG,a);
@@ -2376,12 +2420,10 @@ async function schiebe(){
 
 async function zieheFern(){
   try{
-    const r=await fetch(API+"/vorgaenge",{credentials:"same-origin",
-      headers:{accept:"application/json"}});
+    const r=await holeKurz(API+"/vorgaenge",{headers:{accept:"application/json"}});
     if(r.status===401){ NETZ.zustand="abgemeldet"; netzChip(); return; }
-    if(!r.ok||!(r.headers.get("content-type")||"").includes("json")){
-      NETZ.zustand="kein-server"; netzChip(); return; }
-    const j=await r.json();
+    if(!r.ok||!r.json){ NETZ.zustand="kein-server"; netzChip(); return; }
+    const j=r.daten||{};
     const liste=Array.isArray(j)?j:(j.vorgaenge||[]);
     /* Der Worker liefert den Vorgang flach: die gespeicherten Daten,
        darüber gelegt id, tag, mode, name, finished, archiviert. */
@@ -2801,11 +2843,21 @@ function renderLogin(){
     $("#pinFehler").textContent="";
     let name=null, serverHat=false;
     try{
-      const r=await fetch(API+"/anmelden",{method:"POST",credentials:"same-origin",
+      /* BERICHTIGUNG (dritte Jagd Runde 16 · A): Hier stand ein nacktes
+         `fetch`. Nimmt der Server die Anmeldung an und antwortet nie,
+         loeste dieses `await` nie auf: `laeuftPruefung` blieb `true`, der
+         Wächter oben liess keinen zweiten Versuch mehr durch, und die
+         Rueckfallebene `bekannterCode()` weiter unten — die ausdrueckich
+         dafuer da ist, dass die Anmeldung im Keller ohne Netz trotzdem
+         geht — liegt HINTER demselben `await` und wurde nie erreicht.
+         Gemessen: nach 20 s kein Fehlertext, kein zweiter Ruf, keine
+         Erholung, als das Netz zurueckkam. Vor dem Ziffernblock stand
+         jemand, fuer den nichts mehr passierte. */
+      const r=await holeKurz(API+"/anmelden",{method:"POST",
         headers:{"content-type":"application/json"},body:JSON.stringify({code})});
-      if((r.headers.get("content-type")||"").includes("json")){
+      if(r.json){
         serverHat=true;
-        const j=await r.json().catch(()=>({}));
+        const j=r.daten||{};
         if(r.ok){ name=j.name||null; }
         else {
           /* Der Server sperrt nach zu vielen Fehlversuchen. Solange das
@@ -5507,9 +5559,8 @@ async function holeZBericht(tag){
   try{
     const r=await holeKurz(API+"/fassungsliste?tag="+encodeURIComponent(tag),
       {headers:{accept:"application/json"}});
-    if(!r.ok)return null;
-    if(!(r.headers.get("content-type")||"").includes("json"))return null;
-    const j=await r.json();
+    if(!r.ok||!r.json)return null;
+    const j=r.daten;
     return (j&&Array.isArray(j.positionen)&&j.positionen.length)?j:null;
   }catch(e){ return null; }
 }
@@ -5583,27 +5634,44 @@ function verkaufteFlaschen(p,groessen){
    Backoffices (`GET /api/mapping`, Feld `gebinde_ml`). Ohne Netz oder
    ohne Antwort bleibt die Liste leer — dann ist nichts umrechenbar, und
    das Fenster sagt genau das. */
+/* BERICHTIGUNG (dritte Jagd Runde 16 · B): Hier kam bei einem Fehler
+   dasselbe zurueck wie bei „es gibt keine bestaetigten Groessen" — ein
+   leeres Verzeichnis. Das Fenster schob damit einen Serverfehler der
+   Leitung als unerledigte Arbeit zu („die Groessen fehlen, bestaetige sie
+   im Backoffice"), obwohl sie laengst bestaetigt waren und nur die
+   Antwort nicht kam. `null` heisst jetzt „nicht geholt", `{}` heisst
+   „geholt, keine dabei". */
 async function holeGebindeGroessen(){
   try{
     const r=await holeKurz(API+"/mapping",{headers:{accept:"application/json"}});
-    if(!r.ok)return {};
-    if(!(r.headers.get("content-type")||"").includes("json"))return {};
-    const j=await r.json();
+    if(!r.ok||!r.json||!r.daten)return null;
     const g={};
-    (j.mapping||[]).forEach(m=>{ if(+m.gebinde_ml>0)g[m.kassenname]=+m.gebinde_ml; });
+    (r.daten.mapping||[]).forEach(m=>{ if(+m.gebinde_ml>0)g[m.kassenname]=+m.gebinde_ml; });
     return g;
-  }catch(e){ return {}; }
+  }catch(e){ return null; }
 }
 
 function abgleichZeilen(d,z,groessen){
   const gef=gefassteMengen(d);
   const verk={};
-  let ohneZuordnung=0, ohneGroesse=0;
+  /* BERICHTIGUNG (dritte Jagd Runde 16 · B): `ohneGroesse` zaehlte seit
+     der zweiten Jagd ZWEI verschiedene Ursachen in einen Topf — „keine
+     Menge im Kassennamen" (da kann die Leitung nichts tun, das fehlt der
+     Kasse) und „keine bestaetigte Gebindegroesse" (da kann sie etwas
+     tun). Der Kopf des Fensters schickte daraufhin auch dann ins
+     Backoffice, wenn dort nichts zu holen war. Jetzt getrennt. */
+  let ohneZuordnung=0, ohneMenge=0, ohneGebinde=0;
   const fehltGroesse={};
+  /* `groessen === null` heisst: die Groessen konnten nicht geholt werden
+     (Serverfehler, Frist abgelaufen). Das ist etwas anderes als „keine
+     bestaetigt" und wird auch anders gesagt. */
+  const geholt = groessen!==null && groessen!==undefined;
+  const gr = geholt ? groessen : {};
   (z.positionen||[]).forEach(p=>{
     if(!p.artikel){ ohneZuordnung++; return; }
-    const fl=verkaufteFlaschen(p,groessen);
-    if(fl===null){ ohneGroesse++; fehltGroesse[p.artikel]=1; return; }
+    if(!(+p.ausschankMl>0)){ ohneMenge++; fehltGroesse[p.artikel]=1; return; }
+    const fl=verkaufteFlaschen(p,gr);
+    if(fl===null){ ohneGebinde++; fehltGroesse[p.artikel]=1; return; }
     verk[p.artikel]=(verk[p.artikel]||0)+fl;
   });
   const rund=n=>Math.round((+n||0)*10)/10;
@@ -5622,7 +5690,7 @@ function abgleichZeilen(d,z,groessen){
     zeilen.push({id, gefasst:a, verkauft:b, diff:rund(a-b)});
   });
   zeilen.sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
-  return {zeilen, geprueft, ohneGroesse, ohneZuordnung};
+  return {zeilen, geprueft, ohneMenge, ohneGebinde, ohneZuordnung, geholt};
 }
 
 /* Abschliessen — an EINER Stelle, damit der gewoehnliche Weg und die
@@ -5685,16 +5753,31 @@ function popupAbgleich(d,z,groessen){
      Gebindegrössen fehlen" stimmt nur, wenn Positionen daran scheitern.
      Ist der Bericht schlicht keinem Artikel zugeordnet — oder wurde
      nichts gefasst, was darin vorkommt —, ist das etwas anderes. */
-  const warum = a.ohneGroesse
-    ? "Zum Z-Bericht vom " + deTagKurz(vortagVon(d.tag)) + " fehlen die "
-      + "Gebindegr\u00f6\u00dfen \u2014 ohne sie l\u00e4sst sich aus \u201e1/8 l\u201c oder "
-      + "\u201e2 cl\u201c keine Flaschenzahl rechnen. Die Leitung best\u00e4tigt sie "
-      + "im Backoffice unter \u201eVerkauf \u2194 Fassung\u201c."
-    : a.ohneZuordnung
-      ? "Keine Position des Z-Berichts vom " + deTagKurz(vortagVon(d.tag))
-        + " ist einem Artikel zugeordnet. Das macht die Leitung im Backoffice."
-      : "Zum Z-Bericht vom " + deTagKurz(vortagVon(d.tag))
-        + " gibt es nichts, was zu dieser Fassung passt.";
+  /* Der Grund muss der sein, der WIRKLICH gilt, und er darf dem Fuss
+     nicht widersprechen (dritte Jagd Runde 16 · B). Vier Lagen, in der
+     Reihenfolge, in der sie etwas zu tun geben:
+       · die Groessen kamen gar nicht an  -> Serverfehler, nichts zu tun
+       · Gebindegroessen nicht bestaetigt -> Arbeit der Leitung
+       · keine Menge im Kassennamen       -> fehlt der KASSE, nicht uns
+       · nichts zugeordnet / nichts Passendes */
+  const wann = deTagKurz(vortagVon(d.tag));
+  const warum = !a.geholt
+    ? "Die Gebindegr\u00f6\u00dfen konnten nicht geholt werden \u2014 der Server hat "
+      + "nicht geantwortet. Der Abgleich steht im Backoffice."
+    : a.ohneGebinde
+      ? "Zum Z-Bericht vom " + wann + " fehlen die Gebindegr\u00f6\u00dfen \u2014 ohne "
+        + "sie l\u00e4sst sich aus \u201e1/8 l\u201c keine Flaschenzahl rechnen. Die "
+        + "Leitung best\u00e4tigt sie im Backoffice unter \u201eVerkauf \u2194 Fassung\u201c."
+      : a.ohneMenge
+        ? "Im Z-Bericht vom " + wann + " steht bei diesen Positionen keine "
+          + "Menge im Namen (\u201eAperol Spritz 1 Glas\u201c). Daraus l\u00e4sst sich "
+          + "keine Flaschenzahl rechnen \u2014 das fehlt der Kasse, nicht dem "
+          + "Backoffice."
+        : a.ohneZuordnung
+          ? "Keine Position des Z-Berichts vom " + wann + " ist einem Artikel "
+            + "zugeordnet. Das macht die Leitung im Backoffice."
+          : "Zum Z-Bericht vom " + wann + " gibt es nichts, was zu dieser "
+            + "Fassung passt.";
   const kopf = a.geprueft===0
     ? `<div class="box warn" style="margin-top:0"><b>Nichts zu vergleichen.</b><br>`
       +esc(warum)+`</div>`
@@ -5719,11 +5802,17 @@ function popupAbgleich(d,z,groessen){
      der gerade gezaehlt hat. Genannt wird die Zahl deshalb wieder, aber
      nur wenn es eine Abweichung gibt, die sie erklaeren kann. */
   const fuss=[];
-  if(a.ohneGroesse)fuss.push(a.ohneGroesse===1
-    ? "Eine Kassenposition hat keine Menge im Namen oder keine best\u00e4tigte "
-      +"Gebindegr\u00f6\u00dfe und bleibt aus der Rechnung."
-    : a.ohneGroesse+" Kassenpositionen haben keine Menge im Namen oder keine "
-      +"best\u00e4tigte Gebindegr\u00f6\u00dfe und bleiben aus der Rechnung.");
+  if(!a.geholt)fuss.push("Die Gebindegr\u00f6\u00dfen konnten nicht geholt werden \u2014 "
+    +"gerechnet wurde ohne sie.");
+  if(a.ohneGebinde)fuss.push(a.ohneGebinde===1
+    ? "Eine Kassenposition hat keine best\u00e4tigte Gebindegr\u00f6\u00dfe und bleibt "
+      +"aus der Rechnung."
+    : a.ohneGebinde+" Kassenpositionen haben keine best\u00e4tigte Gebindegr\u00f6\u00dfe "
+      +"und bleiben aus der Rechnung.");
+  if(a.ohneMenge)fuss.push(a.ohneMenge===1
+    ? "Eine Kassenposition hat keine Menge im Namen und bleibt aus der Rechnung."
+    : a.ohneMenge+" Kassenpositionen haben keine Menge im Namen und bleiben "
+      +"aus der Rechnung.");
   if(a.ohneZuordnung&&a.zeilen.length)fuss.push(a.ohneZuordnung
     +(a.ohneZuordnung===1?" Kassenposition ist":" Kassenpositionen sind")
     +" keinem Artikel zugeordnet \u2014 was darunter verkauft wurde, fehlt "

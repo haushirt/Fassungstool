@@ -61,7 +61,7 @@ describe("F5 · Verwaltung raus, Backoffice rein", () => {
     assert.match(APP, /meineRolle\(\)==="leitung"/);
   });
   test("die Rolle kommt aus /api/ich, nicht aus der Anmeldung", () => {
-    assert.match(APP, /fetch\(API\+"\/ich"/);
+    assert.match(APP, /holeKurz\(API\+"\/ich"/);
   });
 });
 

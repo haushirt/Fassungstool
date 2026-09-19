@@ -920,6 +920,21 @@ function wuerfelPin(){
   return String(a[0]%spanne).padStart(PIN_LAENGE,"0");
 }
 
+/* Ein `fetch` mit Frist — fuer die beiden Wege, bei denen ein Haengen
+   wehtut: Abmelden (am geteilten iPad) und „PIN zuruecksetzen" (der
+   Knopf bliebe sonst fuer immer gesperrt). Das Backoffice laeuft sonst
+   am MacBook mit stabiler Leitung; die uebrigen Aufrufe holen nur
+   Zahlen und duerfen warten. Dieselbe Rechnung wie `holeKurz()` in
+   index.html (dritte Jagd Runde 16). */
+async function kurz(pfad,opt,ms){
+  const ab=(typeof AbortController!=="undefined")?new AbortController():null;
+  const uhr=ab?setTimeout(()=>ab.abort(),+ms>0?+ms:8000):0;
+  try{
+    return await fetch(pfad,Object.assign({credentials:"same-origin"},opt||{},
+      ab?{signal:ab.signal}:{}));
+  } finally { if(uhr)clearTimeout(uhr); }
+}
+
 let ICH=null;
 async function werBinIch(){
   try{ const r=await fetch("/api/ich"); if(r.ok){ ICH=await r.json(); return ICH; } }catch(e){}
@@ -1599,7 +1614,7 @@ async function abmelden(){
   const b=$("#bAb"); if(b)b.disabled=true;
   let weg=false;
   try{
-    const r=await fetch("/api/abmelden",{method:"POST",credentials:"same-origin"});
+    const r=await kurz("/api/abmelden",{method:"POST"});
     weg=r.ok;
   }catch(e){}
   if(!weg){ if(b)b.disabled=false;
@@ -2720,7 +2735,7 @@ function vTeam(m){
       let vorschlag=null;
       try{ vorschlag=wuerfelPin(); }catch(e){ vorschlag=null; }
       try{
-        const r=await fetch("/api/person/pin",{method:"POST",
+        const r=await kurz("/api/person/pin",{method:"POST",
           headers:{"content-type":"application/json"},
           body:JSON.stringify(vorschlag?{id:p.id,code:vorschlag}:{id:p.id})});
         const j=await r.json();

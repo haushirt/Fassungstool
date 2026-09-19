@@ -35,7 +35,7 @@ const LAGE = {
   /* Der Z-Bericht zum Vorabend — oder keiner (404), je nach Szene.
      Gefüllt wird er von der Szene selbst, sobald sie die echten
      Artikelkennungen der App kennt. */
-  zbericht: null, mapping: [], stumm: false,
+  zbericht: null, mapping: [], stumm: false, stummerLeib: null,
   abgemeldet: 0, gesendet: []
 };
 
@@ -44,6 +44,17 @@ const srv = http.createServer((q, a) => {
   if (u === "/") u = "/index.html";
   if (u.startsWith("/api")) {
     const kopf = { "content-type": "application/json" };
+    /* `stumm` nimmt die Anfrage an und antwortet nie — der Kellerfall:
+       WLAN da, kein Durchsatz. `fetch` bricht von sich aus nicht ab.
+       `stummerLeib` sendet Kopf und Statuszeile und danach nie den Leib —
+       das halb durchgekommene Paket. Beides trifft JEDEN /api-Pfad; ein
+       schwacher Access Point schweigt nicht nach Endpunkt.
+       (Bis zur dritten Jagd traf `stumm` nur `/api/fassungsliste` — die
+       Szene prüfte damit genau den Ausschnitt, den die Behebung abdeckte.) */
+    if (LAGE.stumm && (LAGE.stumm === true || u === LAGE.stumm)) return;
+    if (LAGE.stummerLeib && u === LAGE.stummerLeib) {
+      a.writeHead(200, kopf); return;   /* Kopf ja, Leib nie */
+    }
     if (u === "/api/ich") { a.writeHead(200, kopf);
       return a.end(JSON.stringify({ name: LAGE.wer, rolle: LAGE.rolle })); }
     if (u === "/api/vorgaenge") { a.writeHead(200, kopf);
@@ -54,10 +65,6 @@ const srv = http.createServer((q, a) => {
     if (u === "/api/mapping") { a.writeHead(200, kopf);
       return a.end(JSON.stringify({ mapping: LAGE.mapping || [] })); }
     if (u === "/api/fassungsliste") {
-      /* `stumm` nimmt die Anfrage an und antwortet nie — das ist der
-         Kellerfall: WLAN da, kein Durchsatz. `fetch` bricht von sich aus
-         nicht ab; nur die Zeitgrenze in `holeKurz()` beendet das. */
-      if (LAGE.stumm) return;
       if (!LAGE.zbericht) { a.writeHead(404, kopf);
         return a.end(JSON.stringify({ fehler: "nicht vorhanden" })); }
       a.writeHead(200, kopf); return a.end(JSON.stringify(LAGE.zbericht));
@@ -380,7 +387,7 @@ async function tagesfassungBisAbschluss(p) {
        andere Tür (zweite Jagd Runde 16 · A). */
     {
       LAGE.zbericht = null; LAGE.mapping = []; LAGE.gesendet = [];
-      LAGE.stumm = true;
+      LAGE.stumm = "/api/fassungsliste";
       const { ctx, p, fehler } = await seite(b);
       await tagesfassungBisAbschluss(p);
       const knopf = p.locator(".finishbtn[data-netz]");
@@ -412,6 +419,98 @@ async function tagesfassungBisAbschluss(p) {
          LAGE.gesendet.some(v => v.finished === true)),
         "fertig: " + JSON.stringify(lage.stand.tag && lage.stand.tag.finished) +
         " · Ausgang " + lage.ausgang.length + " · PUTs " + LAGE.gesendet.length);
+      urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      LAGE.stumm = false;
+      await ctx.close();
+    }
+
+    /* ── 4d · Kopf ja, Leib nie ────────────────────────────────────────
+       Die erste Frist endete, sobald der KOPF da war — `await r.json()`
+       lief danach ohne jede Grenze. Ein halb durchgekommenes Paket über
+       schwaches WLAN ist der Normalfall dieses Fehlerbilds, nicht die
+       Ausnahme (dritte Jagd Runde 16 · A). */
+    {
+      LAGE.zbericht = null; LAGE.mapping = []; LAGE.gesendet = [];
+      LAGE.stumm = false; LAGE.stummerLeib = "/api/fassungsliste";
+      const { ctx, p, fehler } = await seite(b);
+      await tagesfassungBisAbschluss(p);
+      const knopf = p.locator(".finishbtn[data-netz]");
+      await knopf.click();
+      await p.waitForSelector("#ov.on", { timeout: 15000 }).catch(() => {});
+      urteil("A · Kopf ohne Leib hält den Abschluss nicht auf",
+        await p.locator("#ov").evaluate(el => el.classList.contains("on")));
+      urteil("A · und der Knopf ist wieder frei",
+        (await knopf.textContent() || "").trim() === "Fertig – Speichern" &&
+        await knopf.isEnabled(), (await knopf.textContent() || "").trim());
+      urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      LAGE.stummerLeib = null;
+      await ctx.close();
+    }
+
+    /* ── 4e · Der Ausgang am schweigenden PUT ──────────────────────────
+       Der einzige Weg, auf dem die Daten das Gerät verlassen, war der
+       einzige ohne Frist. Ohne sie fiel `NETZ.laeuft` nie, und ALLE
+       Anstösse danach prallten daran ab — der Ausgang stand für die
+       ganze Sitzung still, während der Chip „Verbunden" sagte. */
+    {
+      LAGE.zbericht = null; LAGE.mapping = []; LAGE.gesendet = [];
+      LAGE.stumm = "/api/vorgang/tag_" + heute;
+      const { ctx, p, fehler } = await seite(b);
+      await tagesfassungBisAbschluss(p);
+      await p.locator(".finishbtn[data-netz]").click();
+      await p.waitForSelector("#ov.on", { timeout: 15000 }).catch(() => {});
+      await p.locator("#ovOk").click();
+      await warte(p, 500);
+      /* Die Frist am PUT steht auf 20 s. Danach muss die Sperre gefallen
+         sein, sonst geht nie wieder etwas hinaus. */
+      await p.waitForFunction(() => NETZ.laeuft === false, null,
+        { timeout: 30000 }).catch(() => {});
+      urteil("A · die Sperre des Ausgangs fällt auch am schweigenden Server",
+        await p.evaluate(() => NETZ.laeuft) === false,
+        "laeuft: " + await p.evaluate(() => NETZ.laeuft));
+      /* Und ein neuer Anstoss muss wieder etwas versuchen. */
+      LAGE.stumm = false;
+      const vorher = LAGE.gesendet.length;
+      await p.evaluate(() => schiebe());
+      await warte(p, 1200);
+      urteil("A · nach der Frist geht der Vorgang wieder hinaus",
+        LAGE.gesendet.length > vorher,
+        vorher + " → " + LAGE.gesendet.length + " PUTs");
+      urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
+      await ctx.close();
+    }
+
+    /* ── 4f · Die Anmeldung am schweigenden Server ─────────────────────
+       `laeuftPruefung` blieb true, der Wächter liess keinen zweiten
+       Versuch durch, und die Rückfallebene für den Keller ohne Netz lag
+       hinter demselben `await`. */
+    {
+      LAGE.stumm = "/api/anmelden";
+      const ctx = await b.newContext({ viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      /* Ohne Saat steht die Anmeldung; ein Code, der auf diesem Gerät
+         schon einmal geglückt ist, liegt im Vorrat. */
+      await ctx.addInitScript(`(()=>{ try{
+        localStorage.setItem("hh_bekannt_v1", '{"roh:1234":"Casimir"}');
+      }catch(e){} })();`);
+      const p = await ctx.newPage();
+      const fehler = [];
+      p.on("pageerror", e => fehler.push(String(e)));
+      await p.goto("http://127.0.0.1:8781/index.html", { waitUntil: "load" });
+      await warte(p, 500);
+      for (const z of ["1", "2", "3", "4"]) await p.keyboard.press(z);
+      await p.waitForFunction(
+        () => (document.querySelector("#pinFehler") || {}).textContent,
+        null, { timeout: 15000 }).catch(() => {});
+      urteil("A · die Anmeldung bleibt am schweigenden Server nicht stumm",
+        !!(await p.locator("#pinFehler").textContent() || "").trim(),
+        (await p.locator("#pinFehler").textContent() || "").trim().slice(0, 60));
+      urteil("A · und ein zweiter Versuch ist danach wieder möglich",
+        await p.evaluate(() => {
+          const i = document.querySelector("#uCode");
+          return !!i && i.value === "";
+        }));
+      await bild(p, "14-anmeldung-schweigender-server");
       urteil("keine JS-Fehler dabei", fehler.length === 0, fehler[0]);
       LAGE.stumm = false;
       await ctx.close();
