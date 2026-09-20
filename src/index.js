@@ -708,9 +708,7 @@ async function bestand(env) {
 
 /* ── Fassungsliste ─────────────────────────────────────────────────────
    Die Tabelle heisst live anders, als der Worker sie bisher ansprach:
-   `z` statt `nr`, `wer` statt `quelle`, `importiert` statt `ts`; dazu
-   `kostenstelle`, `von_ts`, `bis_ts`, die `parseZ` heute nicht liefert
-   und die deshalb leer bleiben (Punkt in `review/OFFENE-ENTSCHEIDUNGEN.md`).
+   `z` statt `nr`, `wer` statt `quelle`, `importiert` statt `ts`.
 
    Wichtig: auf `fassungsliste.tag` liegt live KEIN UNIQUE-Index, nur
    `i_liste_tag`. Ein `ON CONFLICT(tag)` gäbe es damit nicht — SQLite
@@ -718,22 +716,53 @@ async function bestand(env) {
    constraint". Der Schlüssel der Liste ist deshalb der Betriebstag
    selbst (`id = tag`): ein Z-Bericht je Betriebstag, zweimal derselbe
    Bericht ersetzt sich sauber, und `fassungszeile.liste` zeigt lesbar
-   auf den Tag. */
+   auf den Tag.
+
+   RUNDE 21 · drei Dinge an dieser Stelle:
+
+   1 · EIN Schreibvorgang. Kopf, `DELETE` und Zeilen waren drei getrennte
+       Schreibvorgänge (`review/BACKLOG.md`, software-engineer Runde 5).
+       Scheiterte der dritte, stand der Kopf mit frischem `importiert` und
+       NULL Positionen da: der alte Bericht gelöscht, der neue nie
+       angekommen, und im Backoffice ein eingelesener Tag ohne Inhalt. Im
+       Mailweg merkt das niemand, weil alles in `ctx.waitUntil` läuft.
+       Jetzt ein `batch` wie bei `vorgangSchreiben` — entweder alles oder
+       nichts.
+
+   2 · Eine Spur beim Ersetzen. Zweimal derselbe Betriebstag ist der
+       Normalfall (Nachbuchung, Storno — dann ist Ersetzen richtig).
+       Schliessen Bar und Restaurant aber getrennt ab, kommen zwei
+       TEILberichte, und der zweite warf den ersten lautlos weg, mit
+       HTTP 200. Dem Abgleich fehlte danach eine ganze Kostenstelle, ohne
+       dass es irgendwo stand. Gesperrt wird nichts (Linie aus Runde 19:
+       melden, nicht sperren), aber es steht jetzt im Journal und in der
+       Antwort.
+
+   3 · `kostenstelle`, `von_ts`, `bis_ts` werden gefüllt. Sie stehen live
+       seit jeher da und blieben leer, weil `parseZ` sie nicht las
+       (`review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11). Jetzt liest es sie. */
+
+/* Weniger als zwei Drittel der Positionen des Vorgängers: Verdacht auf
+   einen Teilbericht. Die Zahl ist an Bericht 37 gemessen — die Bar hält
+   dort 24 von 53 Buchungen, ein Bar-Bericht allein läge also bei gut 45 %.
+   Eine Nachbuchung oder ein Storno ändert dagegen ein bis zwei Zeilen.
+   Zwischen beidem liegt viel Platz; zwei Drittel sitzt in der Mitte und
+   irrt im Zweifel zur sichtbaren Seite. Falsch angeschlagen kostet es
+   einen Satz auf dem Schirm, übersehen kostet einen halben Betriebstag. */
+const TEILVERDACHT = 2 / 3;
 async function fassungsliste(env, text, wer) {
   const z = parseZ(text);
   if (!z.tag) return json({ fehler: "kein Betriebstag erkannt" }, 422);
+  /* Ein Bericht ohne eine einzige Position ist kein Bericht. Vor Runde 21
+     räumte so eine Datei den Tag leer und meldete Erfolg. */
+  if (!z.positionen.length) return json({ fehler: "keine Positionen erkannt" }, 422);
 
-  await env.DB.prepare(
-    `INSERT INTO fassungsliste (id, tag, z, importiert, wer, roh)
-     VALUES (?1,?1,?2,?3,?4,?5)
-     ON CONFLICT(id) DO UPDATE SET z=excluded.z, roh=excluded.roh,
-       importiert=excluded.importiert, wer=excluded.wer`
-  ).bind(z.tag, z.nr || null, Date.now(), wer, text).run();
-
-  /* Zeilen gehören zur Liste, nicht zum Tag (PRIMARY KEY (liste, rohbez)).
-     Erst räumen: eine Position, die im neuen Bericht fehlt, darf nicht
-     aus dem alten stehen bleiben. */
-  await env.DB.prepare(`DELETE FROM fassungszeile WHERE liste = ?1`).bind(z.tag).run();
+  /* Was heute unter diesem Betriebstag steht — gelesen VOR dem Schreiben,
+     sonst ist es weg, bevor jemand es vergleichen kann. */
+  const alt = await env.DB.prepare(
+    `SELECT f.z, f.kostenstelle, f.roh, COUNT(zl.rohbez) AS positionen
+       FROM fassungsliste f LEFT JOIN fassungszeile zl ON zl.liste = f.id
+      WHERE f.id = ?1 GROUP BY f.id`).bind(z.tag).first();
 
   const { results: bek } = await env.DB.prepare(
     `SELECT fremd, artikel, status FROM mapping`).all();
@@ -744,11 +773,72 @@ async function fassungsliste(env, text, wer) {
   const stmt = env.DB.prepare(
     `INSERT INTO fassungszeile (liste, rohbez, kern, anzahl, betrag, ausschankMl, artikel)
      VALUES (?1,?2,?3,?4,?5,?6,?7)`);
-  await env.DB.batch(z.positionen.map(p => {
-    const a = kennt.has(p.name) ? fest[p.name] : mappe(p.name);
-    return stmt.bind(z.tag, p.name, kern(p.name), p.anzahl, p.umsatz ?? 0,
-                     p.ml ?? null, a ?? null);
-  }));
+
+  /* Kopf, Räumen und Zeilen in EINER Anweisungsfolge. Die Reihenfolge
+     zählt: erst der Kopf (sonst zeigt `fassungszeile.liste` einen
+     Augenblick lang ins Leere), dann räumen — eine Position, die im neuen
+     Bericht fehlt, darf nicht aus dem alten stehen bleiben —, dann die
+     neuen Zeilen. D1 nimmt ein `batch` als Ganzes zurück; scheitert eine
+     Zeile, bleibt der alte Bericht unangetastet stehen. */
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO fassungsliste (id, tag, z, kostenstelle, von_ts, bis_ts, importiert, wer, roh)
+       VALUES (?1,?1,?2,?3,?4,?5,?6,?7,?8)
+       ON CONFLICT(id) DO UPDATE SET z=excluded.z, kostenstelle=excluded.kostenstelle,
+         von_ts=excluded.von_ts, bis_ts=excluded.bis_ts, roh=excluded.roh,
+         importiert=excluded.importiert, wer=excluded.wer`
+    ).bind(z.tag, z.nr || null, z.kostenstelle || null, z.von ?? null, z.bis ?? null,
+           Date.now(), wer, text),
+    env.DB.prepare(`DELETE FROM fassungszeile WHERE liste = ?1`).bind(z.tag),
+    ...z.positionen.map(p => {
+      const a = kennt.has(p.name) ? fest[p.name] : mappe(p.name);
+      return stmt.bind(z.tag, p.name, kern(p.name), p.anzahl, p.umsatz ?? 0,
+                       p.ml ?? null, a ?? null);
+    })
+  ]);
+
+  /* Die Spur. Sie steht NACH dem Schreiben, damit im Journal nichts
+     behauptet wird, was nicht passiert ist.
+
+     Zweimal dieselbe Datei erzeugt KEINE Zeile: der Mailweg kann denselben
+     Bericht ein zweites Mal bringen, und ein Journal, in dem täglich
+     dasselbe steht, liest niemand mehr. Verglichen wird der Rohtext —
+     genauer geht es nicht, und er steht ohnehin in `roh`. */
+  let ersetzt = null;
+  if (alt) {
+    const unveraendert = alt.roh === text;
+    const andereStelle = !!(alt.kostenstelle && z.kostenstelle
+                            && alt.kostenstelle !== z.kostenstelle);
+    /* Unter fünf Positionen ist jede Verhältniszahl Lärm. */
+    const geschrumpft = alt.positionen >= 5
+                     && z.positionen.length < alt.positionen * TEILVERDACHT;
+    /* Und wenn geschrumpft: steht der Rest vielleicht noch im Bericht?
+       `parseZ` wählt genau EINE Sektion und verwirft die anderen
+       (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 12). Eine zweite Sektion in
+       Positionsgrösse heisst: der Bericht ist nach Kostenstellen
+       gespalten, und die Hälfte liegt ungelesen daneben. Das ist die
+       Ursache, nicht nur das Symptom — sie gehört in dieselbe Zeile. */
+    const zweiter = (z.sektionen || []).filter(x => x.n >= z.positionen.length / 2).length > 1;
+    ersetzt = {
+      z: alt.z || null, kostenstelle: alt.kostenstelle || null,
+      vorher: alt.positionen, nachher: z.positionen.length, unveraendert,
+      teilbericht: !unveraendert && (geschrumpft || andereStelle), gespalten: zweiter
+    };
+    if (!unveraendert) {
+      const n = k => k === 1 ? "1 Position" : k + " Positionen";
+      await notiz(env, "zbericht",
+        `${z.tag}: ${alt.z || "ein Bericht"} (${n(alt.positionen)}) ersetzt durch `
+        + `${z.nr || "einen Bericht"} (${n(z.positionen.length)})`
+        + (andereStelle ? ` — andere Kostenstelle (${alt.kostenstelle} → ${z.kostenstelle})` : "")
+        + (geschrumpft ? " — deutlich weniger Positionen" : "")
+        + (ersetzt.teilbericht
+            ? ". Möglicherweise ein Teilbericht; dann fehlt dem Abgleich eine ganze Kostenstelle."
+            : "")
+        + (zweiter
+            ? " Der Bericht hat einen zweiten Block in Positionsgrösse — gelesen wird nur einer."
+            : ""));
+    }
+  }
 
   const offen = z.positionen.filter(p => !kennt.has(p.name) && !mappe(p.name)).length;
   /* Storno und Rabatt gehen mit hinaus. Beides ist Verbrauch (Vorgabe vom
@@ -757,14 +847,21 @@ async function fassungsliste(env, text, wer) {
      fehlt dem Positionsblock. Ohne diese Zahl fehlt er lautlos und taucht
      in der ersten Kellerzählung als Schwund wieder auf. */
   return json({ tag: z.tag, positionen: z.positionen.length, offen,
-                rabatt: z.rabatte.anzahl, storno: z.storno.anzahl });
+                rabatt: z.rabatte.anzahl, storno: z.storno.anzahl,
+                kostenstelle: z.kostenstelle || null,
+                von_ts: z.von ?? null, bis_ts: z.bis ?? null, ersetzt });
 }
 
+/* Die Spaltenliste steht zweimal ausgeschrieben statt einmal in einer
+   Konstanten: Regel des Prüfstands (`tests/schema.test.mjs:64`) — kein
+   `${…}` in einer SQL-Zeichenkette, auch kein harmloses. Eine Ausnahme
+   wäre eine Lücke, durch die später eine echte passt. */
 async function fassungslistenLesen(env, url) {
   const tag = url.searchParams.get("tag");
   if (tag) {
     const kopf = await env.DB.prepare(
-      `SELECT id, tag, z, kostenstelle, importiert, wer FROM fassungsliste WHERE tag = ?1`
+      `SELECT id, tag, z, kostenstelle, von_ts, bis_ts, importiert, wer
+         FROM fassungsliste WHERE tag = ?1`
     ).bind(tag).first();
     if (!kopf) return json({ fehler: "nicht vorhanden" }, 404);
     const { results } = await env.DB.prepare(
@@ -773,7 +870,43 @@ async function fassungslistenLesen(env, url) {
     ).bind(kopf.id).all();
     return json({ ...kopf, positionen: results });
   }
-  /* Der Verbund braucht einen anderen Buchstaben als `z`: die Liste hat
+
+  /* `?zeilen=1` — dieselbe Auskunft wie oben, nur für viele Tage auf
+     einmal (Runde 21).
+
+     Warum: Das Backoffice holte die Übersicht und danach je Bericht eine
+     EIGENE Anfrage, nacheinander, bis zu 60 — gemessen 4,1 s leerer
+     Schirm bei jedem Öffnen und jedem „Aktualisieren"
+     (`review/BACKLOG.md`, ui-designer Runde 19).
+
+     Zwei Abfragen statt 61, und beide mit gebundenem Parameter: keine
+     zusammengesetzte IN-Liste, damit auch keine Grenze für die Zahl der
+     Parameter. Ein Eintrag hat genau die Form der `?tag=`-Antwort, damit
+     der Leser im Browser derselbe bleiben kann.
+
+     Die Obergrenze ist kein Schmuck: dieser Endpunkt steht jedem
+     Angemeldeten offen, nicht nur der Leitung, und 60 Berichte sind
+     bereits gut 340 kB. */
+  if (url.searchParams.get("zeilen")) {
+    const grenze = Math.min(90, Math.max(1, +url.searchParams.get("limit") || 60));
+    const { results: koepfe } = await env.DB.prepare(
+      `SELECT id, tag, z, kostenstelle, von_ts, bis_ts, importiert, wer
+         FROM fassungsliste ORDER BY tag DESC LIMIT ?1`
+    ).bind(grenze).all();
+    const { results: zeilen } = await env.DB.prepare(
+      `SELECT liste, rohbez, kern, anzahl, betrag, ausschankMl, artikel
+         FROM fassungszeile
+        WHERE liste IN (SELECT id FROM fassungsliste ORDER BY tag DESC LIMIT ?1)`
+    ).bind(grenze).all();
+    const nach = {};
+    koepfe.forEach(k => { nach[k.id] = { ...k, positionen: [] }; });
+    zeilen.forEach(({ liste, ...rest }) => { if (nach[liste]) nach[liste].positionen.push(rest); });
+    return json({ berichte: koepfe.map(k => nach[k.id]) });
+  }
+
+  /* Die schlichte Übersicht — unverändert. Sie zählt die Positionen,
+     statt sie mitzuschicken; `positionen` ist hier eine Zahl.
+     Der Verbund braucht einen anderen Buchstaben als `z`: die Liste hat
      eine Spalte, die so heisst (die Z-Nummer). */
   const { results } = await env.DB.prepare(
     `SELECT f.tag, f.z, f.importiert, COUNT(zl.rohbez) AS positionen

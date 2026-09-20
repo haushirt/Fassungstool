@@ -90,6 +90,39 @@ export function kern(name) {
   return t || s;
 }
 
+/* Ortszeit aus dem Kopf des Berichts → Zeitstempel.
+
+   Der Bericht schreibt Wiener Zeit („15.09.2026 23:11"), der Worker läuft
+   in UTC (`src/index.js`, Kopf von `wienTag`). Ohne Umrechnung stünde in
+   `fassungsliste.von_ts` eine Zahl, die zwei Stunden danebenliegt und im
+   Winter anders als im Sommer — genau die Art Fehler, die erst im
+   November auffällt.
+
+   Gerechnet wird ohne Bibliothek: einmal blind als UTC, dann den Versatz
+   messen, den `Europe/Vienna` zu diesem Augenblick hat, und abziehen.
+   Zweimal, weil der erste Versuch in der Nacht der Zeitumstellung um eine
+   Stunde daneben liegen kann und der zweite darauf aufsetzt. */
+const versatz = ms => {
+  const t = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Vienna", hour12: false, year: "numeric", month: "2-digit",
+    day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"
+  }).formatToParts(new Date(ms));
+  const p = Object.fromEntries(t.map(x => [x.type, x.value]));
+  return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second) - ms;
+};
+
+/* `null`, wenn keine UHRZEIT dabeisteht. Ein Datum allein als Mitternacht
+   abzulegen wäre eine erfundene Zahl; dann bleibt die Spalte lieber leer,
+   wie bisher. */
+export function zeitpunkt(text) {
+  const m = /(\d{1,2})\.(\d{1,2})\.(\d{4})[\s,]+(\d{1,2}):(\d{2})/.exec(String(text || ""));
+  if (!m) return null;
+  const roh = Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4], +m[5]);
+  let ms = roh - versatz(roh);
+  ms = roh - versatz(ms);
+  return ms;
+}
+
 export function parseZ(text) {
   const alle = String(text).split(/\r?\n/);
 
@@ -125,14 +158,37 @@ export function parseZ(text) {
     akt.zeilen.push(f);
   });
 
-  /* Betriebstag: das Datum hinter „Bis" */
-  let tag = "";
+  /* Betriebstag: das Datum hinter „Bis".
+
+     Im selben Durchgang der Zeitraum („Von"/„Bis" mit Uhrzeit) und die
+     Kostenstelle. Beide stehen seit jeher im Kopf des Berichts und haben
+     live eine eigene Spalte (`fassungsliste.von_ts`, `bis_ts`,
+     `kostenstelle`) — bis Runde 21 hat sie nur niemand gelesen
+     (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 11). Der Betriebstag wird
+     weiterhin aus „Bis" abgeleitet, unverändert; die Uhrzeit kommt
+     zusätzlich mit, sie ersetzt nichts.
+
+     Wozu: An „von wann bis wann" sieht die Leitung ohne Rechnen, ob ein
+     Bericht die ganze Nacht abdeckt oder nur den halben Abend — der Fall,
+     in dem Bar und Restaurant getrennt abschliessen. */
+  let tag = "", von = null, bis = null, kostenstelle = "";
   for (const z of alle) {
     const f = felder(z);
-    if (/^bis\b/i.test(f[0] || "")) {
-      const d = /(\d{1,2})\.(\d{1,2})\.(\d{4})/.exec(f.slice(1).join(" ") || f[0]);
-      if (d) { tag = `${d[3]}-${String(d[2]).padStart(2, "0")}-${String(d[1]).padStart(2, "0")}`; break; }
+    const k = (f[0] || "").toLowerCase();
+    const rest = f.slice(1).join(" ");
+    /* Genau „Kostenstelle", nicht `\b`: vier Zeilen weiter unten beginnt
+       die Tabelle „Kostenstellen | Anzahl | Betrag" mit Bar und Restaurant.
+       Die ist eine Aufteilung des Tages, keine Kostenstelle des Berichts. */
+    if (!kostenstelle && /^kostenstelle$/.test(k) && rest.trim()) kostenstelle = rest.trim();
+    if (von == null && /^von\b/.test(k)) von = zeitpunkt(rest || f[0]);
+    if (/^bis\b/.test(k)) {
+      if (bis == null) bis = zeitpunkt(rest || f[0]);
+      if (!tag) {
+        const d = /(\d{1,2})\.(\d{1,2})\.(\d{4})/.exec(rest || f[0]);
+        if (d) tag = `${d[3]}-${String(d[2]).padStart(2, "0")}-${String(d[1]).padStart(2, "0")}`;
+      }
     }
+    if (tag && von != null && bis != null && kostenstelle) break;
   }
   /* Die Z-Nummer steht im echten Bericht als eigene Zeile in zwei
      Feldern („Z" | „37"); der Kopf anderer Häuser schreibt sie in einen
@@ -211,7 +267,7 @@ export function parseZ(text) {
   };
 
   return {
-    tag, nr, block: beste ? beste.titel : "—",
+    tag, nr, von, bis, kostenstelle, block: beste ? beste.titel : "—",
     /* `n` ist die Zahl der Zeilen, die nach einer Position AUSSEHEN —
        nicht die Zahl der Zeilen überhaupt. Sonst hält die Prüfung auf
        gespaltene Berichte den Bezahlartenblock (eine Buchung, 26
