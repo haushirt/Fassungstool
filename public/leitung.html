@@ -1718,6 +1718,25 @@ const vorbehaltSatz = v => {
    die App hat ihn übernommen und als „mind." ausgegeben, und dort tat er
    weh. Der Satz steht berichtigt, damit ihn niemand ein zweites Mal
    abschreibt. */
+/* NACHTRICHTIGUNG (dritte Jagd · A): Diese Seite hatte ZWEI
+   Deutungsspalten mit zwei Texten — `vHeute` (`.deutung`) und das
+   Druckblatt. Behoben wurde nur das Blatt; der Mittagsblick, den der
+   Kommentar daneben selbst „der Schirm, den die Leitung morgens zuerst
+   sieht" nennt, druckte weiter „Vorrat aufgebaut oder Schwund".
+
+   Und zwar für genau die Zeile, um die es geht: Ein Kassenname auf
+   „Ignorieren" ruft `zaehlePos()` nie auf, der Artikel bekommt also
+   weder `unklar` noch `vorbehalt` und steht als volle, unkommentierte
+   Abweichung da.
+
+   Das Wort fällt deshalb ÜBERALL weg, nicht nur auf Papier. Ob eine
+   Flasche fehlt oder im Vorrat steht, entscheidet ein Mensch im Keller;
+   die Rechnung kann es nicht wissen, solange „Ignorieren" ein
+   vollwertiger Zustand ist. Ein Satz, eine Stelle. */
+const DEUTUNG = r => r.diff>0
+  ? "mehr geholt als verkauft — Vorrat aufgebaut oder im Keller nachsehen"
+  : "mehr verkauft als geholt — Vorrat wird abgebaut";
+
 const BEFUND = r => Math.abs(r.diff)<0.5
   ? (r.vorbehalt ? {w:"unvollständig", k:"p-grau"} : {w:"stimmt", k:"p-ok"})
   : Math.abs(r.diff)<2 ? {w:"kleine Abweichung", k:"p-warn"}
@@ -1821,7 +1840,13 @@ function abgleich(tag, spanne){
         if(r.some(x=>!(+x.ml>0))){
           const l=r.find(x=>!(+x.ml>0));
           merkeOhneGroesse(p, l.id, {fehlt:"ausschank"}, true);
-          r.forEach(x=>zaehlePos(x.id,false,"menge"));
+          /* NACHTRICHTIGUNG (dritte Jagd · B): Hier stand `"menge"`.
+             `zaehlePos` kennt genau einen Grundwert, `"ausschank"`, und
+             wirft alles andere in den Topf „ohne bestätigte Größe" —
+             die Zeile hätte zu einer bestätigten Größe behauptet, sie
+             fehle. Dieselbe Falschzuweisung hat die sechste Jagd in
+             Runde 16 abgestellt. */
+          r.forEach(x=>zaehlePos(x.id,false,"ausschank"));
           return;
         }
         r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
@@ -2250,6 +2275,16 @@ function vHeute(m){
       +" ("+einh(t.stkAusschank)+") sagen nicht, wie viel ausgeschenkt wurde"+nix
       +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge oder eine Rezeptur.");
   }
+  /* NACHTRICHTIGUNG (dritte Jagd · A): „Was noch fehlt" kannte keine
+     Zeile für ignorierte Kassennamen — dabei ist „Ignorieren" der
+     einzige Weg, einen Cocktail ohne Menge im Namen aus dem roten Balken
+     zu bekommen, und seine Flaschen kommen aus dem Keller. Die Zeile
+     steht bewusst hier und nicht bei den Abweichungen: Es ist eine
+     Entscheidung, kein Befund. */
+  if(a.ignoriert && a.ignoriert.length) fehlt.push(
+    a.ignoriert.length+" Kassennamen ("+num(a.stkIgnoriert)+" Einheiten) stehen auf "
+    +"„Ignorieren“ und zählen nicht als Verkauf — richtig für Speisen, Kaffee und Fassbier. "
+    +"Steht dort ein Getränk aus dem Keller, erscheint seine Entnahme unten als volle Abweichung.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else {
     /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
@@ -2290,7 +2325,7 @@ function vHeute(m){
         <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}${
+        <td class="deutung">${DEUTUNG(r)}${
           /* Auch hier gesagt: der Mittagsblick ist der Schirm, den die
              Leitung morgens zuerst sieht, und eine Differenz aus halb
              gerechnetem Verkauf darf dort nicht als ganze dastehen. */
@@ -2656,11 +2691,29 @@ function druckDifferenzen(tag, a){
   const vorbehalte=[];
   /* NACHTRICHTIGUNG (zweite Jagd · A): Zuerst die eine Zahl, die jeden
      Weg mitnimmt — auch die stillen. Danach erst die Gründe. */
-  const draussen=Math.max(0, (a.stkGesamt||0)-(a.stkGerechnet||0));
-  if(draussen) vorbehalte.push(
+  /* NACHTRICHTIGUNG (dritte Jagd · B): `draussen` zählte auch Speisen
+     und Kaffee mit. Im bestmöglich gepflegten Zustand blieben von 145
+     Einheiten 99 „nicht in der Rechnung", davon 80 Rührei und Espresso —
+     das Blatt hätte AB JETZT IMMER „unvollständig" gesagt, und ein
+     Warnhinweis, der nie ausgeht, unterscheidet den Normalzustand nicht
+     mehr vom Schaden.
+     Deshalb zwei Zahlen: was ausdrücklich ausgenommen ist („Ignorieren"
+     — eine Entscheidung) und was ungewollt fehlt (eine Lücke). Nur die
+     Lücke macht die Rechnung unvollständig. Die Ausnahme steht trotzdem
+     im Kasten, weil dort auch ein Getränk stehen kann. */
+  const ausgenommen=+a.stkIgnoriert||0;
+  const luecke=Math.max(0, (a.stkGesamt||0)-(a.stkGerechnet||0)-ausgenommen);
+  if(luecke||ausgenommen) vorbehalte.push(
     "Von "+num(a.stkGesamt)+" verkauften Einheiten im Zeitraum sind "
-    +num(a.stkGerechnet)+" in diese Rechnung eingegangen — "+num(draussen)
-    +" nicht. Die Gründe stehen darunter.");
+    +num(a.stkGerechnet)+" in diese Rechnung eingegangen"
+    +(ausgenommen?", "+num(ausgenommen)+" ausdrücklich ausgenommen":"")
+    +(luecke?" — "+num(luecke)+" fehlen.":".")
+    +" Die Gründe stehen darunter.");
+  /* Ein Bericht ohne eine einzige Position ist keine leere Verkaufsseite,
+     sondern eine fehlende (dritte Jagd · B). */
+  if(a.berichte && !a.stkGesamt) vorbehalte.push(
+    "Der Z-Bericht im Zeitraum enthält keine einzige Position. Die Verkaufsseite "
+    +"ist damit nicht leer, sondern unbekannt.");
   if(a.berichte<a.spanne) vorbehalte.push(
     (a.spanne-a.berichte)+" von "+a.spanne+" Tagen sind nicht eingelesen — für sie fehlt "
     +"der Verkauf ganz. Die Differenzen fallen entsprechend zu hoch aus.");
@@ -2677,12 +2730,15 @@ function druckDifferenzen(tag, a){
     +" Einheiten) sagen nicht, wie viel ausgeschenkt wurde, und zählen nicht als Verkauf.");
   if(a.ignoriert && a.ignoriert.length) vorbehalte.push(
     a.ignoriert.length+" Kassennamen ("+num(a.stkIgnoriert)+" Einheiten) stehen auf "
-    +"\u201eIgnorieren\u201c und zählen nicht als Verkauf — richtig für Speisen und Kaffee, "
-    +"falsch, sobald ein Getränk darunter ist.");
+    +"\u201eIgnorieren\u201c: Speisen, Kaffee, Fassbier — alles, was nicht aus dem Keller "
+    +"kommt. Steht dort ein Getränk, fehlt sein Verkauf in dieser Rechnung.");
   /* Solange irgendein Verkauf fehlt, ist ein Plus kein Befund über den
      Keller. `draussen` deckt auch die Wege ab, für die es keinen eigenen
      Grund in der Liste gibt (zweite Jagd · A). */
-  const halbeRechnung = draussen>0 || a.berichte<a.spanne || vorbehalte.length>0;
+  /* Unvollständig ist die Rechnung, wenn etwas UNGEWOLLT fehlt — nicht,
+     wenn jemand Rührei ausgenommen hat (dritte Jagd · B). */
+  const halbeRechnung = luecke>0 || !a.berichte || a.berichte<a.spanne
+                        || (a.berichte>0 && !a.stkGesamt);
 
   const kopf=`<div class="notiz">
     ${a.berichte
@@ -2697,12 +2753,17 @@ function druckDifferenzen(tag, a){
       : `<b>In diesem Zeitraum liegt kein Z-Bericht vor.</b><br>
          Ohne ihn ist der Verkauf unbekannt — verglichen ist damit nichts.`}
     </div>`
-    + (vorbehalte.length?`<div class="notiz vorbehalt">
-        <b>Diese Rechnung ist unvollständig — bitte vor dem Weiterleiten lesen:</b>
+    + (vorbehalte.length?`<div class="notiz${halbeRechnung?" vorbehalt":""}">
+        <b>${halbeRechnung
+          ?"Diese Rechnung ist unvollständig — bitte vor dem Weiterleiten lesen:"
+          :"Was nicht in dieser Rechnung steht:"}</b>
         <ul>${vorbehalte.map(s=>"<li>"+esc(s)+"</li>").join("")}</ul>
-        Was fehlt, fehlt auf der VERKAUFSSEITE. Jede Zahl in der Spalte „Verkauft" ist
-        deshalb eine Untergrenze, und jedes Plus ist höchstens so groß, wie es dasteht —
-        meist kleiner. Ein Plus ist hier kein Nachweis von Schwund.</div>`:"");
+        ${halbeRechnung
+          ?`Was fehlt, fehlt auf der VERKAUFSSEITE. Jede Zahl in der Spalte „Verkauft" ist
+            deshalb eine Untergrenze, und jedes Plus ist höchstens so groß, wie es dasteht —
+            meist kleiner. Ein Plus ist hier kein Nachweis von Schwund.`
+          :`Was ausdrücklich ausgenommen ist, gehört nicht in diese Rechnung — solange kein
+            Getränk darunter steht. Jedes Plus heisst: im Keller nachsehen.`}</div>`:"");
 
   const zeilen = auf.length ? `<h2>Nicht ausgeglichen</h2><table><thead><tr>
       <th>Artikel</th><th class="r">Verkauft</th><th class="r">Geholt</th>
@@ -2711,15 +2772,9 @@ function druckDifferenzen(tag, a){
         <td>${esc(r.name)}<br><span class="mini">${esc(r.art)}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r plus">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td>${r.diff>0
-              ?(halbeRechnung
-                ?"mehr geholt als gerechneter Verkauf — es fehlt Verkauf in der Rechnung"
-                /* Auch bei vollständiger Rechnung steht hier kein
-                   Vorwurf. Das Blatt geht in eine Gruppe; ob eine
-                   Flasche fehlt oder im Vorrat steht, entscheidet ein
-                   Mensch im Keller, nicht ein Ausdruck (zweite Jagd). */
-                :"mehr geholt als verkauft — Vorrat aufgebaut oder im Keller nachsehen")
-              :"mehr verkauft als geholt — Vorrat wird abgebaut"}
+        <td>${halbeRechnung && r.diff>0
+              ?"mehr geholt als gerechneter Verkauf — es fehlt Verkauf in der Rechnung"
+              :DEUTUNG(r)}
           ${r.vorbehalt?`<br><span class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</span>`:""}</td>
       </tr>`).join("")}
       <tr class="zwt"><td>Summe</td><td class="r">${num(auf.reduce((s,r)=>s+r.verkauf,0))}</td>
@@ -4104,8 +4159,12 @@ document.addEventListener("keydown",e=>{
      Text zu wählen, und das ist keine Navigation. */
   const eigenerBedarf=(el,amRand)=>{
     if(!el || !el.closest) return false;
-    if(el.closest("input,textarea,select,[contenteditable]")) return true;
+    /* Am Rand gewinnt IMMER die Randgeste, auch über einem Eingabefeld:
+       Sonst bliebe genau dort das Loch offen, das gerade geschlossen
+       wurde (dritte Jagd · C). Vier Pixel Ziehweg weniger sind der
+       kleinere Verlust als eine Seite, die sich verabschiedet. */
     if(amRand) return false;
+    if(el.closest("input,textarea,select,[contenteditable]")) return true;
     const h=el.closest(".tabhuelle");
     return !!(h && h.scrollWidth > h.clientWidth+4);
   };
@@ -4135,8 +4194,11 @@ document.addEventListener("keydown",e=>{
          Zeile liess bei OFFENER Leiste den Randwisch nach rechts los.
          Genau dort liegt der Daumen, wenn die Schublade offen ist, und
          „zurück" heisst hier: aus dem Backoffice heraus. */
+      /* Safaris Zurück-Geste am linken Rand ist ein Wisch nach RECHTS.
+         Nach links am Rand bewirkt nichts und ist nichts zu schützen —
+         das gehört der Seite darunter (dritte Jagd · C). */
       const wirkt = (hin>0 && !offen()) || (hin<0 && offen());
-      if(!wirkt && !amRand){ x0=null; return; }
+      if(!wirkt && !(amRand && hin>0)){ x0=null; return; }
       aktiv=true;
     }
     /* Ab hier gehört die Bewegung dieser Seite. */

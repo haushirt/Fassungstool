@@ -72,15 +72,15 @@ const VOLL = [
    BESTÄTIGT im Mapping — ohne sie fällt jede Zeile in „ohne Abgleich". */
 const ZTAG = tg(1);
 const BERICHT = { tag: ZTAG, z: "Z-0815", positionen: [
-  { rohbez: "Glatzer Rubin Carnuntum 0,75", anzahl: 3, betrag: 129, ausschankMl: 750 },
-  { rohbez: "Moric Reserve 0,75", anzahl: 1, betrag: 62, ausschankMl: 750 },
-  { rohbez: "Cola 0,33", anzahl: 10, betrag: 45, ausschankMl: 330 },
+  { rohbez: "Glatzer Rubin Carnuntum 0,75 l", anzahl: 3, betrag: 129, ausschankMl: 750 },
+  { rohbez: "Moric Reserve 0,75 l", anzahl: 1, betrag: 62, ausschankMl: 750 },
+  { rohbez: "Cola 0,33 l", anzahl: 10, betrag: 45, ausschankMl: 330 },
   { rohbez: "HP Omelett", anzahl: 4, betrag: 36, ausschankMl: null }
 ] };
 const MAPPING = [
-  { kassenname: "Glatzer Rubin Carnuntum 0,75", artikel: "w026", ignoriert: 0, gebinde_ml: 750 },
-  { kassenname: "Moric Reserve 0,75", artikel: "w031", ignoriert: 0, gebinde_ml: 750 },
-  { kassenname: "Cola 0,33", artikel: "cola", ignoriert: 0, gebinde_ml: 330 }
+  { kassenname: "Glatzer Rubin Carnuntum 0,75 l", artikel: "w026", ignoriert: 0, gebinde_ml: 750 },
+  { kassenname: "Moric Reserve 0,75 l", artikel: "w031", ignoriert: 0, gebinde_ml: 750 },
+  { kassenname: "Cola 0,33 l", artikel: "cola", ignoriert: 0, gebinde_ml: 330 }
 ];
 /* „HP Omelett" bleibt absichtlich unzugeordnet: Genau diese Lage — ein
    Verkauf, der gar nicht in der Rechnung steht — hat die Jagd nach
@@ -324,7 +324,7 @@ const WISCH = `(von, nach, hoch) => {
     const d = document.querySelector("#druck");
     const k = d.querySelector(".notiz.vorbehalt");
     return { kasten: !!k,
-      punkte: k ? [...k.querySelectorAll("li")].map(li => li.textContent.trim()) : [],
+      punkte: [...d.querySelectorAll(".notiz li")].map(li => li.textContent.trim()),
       schwund: /Schwund/.test([...d.querySelectorAll("tbody td")].map(c => c.textContent).join(" ")),
       unterzeile: (d.querySelector(".druckunter") || {}).textContent || "" };
   });
@@ -348,8 +348,9 @@ const WISCH = `(von, nach, hoch) => {
       await new Promise(r => setTimeout(r, 200));
       const d = document.querySelector("#druck");
       const txt = d.textContent;
-      const erg = { kasten: !!d.querySelector(".notiz.vorbehalt"),
-        punkte: [...d.querySelectorAll(".notiz.vorbehalt li")].map(li => li.textContent.trim()),
+      const erg = { laut: !!d.querySelector(".notiz.vorbehalt"),
+        kasten: !!d.querySelector(".notiz li"),
+        punkte: [...d.querySelectorAll(".notiz li")].map(li => li.textContent.trim()),
         /* Der Vorwurf steht in der DEUTUNGSSPALTE. Im Vorbehaltskasten
            und unter „Ohne Abgleich" kommt das Wort vor, um es zu
            verneinen — das ist der Punkt, nicht der Fehler. */
@@ -365,25 +366,85 @@ const WISCH = `(von, nach, hoch) => {
     MAP = {}; REZ = {};
     Object.keys(ZBER).forEach(tg => ZBER[tg].positionen.forEach(
       q => { MAP[q.name] = "__ignoriert"; }));
-    MAP["Cola 0,33"] = "cola"; GEB_BEST = { "Cola 0,33": 330 };
+    MAP["Cola 0,33 l"] = "cola"; GEB_BEST = { "Cola 0,33 l": 330 };
     SPANNE = 1; vAbgleich.tag = letzterTag();
     const ignoriert = await lauf();
 
-    /* Weg 2 · eine Rezeptzutat mit 0 ml. */
-    MAP = { "Cola 0,33": "cola" }; GEB_BEST = { "Cola 0,33": 330 };
+    const zahlen = () => { const x = abgleich(letzterTag(), SPANNE);
+      return { gesamt: x.stkGesamt, gerechnet: x.stkGerechnet,
+               ausgenommen: x.stkIgnoriert,
+               luecke: x.stkGesamt - x.stkGerechnet - x.stkIgnoriert }; };
+    const zIgnoriert = zahlen();
+
+    /* Weg 2 · LÜCKENLOSES Mapping, nur die Rezeptzutat hat 0 ml. Ohne
+       das trüge der Vorbehalt „Kassennamen ohne Zuordnung" das Urteil
+       allein, und der 0-ml-Zweig bliebe unbewacht (dritte Jagd · B). */
+    MAP = {}; GEB_BEST = {};
+    Object.keys(ZBER).forEach(tg => ZBER[tg].positionen.forEach(q => {
+      if (q.name === "HP Omelett") return;
+      MAP[q.name] = q.name === "Cola 0,33 l" ? "cola"
+        : q.name === "Moric Reserve 0,75 l" ? "w031" : "w026";
+      GEB_BEST[q.name] = q.name === "Cola 0,33 l" ? 330 : 750; }));
     REZ = { "HP Omelett": [{ id: "cola", ml: 0 }] };
+    const zMitNull = zahlen();
     const nullRezept = await lauf();
+    /* Gegenprobe: dieselbe Rezeptur MIT Menge schliesst die Lücke. */
+    REZ = { "HP Omelett": [{ id: "cola", ml: 200 }] };
+    const zOhneNull = zahlen();
+
+    /* Und ein Bericht, bei dem WIRKLICH nichts fehlt — nur so ist zu
+       prüfen, dass der laute Kasten auch wieder ausgeht. */
+    const merkZ = ZBER, merkS = SPANNE;
+    const tg = letzterTag();
+    ZBER = { [tg]: { tag: tg, nr: "Z-heil", block: "Positionen", sektionen: [],
+      positionen: [{ name: "Cola 0,33 l", anzahl: 4, umsatz: 18, ml: 330, zeilen: 1 }],
+      umsatz: 18 } };
+    MAP = { "Cola 0,33 l": "cola" }; GEB_BEST = { "Cola 0,33 l": 330 }; REZ = {};
+    SPANNE = 1; vAbgleich.tag = tg;
+    const zHeil = zahlen();
+    const heil = await lauf();
+    ZBER = merkZ; SPANNE = merkS;
 
     MAP = merkMap; REZ = merkRez; GEB_BEST = merkGeb; SPANNE = 7;
-    return { ignoriert, nullRezept };
+    return { ignoriert, nullRezept, heil, zIgnoriert, zMitNull, zOhneNull, zHeil };
   });
-  urteil("„Ignorieren“ nimmt Verkauf aus der Rechnung — das Blatt sagt es",
-    still.ignoriert.kasten && still.ignoriert.unvollstaendig
+  /* „Ignorieren" ist eine ENTSCHEIDUNG, keine Lücke: Das Blatt benennt
+     sie, schlägt aber keinen Alarm — sonst stünde die laute Warnung auf
+     jedem Blatt, das je gedruckt wird (dritte Jagd · B). */
+  urteil("„Ignorieren“ steht im Kasten — benannt, aber ohne Alarm",
+    still.ignoriert.kasten && !still.ignoriert.laut && !still.ignoriert.unvollstaendig
       && still.ignoriert.punkte.some(s => /Ignorieren/.test(s)), still.ignoriert);
-  urteil("eine Rezeptzutat mit 0 ml gilt nicht als gerechneter Verkauf",
-    still.nullRezept.kasten && still.nullRezept.unvollstaendig, still.nullRezept);
+  urteil("„Ignorieren“ wird als AUSNAHME gezählt, nicht als Lücke",
+    still.zIgnoriert.ausgenommen > 0 && still.zIgnoriert.gesamt > 0,
+    still.zIgnoriert);
+  /* Die eigentliche Rechenmitte: die Lücke muss an der 0 hängen und ohne
+     sie verschwinden. */
+  /* Die Rechenmitte: die 0 ml MUSS die Lücke vergrössern, und die Menge
+     MUSS sie schliessen. Ohne den 0-ml-Zweig in `abgleich()` sind beide
+     Läufe gleich und dieses Urteil rot. */
+  urteil("eine Rezeptzutat mit 0 ml vergrössert die Lücke — mit Menge schliesst sie sich",
+    still.zMitNull.luecke > still.zOhneNull.luecke
+      && still.zOhneNull.gerechnet > still.zMitNull.gerechnet,
+    { mitNull: still.zMitNull, ohneNull: still.zOhneNull });
+  urteil("ohne Lücke geht der laute Kasten wieder aus",
+    still.zHeil.luecke === 0 && still.nullRezept.laut && !still.heil.laut
+      && !still.heil.unvollstaendig,
+    { zahlen: still.zHeil, mitNull: still.nullRezept, heil: still.heil });
   urteil("das Wort „Schwund“ steht auf diesem Blatt nie",
-    !still.ignoriert.schwund && !still.nullRezept.schwund, still);
+    !still.ignoriert.schwund && !still.nullRezept.schwund && !still.heil.schwund,
+    { a: still.ignoriert.schwund, b: still.nullRezept.schwund, c: still.heil.schwund });
+  /* Zweite Deutungsspalte: der Mittagsblick (dritte Jagd · A). */
+  const schirm = await p.evaluate(() => {
+    SEITE = "heute"; zeichne();
+    /* Nur die DEUTUNGSSPALTE. Der Hinweis darüber verneint das Wort —
+       das ist der Punkt, nicht der Fehler. */
+    const txt = [...document.querySelectorAll("main td.deutung")]
+      .map(c => c.textContent).join(" ");
+    return { schwund: /Schwund/.test(txt), zeilen: document.querySelectorAll("main td.deutung").length,
+      ignorierzeile: /auf .Ignorieren. und zählen nicht als Verkauf/.test(txt) };
+  });
+  urteil("auch die Deutungsspalte des Mittagsblicks sagt nirgends „Schwund“",
+    !schirm.schwund && schirm.zeilen > 0, schirm);
 
   /* ── B4 ─────────────────────────────────────────────────────────── */
   console.log("\nB4 · Wisch von links");
@@ -465,8 +526,10 @@ const WISCH = `(von, nach, hoch) => {
     /* Der Finger setzt MITTEN auf das Suchfeld bzw. die Rollfläche. */
     const zu = () => document.body.classList.remove("navoffen");
     zu();
+    /* Deutlich im Feld, nicht im 4px-Streifen am Rand — dort gewinnt
+       absichtlich die Randgeste (dritte Jagd · C). */
     const aufFeld = (() => { const y = Math.round(feld.top + feld.height / 2);
-      return wisch(Math.round(feld.left) + 4, Math.round(feld.left) + 90, y); })();
+      return wisch(Math.round(feld.left) + 40, Math.round(feld.left) + 140, y); })();
     zu();
     const r = huelle.getBoundingClientRect();
     /* Deutlich INNERHALB, nicht im 4px-Streifen am Rand: dort gewinnt
