@@ -814,11 +814,10 @@ async function fassungsliste(env, text, wer) {
                      && z.positionen.length < alt.positionen * TEILVERDACHT;
     /* Und wenn geschrumpft: steht der Rest vielleicht noch im Bericht?
        `parseZ` wählt genau EINE Sektion und verwirft die anderen
-       (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 12). Eine zweite Sektion in
-       Positionsgrösse heisst: der Bericht ist nach Kostenstellen
-       gespalten, und die Hälfte liegt ungelesen daneben. Das ist die
-       Ursache, nicht nur das Symptom — sie gehört in dieselbe Zeile. */
-    const zweiter = (z.sektionen || []).filter(x => x.n >= z.positionen.length / 2).length > 1;
+       (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 12). Zwei Blöcke, die beide
+       wie ein Positionsblock heissen, sind die Ursache und nicht nur das
+       Symptom — sie gehören in dieselbe Zeile. */
+    const zweiter = !!z.gespalten;
     ersetzt = {
       z: alt.z || null, kostenstelle: alt.kostenstelle || null,
       vorher: alt.positionen, nachher: z.positionen.length, unveraendert,

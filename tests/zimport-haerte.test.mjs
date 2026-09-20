@@ -31,7 +31,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ladeWorker, anfrage, keksAus } from "./hilfe/worker.mjs";
 import { d1Echt, SCHEMA_DA } from "./hilfe/d1-echt.mjs";
-import { pfad } from "./hilfe/dateien.mjs";
+import { pfad, lies } from "./hilfe/dateien.mjs";
 import { parseZ } from "../src/gnparse.js";
 
 const TEXT = readFileSync(join(pfad("tests", "fixtures"), "zbericht-37-extended.csv"), "utf8");
@@ -197,6 +197,23 @@ describe("Runde 21 · der Z-Import hält", { skip: SCHEMA_DA ? false :
     assert.equal(env.DB.zeilen("fassungsliste")[0].z, "Z 41");
   });
 
+  test("der gespaltene Bericht wird benannt — und nur er", async () => {
+    const { worker, env, keks } = await haus();
+    /* Der echte Bericht hat EINEN Positionsblock, daneben Warengruppen,
+       Kostenstellen und Bezahlarten. Die sind Zusammenfassungen, kein
+       zweiter Ausschank — sie dürfen die Meldung nicht auslösen. */
+    assert.equal(parseZ(TEXT).gespalten, false);
+    await senden(worker, env, keks);
+    const j = await (await senden(worker, env, keks, beschnitten("41", 10))).json();
+    assert.equal(j.ersetzt.gespalten, false,
+      "die Warengruppen-Tabelle gilt als zweiter Positionsblock");
+    assert.doesNotMatch(journal(env)[0].notiz, /zweiten Block/);
+
+    /* So sieht ein wirklich gespaltener Bericht aus: zweimal „Positionen". */
+    const zwei = TEXT.replace(/^"Warengruppen"\t/m, '"Positionen"\t');
+    assert.equal(parseZ(zwei).gespalten, true);
+  });
+
   /* ── Z3 · Zeitraum und Kostenstelle ────────────────────────────────── */
 
   test("Kostenstelle und Zeitraum kommen in der Datenbank an", async () => {
@@ -319,5 +336,51 @@ describe("Runde 21 · der Z-Import hält", { skip: SCHEMA_DA ? false :
     const viel = await (await worker.fetch(
       anfrage("/api/fassungsliste?zeilen=1&limit=9000", { keks }), env)).json();
     assert.equal(viel.berichte.length, 4, "vier sind da, mehr als 90 dürften es nie werden");
+  });
+});
+
+/* ── Und was die Seiten daraus machen ───────────────────────────────────
+   Quelltextprüfungen im Stil von `tests/runde16.test.mjs`. Sie ersetzen
+   keinen Browserlauf, aber sie halten die drei Zeilen fest, an denen der
+   neue Weg hängt — und die eine, die NICHT angefasst werden darf.      */
+describe("Runde 21 · was Backoffice und App tun", () => {
+  const LEIT = lies("public", "leitung.html");
+  const APP = lies("public", "index.html");
+
+  test("das Backoffice holt die Berichte in EINEM Abruf", () => {
+    assert.match(LEIT, /fassungsliste\?zeilen=1&limit=60/);
+  });
+
+  test("und fällt auf den alten Weg zurück, wenn der Server ihn nicht kennt", () => {
+    /* Der alte Worker antwortet 200 mit der schlichten Übersicht, nicht
+       mit einem Fehler — der Rückfall muss deshalb an der FORM hängen. */
+    assert.match(LEIT, /every\(b=>Array\.isArray\(b\.positionen\)\)/);
+    assert.match(LEIT, /fassungsliste\?tag="\+encodeURIComponent\(b\.tag\)/);
+  });
+
+  test("die App im Keller bleibt beim einzelnen Tag", () => {
+    /* `holeZBericht()` braucht genau einen Tag und hat im Keller kein
+       Netz zu verschenken. */
+    assert.match(APP, /API\+"\/fassungsliste\?tag="/);
+    assert.doesNotMatch(APP, /zeilen=1/);
+  });
+
+  test("ein ersetzter Teilbericht bekommt einen stehenden Hinweis, keinen Toast", () => {
+    assert.match(LEIT, /vImport\.warnung/);
+    assert.match(LEIT, /hinweis bad/);
+    assert.match(LEIT, /Teilbericht/);
+    /* Und die Seite läuft dann nicht weiter. */
+    assert.match(LEIT, /if\(!faul\) SEITE=/);
+  });
+
+  test("der Zeitraum wird in Wiener Zeit gezeigt, nicht in UTC", () => {
+    assert.match(LEIT, /function zeitraum\(z\)/);
+    assert.match(LEIT, /timeZone:"Europe\/Vienna"/);
+  });
+
+  test("der Speicherstand ist erhöht", () => {
+    /* Regel aus CLAUDE.md: nach jeder Änderung in `public/`. */
+    const v = /const VERSION = "v(\d+)"/.exec(lies("public", "sw.js"));
+    assert.ok(v && +v[1] >= 67, "sw.js steht noch auf v" + (v && v[1]));
   });
 });

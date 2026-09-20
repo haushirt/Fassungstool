@@ -1661,28 +1661,59 @@ async function ladeDaten(){
    Abschrift, damit die Seite ohne Netz nicht leer dasteht. */
 const vomServer = e => ({
   tag: e.tag, nr: e.z || "", block: "Positionen", sektionen: [],
+  /* Seit Runde 21 füllt der Worker auch diese drei. Ältere Berichte, die
+     vor Runde 21 eingelesen wurden, haben sie nicht — dann bleibt es bei
+     `null`, und die Anzeige lässt den Zeitraum einfach weg. */
+  kostenstelle: e.kostenstelle || "",
+  von: e.von_ts!=null ? +e.von_ts : null,
+  bis: e.bis_ts!=null ? +e.bis_ts : null,
   positionen: (e.positionen||[]).map(p=>({
     name: p.rohbez, anzahl: +p.anzahl||0, umsatz: +p.betrag||0,
     ml: p.ausschankMl!=null ? +p.ausschankMl : null, zeilen: 1 })),
   umsatz: (e.positionen||[]).reduce((a,p)=>a+(+p.betrag||0),0)
 });
 
+/* Uhrzeit eines Zeitstempels, in der Zeit, die im Haus an der Wand hängt.
+   Der Worker legt echte Zeitstempel ab; ohne Zone stünde hier UTC. */
+const uhr = ms => new Intl.DateTimeFormat("de-AT",{timeZone:"Europe/Vienna",
+  hour:"2-digit", minute:"2-digit", hour12:false}).format(new Date(ms));
+/* „15.09. 23:11 – 16.09. 23:26" — leer, wenn der Bericht es nicht hergibt. */
+function zeitraum(z){
+  if(!z || z.von==null || z.bis==null) return "";
+  const t = ms => new Intl.DateTimeFormat("de-AT",{timeZone:"Europe/Vienna",
+    day:"2-digit", month:"2-digit"}).format(new Date(ms));
+  return t(z.von)+" "+uhr(z.von)+" – "+t(z.bis)+" "+uhr(z.bis);
+}
+
 async function ladeBerichte(){
   try{
-    const r=await fetch("/api/fassungsliste",{headers:{Accept:"application/json"}});
+    /* Ein Abruf statt einundsechzig (Runde 21). Bis dahin holte diese
+       Seite die Übersicht und danach je Bericht eine EIGENE Anfrage,
+       nacheinander — gemessen 4,1 s leerer Schirm bei jedem Öffnen und
+       jedem „Aktualisieren".
+
+       Der Rückfall hängt an der FORM der Antwort, nicht am Status: ein
+       Worker, der `zeilen` noch nicht kennt, antwortet nicht mit einem
+       Fehler, sondern mit der alten Übersicht — dort ist `positionen`
+       eine Zahl statt einer Liste. */
+    const r=await fetch("/api/fassungsliste?zeilen=1&limit=60",
+      {headers:{Accept:"application/json"}});
     if(!r.ok) return false;
     const j=await r.json();
-    /* Mehr als die letzten zwei Monate braucht keine Ansicht, und jede
-       Liste kostet eine Anfrage. */
     const liste=(j.berichte||[]).slice(0,60);
+    const mitZeilen = liste.length && liste.every(b=>Array.isArray(b.positionen));
     const neu={};
-    for(const b of liste){
-      if(!b.tag) continue;
-      const a=await fetch("/api/fassungsliste?tag="+encodeURIComponent(b.tag),
-        {headers:{Accept:"application/json"}});
-      if(!a.ok) continue;
-      const e=await a.json();
-      if(e && e.tag) neu[e.tag]=vomServer(e);
+    if(mitZeilen){
+      for(const e of liste) if(e && e.tag) neu[e.tag]=vomServer(e);
+    } else {
+      for(const b of liste){
+        if(!b.tag) continue;
+        const a=await fetch("/api/fassungsliste?tag="+encodeURIComponent(b.tag),
+          {headers:{Accept:"application/json"}});
+        if(!a.ok) continue;
+        const e=await a.json();
+        if(e && e.tag) neu[e.tag]=vomServer(e);
+      }
     }
     ZBER=neu; schreib(K_ZBER,ZBER); return true;
   }catch(e){ return false; }
@@ -3730,6 +3761,28 @@ function vImport(m){
   zone.ondrop=e=>{ e.preventDefault(); zone.classList.remove("ueber");
     if(e.dataTransfer.files[0]) datei(e.dataTransfer.files[0]); };
 
+  /* Der Hinweis, wenn ein Bericht einen anderen ersetzt hat und dabei
+     etwas nicht stimmte (Runde 21). Er steht, statt zu verschwinden:
+     Bar und Restaurant getrennt abgeschlossen heisst, dass dem Abgleich
+     eine ganze Kostenstelle fehlt — vorher passierte das lautlos, mit
+     einem grünen „eingelesen". */
+  if(vImport.warnung){
+    const w=vImport.warnung, ws=document.createElement("section");
+    const p=n=>n===1?"1 Position":n+" Positionen";
+    ws.innerHTML=`<div class="hinweis bad">
+      <b>Der Bericht für ${esc(deTag(w.tag))} hat einen anderen ersetzt.</b><br>
+      Vorher ${esc(w.z||"ein Bericht")} mit ${p(w.vorher)}, jetzt ${p(w.nachher)}.
+      ${w.gespalten ? "Der neue Bericht hat einen zweiten Block in Positionsgröße — gelesen wird nur einer. " : ""}
+      Das sieht nach einem Teilbericht aus: Bar und Restaurant getrennt
+      abgeschlossen. Dann fehlt dem Abgleich eine ganze Kostenstelle.
+      <br><br>Was zu tun ist: den vollständigen Tagesabschluss noch einmal
+      ziehen und hier einlesen — er ersetzt diesen.
+      <br><button class="b klein" id="bWegW" style="margin-top:10px">Verstanden</button>
+    </div>`;
+    m.appendChild(ws);
+    ws.querySelector("#bWegW").onclick=()=>{ vImport.warnung=null; zeichne(); };
+  }
+
   const vor=document.createElement("section"); vor.id="vor"; m.appendChild(vor);
 
   /* Die Vorschau zeigt, was der SERVER gelesen hat — nicht, was diese
@@ -3749,7 +3802,7 @@ function vImport(m){
        das frühere Inline-Styling würde die neue Regel überschreiben. */
     vor.innerHTML=`<h3>Eingelesen</h3>
       <div class="gitter g4" style="margin-bottom:16px">
-        <div class="kpi kpi--status"><span>Betriebstag</span><b>${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc(z.nr||"")}</small></div>
+        <div class="kpi kpi--status"><span>Betriebstag</span><b>${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc([z.nr||"", zeitraum(z)].filter(Boolean).join(" · "))}</small></div>
         <div class="kpi"><span>Positionen</span><b>${z.positionen.length}</b><small>${eur(z.umsatz)}</small></div>
         <div class="kpi"><span>Zugeordnet</span><b>${auto}</b><small>${ign} ignoriert</small></div>
         <div class="kpi ${offen?"warn":"ok"}"><span>Offen</span><b>${offen}</b><small>brauchen eine Zuordnung</small></div>
@@ -3792,11 +3845,20 @@ function vImport(m){
       }
       await ladeBerichte();
       $("#stat").textContent="";
-      toast("Z-Bericht für "+deTag(j.tag)+" eingelesen"
-        + (j.storno ? " · "+j.storno+" storniert, ohne Artikel" : ""));
-      zeigeVorschau(j.tag);
+      const e=j.ersetzt||null;
+      const faul=!!(e && (e.teilbericht || e.gespalten));
+      toast(e && e.unveraendert
+        ? "Derselbe Bericht wie zuvor — es hat sich nichts geändert"
+        : "Z-Bericht für "+deTag(j.tag)+" gespeichert, auf allen Geräten sichtbar"
+          + (j.storno ? " · "+j.storno+" storniert, ohne Artikel" : ""));
       vAbgleich.tag=j.tag;
-      SEITE=(function(){const a=abgleich(j.tag); return a.offen.length?"zuordnung":"abgleich";})();
+      /* Steht ein Verdacht im Raum, bleibt die Seite hier stehen: der
+         Hinweis soll gelesen werden, bevor jemand mit den Zahlen
+         weiterarbeitet. Ein Toast wäre nach vier Sekunden weg. Sonst
+         läuft es wie bisher weiter zur Zuordnung oder zum Abgleich. */
+      vImport.warnung = faul ? { ...e, tag:j.tag } : null;
+      vImport.zeig = j.tag;
+      if(!faul) SEITE=(function(){const a=abgleich(j.tag); return a.offen.length?"zuordnung":"abgleich";})();
       zeichne();
     }catch(e){
       $("#stat").textContent="";
@@ -3808,9 +3870,10 @@ function vImport(m){
   const s2=document.createElement("section");
   s2.innerHTML=`<h3>Auf dem Server</h3>` + (alt.length
     ? `<div class="tabhuelle"><table><thead><tr>
-        <th>Betriebstag</th><th>Bericht</th><th class="r">Positionen</th><th class="r">Umsatz</th><th></th>
+        <th>Betriebstag</th><th>Bericht</th><th>Zeitraum</th><th class="r">Positionen</th><th class="r">Umsatz</th><th></th>
         </tr></thead><tbody>${alt.map(t=>`<tr>
           <td>${esc(deTag(t))}</td><td class="dim">${esc(ZBER[t].nr||"—")}</td>
+          <td class="dim">${esc(zeitraum(ZBER[t])||"—")}</td>
           <td class="r">${ZBER[t].positionen.length}</td><td class="r">${eur(ZBER[t].umsatz)}</td>
           <td class="r"><button class="b klein" data-auf="${t}">Ansehen</button></td></tr>`).join("")}
         </tbody></table></div>

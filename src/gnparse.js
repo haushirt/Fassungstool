@@ -218,6 +218,14 @@ export function parseZ(text) {
   const zaehl = s => s.zeilen.filter(f =>
     f.length >= 2 && f[0] && !/^\d/.test(f[0]) && zahl(f[1]) != null).length;
   const NAME = /^(positionen|artikel|artikelums(a|ä)tze)$/i;
+  /* Zwei Positionsblöcke heisst: der Bericht ist gespalten, und `parseZ`
+     liest nur einen davon (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 12 —
+     nicht auf Verdacht behoben, Regel 7). Gezählt werden ausdrücklich
+     nur Blöcke, die wie ein Positionsblock HEISSEN: Warengruppen,
+     Kostenstellen und Bezahlarten stehen in jedem Bericht und sind
+     Zusammenfassungen, kein zweiter Ausschank. Ohne diese Enge schlüge
+     die Meldung bei jedem kleineren Bericht an. */
+  const namensBloecke = sekt.filter(s => NAME.test(s.titel) && zaehl(s) > 0).length;
   let beste = sekt.find(s => NAME.test(s.titel) && zaehl(s) > 0) || null;
   let bestN = beste ? zaehl(beste) : 0;
   if (!beste) sekt.forEach(s => {
@@ -267,7 +275,8 @@ export function parseZ(text) {
   };
 
   return {
-    tag, nr, von, bis, kostenstelle, block: beste ? beste.titel : "—",
+    tag, nr, von, bis, kostenstelle, gespalten: namensBloecke > 1,
+    block: beste ? beste.titel : "—",
     /* `n` ist die Zahl der Zeilen, die nach einer Position AUSSEHEN —
        nicht die Zahl der Zeilen überhaupt. Sonst hält die Prüfung auf
        gespaltene Berichte den Bezahlartenblock (eine Buchung, 26
