@@ -4243,7 +4243,7 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
   dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs` (neu, Playwright,
-nicht Teil von `npm test`): **40 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+nicht Teil von `npm test`): **43 Urteile grün, 0 rot, keine JS-Fehler** — darunter
 echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
 aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
 Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
@@ -4299,7 +4299,7 @@ Abschnitt „Runde 18".
 dazu der Zeilenklick in den Eingängen als zweiter Weg zum Detail.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
-**40 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
+**43 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
 genau die Funde der Jagd. Der Wischprüfstand setzt den Finger jetzt auf das
 Element, das an der Stelle wirklich liegt (`elementFromPoint`) statt auf den
 Rumpf; vorher hätte er den Fund gar nicht sehen können.
@@ -4346,7 +4346,7 @@ Weiterklicken ändert. Steht im Backlog.
 `abgleich()`, additiv), alle vier B-Funde, zwei der vier C-Funde.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
-**40 Urteile grün, 0 rot** — sechs davon sind neu und stellen genau die zwei
+**43 Urteile grün, 0 rot** — sechs davon sind neu und stellen genau die zwei
 stillen Wege nach (alles auf „Ignorieren", und eine Rezeptur mit 0 ml).
 
 **Für die Nächsten:** Die Lehre dieser Nacht steht in `LEARNINGS.md`: Wer eine
@@ -4354,5 +4354,47 @@ Lücke über ihre GRÜNDE zählt, zählt nur die Gründe, die er kennt. Zähle, 
 übrig bleibt.
 
 **Phase/Thema:** Backoffice / zweite Nachtrichtigung
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (dritte Nachtrichtigung)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Ich habe zweimal dieselbe Hälfte behoben.** Der Fund
+  lautete beide Male „Bildschirm und Blatt sagen Verschiedenes"; ich habe
+  beide Male nur das Blatt angefasst. Die Ursache war die ganze Zeit
+  sichtbar: **zwei Deutungsspalten mit zwei Texten.** Jetzt ein Satz, eine
+  Stelle (`DEUTUNG`). Eine vierte Stelle kann nicht mehr abweichen.
+* ✅ übernommen — **B: `zaehlePos(…,"menge")`.** Ich habe einen Grundwert
+  erfunden, den die Funktion nicht kennt. Vier Zeilen weiter schreibt
+  `merkeOhneGroesse` korrekt `fehlt:"ausschank"` — zwei Buchhaltungen, die
+  sich innerhalb derselben vier Zeilen widersprechen.
+* ✅ übernommen — **B: Mein Warnhinweis war dabei, immer zu leuchten.** Ich
+  habe gezählt, was nicht in der Rechnung steht, und Rührei mitgezählt. Eine
+  Warnung, die nie ausgeht, ist keine Warnung. Entscheidung und Lücke sind
+  jetzt getrennt.
+* ✅ übernommen — **B: Mein Wächter konnte nicht rot werden.** Das Urteil zum
+  0-ml-Zweig hing an einem Vorbehalt, der aus einer ganz anderen Ecke kam.
+  Ein Prüfstand, der grün bleibt, wenn man den geprüften Zweig entfernt,
+  prüft sich selbst.
+* ✅ übernommen — **Der Prüfstand hatte die Verkaufsseite nie gesehen.** Die
+  Kassennamen trugen keine Einheit, `mlAusText()` fand nichts, `verk` blieb
+  leer. Alle bisherigen Urteile über Differenzen liefen über reine Entnahme.
+
+**Umgesetzt:** Ein Deutungssatz für die ganze Seite, `zaehlePos` berichtigt,
+Entscheidung von Lücke getrennt, Bericht ohne Positionen abgefangen, der
+Prüfstand zu einem Wächter gemacht.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**43 Urteile grün, 0 rot.** `sw.js` v59.
+
+**Für die Nächsten:** Die Lehre dieser Nacht: **Wenn derselbe Fund dreimal
+kommt, ist die Behebung falsch, nicht der Fund.** Zweimal habe ich eine
+Textstelle berichtigt; erst beim dritten Mal die beiden Textstellen zu einer
+gemacht.
+
+**Phase/Thema:** Backoffice / dritte Nachtrichtigung
 
 **STATUS:** FERTIG

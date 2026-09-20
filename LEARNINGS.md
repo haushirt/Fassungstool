@@ -63,3 +63,22 @@
   kann einen Treffer nicht sehen.** Die erste Fassung des Wischprüfstands
   schickte alle Ereignisse an `document.body`; `event.target` war damit nie
   das Suchfeld, und die Prüfung hätte den Fund der Jagd nie gefunden.
+
+## 20.09.2026 · Runde 18, nach der dritten Jagd
+
+- **Kommt derselbe Fund dreimal, ist die Behebung falsch, nicht der Fund.**
+  Dreimal lautete er „Bildschirm und Blatt sagen Verschiedenes", dreimal habe
+  ich die Textstelle berichtigt, die gerade genannt war. Erst beim dritten Mal
+  die beiden Stellen zu EINER gemacht. Zwei Texte für dieselbe Aussage sind
+  keine Doppelung, sondern ein offener Widerspruch mit Verzögerung.
+- **Eine Warnung, die nie ausgeht, ist keine Warnung.** Der Vorbehaltskasten
+  zählte Rührei und Espresso als fehlenden Getränkeverkauf und hätte auf jedem
+  Blatt „unvollständig" gesagt. Eine Entscheidung („Ignorieren") und eine
+  Lücke sind zwei verschiedene Dinge und brauchen zwei verschiedene Töne.
+- **Ein Prüfstand, der grün bleibt, wenn man den geprüften Zweig entfernt,
+  prüft sich selbst.** Die Gegenprobe gehört in jedes Urteil: dieselbe Lage
+  einmal mit und einmal ohne die Ursache.
+- **Ein Prüfstand mit unrealistischen Eingabedaten prüft eine andere App.**
+  Die Kassennamen trugen keine Einheit; `mlAusText()` fand nichts, und die
+  Verkaufsseite war im ganzen Prüfstand leer. Alle Urteile über Differenzen
+  liefen über reine Entnahme, ohne dass es jemandem auffiel.

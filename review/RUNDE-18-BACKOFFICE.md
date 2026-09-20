@@ -279,8 +279,8 @@ Prüfstand misst das Blatt, nicht den Drucker.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** (ca. 4 s) |
-| `node tests/ui-runde18.cjs` | **40 Urteile grün, 0 rot, keine JS-Fehler** |
-| Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v58**, keine neue Abhängigkeit in `package.json` |
+| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
+| Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v59**, keine neue Abhängigkeit in `package.json` |
 
 `tests/ui-runde18.cjs` ist wie `ui-leitung.cjs` **nicht** Teil von `npm test`
 (Playwright ist keine Abhängigkeit des Projekts). Aufruf:
@@ -357,7 +357,7 @@ einzige Zählung. Er steht jetzt nur noch dort, wo ein Zählblock im Blatt ist.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` | **40 Urteile grün, 0 rot, keine JS-Fehler** |
+| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
 
 ---
 
@@ -420,5 +420,46 @@ markiert ist.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` | **40 Urteile grün, 0 rot, keine JS-Fehler** |
-| `sw.js` | **v58** |
+| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
+| `sw.js` | **v59** |
+
+---
+
+## Nachtrag 3 · die dritte Jagd
+
+**1 × A, 4 × B, 3 × C.** Wieder derselbe A-Fund — und diesmal war die Ursache
+sichtbar: **Diese Seite hatte zwei Deutungsspalten mit zwei Texten.** Behoben
+wurde beim zweiten Mal nur die auf dem Papier; der Mittagsblick, den sein
+eigener Kommentar „der Schirm, den die Leitung morgens zuerst sieht" nennt,
+druckte unverändert „Vorrat aufgebaut oder Schwund" — für genau die Zeile, um
+die es ging.
+
+**Behoben durch Zusammenlegen, nicht durch Nachbessern:** `const DEUTUNG` ist
+der eine Satz an der einen Stelle. Mittagsblick und Blatt rufen ihn, das Wort
+fällt überall weg, und eine vierte Stelle kann nicht mehr abweichen.
+
+### Die drei weiteren B-Funde
+
+| Fund | Behebung |
+|---|---|
+| `zaehlePos(…,"menge")` im neuen Rezeptzweig — `zaehlePos` kennt nur `"ausschank"` und hätte zu einer **bestätigten** Größe behauptet, sie fehle | `"ausschank"` |
+| **„Unvollständig" war dabei, der Normalzustand zu werden.** Die Lücke zählte Speisen und Kaffee mit: im bestgepflegten Zustand 99 von 145 Einheiten, davon 80 Rührei und Espresso. Ein Warnhinweis, der nie ausgeht, unterscheidet den Normalzustand nicht mehr vom Schaden | Zwei Zahlen: **ausgenommen** („Ignorieren" — eine Entscheidung, steht im Kasten, schlägt keinen Alarm) und **Lücke** (ungewollt — nur sie macht die Rechnung unvollständig). Der Kasten hat eine laute und eine leise Kopfzeile |
+| Ein Z-Bericht mit null Positionen ergab keinen einzigen Vorbehalt | Eigener Satz: „Die Verkaufsseite ist damit nicht leer, sondern unbekannt" |
+| Das Urteil, das den A-Fund der zweiten Jagd bewachen sollte, konnte nicht rot werden | Lückenloses Mapping im Prüfstand, die Urteile lesen die Zahlen direkt, dazu die Gegenprobe (dieselbe Rezeptur mit Menge) und ein Aufbau, bei dem wirklich nichts fehlt |
+
+### Ein Befund über den Prüfstand selbst
+
+Die Kassennamen des Prüfstands trugen keine Einheit („Cola 0,33"). `flaschen()`
+liest die Ausschankmenge aus dem Namen — ohne Einheit findet es nichts, und
+**die Verkaufsseite blieb im ganzen Prüfstand leer.** Jede geprüfte Differenz
+bestand nur aus der Entnahme. Seitdem tragen die Namen eine Einheit, und das
+Blatt zeigt endlich auch Zeilen mit echtem Verkauf (`Cola · 10 verkauft ·
+6 geholt · −4`).
+
+### Stand nach der dritten Behebung
+
+| Prüfung | Ergebnis |
+|---|---|
+| `npm test` | **444 von 444 grün** |
+| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
+| `sw.js` | **v59** |

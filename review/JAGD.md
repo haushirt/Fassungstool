@@ -1003,3 +1003,45 @@ Gestaltungsschicht und muss in beide Dateien.
 * `drucke()`: kein Horcher-Leck, kein jüngerer Druck wird abgeräumt.
 * Gestaltungsschicht zeichengleich; `tr.klickbar` und
   `#druck .notiz.vorbehalt` stehen beide unterhalb der Trennmarke.
+
+## Dritte Jagd nach Runde 18 (Stand `1e8035b`)
+
+**1 × A, 4 × B, 3 × C.** Der A-Fund ist wieder derselbe — behoben wurde er beim
+zweiten Mal nur auf dem Papier.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgerechnet | Stand |
+|---|---|---|---|---|---|
+| A | 18 | **Das Wort „Schwund" stand unverändert in der Deutungsspalte des MITTAGSBLICKS.** Die Behebung der zweiten Jagd hatte nur das Blatt erreicht. Und zwar für genau die Zeile, um die es ging: Ein Kassenname auf „Ignorieren" ruft `zaehlePos()` nie auf, der Artikel bekommt weder `unklar` noch `vorbehalt` und steht als volle, unkommentierte Abweichung da — samt roter Zahl in der Navigation. | `public/leitung.html` (`vHeute`, `td.deutung`) gegen `druckDifferenzen` | Bericht 37, Cocktails und Speisen auf „Ignorieren" (der beworbene Weg): Zeile `Leindl · Langenlois · Verkauft 0 · Geholt 3 · +3`, `unklar:null`, `vorbehalt:null` → die Deutungsspalte druckt wörtlich „mehr geholt als verkauft — Vorrat aufgebaut oder Schwund". **Zwei Deutungsspalten mit zwei Texten** — dasselbe Duplikatsmuster, das diese Datei schon dreimal eingeholt hat. | **behoben in Runde 18** — `const DEUTUNG` ist der eine Satz an der einen Stelle, Mittagsblick und Blatt rufen ihn, das Wort fällt überall weg. „Was noch fehlt" hat eine Zeile für ignorierte Kassennamen bekommen |
+| B | 18 | **`zaehlePos(x.id,false,"menge")` im neuen Rezeptzweig** — `zaehlePos` kennt genau einen Grundwert, `"ausschank"`, und wirft alles andere in „ohne bestätigte Größe". Die Zeile hätte zu einer bestätigten Größe behauptet, sie fehle; dieselbe Falschzuweisung hat die sechste Jagd in Runde 16 abgestellt. | `public/leitung.html` (`abgleich`, Rezeptzweig) gegen `zaehlePos` | Rezept `{id:"cola", ml:0}`, cola mit 350 ml bestätigt → `vorbehalt.cola = {ohne:1, gesamt:2, menge:0, gebinde:1}` → „1 ohne bestätigte Größe". | **behoben in Runde 18** |
+| B | 18 | **„Unvollständig" war dabei, der Normalzustand zu werden.** `draussen` zählte Speisen und Kaffee mit: Im bestmöglich gepflegten Zustand blieben von 145 Einheiten 99 „nicht in der Rechnung", davon 80 Rührei und Espresso. Jedes Blatt hätte ab jetzt „Diese Rechnung ist unvollständig" getragen — und ein Warnhinweis, der nie ausgeht, unterscheidet den Normalzustand nicht mehr vom Schaden. | `public/leitung.html` (`druckDifferenzen`) | Bericht 37 bestmöglich gepflegt: `stkGesamt 145`, `stkGerechnet 46`, `draussen 99`. | **behoben in Runde 18** — `ausgenommen` (Entscheidung, steht im Kasten ohne Alarm) und `luecke` (ungewollt, macht die Rechnung unvollständig) sind getrennt; der Kasten hat eine laute und eine leise Kopfzeile |
+| B | 18 | **Ein Z-Bericht mit null Positionen** ergab `stkGesamt 0`, `luecke 0` und damit keinen einzigen Vorbehalt — das Blatt druckte „+6" ohne jeden Hinweis. `ladeBerichte()` prüft nur `e.tag`, nicht die Positionen. | `public/leitung.html` (`druckDifferenzen`) | `positionen:[]`, spanne 1, Vorgang mit `wein:{w001:6}`. | **behoben in Runde 18** — eigener Vorbehalt: „Der Z-Bericht enthält keine einzige Position. Die Verkaufsseite ist damit nicht leer, sondern unbekannt." |
+| B | 18 | **Das Urteil, das den A-Fund der zweiten Jagd bewachen sollte, konnte nicht rot werden.** In „Weg 2" blieben zwei Kassennamen unzugeordnet — der Vorbehalt kam von dort, nicht vom 0-ml-Zweig. Nimmt man den ganzen Zweig aus `abgleich()` heraus, bleibt das Urteil grün. | `tests/ui-runde18.cjs` | Nachgestellt. | **behoben in Runde 18** — lückenloses Mapping, das Urteil liest `stkGesamt`/`stkGerechnet`/`luecke` direkt und führt die Gegenprobe (dieselbe Rezeptur MIT Menge) mit. Dazu ein Aufbau, bei dem wirklich nichts fehlt |
+
+### C-Funde der dritten Jagd — beide sofort behoben
+* `randwisch()` nahm am linken Rand auch die Geste nach LINKS und tat dann
+  nichts. Safaris Zurück-Geste am linken Rand ist ein Wisch nach RECHTS; nach
+  links gehört die Geste der Seite darunter.
+* Über einem Eingabefeld blieb die Zurück-Geste am Rand offen, weil
+  `eigenerBedarf` das Feld vor `amRand` prüfte — dieselbe Lücke, die für die
+  offene Leiste gerade geschlossen worden war. Am Rand gewinnt jetzt immer die
+  Randgeste.
+
+### Was die dritte Jagd nachgerechnet und in Ordnung gefunden hat
+* Kein Pfad schreibt in `verk`, ohne `stkGerechnet` zu erhöhen, und keiner
+  umgekehrt. `draussen` kann weder negativ noch NaN werden.
+* Derselbe Kassenname an mehreren Tagen wird als Einheiten summiert, nicht als
+  Namen; `ignoriert[]` fasst nach Namen zusammen wie `offen` und `ohneGroesse`.
+* Die Gründe im Vorbehaltskasten sind disjunkt und addieren sich genau zu der
+  Zahl darüber — der Kasten ist in sich widerspruchsfrei.
+* `merkeOhneGroesse(p, l.id, {fehlt:"ausschank"}, true)` — viertes Argument
+  richtig, `r.forEach(…)` für alle Zutaten richtig, keine Division durch null.
+* `malDetail(v, wohin)`: keine doppelten Kennungen mehr, `EGFREMD` und
+  `EGOFFEN` getrennt, die Filterfelder rufen `malListe()` statt `zeichne()`.
+* Gegenprobe Bericht 37 geht auf: 48 Positionen, 145 Stück, 602,50 €.
+
+### Ein Befund über den Prüfstand selbst
+Die Kassennamen des Prüfstands trugen keine Einheit („Cola 0,33"). `flaschen()`
+liest die Ausschankmenge über `mlAusText(p.name)` — ohne Einheit findet es
+nichts, und **die Verkaufsseite blieb im ganzen Prüfstand leer**. Jede
+Differenz bestand nur aus der Entnahme. Seit dieser Jagd tragen die Namen eine
+Einheit, und das Blatt zeigt endlich auch Zeilen mit echtem Verkauf.
