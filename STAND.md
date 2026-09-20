@@ -1,24 +1,26 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 20.09.2026 (Runde 21 · Z-Bericht-Import gehärtet)
+**Letzte Aktualisierung:** 21.09.2026 (Runde 22 · Vorabliste für Kassennamen)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 21 ist gemergt und LIVE** (PR #14, `5eb03f7` auf `main`,
-  20.09.2026). Live gegengelesen: `sw.js` v67 wird ausgeliefert, der
+- **Runde 22 liegt zum Merge bereit** (PR #16). Bis einschliesslich
+  Runde 21 ist alles auf `main` und **live** — live gegengelesen: der
   Sammelabruf steht im Backoffice, die App im Keller ist unverändert.
-- Alle Runden bis einschliesslich 21 sind auf `main`. Die Runden 17 bis 20
-  stehen weiter unten, jede mit dem, was sie gebracht hat.
+- Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
-- `npm test`: **560 von 560 grün** (Stand 20.09.2026, Laufzeit ca. 4 s).
+- `sw.js` steht mit Runde 22 auf **v71**.
+- `npm test`: **581 von 581 grün** (Stand 21.09.2026, Laufzeit ca. 4 s).
 - Oberfläche von Hand, **nicht** Teil von `npm test` (Regel 8), braucht
-  Playwright: `node tests/ui-runde21.cjs` 19/19 ·
-  `node tests/ui-leitung-echt.cjs` 44/44 · `node tests/ui-runde18.cjs` 51/51 ·
-  `node tests/ui-runde17.cjs` 38/38.
+  Playwright: `node tests/ui-runde22.cjs` 31/31 ·
+  `node tests/ui-runde21.cjs` 19/19 · `node tests/ui-leitung-echt.cjs` 44/44 ·
+  `node tests/ui-runde18.cjs` 51/51 · `node tests/ui-runde17.cjs` 38/38.
 - Die PR-Beschreibung der jeweils letzten Runde steht in
-  `review/ERGEBNIS.md`, die Übergaben aller Runden in `review/LOG.md`.
+  `review/ERGEBNIS.md`, die Übergaben aller Runden in `review/LOG.md`,
+  die Fragen an Casimir in `review/MORGENBRIEF.md`.
+- **Offen ist keine Migration.**
 
 ## Was Runde 18 verändert hat (nur `public/leitung.html`)
 - Die vier Kacheln des Mittagsblicks sind **Knöpfe** und führen weiter.
@@ -131,8 +133,47 @@ entschieden, stattdessen die echten Lücken desselben Weges zu schliessen.
 Mailempfang schreibt über dieselbe Funktion. Es fehlt allein die
 Einrichtung im Dashboard, siehe unten.
 
+## Runde 22 (21.09.2026) — die Vorabliste
+
+Runde im Log unter „Runde 22". `sw.js` steht auf **v71**.
+`npm test`: **581 von 581** grün. Browser: `node tests/ui-runde22.cjs`
+31 von 31, `node tests/ui-leitung-echt.cjs` 44 von 44,
+`node tests/ui-runde21.cjs` 19 von 19. **Keine Migration.**
+
+Nach dem Einlesen standen 44 von 48 Kassennamen offen und warteten auf
+ein Auswahlfeld. Jetzt sind es 15 — und im echten Bericht vom 19.09.
+noch 21 von 57 statt 43.
+
+1. **`VORAB` in `src/gnmap.js`:** 36 geprüfte GANZE Kassennamen, 15 auf
+   einen Artikel, 21 als „kommt nicht aus dem Keller" (Speisen, Kaffee,
+   Spirituosen pur). Jeder Eintrag trägt seinen Grund daneben. Wortgleich
+   gespiegelt in `public/leitung.html`, zusammengehalten von
+   `tests/vorab-gleich.test.mjs`.
+2. **Regel 5 ist unberührt.** `mappe()` steht Zeichen für Zeichen, wie sie
+   war, und rät bei keinem dieser Namen — alle Regel-5-Prüfungen sind ohne
+   Änderung grün. Die Vorabliste steht DANEBEN und schlägt nur nach
+   (`Object.hasOwn`, kein Vergleich). Reihenfolge im Worker:
+   **bestätigt → Vorabliste → Kassenmuster.** Die Datenbank schlägt die Liste.
+3. **Ein Klick im Backoffice.** Neuer Zustand „vorgeschlagen"; der Knopf
+   heisst „Alle Vorschläge übernehmen" und nimmt Weine, Getränke und die
+   zu ignorierenden Speisen auf einmal an. Eine bestätigte Zuordnung fasst
+   er nie an.
+4. **Zwei Vertipper gefunden** (stehen live): „Cola Zero" liegt auf `cola`
+   statt `colaz`, „Now-Limo Orange" auf `lemon` statt `orange`. Nichts
+   geändert — aber wo die geprüfte Liste widerspricht, sagt es die Zeile.
+
+**Bewusst NICHT gemacht:** Cocktails auf „Ignorieren" setzen, obwohl das
+die Vorgabe war. Sie zehren Zitronensaft, Ginger Ale, Holundersirup und
+Tonic aus dem Keller; ignoriert käme das als Schwund zurück. Die 15
+Namen bleiben offen und brauchen ein Rezept (`review/BACKLOG.md`, hoch).
+
 ## Was als Nächstes ansteht
 
+- **Sechs Fragen aus Runde 22** stehen fertig aufbereitet in
+  `review/MORGENBRIEF.md`: die zwei Vertipper, die Gasteiner-Artikel,
+  Raschhofer Pils (im Keller gibt es kein Pils), Radler, Hauslimo,
+  „Weißer Spritzer", „Tomate" — und die grosse: sollen die 15 Cocktails
+  Rezepte bekommen oder ignoriert werden?
 - **Casimirs Aufgabe für die Automation:** die Weiterleitung von
   gastronovi auf die Mailadresse des Workers einrichten und `ABSENDER`
   prüfen. Dashboard — für Agenten nicht erreichbar (Regel 13).

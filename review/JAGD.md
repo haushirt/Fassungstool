@@ -1071,3 +1071,90 @@ fällt stumm durch; und für die VERSION-Regel gibt es keinen Wächter.
 Ein einzelner `npm test`-Lauf meldete einmal `443/1`; in über zwanzig weiteren
 Läufen nicht wiederholbar. Zwölf Prüfdateien hängen an `Date.now()`. Wer Zeit
 hat, wiederholt den Lauf um Mitternacht (Wien). Steht im Backlog.
+
+## Jagd nach Runde 22 · die Vorabliste
+
+Sechs Felder abgesucht: 2 A, 4 B, 7 C. `npm test` 572/572, `ui-runde22`
+21/21, `ui-leitung-echt` 44/44, `ui-runde21` 19/19 — alle nachgelaufen,
+alle grün. Die Funde lagen an Stellen, an denen keine dieser Prüfungen
+hinsah.
+
+| Stufe | Fund | Datei | Nachgestellt | Behoben |
+|---|---|---|---|---|
+| A | „Alle Vorschläge übernehmen" fasst Rezeptzeilen an und setzt sie auf „ignoriert" | `public/leitung.html` `#bAuto` | Rezept auf „Amaro Averna Siciliano 2 cl", Knopf geklickt → `mapping.status='ignoriert'`; auf jedem zweiten Gerät ist die Position danach dauerhaft ignoriert, ihre Bestandteile fallen aus der Rechnung | ✅ `#bAuto` überspringt `REZ` — derselbe Riegel, den `#bGebAlle` seit Runde 16 hat. Prüfung in `tests/ui-runde22.cjs` §3 |
+| A | Ein Vorschlag lässt sich nicht ablehnen; Datenbank sagt NULL, Schirm sagt `colaz` | `leitung.html` `sel.onchange` · `ladeZuordnung()` · `src/index.js` | „— offen —" gewählt: Toast „gespeichert", Zeile steht sofort wieder auf „vorgeschlagen". Der Worker zählte sie weder als zugeordnet noch als offen | ✅ Die Datenbank hatte die Ablehnung die ganze Zeit (`status='zugeordnet', artikel=NULL`) — nur las sie niemand. `ladeZuordnung()` liest sie jetzt als `__offen`, `zuordnung()` gibt „offen" zurück, der Sammelknopf lässt sie in Ruhe, und `offen` im Worker zählt sie mit. Prüfung §4b |
+| B | 33 Zuordnungen bleiben nach 403 oder ohne Netz als „festgelegt" stehen | `leitung.html` `#bAuto` · `sel.onchange` | Rolle „wirtschaft" klickt: D1 leer, Gerät voll, 29 Pillen springen auf „festgelegt" | ✅ Erst senden, dann merken; bei Fehlschlag zurück auf den alten Wert. Die Meldung sagt jetzt „ist NICHT gespeichert" |
+| B | 29 unbestätigte Vorschläge erzeugen kein Signal | `leitung.html` `zaehler("zuordnung")` | Zähler 44 → 15; die Vorschläge rechnen schon mit, stehen aber nirgends als Zahl | ✅ Eine Karte über der Tabelle: „n Vorschläge warten auf einen Klick. Sie rechnen schon mit." Die Zahl neben dem Menüpunkt bleibt, was sie ist |
+| B | Die Datenbank kann „kein Keller" nicht von „noch offen" unterscheiden | `src/index.js` | Beides landet als `fassungszeile.artikel = NULL` | ↩️ Nicht behoben, in den Backlog. Heute liest niemand diese Spalte so; die erste Abfrage `WHERE artikel IS NULL` würde Käse und Aperol Spritz gleich zählen. Braucht eine Migration, die nur Casimir einspielt |
+| B | „Johannisbeer gespritzt" → `johan`: aus dem Nachbarn geschlossen, nicht nachgeschlagen | `src/gnmap.js` | Die Begründung im Quelltext war eine Analogie zu „Mango gespritzt" — und es ist nicht derselbe Saft | ✅ Eintrag entfernt. Er steht jetzt im Morgenbrief. Von 37 Einträgen bleiben 36 |
+| C | „geprüfte Liste sagt …" stand in der kleinsten Schrift des Schirms | `leitung.html` | 11 px, 5,3:1 — für eine Zeile, die einen Vertipper mit Geldfolge meldet | ✅ 13 px in der Warnfarbe, der Artikel fett |
+| C | Sechs weitere (`ml()` ohne „l", Ausschank gegen Gebinde, Reihenfolge in `zuordnung()` ungeprüft, `vorabAbweichung` schweigt im umgekehrten Fall, Spirituosen hart ausgeschlossen, „live" im Morgenbrief) | — | — | ↩️ In den Backlog, `review/BACKLOG.md` |
+
+**Was aufgegangen ist:** Bericht 37 rechnet unverändert (48 Positionen,
+145 Stück, 602,50 €, Rabatt 3, Storno 1). Alle Artikel-Ids der Liste
+stehen im Stamm und sind im Auswahlfeld wählbar. `ml()` und
+`mlAusText()` stimmen auf allen 56 geprüften Namen überein. `vorab()`
+schlägt wirklich nur nach — „Käse ", „ Käse", „käse", „Käsebrot",
+„Cola Zero", „Cola Zero 0,5l" gehen alle nicht durch. `mappe()` ist
+unangetastet. Bei 390 px kein waagrechter Überlauf, Sammelknopf
+208 × 44 px.
+
+### Zweite Jagd (auf die Reparatur)
+
+1 A, 2 B, 7 C. Die Reparatur der beiden ersten A-Funde hält — Worker und
+Schirm zählen identisch, die Ablehnung überlebt Neuladen und
+Sammelklick. Aber `__offen` war an einer Stelle nicht mitgedacht.
+
+| Stufe | Fund | Nachgestellt | Behoben |
+|---|---|---|---|
+| A | Eine Ablehnung sperrt die Position dauerhaft aus dem Rezeptur-Schirm aus | `vRezepte()` bot nur Namen ohne MAP-Eintrag an; `__offen` ist einer. Betroffen ausgerechnet „Mango gespritzt", für das der Morgenbrief selbst ein Rezept vorschlägt. Zurück führte kein Weg: der Select kennt kein „nie angefasst", ein DELETE auf `mapping` gibt es nicht | ✅ Ein abgelehnter Name bleibt wählbar. Prüfung in `tests/ui-runde22.cjs` §4b |
+| B | Die Rücknahme bei Fehlschlag war halb: die Zuordnung kam zurück, die bestätigte Gebindegröße blieb gelöscht | Cola Zero auf 330 ml bestätigt, Netz gekappt, Wechsel scheitert: Zeile sagt „festgelegt", 4,24 Flaschen fallen aus dem Abgleich, die Datenbank hält die Größe weiter | ✅ Beides zurück |
+| B | Die Meldung nach einem Fehlschlag sagte das Gegenteil: „die Zuordnung ist nur auf diesem Gerät" — dort ist sie seit der Reparatur gerade nicht | Gemessener Toast-Text | ✅ „Nicht gespeichert — es bleibt beim alten Stand"; der Aufrufer schaltet die alte Zeile stumm |
+| C | `gebArtikelBestaetigt()` legte einen Eintrag unter dem Schlüssel `__offen` an | `Object.keys(t) = ["__offen"]` | ✅ Eine Zeile |
+| C | „Feste Zuordnungen" zählte Ablehnungen und Ignorierte mit | Eine Ablehnung, sonst nichts: angezeigt „1" | ✅ Zählt nur echte Artikel |
+| C | `abgelehnt:true` wurde nirgends gelesen | grep: kein zweites Vorkommen | ✅ Die Zeile sagt jetzt „abgelehnt — offen" statt „offen" |
+| C | Die Zahl zum Bericht vom 19.09. war nach dem Entfernen von „Johannisbeer gespritzt" nicht nachgerechnet | Der Name steht in keiner Fixture, also nur im Live-Bericht | ✅ Nachgerechnet gegen die Live-D1: **21**, nicht 20. Überall berichtigt |
+| C | Drei weitere (32 gegen 33 Zeilen je nach Rezeptur, `bestaetigeGebinde()` merkt weiter vor dem Senden) | — | ↩️ Backlog |
+
+**Geprüft, ohne Fund:** kein Doppelzählen zwischen `abgelehnt` und
+`kennt` (ohne mapping 15/15, nach Sammelklick 15/15, nach einer
+Ablehnung 16/16, nach „Käse → offen" 17/17 — Worker und Schirm gleich).
+Es entsteht keine `mapping`-Zeile, die vorher nicht entstanden wäre. Das
+Rückrollen stimmt für alle vier Ausgangszustände. Alle elf Leser von
+`MAP` durchgesehen — `__offen` wird nirgends als Artikel-Id
+weitergereicht. Die neue Karte bei 390 px ohne Überlauf, und sie
+verschwindet, wenn nichts mehr wartet. Gestaltungsschicht wortgleich
+(11 344 Zeichen, beide Dateien identisch).
+
+### Dritte Jagd (auf die zweite Reparatur)
+
+**Zur Reparatur selbst: kein A, kein B.** Alle sieben Punkte halten der
+Nachrechnung stand. Nachgestellt im Browser gegen echten Worker und
+echte SQLite: die Rücknahme bei Fehlschlag bringt Zuordnung UND
+Gebindegröße zurück, ein abgelehnter Name führt über die Rezeptur
+weiter, und kein Weg schreibt einen Bestandteil als Artikel. Bericht 37
+geht in vier Zuständen an sich selbst auf (frisch, nach Sammelklick,
+nach Ablehnung, Ablehnung plus Rezept): 145 Stück, 602,50 €, und
+gerechnet + ignoriert + offen + ohne Größe = 145 in allen vieren.
+`npm test` fünfzehnmal gelaufen, dazu fünfmal mit verschobener Uhr über
+Wiener Mitternacht, UTC-Mitternacht und 02:00 CEST — kein Wackeln.
+
+Ein B-Fund aus dem Gesamtzustand, vom Thema der Runde unabhängig:
+
+| Stufe | Fund | Nachgestellt | Behoben |
+|---|---|---|---|
+| B | Jeder GEGLÜCKTE Mailempfang wurde auf der Übersicht zum Ausfall erklärt | `meldungen()` hängte an die jüngste Notiz der Quelle `email` unbedingt „— solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein". Der Mailweg schreibt unter derselben Quelle auch die Erfolgsmeldung. Gemessen: „Mailempfang 20.09. 22:18: Z-Bericht 2026-09-16: 48 Positionen, 15 offen — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein." | ✅ Der Worker setzt das Wort „angekommen", das Backoffice liest es. Der Warnsatz hängt nur noch am Ausfall. Neu `tests/mailmeldung.test.mjs`, 9 Urteile, beide Seiten festgehalten |
+
+Der Fund ist alt (der Satz stammt aus Runde 19, die Erfolgsnotiz vom
+27.08.) und war vom ersten Tag an falsch — er fällt nur jetzt auf, weil
+der Mailweg seit Runde 21 fertig ist und die Weiterleitung Casimirs
+erste Aufgabe ist. Am ersten Morgen, an dem sie steht, hätte die
+Übersicht täglich behauptet, der Empfang sei kaputt.
+
+Sechs C-Funde in den Backlog: der Grund eines Fehlschlags fällt im
+Zuordnung-Bildschirm weg (403 und „kein Netz" sind nicht mehr zu
+unterscheiden), die Import-Vorschau nennt eine Rezeptposition
+„bestätigt" mit leerem Artikel, Schirm und Worker zählen „offen"
+verschieden, sobald Rezepte im Spiel sind, `#bAuto` bricht bei einem
+Fehlschlag nicht ab, „Zuordnungen vom Server" zählt weiter alles, und
+die Unterlagen datieren einen Tag vor.

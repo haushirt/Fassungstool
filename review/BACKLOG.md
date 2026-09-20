@@ -435,3 +435,115 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | **mittel** | **Läuft der Hauskonsum in den ARTIKELzeilen des Z-Berichts mit?** `tests/fixtures/zbericht-37-extended.csv` führt 22 Warengruppen „… - Inner Haus" (Beverage 87 Einheiten, Wein Weiß offen 10). Das sind Gruppensummen; der Abgleich rechnet gegen Artikelzeilen. Sind die Hausmengen dort NICHT enthalten, gehen Sonderentnahmen im Abgleich nicht auf und erscheinen als Schwund. Das ist nachzusehen, nicht zu raten — an einem echten Bericht, Gruppensumme gegen Summe der zugehörigen Artikelzeilen. | `src/gnparse.js`, `tests/fixtures/zbericht-37-extended.csv` |
 | niedrig | **`vSpeicher` zeigt weiter die alte, fünfteilige Form** — je Topf eine Tabelle, je Tabelle eine eigene Sortierung. Genau das, was in „Eingänge" behoben wurde. `vgTafelHtml` liegt bereit und nimmt denselben Vorgang; es wären wenige Zeilen. Solange beide Ansichten nebeneinander stehen, zeigt dieselbe Sache zwei verschiedene Bilder. | `public/leitung.html` (`vSpeicher`) |
 | **erledigt** | ~~Kein Wächter gegen die nächste ungleiche Kopie des Laufwegs.~~ Noch in Runde 20 gebaut: `tests/keller-gegen-backoffice.test.mjs` lässt beide `wegCmp` über alle 57 Weine laufen und vergleicht die Reihenfolge — samt Weinliste und Regalplan aus beiden Dateien. Gegenprobe gefahren: mit dem alten `ZORD` fällt sie. | `tests/keller-gegen-backoffice.test.mjs` |
+
+---
+
+## Runde 22 · neu (21.09.2026)
+
+### Hoch — Rezepte gehören in die Datenbank
+Fünfzehn Cocktailnamen aus den echten Berichten (Aperol Spritz, Whiskey
+Sour, Ipanema, Virgin Hugo, Vermouth & Tonic …) können weder zugeordnet
+noch ignoriert werden. Sie zehren Zitronensaft, Limettensaft, Ginger Ale,
+Holundersirup, Tonic und Sanbitter aus dem Keller — alles gezählte
+Artikel. Auf „Ignorieren" gesetzt verschwindet ihr Verbrauch aus der
+Rechnung und kommt in der nächsten Kellerzählung als Schwund zurück.
+
+Der Bildschirm kann Rezepte schon („Mischgetränk"), aber sie liegen nur
+im Gerätespeicher der Leitung (`hh_rezepte_v1`); `POST /api/mapping`
+weist ein Rezept ausdrücklich ab, weil die Spalte live fehlt.
+`migrations/001_mapping_rezept.sql` liegt fertig. Solange sie nicht
+eingespielt ist, hängt eine Stunde Rezeptarbeit an einem Gerät — genau
+der Fehler, den Runde 19 bei den Zuordnungen abgestellt hat.
+
+### Mittel — Die Gasteiner-Artikel klären
+Im Stamm stehen drei: „Gasteiner 1 l", „Gasteiner 0,25 l", „Gasteiner
+still". Die Kasse verkauft „Gasteiner sparkling 0,75l" (bestätigt auf
+„Gasteiner 1 l") und „Gasteiner Quellwasser 1l" (offen). Entweder fehlt
+ein Artikel, oder die Namen im Stamm sagen nicht, was sie meinen. Bis das
+geklärt ist, kann „Gasteiner Quellwasser" nicht zugeordnet werden, ohne
+zu raten.
+
+### Niedrig — Kassenname ohne Komma: den Weinnamen trotzdem lesen
+`mappe()` trennt zwei Weine desselben Winzers am Komma
+(`KÜRZEL Winzer, Wein Grösse`). Fehlt das Komma, gibt sie auf — richtig
+so, aber vermeidbar: bei „ZW Glatzer Rubin Carnuntum 1/8 l" steht der
+Weinname da, nur ohne Trennzeichen. Heute über die Vorabliste gelöst,
+Name für Name. Eine allgemeine Lösung müsste den Winzer erst abtrennen
+und dann den Rest gegen die Weinnamen desselben Winzers prüfen — machbar
+ohne Ähnlichkeitssuche, aber es ist ein Eingriff in `mappe()` und damit in
+die Regel-5-Fläche. Nur mit Freigabe.
+
+### Aus der Jagd nach Runde 22
+
+**Mittel — Die Datenbank kann „kein Keller" nicht von „noch offen"
+unterscheiden.** `fassungszeile.artikel` ist in beiden Fällen `NULL`.
+Das Backoffice hat den Unterschied (`{status:"ignoriert", vorab:true}`),
+die Zeile trägt ihn nicht. Heute liest niemand die Spalte so; die erste
+Abfrage `WHERE artikel IS NULL` zählt Käse und Aperol Spritz gleich.
+Eine saubere Lösung braucht eine Spalte und damit eine Migration.
+
+**Mittel — Ausschank aus dem Kassennamen gegen Gebindegröße.**
+„Stiegl alkoholfrei 0,3l" (300 ml) liegt auf einem Artikel namens
+„Stiegl 0,0 % · 0,33", „Coca Cola 0,35l" (350 ml) auf `cola`.
+Bestätigt jemand 330 ml als Gebinde, zählt eine verkaufte Flasche 0,909
+statt 1. Heute unerreichbar, weil es für die Getränke keinen
+Gebindevorschlag gibt — aber es wartet.
+
+**Niedrig — „Weizen alkoholfrei 0,5" erzeugt nie eine Zahl.**
+`ml()` liest die Größe nur mit „l" am Ende; dieser Kassenname hört ohne
+auf. Der Eintrag ist richtig, er verschiebt den Namen aber nur von
+„offen" nach „zugeordnet, Menge fehlt".
+
+**Niedrig — Nichts prüft, dass `zuordnung()` die Datenbank vor die
+Vorabliste stellt.** `tests/vorab-gleich.test.mjs` hält den Worker per
+Textsuche fest; im Backoffice könnte jemand die Reihenfolge umdrehen,
+und alle Prüfungen blieben grün.
+
+**Niedrig — `vorabAbweichung` schweigt im umgekehrten Fall.** Steht ein
+Artikel bestätigt, während die geprüfte Liste „kein Keller" sagt, gibt
+es keinen Hinweis.
+
+**Niedrig — Spirituosen sind hart ausgeschlossen.** Die drei 2-cl-Namen
+stehen auf „für immer kein Keller", begründet damit, dass es im Stamm
+keinen Artikel dazu gibt. Kommen Spirituosen dazu, bleiben die Namen
+ausgeschlossen und ihr Verbrauch fällt lautlos heraus. Nichts warnt.
+
+### Aus der zweiten Jagd nach Runde 22
+
+**Niedrig — `bestaetigeGebinde()` merkt weiter vor dem Senden.** Der
+Zuordnung-Bildschirm nimmt seit der zweiten Jagd bei einem Fehlschlag
+alles zurück; dieser Weg tut es nicht und behält Artikel und Größe auf
+dem Gerät („Nur auf diesem Gerät gemerkt"). Das ist alt und nicht
+falsch, aber jetzt uneinheitlich.
+
+**Niedrig — Ein ignorierter Name kommt nicht in den Rezeptur-Schirm.**
+`__offen` ist seit der zweiten Jagd wieder wählbar, `__ignoriert` nicht.
+Wer eine Speise versehentlich ignoriert hat und merkt, dass es doch ein
+Mischgetränk ist, muss sie erst wieder zuordnen.
+
+### Aus der dritten Jagd nach Runde 22
+
+**Mittel — Schirm und Worker zählen „offen" verschieden, sobald Rezepte
+im Spiel sind.** Nach dem beworbenen Weg (alles zugeordnet, Rest per
+Rezeptur) sagt das Backoffice 0 offen, der Worker in derselben Minute
+15 — er kennt keine Rezepte, die liegen nur im Gerätespeicher. Hängt an
+derselben Migration wie der Rezept-Punkt oben.
+
+**Mittel — Die Import-Vorschau nennt eine Rezeptposition „bestätigt"
+mit leerem Artikel.** Dritte Stelle desselben fehlenden Zweigs für den
+Status `rezept`. Fällt auf, sobald die 15 Cocktail-Rezepte angelegt
+sind.
+
+**Niedrig — Im Zuordnung-Bildschirm fällt der Grund eines Fehlschlags
+weg.** Seit der zweiten Reparatur schaltet der Aufrufer die Meldung aus
+`sendeZuordnung` stumm und sagt selbst „Nicht gespeichert — es bleibt
+beim alten Stand". Wahr, aber 403 („keine Rechte") und „kein Netz" sind
+nicht mehr zu unterscheiden.
+
+**Niedrig — `#bAuto` bricht bei einem Fehlschlag nicht ab.** Bei 403
+gemessen: 32 Einzelanfragen, 33 Meldungen. Der Nachbarweg
+`bestaetigeAlleGebinde` bricht ab und begründet das ausdrücklich.
+
+**Niedrig — „Zuordnungen vom Server" zählt weiter alles**, was die
+Zeile zwei Bildschirme tiefer seit dieser Runde bewusst nicht mehr
+mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".

@@ -4585,3 +4585,172 @@ zweiter Bericht ersetzt still · 61 Anfragen beim Start), dazu
 `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11.
 
 **STATUS:** FERTIG
+
+### Runde 22 – software-engineer
+
+**Kritik am Vorgänger:** Der Kopf von `src/gnmap.js:8-17` stellt „Getränke
+haben keine Systematik" und „es geht nur Wein durch" als dasselbe dar —
+✅ übernommen, was die Warnung meint (Ähnlichkeit rät falsch), ↩️ geändert,
+was sie daraus schliesst: ein Getränk einzeln nachzusehen ist kein Raten.
+`tests/zbericht-37.test.mjs:351` prüfte Regel 5 an der FORM der Artikel-Id
+(`/^[a-z]\d{3}$/`) — ↩️ geändert auf die HERKUNFT (aus `mappe()` oder aus
+der Vorabliste, etwas Drittes gibt es nicht); die Form war nur ein
+Stellvertreter und wäre beim ersten richtig zugeordneten Getränk rot
+geworden. `public/leitung.html:4104` versprach der Leitung „Ignorieren ist
+ein vollwertiger Zustand: Speisen, Kaffee, Fassbier" und liess sie die
+33 Namen dann doch einzeln anklicken — ❌ abgelehnt als Zustand, ✅ als
+Absicht: jetzt nimmt ein Knopf sie auf einmal.
+
+**Umgesetzt:**
+1. `VORAB` in `src/gnmap.js` — 37 geprüfte ganze Kassennamen (16 Artikel,
+   21 „kein Keller"), wortgleich in `public/leitung.html`, zweite Stufe im
+   Worker zwischen Datenbank und `mappe()`.
+2. Neuer Zustand „vorgeschlagen" im Zuordnung-Bildschirm und ein Knopf
+   „Alle Vorschläge übernehmen"; wo eine Bestätigung der Liste
+   widerspricht, steht es in der Zeile (zwei Vertipper gefunden).
+3. `mappe()` unangetastet — Regel 5 steht, die drei Fehltreffer-Prüfungen
+   sind ohne Änderung grün geblieben.
+
+**Geprüft:** `npm test` 572/572 (vorher 560; neu `tests/vorab-gleich.test.mjs`
+mit 11 Urteilen). Neu `node tests/ui-runde22.cjs` 21/21 im echten Browser
+gegen echten Worker und echte SQLite — darin gemessen: 15 statt 44 offene
+Namen in Bericht 37, ein Klick schreibt 33 Zuordnungen, eine widersprechende
+Bestätigung setzt sich durch. `node tests/ui-leitung-echt.cjs` 44/44,
+`node tests/ui-runde21.cjs` 19/19, beide unverändert. Der Bericht vom 19.09.
+ist aus der Live-D1 gelesen (nur `SELECT`, Regel 2).
+
+**Für die Nächsten:** Die 26 offenen Namen sind keine Tipparbeit mehr,
+sondern sechs Fragen an Casimir (`review/MORGENBRIEF.md`). Die grösste:
+15 Cocktails brauchen ein Rezept, kein „Ignorieren" — sie zehren
+Zitronensaft, Ginger Ale, Holundersirup und Tonic aus dem Keller. Dafür
+läge `migrations/001_mapping_rezept.sql` bereit; heute liegen Rezepte nur
+im Gerätespeicher der Leitung.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**Backlog:** neu — „Rezepte in die Datenbank" (hoch, blockiert die
+Cocktails), „Kassenname ohne Komma: Weinname trotzdem lesen" (niedrig,
+heute über die Vorabliste gelöst), „Gasteiner-Artikel klären: 1 l, 0,25 l,
+still, und eine 0,75-Flasche, die keinen Artikel hat" (mittel).
+
+**STATUS:** FERTIG
+
+### Runde 22 · Nachtrag – software-engineer (nach der Jagd)
+
+**Kritik am Vorgänger (mir selbst):** `public/leitung.html` `#bAuto` —
+der Nachbarknopf `#bGebAlle` trägt den Riegel gegen Rezeptzeilen seit
+Runde 16, samt ausgeschriebener Begründung zehn Zeilen tiefer; ich habe
+den neuen Knopf daneben gebaut und ihn nicht mitgenommen. ✅ übernommen.
+`sel.onchange` — „— offen —" war als Zustand nie vorgesehen, also schrieb
+ich `delete MAP[nm]`, und die Vorabliste holte den abgelehnten Vorschlag
+sofort zurück. Der Fehler ist meiner: die zweite Stufe muss einen Weg
+lassen, sie abzulehnen, sonst ist sie keine Empfehlung, sondern ein
+Zwang. ✅ übernommen. `src/gnmap.js` „Johannisbeer gespritzt" — die
+Begründung war „dasselbe Muster wie Mango gespritzt", also eine
+Analogie. Genau das sollte diese Liste nicht tun. ✅ übernommen, Eintrag
+entfernt. ↩️ geändert beim Fund „Datenbank kann kein Keller nicht von
+offen unterscheiden": richtig, aber es braucht eine Migration — Backlog.
+
+**Umgesetzt:**
+1. `#bAuto` überspringt Rezeptzeilen und sendet, bevor er merkt; bei
+   Fehlschlag bleibt nichts auf dem Gerät stehen.
+2. Eine Ablehnung hält: `ladeZuordnung()` liest die Zeile ohne Artikel
+   als `__offen`, `zuordnung()` gibt „offen" zurück, der Worker zählt
+   sie in `offen` mit. Ohne Migration — die Datenbank konnte das immer.
+3. Karte über der Tabelle mit der Zahl der wartenden Vorschläge;
+   „geprüfte Liste sagt …" in lesbarer Größe; ein Eintrag entfernt.
+
+**Geprüft:** `npm test` 572/572, `node tests/ui-runde22.cjs` **29 von 29**
+(acht neue Punkte: Rezeptzeile unangetastet, Ablehnung hält über das
+Neuladen und gegen den Sammelklick, Worker zählt sie als offen),
+`node tests/ui-leitung-echt.cjs` 44/44, `node tests/ui-runde21.cjs` 19/19.
+`sw.js` auf v69.
+
+**Für die Nächsten:** Die Ablehnung nutzt aus, dass `mapping` eine Zeile
+mit `status='zugeordnet'` und `artikel=NULL` tragen kann. Das ist kein
+Trick, sondern die genaue Bedeutung — aber es steht nirgends im Schema.
+Wer dort aufräumt, muss es wissen.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**Backlog:** sechs C-Funde der Jagd eingetragen (Spalte für „kein
+Keller", Ausschank gegen Gebinde, `ml()` ohne „l", ungeprüfte
+Reihenfolge in `zuordnung()`, `vorabAbweichung` im umgekehrten Fall,
+harter Ausschluss der Spirituosen).
+
+**STATUS:** FERTIG
+
+### Runde 22 · Zweiter Nachtrag – software-engineer (nach der zweiten Jagd)
+
+**Kritik am Vorgänger (wieder mir selbst):** `public/leitung.html`
+`vRezepte()` filtert `!MAP[p.name]` — ich habe mit `__offen` einen neuen
+wahren Wert in `MAP` eingeführt und die elf Stellen, die `MAP` lesen,
+nicht alle durchgesehen. Die Ablehnung wurde damit zur Sackgasse:
+ausgerechnet „Mango gespritzt", für das der Morgenbrief selbst ein
+Rezept vorschlägt, liess sich nach einer Ablehnung nicht mehr für eine
+Rezeptur wählen, und zurück führte nichts. ✅ übernommen. Die Rücknahme
+bei Fehlschlag nahm nur `MAP` zurück, nicht `GEB_BEST` — eine halbe
+Rücknahme ist schlimmer als keine, weil der Schirm danach „festgelegt"
+sagt und die Flaschenzahl trotzdem fehlt. ✅ übernommen. Und die Meldung
+„die Zuordnung ist nur auf diesem Gerät" sagte nach der Reparatur das
+Gegenteil dessen, was geschieht. ✅ übernommen.
+
+**Umgesetzt:**
+1. Ein abgelehnter Name bleibt für eine Rezeptur wählbar; die Zeile
+   sagt „abgelehnt — offen" statt „offen".
+2. Rücknahme bei Fehlschlag nimmt Zuordnung UND Gebindegröße zurück;
+   die Meldung sagt „es bleibt beim alten Stand".
+3. `gebArtikelBestaetigt()` und die Zahl „Feste Zuordnungen" kennen die
+   beiden Zustandswerte jetzt.
+
+**Geprüft:** `npm test` 572/572, `node tests/ui-runde22.cjs` **31 von 31**
+(zwei neue Punkte für die Sackgasse und die sichtbare Ablehnung),
+`node tests/ui-leitung-echt.cjs` 44/44, `node tests/ui-runde21.cjs` 19/19.
+`sw.js` auf v70. Die Zahl zum Bericht vom 19.09. gegen die Live-D1
+nachgerechnet: **21** offen, nicht 20 — überall berichtigt.
+
+**Für die Nächsten:** `MAP` trägt jetzt zwei Zustandswerte (`__ignoriert`,
+`__offen`) neben echten Artikel-Ids. Wer eine neue Stelle schreibt, die
+`MAP` liest, muss beide behandeln. Eine Prüfung, die das erzwingt, gibt
+es nicht — sie steht als C-Fund im Backlog.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**STATUS:** FERTIG
+
+### Runde 22 · Dritter Nachtrag – software-engineer (nach der dritten Jagd)
+
+**Kritik am Vorgänger:** Die dritte Jagd fand an der Reparatur **nichts
+auf A oder B** — die sieben Punkte der zweiten Runde halten der
+Nachrechnung stand, `npm test` fünfzehnmal und fünfmal mit verschobener
+Uhr ohne Wackeln. ✅ Ein B-Fund aus dem Gesamtzustand übernommen, obwohl
+er nicht zum Thema gehört: `meldungen()` in `public/leitung.html` hängte
+den Satz „solange das so bleibt, kommt kein Z-Bericht mehr von selbst
+herein" an JEDE Mailnotiz — auch an die Erfolgsmeldung des Mailwegs.
+Der Satz ist aus Runde 19, die Erfolgsnotiz vom 27.08.; er war vom
+ersten Tag an falsch und fällt erst jetzt auf, weil die Weiterleitung
+Casimirs erste Aufgabe ist. Am ersten Morgen, an dem sie steht, hätte
+die Übersicht täglich behauptet, der Empfang sei kaputt. ↩️ Sechs
+C-Funde in den Backlog statt in diese Runde — keiner davon rechnet
+falsch, und die Runde ist lang genug.
+
+**Umgesetzt:**
+1. Der Worker setzt in der Erfolgsmeldung das Wort „angekommen", das
+   Backoffice liest es; der Warnsatz hängt nur noch am Ausfall.
+2. Neu `tests/mailmeldung.test.mjs` — 9 Urteile, die BEIDE Seiten
+   festhalten (der Worker schreibt das Wort nur bei Status 200, keine
+   Absage trägt es, das Backoffice erkennt den Erfolg daran).
+3. Gegenprobe: die Prüfung zurückgedreht → 3 von 9 rot, zurück → grün.
+
+**Geprüft:** `npm test` **581 von 581** (vorher 572),
+`node tests/ui-runde22.cjs` 31/31, `node tests/ui-leitung-echt.cjs`
+44/44, `node tests/ui-runde21.cjs` 19/19. `sw.js` auf v71.
+
+**Für die Nächsten:** Der Mailweg und die Übersicht hängen jetzt an
+einem WORT. Das ist schwächer als eine Spalte, aber es braucht keine
+Migration — und die Prüfung hält beide Seiten daran fest. Wer die
+Erfolgsmeldung umformuliert, muss das Wort mitnehmen.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**STATUS:** FERTIG

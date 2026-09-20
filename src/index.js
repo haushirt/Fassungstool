@@ -11,7 +11,7 @@
 
 import PostalMime from "postal-mime";
 import { parseZ, kern } from "./gnparse.js";
-import { mappe } from "./gnmap.js";
+import { mappe, vorab } from "./gnmap.js";
 
 /* PBKDF2-Runden. Cloudflare erlaubt höchstens 100000, der Free-Plan
    schafft rechnerisch aber nur wenige tausend (10 ms CPU, vier
@@ -769,6 +769,14 @@ async function fassungsliste(env, text, wer) {
   const fest = Object.fromEntries(
     bek.map(r => [r.fremd, r.status === "ignoriert" ? null : r.artikel]));
   const kennt = new Set(bek.map(r => r.fremd));
+  /* Zugeordnet, aber ohne Artikel — die Leitung hat hingesehen und
+     abgelehnt. Das ist etwas anderes als „ignoriert" (raus aus der
+     Rechnung) und etwas anderes als „noch nie angefasst": die Position
+     wartet weiter auf einen Artikel und muss deshalb in die Zahl der
+     offenen. Vor der ersten Jagd der Runde 22 fiel sie in keine der
+     beiden Gruppen und war damit unsichtbar. */
+  const abgelehnt = new Set(
+    bek.filter(r => r.status !== "ignoriert" && !r.artikel).map(r => r.fremd));
 
   const stmt = env.DB.prepare(
     `INSERT INTO fassungszeile (liste, rohbez, kern, anzahl, betrag, ausschankMl, artikel)
@@ -791,7 +799,14 @@ async function fassungsliste(env, text, wer) {
            Date.now(), wer, text),
     env.DB.prepare(`DELETE FROM fassungszeile WHERE liste = ?1`).bind(z.tag),
     ...z.positionen.map(p => {
-      const a = kennt.has(p.name) ? fest[p.name] : mappe(p.name);
+      /* Drei Stufen, in dieser Reihenfolge und ohne vierte:
+         1. was die Leitung bestätigt hat (`mapping` in der Datenbank),
+         2. die geprüfte Vorabliste aus `gnmap.js` — ganze Namen, kein
+            Muster; `{id:null}` heisst „kommt nicht aus dem Keller",
+         3. das Kassenmuster der Weine.
+         Was keine der drei kennt, bleibt offen. Geraten wird nirgends. */
+      const v = vorab(p.name);
+      const a = kennt.has(p.name) ? fest[p.name] : v ? v.id : mappe(p.name);
       return stmt.bind(z.tag, p.name, kern(p.name), p.anzahl, p.umsatz ?? 0,
                        p.ml ?? null, a ?? null);
     })
@@ -839,7 +854,9 @@ async function fassungsliste(env, text, wer) {
     }
   }
 
-  const offen = z.positionen.filter(p => !kennt.has(p.name) && !mappe(p.name)).length;
+  const offen = z.positionen.filter(
+    p => abgelehnt.has(p.name)
+      || (!kennt.has(p.name) && !vorab(p.name) && !mappe(p.name))).length;
   /* Storno und Rabatt gehen mit hinaus. Beides ist Verbrauch (Vorgabe vom
      17.09.), aber nur der Rabatt steht schon in den Positionen — der
      Storno nennt einen Grund („Bedienerfehler"), keinen Artikel, und
@@ -1307,8 +1324,14 @@ export default {
            Meldung, mit der niemand etwas anfangen kann. */
         const a = await fassungsliste(env, text, "email:" + von);
         const j = await a.json();
+        /* Das Wort „angekommen" ist die Marke, an der das Backoffice
+           Erfolg von Ausfall unterscheidet (`meldungen()` in
+           `public/leitung.html`). Es stand hier nicht, und die Übersicht
+           hängte an JEDE Mailnotiz den Satz „solange das so bleibt,
+           kommt kein Z-Bericht mehr von selbst herein" — auch an die
+           Erfolgsmeldung (dritte Jagd Runde 22 · B). */
         await notiz(env, "email", a.status === 200
-          ? `Z-Bericht ${j.tag}: ${j.positionen} Positionen, ${j.offen} offen`
+          ? `Z-Bericht ${j.tag} angekommen: ${j.positionen} Positionen, ${j.offen} offen`
             + (j.storno ? `, ${j.storno} storniert — keinem Artikel zuzuordnen` : "")
           : `Z-Bericht abgelehnt (${a.status}): ${j.fehler || "Grund unbekannt"}`
             + " — Betreff: " + (mail.subject || "ohne Betreff"));

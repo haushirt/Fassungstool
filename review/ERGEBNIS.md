@@ -1,67 +1,116 @@
-# Runde 21 · Der Z-Bericht kommt sicher an
+# Runde 22 · Die Vorabliste
 
-**Keine Migration.** Alle benötigten Spalten stehen live in `fassungsliste`.
-Nichts einzuspielen, vor oder nach dem Merge.
-
-## Worum es ging
-
-Der Auftrag lautete, den Z-Bericht-Import serverseitig und geräteübergreifend
-zu bauen. **Das war seit Runde 5 gebaut** — `POST`/`GET /api/fassungsliste`,
-ein einziger Leser im Worker, ein Bericht je Betriebstag, das Backoffice holt
-ihn von dort, und der Bericht aus dem Postfach geht denselben Weg. Der Auftrag
-stützte sich auf eine Beschreibung des Standes von vor sechzehn Runden.
-
-Statt das ein zweites Mal zu bauen, schliesst diese Runde die vier Lücken, die
-auf diesem Weg wirklich offen waren. Alle vier standen im Backlog.
+Der Z-Bericht liest sich seit Runde 21 sauber ein. Was danach kam, war
+Handarbeit: 44 von 48 Kassennamen standen offen und warteten auf ein
+Auswahlfeld. Diese Runde nimmt den Großteil davon vorweg — ohne die
+Regel aufzuweichen, die genau das bisher verhindert hat.
 
 ## Was sich ändert
 
-**1 · Ein halber Betriebstag kann nicht mehr lautlos verschwinden.**
-Schliessen Bar und Restaurant getrennt ab, kommen zwei Teilberichte für
-denselben Tag — und der zweite warf den ersten weg, mit grünem „eingelesen".
-Dem Abgleich fehlte danach eine ganze Kostenstelle, ohne dass es irgendwo
-stand. Jetzt nennt eine Zeile im Journal beide Berichtsnummern und beide
-Positionszahlen, und wenn es nach einem Teilbericht aussieht, bleibt das
-Backoffice stehen und sagt, was zu tun ist. Angenommen wird der Bericht
-trotzdem — gemeldet, nicht gesperrt.
+**1 · Eine geprüfte Liste ganzer Kassennamen.**
+36 Einträge in `src/gnmap.js`: 15 zeigen auf einen Artikel, 21 sind
+„kommt nicht aus dem Keller" (Speisen, Kaffee, Spirituosen pur auf
+2 cl). Jeder Eintrag ist einzeln nachgesehen und trägt seinen Grund in
+der Zeile daneben. Die Namen stammen aus den beiden echten Berichten,
+die im Haus liegen: Z 40 vom 19.09.2026 aus dem Backoffice und
+Bericht 37 aus `tests/fixtures/` — 71 Namen zusammen.
 
-**2 · Ein Fehler beim Einlesen lässt den alten Bericht stehen.**
-Kopf, Räumen und Zeilen waren drei getrennte Schreibvorgänge. Scheiterte der
-dritte, war der alte Bericht gelöscht und der neue nie angekommen — und im
-Postfachweg merkte das niemand. Jetzt ist es einer: entweder alles oder
-nichts. Eine Datei ganz ohne Positionen wird abgewiesen, statt den Tag
-leerzuräumen.
+Im echten Bericht von gestern bleiben danach **21 von 57** offen statt
+43 (dort sind 13 Namen schon von Hand bestätigt). Und diese 21 sind
+keine Tipparbeit mehr, sondern Fragen, die eine Entscheidung brauchen
+(`review/MORGENBRIEF.md`).
 
-**3 · Man sieht, welchen Zeitraum ein Bericht abdeckt.**
-„15.09. 23:11 – 16.09. 23:26" steht jetzt neben jedem Bericht. Daran erkennt
-man ohne Rechnen, ob der Tagesabschluss die ganze Nacht umfasst. Die Angaben
-standen immer im Bericht und in der Datenbank — gelesen hat sie nie jemand.
+**2 · Regel 5 bleibt, wie sie war.**
+`mappe()` ist Wort für Wort unverändert und rät bei keinem einzigen
+dieser Namen — die drei Fehltreffer der abgeschalteten
+Ähnlichkeitssuche stehen weiter als Prüfung in `tests/mapping.test.mjs`
+und sind grün. Die Vorabliste steht **daneben**, nicht darin, und
+schlägt nur nach: ein `Object.hasOwn` und ein Zugriff, kein Vergleich,
+kein Teilstück, keine Ähnlichkeit. Ein Name, der morgen neu in der
+Kasse auftaucht, kann hier nicht stillschweigend hineinrutschen.
 
-**4 · Das Backoffice öffnet schneller.**
-Es holte beim Start bis zu 61 Anfragen nacheinander, gemessen 4,1 Sekunden
-leerer Schirm — bei jedem Öffnen und jedem „Aktualisieren". Jetzt ist es eine.
+Die Reihenfolge im Worker ist **bestätigt → Vorabliste → Kassenmuster**.
+Die Datenbank schlägt die Liste: was die Leitung bestätigt hat, gilt.
 
-## Was gleich bleibt
+**3 · Ein Klick im Backoffice.**
+Neuer Zustand „vorgeschlagen" — nachgesehen, Artikel steht schon im
+Feld, aber noch nicht bestätigt. Der Knopf heißt jetzt „Alle Vorschläge
+übernehmen" und nimmt Weine, Getränke und die dauerhaft zu
+ignorierenden Speisen auf einmal an. Eine bestätigte Zuordnung fasst er
+nie an.
 
-Die Rechte (nur die Leitung liest Berichte ein), der Weg über den Rohtext, ein
-Bericht je Betriebstag, das Journal als Anhängeliste, die App im Keller.
-`public/index.html` ist nicht angefasst.
+**4 · Zwei Vertipper sind dabei aufgefallen.**
+Live steht „Cola Zero 0,35l" auf dem Artikel **Cola** (es gibt „Cola
+Zero" als eigenen Artikel) und „Now-Limo Orange 0,35l" auf **Lemon
+Lemonade**. Geändert wurde nichts — die Bestätigung gilt. Aber wo die
+geprüfte Liste widerspricht, steht es jetzt in der Zeile:
+*„geprüfte Liste sagt: …"*. Beides steht im Morgenbrief zum Nachsehen.
+
+## Was ausdrücklich NICHT gemacht wurde
+
+**Cocktails sind nicht auf „Ignorieren" gesetzt**, obwohl das die
+Vorgabe war. Ein Whiskey Sour nimmt Zitronensaft, ein Ipanema Ginger
+Ale, ein Virgin Hugo Holundersirup, ein Vermouth & Tonic Tonic — alle
+vier liegen im Keller und werden gezählt. Ignoriert verschwände ihr
+Verbrauch aus der Rechnung und käme in der nächsten Kellerzählung als
+Schwund zurück. Die 15 Cocktailnamen bleiben offen und stehen mit
+Begründung im Morgenbrief; sie brauchen ein Rezept, nicht ein Kreuz.
+
+Nicht eingetragen wurde außerdem alles, wo ein Zweifel blieb:
+Raschhofer Pils (im Keller gibt es kein Pils), Radler, Hauslimo,
+Gasteiner Quellwasser, Weißer Spritzer, Tomate (gleicher Name wie der
+Tomatensaft im Keller). Sechs Fragen, alle im Morgenbrief.
 
 ## Geprüft
 
-- `npm test`: **560 von 560** grün (vorher 538). Neu
-  `tests/zimport-haerte.test.mjs` mit 22 Urteilen gegen echte SQLite aus
-  `docs/live-schema.sql` und den echten Bericht 37.
-- Jedes der vier Ziele einzeln **zurückgedreht** und nachgesehen, ob die
-  Prüfung rot wird — sieben Mutationen, sieben rot.
-- Neu `node tests/ui-runde21.cjs`: **19 von 19** im echten Browser gegen
-  echten Worker und echte Datenbank. Darin nachgemessen: sechs Betriebstage,
-  **eine** Anfrage beim Start, 1,0 s.
+- `npm test`: **581 von 581** grün (vorher 560). Neu
+  `tests/vorab-gleich.test.mjs` mit 11 Urteilen: beide Dateien Eintrag
+  für Eintrag gleich, jede Artikel-Id im Stamm, kein Name doppelt, und
+  fünf Gegenproben, dass ein nur ähnlicher Name nicht durchgeht.
+- Neu `node tests/ui-runde22.cjs`: **31 von 31** im echten Browser
+  gegen echten Worker und echte SQLite. Darin gemessen: 15 statt 44
+  offene Namen in Bericht 37, ein Klick schreibt 32 Zeilen in die
+  Zuordnungstabelle, und eine widersprechende Bestätigung setzt sich
+  gegen die Liste durch.
 - `node tests/ui-leitung-echt.cjs`: unverändert **44 von 44**.
+- `node tests/ui-runde21.cjs`: unverändert **19 von 19**.
+- Die Zahlen des Berichts vom 19.09. sind aus der **Live-Datenbank
+  gelesen** (nur `SELECT`, Regel 2).
+- **Eine Jagd danach** (`review/JAGD.md`): 2 A, 4 B, 7 C. Beide A-Funde
+  behoben und je mit einer eigenen Prüfung belegt:
+  1. Der Sammelknopf fasste **Rezeptzeilen** an und setzte sie auf
+     „ignoriert" — für eine Position mit Rezeptur ist eine Artikel-Id
+     ein Bestandteil, kein Artikel. Jetzt überspringt er sie, derselbe
+     Riegel, den der Nachbarknopf seit Runde 16 hat.
+  2. **Ein Vorschlag liess sich nicht ablehnen.** „— offen —" schickte
+     eine Zeile ohne Artikel hinaus, die Seite warf sie beim Laden weg,
+     die Vorabliste griff wieder — der abgelehnte Vorschlag stand sofort
+     erneut da. Die Datenbank hatte die Ablehnung die ganze Zeit; nur
+     gelesen hat sie niemand. Jetzt hält sie, auch über das Neuladen.
+  Dazu drei B-Funde behoben (Zuordnungen gelten erst nach dem Senden,
+  eine Karte nennt die wartenden Vorschläge, der Hinweis auf eine
+  abweichende Bestätigung steht nicht mehr in der kleinsten Schrift) und
+  ein Eintrag **entfernt**, dessen Begründung ein Schluss statt eines
+  Nachschlagens war („Johannisbeer gespritzt" — geschlossen aus
+  „Mango gespritzt", und es ist nicht derselbe Saft).
+- **Und eine zweite Jagd auf die Reparatur**: 1 A, 2 B, 7 C. Der A-Fund
+  war eine Sackgasse — eine Ablehnung sperrte die Position dauerhaft aus
+  dem Rezeptur-Bildschirm aus, und zurück führte kein Weg. Behoben, samt
+  beider B-Funde: die Rücknahme bei Fehlschlag nimmt jetzt auch die
+  bestätigte Gebindegröße zurück, und die Meldung danach sagt, was
+  wirklich geschehen ist.
+- **Und eine dritte Jagd**: an der Reparatur **kein A, kein B**. Ein
+  B-Fund aus dem Gesamtzustand ist mitgenommen, weil er genau die erste
+  Aufgabe des Morgenbriefs trifft: die Übersicht erklärte **jeden
+  geglückten Mailempfang zum Ausfall** („solange das so bleibt, kommt
+  kein Z-Bericht mehr von selbst herein" hing an jeder Mailnotiz, auch
+  an der Erfolgsmeldung). Am ersten Morgen, an dem die Weiterleitung
+  steht, wäre das ein Alarm, der nie ausgeht. Behoben und mit
+  `tests/mailmeldung.test.mjs` (9 Urteile) festgehalten. Alles in
+  `review/JAGD.md`.
 
-## Zur täglichen Automation
+## Keine Migration
 
-Sie ist im Code fertig: Der Worker nimmt den Z-Bericht aus dem Postfach an und
-schreibt ihn über dieselbe Funktion wie die Hand. Was fehlt, ist allein die
-Einrichtung im Dashboard — die Weiterleitung von gastronovi und der
-freigegebene Absender. Das kann nur Casimir, und es braucht keine Runde mehr.
+Es kommt keine Spalte und keine Tabelle dazu. Die Liste steht im Code,
+die Zuordnungstabelle bleibt, wie sie ist. `sw.js` steht auf **v71**.
+`public/index.html` ist nicht angefasst.

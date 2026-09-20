@@ -28,6 +28,7 @@
 
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { mappe, vorab } from "../src/gnmap.js";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseZ, kern, ml } from "../src/gnparse.js";
@@ -348,12 +349,34 @@ describe("Z 37 – bis in die Datenbank", { skip: SCHEMA_DA ? false :
     assert.equal(env.DB.zeilen("fassungszeile").length, 48);
   });
 
-  test("Regel 5: kein Getränk wird automatisch zugeordnet", async () => {
+  test("Regel 5: nichts wird geraten", async () => {
+    /* Bis Runde 21 stand hier eine Prüfung auf die FORM der Artikel-Id
+       (`w026`): Getränke-Ids sehen anders aus, ein Getränk in der Spalte
+       fiel also auf. Seit der Vorabliste gehen Getränke-Ids zu Recht
+       durch — nur eben nicht über Ähnlichkeit, sondern über einen
+       einzeln nachgesehenen, ganzen Namen.
+
+       Deshalb prüft diese Zeile jetzt die HERKUNFT statt die Form: jede
+       geschriebene Zuordnung muss entweder aus dem Kassenmuster der
+       Weine (`mappe`) oder aus der Vorabliste (`vorab`) stammen. Etwas
+       Drittes gibt es nicht — und eine Ähnlichkeitssuche wäre genau das. */
+    const { worker, env, keks } = await haus();
+    await senden(worker, env, keks);
+    for (const x of env.DB.zeilen("fassungszeile").filter(x => x.artikel)) {
+      const v = vorab(x.rohbez);
+      assert.equal(x.artikel === mappe(x.rohbez) || (v && x.artikel === v.id), true,
+        x.rohbez + " → " + x.artikel + " kommt aus keiner der beiden Quellen");
+    }
+  });
+
+  test("und die Vorabliste trifft in Bericht 37, was sie treffen soll", async () => {
+    /* Zwei Stichproben aus dem echten Bericht: ein Wein, dem das Komma
+       fehlt, und eine Speise. Beide standen vorher offen. */
     const { worker, env, keks } = await haus();
     await senden(worker, env, keks);
     const zl = env.DB.zeilen("fassungszeile");
-    const zugeordnet = zl.filter(x => x.artikel);
-    assert.ok(zugeordnet.every(x => /^[a-z]\d{3}$/.test(x.artikel)),
-      "zugeordnet wird nur über ein Kürzel im Namen, nie über Ähnlichkeit");
+    const finde = n => zl.find(x => x.rohbez === n);
+    assert.equal(finde("ZW Glatzer Rubin Carnuntum 1/8 l").artikel, "w026");
+    assert.equal(finde("Käse").artikel, null, "Speisen bleiben ohne Artikel");
   });
 });
