@@ -4585,3 +4585,52 @@ zweiter Bericht ersetzt still · 61 Anfragen beim Start), dazu
 `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11.
 
 **STATUS:** FERTIG
+
+### Runde 22 – software-engineer
+
+**Kritik am Vorgänger:** Der Kopf von `src/gnmap.js:8-17` stellt „Getränke
+haben keine Systematik" und „es geht nur Wein durch" als dasselbe dar —
+✅ übernommen, was die Warnung meint (Ähnlichkeit rät falsch), ↩️ geändert,
+was sie daraus schliesst: ein Getränk einzeln nachzusehen ist kein Raten.
+`tests/zbericht-37.test.mjs:351` prüfte Regel 5 an der FORM der Artikel-Id
+(`/^[a-z]\d{3}$/`) — ↩️ geändert auf die HERKUNFT (aus `mappe()` oder aus
+der Vorabliste, etwas Drittes gibt es nicht); die Form war nur ein
+Stellvertreter und wäre beim ersten richtig zugeordneten Getränk rot
+geworden. `public/leitung.html:4104` versprach der Leitung „Ignorieren ist
+ein vollwertiger Zustand: Speisen, Kaffee, Fassbier" und liess sie die
+33 Namen dann doch einzeln anklicken — ❌ abgelehnt als Zustand, ✅ als
+Absicht: jetzt nimmt ein Knopf sie auf einmal.
+
+**Umgesetzt:**
+1. `VORAB` in `src/gnmap.js` — 37 geprüfte ganze Kassennamen (16 Artikel,
+   21 „kein Keller"), wortgleich in `public/leitung.html`, zweite Stufe im
+   Worker zwischen Datenbank und `mappe()`.
+2. Neuer Zustand „vorgeschlagen" im Zuordnung-Bildschirm und ein Knopf
+   „Alle Vorschläge übernehmen"; wo eine Bestätigung der Liste
+   widerspricht, steht es in der Zeile (zwei Vertipper gefunden).
+3. `mappe()` unangetastet — Regel 5 steht, die drei Fehltreffer-Prüfungen
+   sind ohne Änderung grün geblieben.
+
+**Geprüft:** `npm test` 572/572 (vorher 560; neu `tests/vorab-gleich.test.mjs`
+mit 11 Urteilen). Neu `node tests/ui-runde22.cjs` 21/21 im echten Browser
+gegen echten Worker und echte SQLite — darin gemessen: 15 statt 44 offene
+Namen in Bericht 37, ein Klick schreibt 33 Zuordnungen, eine widersprechende
+Bestätigung setzt sich durch. `node tests/ui-leitung-echt.cjs` 44/44,
+`node tests/ui-runde21.cjs` 19/19, beide unverändert. Der Bericht vom 19.09.
+ist aus der Live-D1 gelesen (nur `SELECT`, Regel 2).
+
+**Für die Nächsten:** Die 26 offenen Namen sind keine Tipparbeit mehr,
+sondern sechs Fragen an Casimir (`review/MORGENBRIEF.md`). Die grösste:
+15 Cocktails brauchen ein Rezept, kein „Ignorieren" — sie zehren
+Zitronensaft, Ginger Ale, Holundersirup und Tonic aus dem Keller. Dafür
+läge `migrations/001_mapping_rezept.sql` bereit; heute liegen Rezepte nur
+im Gerätespeicher der Leitung.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**Backlog:** neu — „Rezepte in die Datenbank" (hoch, blockiert die
+Cocktails), „Kassenname ohne Komma: Weinname trotzdem lesen" (niedrig,
+heute über die Vorabliste gelöst), „Gasteiner-Artikel klären: 1 l, 0,25 l,
+still, und eine 0,75-Flasche, die keinen Artikel hat" (mittel).
+
+**STATUS:** FERTIG

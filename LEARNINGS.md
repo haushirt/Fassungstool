@@ -147,3 +147,32 @@
   sieht das ganze Jahr plausibel aus. Die Prüfung dazu braucht einen Sommer-
   UND einen Winterbericht, sonst fängt sie nichts.
 
+
+## 20./21.09.2026 · Runde 22 (Vorabliste)
+
+- **Eine Regel ist nicht dasselbe wie ihre Umsetzung.** Regel 5 verbietet das
+  RATEN, nicht das ZUORDNEN. Die Lösung war deshalb nicht, `mappe()`
+  aufzubohren, sondern eine zweite Stufe danebenzustellen, die nur
+  nachschlägt. `mappe()` blieb Zeichen für Zeichen, und alle
+  Regel-5-Prüfungen blieben ohne eine einzige Änderung grün — das ist der
+  Beweis, dass die Regel unberührt ist, und nicht meine Behauptung.
+- **Eine Anweisung gegen die Daten prüfen, bevor man sie ausführt.** Die
+  Vorgabe lautete „Cocktails auf kein Keller". Ausgeführt hätte sie den
+  Verbrauch von Zitronensaft, Ginger Ale, Holundersirup und Tonic still
+  verschwinden lassen — vier Artikel, die im Keller gezählt werden. Die
+  Vorgabe war nicht falsch, sie kannte nur die Rezepturen nicht. Speisen,
+  Kaffee und Spirituosen pur gingen durch, die Cocktails nicht, mit
+  Begründung im Morgenbrief. Teilweise ausführen und den Rest erklären
+  schlägt beides: blind folgen und still abweichen.
+- **Wer die echten Daten liest, findet Fehler, die keine Prüfung sucht.**
+  Beim Durchsehen der 13 bestätigten Zuordnungen in der Live-Datenbank fielen
+  zwei Vertipper auf: „Cola Zero" lag auf `cola` statt `colaz`, „Now-Limo
+  Orange" auf `lemon` statt `orange`. Beides rechnet seit Wochen falsch und
+  wäre in keinem Test aufgefallen — eine bestätigte Zuordnung gilt per
+  Definition als richtig. Die Lehre daraus steht jetzt im Code: wo die
+  geprüfte Liste der Bestätigung widerspricht, sagt es die Zeile, ändert aber
+  nichts.
+- **Die Fixture ist nicht die Wirklichkeit.** Bericht 37 hat 48 Namen, der
+  echte Bericht von gestern 57 — 23 davon stehen in keiner Fixture. Wer nur
+  gegen `tests/fixtures/` arbeitet, baut an einem Viertel der Namen vorbei.
+  Die Live-D1 zu LESEN ist erlaubt und war hier der halbe Ertrag.
