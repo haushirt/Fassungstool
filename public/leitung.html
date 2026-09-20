@@ -1729,6 +1729,23 @@ function abgleich(tag, spanne){
   const imFenster = t => t>=von && t<=bis;
 
   const verk={}, offen=[], ohneGroesse=[], berichte=[];
+  /* NACHTRICHTIGUNG (zweite Jagd nach Runde 18 · A): Bis hierher zählte
+     nur, was sich selbst meldet — fehlende Berichte, offene Namen,
+     fehlende Gebindegrössen. Zwei Wege nehmen den Verkauf aber STILL aus
+     der Rechnung, und beide sind Alltag:
+       · „Ignorieren" ist ein vollwertiger Zustand (`vZuordnung` bewirbt
+         ihn ausdrücklich) und der einzige Weg, einen Cocktail ohne Menge
+         im Kassennamen aus dem roten Balken zu bekommen. Seine Flaschen
+         kommen trotzdem aus dem Keller.
+       · Eine Rezeptzutat mit 0 ml rechnet 6 Gläser zu 0 Flaschen und
+         meldet „gerechnet".
+     In beiden Fällen stand auf dem Blatt für die Gruppe „Verkauft 0 ·
+     Geholt 3 · +3 · Vorrat aufgebaut oder Schwund". Deshalb wird jetzt
+     schlicht gezählt, wie viele der verkauften EINHEITEN es überhaupt in
+     die Rechnung geschafft haben — unabhängig vom Grund. Diese eine Zahl
+     ist gegen jeden künftigen stillen Weg dicht. */
+  let stkGesamt=0, stkGerechnet=0, stkIgnoriert=0;
+  const ignoriert=[];
   /* Artikel, deren VERKAUF in diesem Zeitraum nicht bestimmbar ist.
      Für sie gibt es keine Differenz und keine Deutung — die Entnahme
      steht da, weil sie bekannt ist, aber ohne Urteil.
@@ -1783,6 +1800,7 @@ function abgleich(tag, spanne){
   Object.keys(ZBER).filter(imFenster).sort().forEach(t=>{
     const z=ZBER[t]; berichte.push(z);
     z.positionen.forEach(p=>{
+      stkGesamt+=(+p.anzahl||0);
       const r=REZ[p.name];
       if(r && r.length){                       /* zerlegtes Mischgetränk */
         /* Auch hier gilt: ohne bestätigtes Gebinde keine Flaschenzahl.
@@ -1797,8 +1815,18 @@ function abgleich(tag, spanne){
           r.forEach(x=>zaehlePos(x.id,false,"gebinde"));
           return;
         }
+        /* Eine Zutat ohne Menge ist keine Menge. `Math.max(0, …)` im
+           Formular lässt die 0 zu, und 6 × 0 / 350 = 0 sähe wie ein
+           gerechneter Verkauf von null aus (zweite Jagd · A). */
+        if(r.some(x=>!(+x.ml>0))){
+          const l=r.find(x=>!(+x.ml>0));
+          merkeOhneGroesse(p, l.id, {fehlt:"ausschank"}, true);
+          r.forEach(x=>zaehlePos(x.id,false,"menge"));
+          return;
+        }
         r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
           zaehlePos(x.id,true); });
+        stkGerechnet+=(+p.anzahl||0);
         return;
       }
       const zu=zuordnung(p);
@@ -1824,10 +1852,17 @@ function abgleich(tag, spanne){
         else offen.push({name:p.name, anzahl:(+p.anzahl||0), umsatz:(+p.umsatz||0)});
         return;
       }
-      if(zu.status==="ignoriert") return;
+      if(zu.status==="ignoriert"){
+        stkIgnoriert+=(+p.anzahl||0);
+        const i=ignoriert.find(o=>o.name===p.name);
+        if(i) i.anzahl+=(+p.anzahl||0);
+        else ignoriert.push({name:p.name, anzahl:(+p.anzahl||0)});
+        return;
+      }
       const f=flaschen(p, zu.id);
       if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false,f.fehlt); return; }
       verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
+      stkGerechnet+=(+p.anzahl||0);
     });
   });
   const z=berichte.length?berichte[berichte.length-1]:null;
@@ -1876,7 +1911,10 @@ function abgleich(tag, spanne){
                  || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
   return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, von, bis, spanne,
-          berichte:berichte.length};
+          berichte:berichte.length,
+          /* Die eine Zahl, an der ablesbar ist, wie viel von der
+             Verkaufsseite überhaupt in der Rechnung steht. */
+          ignoriert, stkGesamt, stkGerechnet, stkIgnoriert};
 }
 
 /* `ohneGroesse` führt an drei verschiedene Orte, und wer sie in einen
@@ -2616,6 +2654,13 @@ function druckDifferenzen(tag, a){
   const tOG=teileOhneGroesse(a.ohneGroesse);
   const stkOffen=a.offen.reduce((s,o)=>s+(+o.anzahl||0),0);
   const vorbehalte=[];
+  /* NACHTRICHTIGUNG (zweite Jagd · A): Zuerst die eine Zahl, die jeden
+     Weg mitnimmt — auch die stillen. Danach erst die Gründe. */
+  const draussen=Math.max(0, (a.stkGesamt||0)-(a.stkGerechnet||0));
+  if(draussen) vorbehalte.push(
+    "Von "+num(a.stkGesamt)+" verkauften Einheiten im Zeitraum sind "
+    +num(a.stkGerechnet)+" in diese Rechnung eingegangen — "+num(draussen)
+    +" nicht. Die Gründe stehen darunter.");
   if(a.berichte<a.spanne) vorbehalte.push(
     (a.spanne-a.berichte)+" von "+a.spanne+" Tagen sind nicht eingelesen — für sie fehlt "
     +"der Verkauf ganz. Die Differenzen fallen entsprechend zu hoch aus.");
@@ -2630,9 +2675,14 @@ function druckDifferenzen(tag, a){
   if(tOG.ausschank.length) vorbehalte.push(
     tOG.ausschank.length+" zugeordnete Kassennamen ("+num(tOG.stkAusschank)
     +" Einheiten) sagen nicht, wie viel ausgeschenkt wurde, und zählen nicht als Verkauf.");
+  if(a.ignoriert && a.ignoriert.length) vorbehalte.push(
+    a.ignoriert.length+" Kassennamen ("+num(a.stkIgnoriert)+" Einheiten) stehen auf "
+    +"\u201eIgnorieren\u201c und zählen nicht als Verkauf — richtig für Speisen und Kaffee, "
+    +"falsch, sobald ein Getränk darunter ist.");
   /* Solange irgendein Verkauf fehlt, ist ein Plus kein Befund über den
-     Keller. Das Wort, das jemanden beschuldigt, bleibt dann weg. */
-  const halbeRechnung = vorbehalte.length>0;
+     Keller. `draussen` deckt auch die Wege ab, für die es keinen eigenen
+     Grund in der Liste gibt (zweite Jagd · A). */
+  const halbeRechnung = draussen>0 || a.berichte<a.spanne || vorbehalte.length>0;
 
   const kopf=`<div class="notiz">
     ${a.berichte
@@ -2640,8 +2690,8 @@ function druckDifferenzen(tag, a){
          ? `<b>${auf.length} Position${auf.length===1?"":"en"} gehen nicht auf.</b><br>
             Verglichen wurde, was die Kasse gebucht hat, gegen das, was aus dem Keller
             geholt wurde — über ${a.spanne} Tag${a.spanne===1?"":"e"}, ${a.berichte}
-            Z-Bericht${a.berichte===1?"":"e"}. Ein Plus heisst: mehr geholt als verkauft.
-            Ein Minus heisst: mehr verkauft als geholt.`
+            Z-Bericht${a.berichte===1?"":"e"}. Ein Plus heisst: mehr geholt, als die Rechnung
+            an Verkauf kennt. Ein Minus heisst: mehr verkauft als geholt.`
          : `<b>Verkauf und Entnahme decken sich.</b><br>
             Keine Position weicht über eine Flasche ab.`)
       : `<b>In diesem Zeitraum liegt kein Z-Bericht vor.</b><br>
@@ -2663,8 +2713,12 @@ function druckDifferenzen(tag, a){
         <td class="r plus">${r.diff>0?"+":""}${num(r.diff)}</td>
         <td>${r.diff>0
               ?(halbeRechnung
-                ?"mehr geholt als GERECHNETER Verkauf — es fehlt Verkauf in der Rechnung"
-                :"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund")
+                ?"mehr geholt als gerechneter Verkauf — es fehlt Verkauf in der Rechnung"
+                /* Auch bei vollständiger Rechnung steht hier kein
+                   Vorwurf. Das Blatt geht in eine Gruppe; ob eine
+                   Flasche fehlt oder im Vorrat steht, entscheidet ein
+                   Mensch im Keller, nicht ein Ausdruck (zweite Jagd). */
+                :"mehr geholt als verkauft — Vorrat aufgebaut oder im Keller nachsehen")
               :"mehr verkauft als geholt — Vorrat wird abgebaut"}
           ${r.vorbehalt?`<br><span class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</span>`:""}</td>
       </tr>`).join("")}
@@ -3224,7 +3278,7 @@ function vZaehlliste(m){
 
    Zwei leere Zustände, nicht einer (ui-designer, Runde 3): „nichts da"
    und „nichts passt" sind verschiedene Nachrichten. */
-let EGFILTER={modus:"", wer:"", q:""}, EGOFFEN=null;
+let EGFILTER={modus:"", wer:"", q:""}, EGOFFEN=null, EGFREMD=null;
 
 /* Ein Vorgang hat auf dem Server eine `id`; lokal (Rückfall auf den
    Gerätespeicher) hat er keine. Der Schlüssel muss beides überstehen,
@@ -3318,12 +3372,23 @@ function vEingaenge(m){
           <td class="r"><button class="b klein" data-fremd="${i}">Ansehen</button></td>
         </tr>`).join("")}</tbody></table></div>`;
     m.appendChild(s);
-    /* `EGOFFEN` bleibt hier leer: Es zeigt auf die Serverliste, und ein
-       Schlüssel, den `finde()` dort nicht findet, liesse beim nächsten
-       Neuzeichnen ein Detail stehen, das zur Liste darüber nicht passt. */
+    /* NACHTRICHTIGUNG (zweite Jagd · B): Dieses Detail gehört zur Tabelle
+       darüber, nicht zur Serverliste. Es lag trotzdem in `#egDetail` —
+       und jeder Tastendruck im Suchfeld der SERVERLISTE löschte es, ohne
+       ein Wort, während seine eigene Tabelle unverändert stehenblieb.
+       Es bekommt deshalb eine eigene Fläche. */
+    const fd=document.createElement("div"); fd.id="egFremdDetail"; s.appendChild(fd);
+    const fSchl=v=>vgSchluessel(v);
     s.querySelectorAll("[data-fremd]").forEach(b=>b.onclick=()=>{
-      EGOFFEN=null; malDetail(fremd[+b.dataset.fremd]);
-      $("#egDetail").scrollIntoView({behavior:"smooth", block:"start"}); });
+      const v=fremd[+b.dataset.fremd];
+      EGFREMD=fSchl(v); malDetail(v, fd);
+      fd.scrollIntoView({behavior:"smooth", block:"start"}); });
+    /* Ein Filter der Serverliste zeichnet die ganze Ansicht neu. Ohne
+       eigenen Merker wäre dieses Detail danach weg — dieselbe Ursache,
+       nur eine Ebene tiefer (zweite Jagd · B). Die Tabelle hier steht
+       unverändert, also steht ihr Detail auch unverändert. */
+    const wieder=EGFREMD?fremd.find(v=>fSchl(v)===EGFREMD):null;
+    if(wieder) malDetail(wieder, fd); else EGFREMD=null;
   }
 
   function gefiltert(){
@@ -3372,6 +3437,10 @@ function vEingaenge(m){
        Runde 18 · B). */
     $("#egListe").querySelectorAll("[data-egzeile]").forEach(tr=>tr.onclick=e=>{
       if(e.target.closest("button")) return;
+      /* Wer eine Notiz markiert hat, wollte sie markieren, nicht öffnen
+         (zweite Jagd · C). */
+      const w=window.getSelection && window.getSelection();
+      if(w && !w.isCollapsed && String(w).length>1) return;
       aufschlagen(tr.dataset.egzeile); });
     $("#egListe").querySelectorAll("[data-egpdf]").forEach(b=>b.onclick=()=>{
       const v=finde(b.dataset.egpdf); if(v) druckVorgang(v);});
@@ -3379,8 +3448,10 @@ function vEingaenge(m){
     if(offen) malDetail(offen);
     else if($("#egDetail")) $("#egDetail").innerHTML="";
   }
-  function malDetail(v){
-    if(!v){ $("#egDetail").innerHTML=""; return; }
+  function malDetail(v, wohin){
+    const ziel = wohin || $("#egDetail");
+    if(!ziel) return;
+    if(!v){ ziel.innerHTML=""; return; }
     const B=vgBloecke(v);
     const tab=b=>{
       const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
@@ -3392,22 +3463,26 @@ function vEingaenge(m){
         ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r"><b>${num(b.o[k])}</b></td></tr>`).join("")}
         <tr class="zwt"><td>Summe</td><td class="r">${num(summe(b.o))}</td></tr></tbody></table></div>`;
     };
-    $("#egDetail").innerHTML=`<div class="karte" style="margin-top:24px">
+    ziel.innerHTML=`<div class="karte" style="margin-top:24px">
       <div class="reihe">
         <div><h3 style="margin:0">${esc(MODUSNAME[v.mode]||v.mode)} · ${esc(deTag(v.tag))}</h3>
           <div class="mini">${esc(v.name||"ohne Namen")}${v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):""}
             · ${v.fertig?"abgeschlossen":"läuft noch"}</div></div>
         <span class="rechts"></span>
-        <button class="b" id="egPdf">Als PDF</button>
-        <button class="b klein" id="egJson">Rohdaten</button>
-        <button class="b klein" id="egZu">Schließen</button></div>
+        <button class="b" data-pdf>Als PDF</button>
+        <button class="b klein" data-json>Rohdaten</button>
+        <button class="b klein" data-zu>Schließen</button></div>
       ${v.notiz?`<div class="hinweis" style="margin-top:14px"><b>Notiz:</b> ${esc(v.notiz)}</div>`:""}
       ${B.length?B.map(tab).join("")
         :`<div class="leer" style="margin-top:20px">Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</div>`}
     </div>`;
-    $("#egZu").onclick=()=>{EGOFFEN=null; $("#egDetail").innerHTML="";};
-    $("#egPdf").onclick=()=>druckVorgang(v);
-    $("#egJson").onclick=()=>hol(`vorgang_${v.mode}_${v.tag}.json`,
+    /* Die Knöpfe hängen an der Karte, die gerade gebaut wurde — nicht an
+       einer Kennung, die es zweimal geben kann. */
+    ziel.querySelector("[data-zu]").onclick=()=>{
+      if(wohin) EGFREMD=null; else EGOFFEN=null;
+      ziel.innerHTML=""; };
+    ziel.querySelector("[data-pdf]").onclick=()=>druckVorgang(v);
+    ziel.querySelector("[data-json]").onclick=()=>hol(`vorgang_${v.mode}_${v.tag}.json`,
       JSON.stringify(v.roh,null,2), "application/json");
   }
 }
@@ -3580,6 +3655,9 @@ function vRezepte(m){
     const nm=$("#rzName").value;
     if(!nm) return toast("Erst eine Kassenposition wählen");
     if(!zut.length) return toast("Ohne Zutat ist es keine Rezeptur");
+    /* `min="10"` im Feld greift ohne Formularprüfung nicht (zweite Jagd · A). */
+    if(zut.some(x=>!(+x.ml>0)))
+      return toast("Jede Zutat braucht eine Menge in Millilitern — 0 rechnet keinen Verkauf.");
     REZ[nm]=zut.map(t=>({id:t.id, ml:t.ml})); schreib(K_REZ,REZ);
     zeichne(); toast("Rezeptur gespeichert");
   };
@@ -4015,23 +4093,30 @@ document.addEventListener("keydown",e=>{
      was die Geste selbst braucht, und `preventDefault` nur noch dort,
      wo auch wirklich etwas geschieht. */
   const RAND=20, SCHWELLE=48, TOTZONE=10;
-  let x0=null, y0=0, aktiv=false, hin=0;
+  let x0=null, y0=0, aktiv=false, hin=0, amRand=false;
   const offen=()=>document.body.classList.contains("navoffen");
   /* Was die waagrechte Geste selbst braucht, behält sie. Dort bleibt es
      beim Verhalten des Browsers — auch beim Zurückblättern. */
-  const eigenerBedarf=el=>{
+  /* NACHTRICHTIGUNG (zweite Jagd · C): Der Inhalt beginnt bei 16px, die
+     Randzone endet bei 20px — in diesem 4px-Streifen gewinnt die
+     Randgeste, sonst gäbe es ein Loch, durch das Safari zurückblättert.
+     Ein Eingabefeld behält die Geste auch dort: dort wird gezogen, um
+     Text zu wählen, und das ist keine Navigation. */
+  const eigenerBedarf=(el,amRand)=>{
     if(!el || !el.closest) return false;
     if(el.closest("input,textarea,select,[contenteditable]")) return true;
+    if(amRand) return false;
     const h=el.closest(".tabhuelle");
     return !!(h && h.scrollWidth > h.clientWidth+4);
   };
 
   addEventListener("touchstart", e=>{
-    x0=null; aktiv=false; hin=0;
+    x0=null; aktiv=false; hin=0; amRand=false;
     if(e.touches.length!==1) return;
     const t=e.touches[0];
-    if(!(t.clientX<=RAND || offen())) return;
-    if(eigenerBedarf(t.target)) return;
+    amRand = t.clientX<=RAND;
+    if(!(amRand || offen())) return;
+    if(eigenerBedarf(t.target, amRand)) return;
     x0=t.clientX; y0=t.clientY;
   }, {passive:true});
 
@@ -4043,11 +4128,15 @@ document.addEventListener("keydown",e=>{
       /* Senkrecht: das ist Scrollen, und es bleibt Scrollen. */
       if(Math.abs(dy)>=Math.abs(dx)){ x0=null; return; }
       hin=dx>0?1:-1;
-      /* Nur die zwei Richtungen, die etwas bewirken: aufziehen, wenn zu
-         ist, zuziehen, wenn offen ist. Alles andere gibt der Browser
-         selbst weiter — eine Geste abzufangen, die nichts auslöst, ist
-         die schlechteste Art, nichts zu tun. */
-      if(hin>0 === offen()){ x0=null; return; }
+      /* Zwei Gründe, die Geste zu behalten: Sie bewirkt etwas
+         (aufziehen, wenn zu ist; zuziehen, wenn offen ist) — ODER sie
+         beginnt am linken Rand, wo Safari sonst zurückblättert.
+         NACHTRICHTIGUNG (zweite Jagd · B): Die erste Fassung dieser
+         Zeile liess bei OFFENER Leiste den Randwisch nach rechts los.
+         Genau dort liegt der Daumen, wenn die Schublade offen ist, und
+         „zurück" heisst hier: aus dem Backoffice heraus. */
+      const wirkt = (hin>0 && !offen()) || (hin<0 && offen());
+      if(!wirkt && !amRand){ x0=null; return; }
       aktiv=true;
     }
     /* Ab hier gehört die Bewegung dieser Seite. */

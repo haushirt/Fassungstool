@@ -340,6 +340,51 @@ const WISCH = `(von, nach, hoch) => {
   await p.evaluate(() => { document.body.classList.remove("drucken");
     document.querySelector("#druck").innerHTML = ""; });
 
+  /* ── A der zweiten Jagd: Verkauf, der STILL verschwindet ────────── */
+  console.log("\nA · stille Lücken auf der Verkaufsseite");
+  const still = await p.evaluate(async () => {
+    const lauf = async () => { SEITE = "abgleich"; zeichne();
+      window.__gedruckt = 0; document.querySelector("#bPdf").click();
+      await new Promise(r => setTimeout(r, 200));
+      const d = document.querySelector("#druck");
+      const txt = d.textContent;
+      const erg = { kasten: !!d.querySelector(".notiz.vorbehalt"),
+        punkte: [...d.querySelectorAll(".notiz.vorbehalt li")].map(li => li.textContent.trim()),
+        /* Der Vorwurf steht in der DEUTUNGSSPALTE. Im Vorbehaltskasten
+           und unter „Ohne Abgleich" kommt das Wort vor, um es zu
+           verneinen — das ist der Punkt, nicht der Fehler. */
+        schwund: /Schwund/.test([...d.querySelectorAll("tbody td")]
+                   .map(c => c.textContent).join(" ")),
+        unvollstaendig: /unvollständige Rechnung/.test(txt) };
+      document.body.classList.remove("drucken"); d.innerHTML = "";
+      return erg; };
+
+    const merkMap = MAP, merkRez = REZ, merkGeb = GEB_BEST;
+    /* Weg 1 · alles auf „Ignorieren", nur Cola zugeordnet. Kein offener
+       Name, keine fehlende Größe — die drei alten Gründe schweigen. */
+    MAP = {}; REZ = {};
+    Object.keys(ZBER).forEach(tg => ZBER[tg].positionen.forEach(
+      q => { MAP[q.name] = "__ignoriert"; }));
+    MAP["Cola 0,33"] = "cola"; GEB_BEST = { "Cola 0,33": 330 };
+    SPANNE = 1; vAbgleich.tag = letzterTag();
+    const ignoriert = await lauf();
+
+    /* Weg 2 · eine Rezeptzutat mit 0 ml. */
+    MAP = { "Cola 0,33": "cola" }; GEB_BEST = { "Cola 0,33": 330 };
+    REZ = { "HP Omelett": [{ id: "cola", ml: 0 }] };
+    const nullRezept = await lauf();
+
+    MAP = merkMap; REZ = merkRez; GEB_BEST = merkGeb; SPANNE = 7;
+    return { ignoriert, nullRezept };
+  });
+  urteil("„Ignorieren“ nimmt Verkauf aus der Rechnung — das Blatt sagt es",
+    still.ignoriert.kasten && still.ignoriert.unvollstaendig
+      && still.ignoriert.punkte.some(s => /Ignorieren/.test(s)), still.ignoriert);
+  urteil("eine Rezeptzutat mit 0 ml gilt nicht als gerechneter Verkauf",
+    still.nullRezept.kasten && still.nullRezept.unvollstaendig, still.nullRezept);
+  urteil("das Wort „Schwund“ steht auf diesem Blatt nie",
+    !still.ignoriert.schwund && !still.nullRezept.schwund, still);
+
   /* ── B4 ─────────────────────────────────────────────────────────── */
   console.log("\nB4 · Wisch von links");
   const ctx2 = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true,
@@ -388,7 +433,7 @@ const WISCH = `(von, nach, hoch) => {
                  fenster: window.innerHeight } : { fehlt: true };
   });
   urteil("Kachel „Tagesfassung“ bringt das Detail am Handy ins Bild",
-    !falz.fehlt && falz.oben < falz.fenster, falz);
+    !falz.fehlt && falz.oben >= 0 && falz.oben < falz.fenster, falz);
   await q.evaluate(() => { EGOFFEN = null; SEITE = "heute"; zeichne(); window.scrollTo(0, 0); });
   await q.waitForTimeout(200);
 
@@ -424,7 +469,9 @@ const WISCH = `(von, nach, hoch) => {
       return wisch(Math.round(feld.left) + 4, Math.round(feld.left) + 90, y); })();
     zu();
     const r = huelle.getBoundingClientRect();
-    const aufTabelle = wisch(Math.round(r.left) + 4, Math.round(r.left) + 90,
+    /* Deutlich INNERHALB, nicht im 4px-Streifen am Rand: dort gewinnt
+       absichtlich die Randgeste (zweite Jagd · C). */
+    const aufTabelle = wisch(Math.round(r.left) + 40, Math.round(r.left) + 140,
       Math.round(r.top + r.height / 2));
     zu();
     return { feldLinks: mass("#egQ"), huelleLinks: mass("#egListe .tabhuelle"),
@@ -436,7 +483,9 @@ const WISCH = `(von, nach, hoch) => {
   urteil("über einer waagrecht rollenden Tabelle greift die Geste nicht",
     bedarf.rollt && !bedarf.aufTabelle.verhindert && !bedarf.aufTabelle.offen, bedarf);
 
-  /* …und bei offener Leiste wird keine Geste geschluckt, die nichts tut. */
+  /* …bei offener Leiste: aus der MITTE nach rechts bewirkt nichts und
+     wird losgelassen — AM RAND aber bliebe sonst die Zurück-Geste des
+     Browsers stehen, und genau dort liegt der Daumen (zweite Jagd · B). */
   const leerlauf = await q.evaluate(WISCHQ => {
     SEITE = "heute"; zeichne();
     document.body.classList.add("navoffen");
@@ -444,8 +493,56 @@ const WISCH = `(von, nach, hoch) => {
     document.body.classList.remove("navoffen");
     return e;
   }, WISCH);
-  urteil("bei offener Leiste wird ein Wisch nach rechts nicht geschluckt",
+  urteil("bei offener Leiste wird ein Wisch aus der MITTE nicht geschluckt",
     !leerlauf.verhindert, leerlauf);
+  const randOffen = await q.evaluate(WISCHQ => {
+    SEITE = "heute"; zeichne();
+    document.body.classList.add("navoffen");
+    const e = eval("(" + WISCHQ + ")")(8, 160, 420);
+    document.body.classList.remove("navoffen");
+    return e;
+  }, WISCH);
+  urteil("bei offener Leiste bleibt die Zurück-Geste AM RAND abgefangen",
+    randOffen.verhindert, randOffen);
+
+  /* 4px-Streifen zwischen Inhaltsbeginn (16) und Randzone (20): dort
+     gewinnt die Randgeste, sonst bliebe ein Loch (zweite Jagd · C). */
+  const streifen = await q.evaluate(async WISCHQ => {
+    EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" }; SEITE = "eingaenge"; zeichne();
+    await new Promise(r => setTimeout(r, 200));
+    document.body.classList.remove("navoffen");
+    const h = document.querySelector("#egListe .tabhuelle").getBoundingClientRect();
+    const e = eval("(" + WISCHQ + ")")(18, 120, Math.round(h.top + h.height / 2));
+    document.body.classList.remove("navoffen");
+    return e;
+  }, WISCH);
+  urteil("im 4px-Streifen am Rand gewinnt die Randgeste",
+    streifen.verhindert && streifen.offen, streifen);
+
+  /* Das Detail aus „Nur auf diesem Gerät" gehört zu seiner eigenen
+     Tabelle — ein Tastendruck im Suchfeld der Serverliste darf es nicht
+     löschen (zweite Jagd · B). */
+  const fremdDetail = await q.evaluate(async () => {
+    /* Ein Vorgang, den der „Server" dieses Prüfstands nicht kennt. */
+    try { localStorage.setItem("hh_archiv", JSON.stringify({ "nach_2026-01-02":
+      { mode: "nach", tag: "2026-01-02", name: "Uralt", finished: true,
+        notiz: "aus dem Gerätespeicher", ent: { w026: 2 } } })); } catch (e) {}
+    EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" }; SEITE = "eingaenge"; zeichne();
+    await new Promise(r => setTimeout(r, 200));
+    const knopf = document.querySelector("[data-fremd]");
+    if (!knopf) return { fehlt: true };
+    knopf.click();
+    const auf = !!document.querySelector("#egFremdDetail .karte");
+    EGFILTER.q = "Lena"; zeichne();
+    const nachher = !!document.querySelector("#egFremdDetail .karte");
+    const tabelleDa = !!document.querySelector("[data-fremd]");
+    try { localStorage.removeItem("hh_archiv"); } catch (e) {}
+    EGFILTER = { modus: "", wer: "", q: "" }; EGOFFEN = null; zeichne();
+    return { auf, nachher, tabelleDa };
+  });
+  urteil("das Detail aus dem Gerätespeicher überlebt den Filter der Serverliste",
+    !fremdDetail.fehlt && fremdDetail.auf && fremdDetail.nachher && fremdDetail.tabelleDa,
+    fremdDetail);
 
   /* Die Zeile selbst öffnet das Detail — „Ansehen" liegt bei 390px
      ausserhalb der Rollfläche. */
