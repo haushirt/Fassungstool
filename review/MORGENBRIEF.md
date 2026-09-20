@@ -9,7 +9,7 @@ Kassennamen das Tool von selbst erkennt.
 
 **Den Z-Bericht einlesen und mit einem Klick fertig sein.**
 
-Im Bericht von gestern (Z 40, 57 Kassennamen) blieben vorher 44 Namen
+Im Bericht von gestern (Z 40, 57 Kassennamen) blieben vorher 43 Namen
 offen. Jetzt sind es **20** — und die restlichen sind keine Tipparbeit
 mehr, sondern echte Fragen, die unten stehen.
 

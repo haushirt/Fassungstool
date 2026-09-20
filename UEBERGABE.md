@@ -26,7 +26,7 @@
   **Keine Migration.**
 
 **Zahlen:** Bericht 37 — 15 statt 44 offene Namen. Echter Bericht vom
-19.09. — 20 statt 44 von 57.
+19.09. — 20 statt 43 von 57 (dort sind 13 Namen schon von Hand bestätigt).
 
 **Geprüft:** `npm test` 572/572 · `node tests/ui-runde22.cjs` 21/21 ·
 `node tests/ui-leitung-echt.cjs` 44/44 · `node tests/ui-runde21.cjs` 19/19.

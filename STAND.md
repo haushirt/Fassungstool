@@ -137,7 +137,7 @@ Runde im Log unter „Runde 22". `sw.js` steht auf **v68**.
 
 Nach dem Einlesen standen 44 von 48 Kassennamen offen und warteten auf
 ein Auswahlfeld. Jetzt sind es 15 — und im echten Bericht vom 19.09.
-noch 20 von 57.
+noch 20 von 57 statt 43.
 
 1. **`VORAB` in `src/gnmap.js`:** 37 geprüfte GANZE Kassennamen, 16 auf
    einen Artikel, 21 als „kommt nicht aus dem Keller" (Speisen, Kaffee,

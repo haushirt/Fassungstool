@@ -16,8 +16,9 @@ die im Haus liegen: Z 40 vom 19.09.2026 aus dem Backoffice und
 Bericht 37 aus `tests/fixtures/` — 71 Namen zusammen.
 
 Im echten Bericht von gestern bleiben danach **20 von 57** offen statt
-44. Und diese 20 sind keine Tipparbeit mehr, sondern Fragen, die eine
-Entscheidung brauchen (`review/MORGENBRIEF.md`).
+43 (dort sind 13 Namen schon von Hand bestätigt). Und diese 20 sind
+keine Tipparbeit mehr, sondern Fragen, die eine Entscheidung brauchen
+(`review/MORGENBRIEF.md`).
 
 **2 · Regel 5 bleibt, wie sie war.**
 `mappe()` ist Wort für Wort unverändert und rät bei keinem einzigen
