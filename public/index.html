@@ -2629,7 +2629,23 @@ function fernNeuer(m){
   treffer.sort((a,b)=>(b.zaehlnr||0)-(a.zaehlnr||0));
   const v=treffer[0];
   const eigen=zaehlnr(v.schluessel||(m+"_"+ziel));
-  return (v.zaehlnr||0)>eigen ? v : null;
+  /* NACHTRICHTIGUNG (Jagd nach Runde 19 · A): Hier stand strikt `>`, und
+     genau der GLEICHSTAND fiel damit heraus — der häufigste Fall, nicht
+     der seltenste: `zaehlnr()` zählt JE GERÄT, zwei Geräte, die beide
+     offline beginnen, tragen beide die 1.
+     Seit Runde 19 antwortet der Server in genau dieser Lage mit 409
+     (`vorgangSchreiben`, src/index.js). Solange diese Zeile `>` sagte,
+     liefen die beiden Schwellen auseinander: Der Server nannte es einen
+     Konflikt und schob den eigenen Stand ins Sackfach, die App fragte
+     aber nie „Auf einem anderen Gerät weiter?" — der nächste
+     Zwischenstand trug dann eine höhere Zählnummer und überschrieb den
+     fremden Stand doch, still, 45 Sekunden später. Der Wächter hätte den
+     Verlust nur verschoben und dabei der Person, deren Arbeit gleich
+     gewinnt, gemeldet, ihre Arbeit sei verloren.
+     Beide Schwellen sind jetzt dieselbe. Bei Gleichstand wird gefragt —
+     das ist die Regel des Hauses: zwei Geräte am selben Vorgang fragen,
+     nie still zusammenführen. */
+  return (v.zaehlnr||0)>=eigen && (v.zaehlnr||0)>0 ? v : null;
 }
 
 /* Der Satz für einen Stand, den der Server nicht angenommen hat.

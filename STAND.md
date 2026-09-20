@@ -32,27 +32,36 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   an denselben Zahlen, und das Wort „Schwund" steht in keiner Deutungsspalte
   mehr.
 
-## Analyse-Lauf Runde 19 (20.09.2026) — BLOCKER gefunden
+## Runde 19 (20.09.2026) — Reparatur und neue Übersicht
 
-Voller Bericht: `review/ANALYSE-BACK-FRONT.md`. Neue Funde in `review/BACKLOG.md`
-(Runde 19). Zwei Mockups der neuen Übersicht unter `review/mockup/`.
+Bericht: `review/ANALYSE-BACK-FRONT.md`. Runde im Log unter „Runde 19".
+`sw.js` steht auf **v64**. `npm test`: **490 von 490** grün.
 
-**Vier Sachen sind kaputt, alle ohne Migration behebbar:**
-1. **Jede geholte Getränkeflasche zählt im Backoffice doppelt.**
-   `normVorgang` (`leitung.html:922`) rechnet die Fehlmenge neu und addiert
-   `:968` zusätzlich `gent` — dieselbe Zahl. Gemessen: Journal 4, Backoffice 8.
-   Von 445 Prüfungen verdeckt, weil jede Prüfdatei `gent` ohne `getr` setzt.
-2. **Laufende Vorgänge werden voll mitgerechnet**, das Journal kennt nur
-   abgeschlossene. Gemessen: Worker 12, Backoffice 7.
-3. **Gleiche Zählnummer = stilles Überschreiben** mit HTTP 200
-   (`src/index.js:348` prüft nur `>`).
-4. **Die Rollen werden für Vorgänge nirgends durchgesetzt** —
-   `PUT /api/vorgang/` hat keine Rechteprüfung.
+**Behoben (alles ohne Migration):**
+1. **Getränke zählten im Backoffice doppelt.** `normVorgang` leitete die
+   geholte Menge selbst her UND addierte `gent`, das dieselbe Zahl ist.
+   Gemessen: Journal 4, Backoffice 8. Jetzt 4.
+2. **Laufende Vorgänge** gingen voll in Bestand, Verbrauch und Abgleich
+   ein — das Journal kennt sie nicht. Neuer Filter `gebucht()`; die
+   ausgelassene Menge wird überall benannt, wo auch die anderen
+   Vorbehalte stehen.
+3. **Gleiche Zählnummer zweier Geräte** überschrieb still mit 200. Jetzt
+   409 — und `fernNeuer` in der App fragt bei derselben Schwelle, sonst
+   hätte der Wächter den Verlust nur um 45 Sekunden verschoben.
+4. **Beschädigter Sitzungskeks** lieferte 500 statt 401 und hielt damit
+   die Offline-Reihe an.
+5. **Rechte werden gemeldet, nicht gesperrt** (Entscheidung Casimir).
+   Dazu `GET /api/journal` — damit sind abgewiesene Mail-Berichte zum
+   ersten Mal sichtbar.
 
-Dazu: der Bestellzettel rechnet für 56 von 57 Weinen mit geratenen 6er-Kisten;
-ein beschädigter Sitzungskeks liefert 500 statt 401 und hält die Offline-Reihe
-an; das Backoffice braucht bei 60 Berichten **4,1 s leeren Schirm** beim Start
-(61 Anfragen nacheinander).
+**Neu: die Übersicht (ehemals Mittagsblick).** Sie beantwortet drei Fragen
+in dieser Reihenfolge: Kann ich den Zahlen trauen (Urteil und
+Abdeckungsbalken) · Wo reißt es (die Kette aus fünf Gliedern) · Was ist zu
+tun (höchstens drei Aufgaben mit Knopf, darunter „Außerdem" vollständig).
+Danach der laufende Tag getrennt vom Abgleichfenster, sechs Zahlen, die
+Abweichungen nach **Euro** sortiert, und 14 Tage nebeneinander.
+Der Zeitraum steht jetzt im Kopf und überlebt das Neuladen; der Chip sagt,
+wie alt die Daten sind, statt welcher Betriebstag gemeint ist.
 
 ## Was als Nächstes ansteht
 - **Entscheidung von Casimir (steht ganz oben unter „Hoch"):** Was soll
