@@ -89,8 +89,8 @@ Befehlstaste-P ohne Knopf bringt weiterhin die Seite selbst aufs Papier.
 
 | Prüfung | Ergebnis |
 |---|---|
-| `npm test` | **443 von 443 grün** |
-| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **25 Urteile grün, 0 rot, keine JS-Fehler** |
+| `npm test` | **444 von 444 grün** |
+| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **26 Urteile grün, 0 rot, keine JS-Fehler** |
 | Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v57, keine neue Abhängigkeit |
 
 Fundstellen, Lösungswege und Prüfpläne Punkt für Punkt:

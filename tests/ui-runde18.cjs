@@ -141,6 +141,21 @@ const WISCH = `(von, nach, hoch) => {
   await p.goto("http://127.0.0.1:8934/leitung.html", { waitUntil: "load" });
   await p.waitForTimeout(600);
 
+  /* ── Rückfall: keine Ansicht darf an Runde 18 zerbrechen ────────── */
+  console.log("\nAlle Ansichten zeichnen");
+  const SEITEN = ["heute", "abgleich", "import", "bestand", "bestellen", "getraenke",
+    "zaehlliste", "eingaenge", "speicher", "zuordnung", "rezepte", "team", "einst"];
+  const vorher = fehler.length;
+  for (const s of SEITEN) {
+    await p.evaluate(id => { SEITE = id; zeichne(); window.scrollTo(0, 0); }, s);
+    await p.waitForTimeout(120);
+  }
+  const leer = await p.evaluate(() => [...document.querySelectorAll("main section")].length);
+  urteil("alle 13 Ansichten zeichnen ohne JS-Fehler",
+    fehler.length === vorher && leer > 0, { neueFehler: fehler.slice(vorher) });
+  await p.evaluate(() => { SEITE = "heute"; zeichne(); });
+  await p.waitForTimeout(200);
+
   /* ── B2 ─────────────────────────────────────────────────────────── */
   console.log("\nB2 · Kacheln im Mittagsblick");
   await p.screenshot({ path: path.join(OUT, "macbook-mittagsblick.png"), fullPage: true });

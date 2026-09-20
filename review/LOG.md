@@ -4242,8 +4242,8 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
 * Wisch vom linken Rand öffnet die Navigation und nimmt Safari die Zurück-Geste;
   dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
 
-**Geprüft:** `npm test` **442/442**. `node tests/ui-runde18.cjs` (neu, Playwright,
-nicht Teil von `npm test`): **25 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs` (neu, Playwright,
+nicht Teil von `npm test`): **26 Urteile grün, 0 rot, keine JS-Fehler** — darunter
 echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
 aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
 Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach

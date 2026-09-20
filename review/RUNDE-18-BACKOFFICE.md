@@ -278,8 +278,8 @@ Prüfstand misst das Blatt, nicht den Drucker.
 
 | Prüfung | Ergebnis |
 |---|---|
-| `npm test` | **442 von 442 grün** (ca. 4 s) |
-| `node tests/ui-runde18.cjs` | **25 Urteile grün, 0 rot, keine JS-Fehler** |
+| `npm test` | **444 von 444 grün** (ca. 4 s) |
+| `node tests/ui-runde18.cjs` | **26 Urteile grün, 0 rot, keine JS-Fehler** |
 | Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v57**, keine neue Abhängigkeit in `package.json` |
 
 `tests/ui-runde18.cjs` ist wie `ui-leitung.cjs` **nicht** Teil von `npm test`
