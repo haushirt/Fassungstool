@@ -516,6 +516,32 @@ header :focus-visible,.foot :focus-visible{outline-color:var(--fg-on-dark)}
   font-weight:var(--weight-medium)}
 .mi.run{border-color:var(--danger-border);background:var(--danger-surface)}
 .mi.run .ic{background:var(--danger-bg);color:var(--danger)}
+/* Runde 17 · H3 · Der Papierkorb an einer angefangenen Kachel.
+   Er liegt NEBEN dem Kachelknopf in einer Hülle, nicht darin: ein Knopf
+   im Knopf geht nicht. Optisch sitzt er trotzdem auf der Kachel — die
+   Kachel bekommt dafür rechts Platz, in den er hineinragt, links vom
+   Winkel. Sichtbar 36px, greifbar --tap-min über ein ::after, wie beim
+   Knopf „Gesehen" in der Statuszeile; ein Papierkorb, den man mit dem
+   Daumen halb trifft, wäre hier das größere Übel als einer, der klein
+   aussieht. Der Abstand zum Winkel hält den Fehlgriff auf Abstand. */
+.mi-wrap{position:relative}
+/* Der Winkel › weicht: er sagt „tippen, dann geht es weiter“ — das sagt
+   die ganze Kachel ohnehin, und neben dem Papierkorb lag er so dicht, dass
+   beide Zeichen ineinander liefen. Ein Zeichen am rechten Rand, nicht zwei. */
+.mi-wrap>.mi{padding-right:calc(var(--control-h-sm) + var(--space-4) + var(--space-3))}
+.mi-wrap>.mi .go{display:none}
+.mi-del{position:absolute;top:50%;transform:translateY(-50%);
+  right:var(--space-4);
+  width:var(--control-h-sm);height:var(--control-h-sm);
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--surface);color:var(--danger);
+  border:1px solid var(--danger-border);border-radius:var(--radius-ctl);
+  cursor:pointer;transition:background var(--dur-fast) var(--ease)}
+.mi-del svg{width:18px;height:18px}
+.mi-del::after{content:"";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:var(--tap-min);height:var(--tap-min)}
+.mi-del:active{background:var(--danger-bg)}
 /* › als Textzeichen sass zu hoch und passte in der Strichstaerke nicht
    zu den 1,5px-Symbolen daneben. Gleiche Form, jetzt als Grafik. */
 .mi .go,.gbtn .go2,.hwh .car2,.secarrow,.w .go,.offenz .go{
@@ -1298,6 +1324,28 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   white-space:nowrap}
 .netzok::after{content:"";position:absolute;left:0;right:0;
   top:50%;transform:translateY(-50%);min-height:var(--tap-min)}
+/* Runde 17 · H3 · Derselbe Papierkorb, zweiter Ort: rechts in der
+   schmalen Leiste im Vorgang. Dort steht er, solange etwas erfasst und
+   noch nichts abgeschlossen ist — wer die falsche Kachel erwischt hat,
+   muss dafür nicht erst ins Menü zurück. Maße wie `.netzok`, damit die
+   Leiste eine Höhe behält. */
+/* Nur der Papierkorb, sonst nichts: kein Punkt, und die Leiste wird so
+   flach, wie sie sein darf. */
+.netz--leer{padding-top:var(--space-1);padding-bottom:var(--space-1)}
+.netz--leer::before{display:none}
+.netz--leer .netztext{display:none}
+.netzdel{position:relative;flex:none;align-self:flex-start;
+  margin-left:auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--control-h-sm);height:var(--control-h-sm);
+  color:inherit;background:var(--surface);
+  border:1px solid currentColor;border-radius:var(--radius-ctl);
+  cursor:pointer}
+.netzdel[hidden]{display:none}
+.netzdel svg{width:18px;height:18px}
+.netzdel::after{content:"";position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:var(--tap-min);height:var(--tap-min)}
 .netzok:active{background:var(--surface-2)}
 .netzok[hidden]{display:none}
 .netz.ok{background:var(--success-bg);color:var(--success-fg);
@@ -1835,7 +1883,7 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
   </div>
   <nav class="steps" id="steps" role="tablist"></nav>
 </header>
-<div class="netz" id="netz" style="display:none"><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button></div>
+<div class="netz" id="netz" style="display:none"><span class="netztext" role="status"></span><button type="button" class="netzok" hidden aria-label="Hinweis zum nicht übernommenen Stand schließen">Gesehen</button><button type="button" class="netzdel" hidden aria-label="Vorgang zurücksetzen" title="Vorgang zurücksetzen"></button></div>
 <div class="howto" id="howto"></div>
 <div class="tools" id="tools"><input id="q" type="search" placeholder="Wein suchen …" autocomplete="off"></div>
 </div>
@@ -2187,7 +2235,11 @@ function archive(rec){
      Server nie gesehen hat. */
   if(rec.finished&&!rec._gesendet){ rec._gesendet=1; inDenAusgang(rec,"fertig"); }
   const a=loadArch();
-  a[rec.mode+"_"+rec.tag]=Object.assign({},rec,{archiviert:new Date().toISOString()});
+  /* Runde 17: `schluesselVon` statt `mode+"_"+tag`. Eine unabhaengige
+     zweite Sitzung (Nachfuellen/Sonderentnahme neben einem fremden
+     Vorgang) traegt ein Suffix — ohne das haette sie im Archiv den
+     fremden Stand ueberschrieben. */
+  a[schluesselVon(rec)]=Object.assign({},rec,{archiviert:new Date().toISOString()});
   const ks=Object.keys(a).sort((x,y)=>(a[x].archiviert||"").localeCompare(a[y].archiviert||""));
   while(ks.length>30){const weg=ks.shift();delete a[weg];}
   saveArch(a);}
@@ -2358,11 +2410,33 @@ let FERN=jlese(K_FERN,{});          /* schluessel → Vorgang vom Server  */
 let AEND=0;                          /* Zeitstempel der letzten Änderung */
 function merkeAenderung(){ AEND=Date.now(); }
 
-function schluesselVon(rec){ return rec.mode+"_"+rec.tag; }
+/* Der Schluessel eines Vorgangs: `<modus>_<tag>`.
+   Runde 17 · Ein Zusatz, der in aller Regel fehlt: `sitzung`. Gesetzt wird
+   er genau dann, wenn jemand bei NACHFUELLEN oder SONDERENTNAHME bewusst
+   einen eigenen, unabhaengigen Vorgang neben einem fremden startet — zwei
+   Leute holen abends nun einmal gleichzeitig etwas aus dem Keller. Ohne
+   eigenen Schluessel schrieben beide Staende uebereinander (409 →
+   Sackfach); mit ihm bucht jeder Vorgang getrennt, denn der Server leitet
+   die Ereignisse je Vorgangs-Id ab (src/index.js, `ereignisseAbleiten`).
+   Bindestrich, nicht Unterstrich: `String(schluessel).split("_")[0]` muss
+   weiter den Modus liefern. Tagesfassung, Kellerzaehlung und Wareneingang
+   kennen `sitzung` nicht — die gibt es je Tag genau einmal. */
+function schluesselVon(rec){
+  return rec.mode+"_"+rec.tag+(rec.sitzung?"-"+rec.sitzung:""); }
 function zaehlnr(sch,neu){
   const z=jlese(K_ZAEHL,{});
   if(neu){ z[sch]=(z[sch]||0)+1; jschreib(K_ZAEHL,z); }
   return z[sch]||0;
+}
+/* Einen fremden Stand quittieren: seine Zaehlnummer wird die eigene.
+   Ohne das faende `fernNeuer` denselben Stand gleich wieder „neuer" und
+   der Dialog kaeme bei jedem Antippen zurueck. Nur nach oben — eine
+   kleinere Zahl waere ein Rueckschritt und liesse den 409-Waechter
+   des Servers ins Leere greifen. */
+function fremdZaehlnrMerken(sch,nr){
+  const z=jlese(K_ZAEHL,{});
+  z[sch]=Math.max(+z[sch]||0,+nr||0);
+  jschreib(K_ZAEHL,z);
 }
 
 /* Der Ausgang hält je Schlüssel höchstens einen Eintrag: Ein Vorgang ist
@@ -2507,7 +2581,24 @@ async function zieheFern(){
 function fernOffen(){
   const heute=today(), gestern=yest();
   return Object.values(FERN).filter(v=>
-    v.status==="laeuft" && v.geraet!==GERAET && (v.tag===heute||v.tag===gestern));
+    v.status==="laeuft" && v.geraet!==GERAET && (v.tag===heute||v.tag===gestern)
+    && fernHatInhalt(v));
+}
+/* Runde 17 · Ein fremder Stand zaehlt erst als „laeuft", wenn wirklich
+   etwas darin steht. Bis v56 legte schon das blosse Antippen einer Kachel
+   einen leeren Vorgang auf dem Server ab (`start()` speichert, die
+   45-Sekunden-Uhr schickt) — auf allen anderen Geraeten stand danach
+   „Laeuft gerade woanders", obwohl niemand etwas tat. Die Schwelle ist
+   dieselbe, die die Kachel-Marke „Angefangen" und `angefangene()` schon
+   benutzen: ein Topf ist gefuellt.
+   Der Filter greift auch LESEND — die leeren Vorgaenge, die v56 bereits
+   auf dem Server hinterlassen hat, verschwinden damit sofort, ohne dass
+   jemand in die Datenbank fasst. */
+function fernHatInhalt(v){
+  /* Der Eintrag heisst seinen Modus `modus` (zieheFern), der Zustand
+     darin `mode`. Beide Schreibweisen kommen vor, je nach Alter des
+     Eintrags im Geraetespeicher. */
+  return !!(v && v.daten && hasData(v.modus||v.daten.mode, v.daten));
 }
 /* Gibt es zu diesem Modus einen neueren Stand woanders? */
 function fernNeuer(m){
@@ -2519,9 +2610,25 @@ function fernNeuer(m){
      wieder weg, und der Dialog kam nie wieder, weil die Zaehlnummer
      quittiert war. Beide Seiten fragen jetzt denselben Tag. */
   const ziel=vorgabeTag();
-  const v=FERN[m+"_"+ziel];
-  if(!v||v.geraet===GERAET)return null;
-  const eigen=zaehlnr(m+"_"+ziel);
+  /* Runde 17 · Drei Aenderungen, alle aus dem Backlog:
+     1. Gesucht wird ueber die WERTE, nicht ueber den Schluessel. Eine
+        unabhaengige zweite Sitzung traegt ein Suffix (`schluesselVon`)
+        und waere ueber `FERN[m+"_"+tag]` unsichtbar geblieben.
+     2. Ein leerer fremder Stand ist kein Stand (`fernHatInhalt`).
+     3. Laeuft auf diesem Geraet bereits eine bewusst eigene Sitzung,
+        ist die Frage beantwortet — sie darf nicht jedes Mal wiederkommen. */
+  const eigenerStand=S[m];
+  if(eigenerStand&&eigenerStand.sitzung&&eigenerStand.tag===ziel
+     &&!eigenerStand.finished)return null;
+  const treffer=Object.values(FERN).filter(v=>
+    (v.modus||(v.daten&&v.daten.mode))===m && v.tag===ziel
+    && v.geraet!==GERAET && fernHatInhalt(v));
+  if(!treffer.length)return null;
+  /* Mehrere fremde Staende zum selben Modus und Tag gibt es erst, seit
+     es unabhaengige Sitzungen gibt. Gefragt wird nach dem juengsten. */
+  treffer.sort((a,b)=>(b.zaehlnr||0)-(a.zaehlnr||0));
+  const v=treffer[0];
+  const eigen=zaehlnr(v.schluessel||(m+"_"+ziel));
   return (v.zaehlnr||0)>eigen ? v : null;
 }
 
@@ -2647,7 +2754,27 @@ function netzChip(){
        Tagesfassung da?" ist auch dann eine Antwort wert, wenn nichts mehr
        zu übertragen ist. */
     const istBlock=el.classList.contains("netz--block");
-    if(!t && !(istBlock && tagesStand().t)){ el.style.display="none"; return; }
+    /* Runde 17 · H3 · Rechts in der schmalen Leiste im Vorgang sitzt der
+       Papierkorb: wer die falsche Kachel erwischt hat, sieht ihn dort, wo
+       er ohnehin hinschaut, ohne erst ins Menü zurück zu müssen. Nur im
+       Vorgang — auf der Startseite steht er auf der Kachel selbst — und
+       nur an einem angefangenen, noch nicht abgeschlossenen Stand.
+       Die Leiste blendet sich sonst aus, wenn sie nichts zu sagen hat;
+       solange der Papierkorb da ist, bleibt sie stehen. */
+    const del=el.querySelector(".netzdel");
+    const loeschbar=!istBlock && !!mode && !ARCHREC && !!S[mode]
+      && !S[mode].finished && !!hasData(mode,S[mode]);
+    if(del){
+      del.hidden=!loeschbar;
+      del.innerHTML=loeschbar?ICONS.papierkorb:"";
+      del.onclick=e=>{ e.stopPropagation(); vorgangAbbrechen(mode); };
+    }
+    if(!t && !loeschbar && !(istBlock && tagesStand().t)){
+      el.style.display="none"; return; }
+    /* Bleibt die Leiste nur wegen des Papierkorbs stehen, hat sie nichts
+       zu sagen — dann fällt auch der Zustandspunkt weg, sonst stünde ein
+       Punkt über einer leeren Zeile. */
+    el.classList.toggle("netz--leer", !t && loeschbar);
     el.style.display="";
     /* className nicht überschreiben — der Block im Menü trägt zusätzlich
        .netz--block und verlöre sonst seinen Rahmen. */
@@ -2747,6 +2874,19 @@ function zwischenstand(){
   if(!mode)return;
   const d=S[mode];
   if(!d||d.finished)return;
+  /* Runde 17 · H2 · Die Schwelle: ERST WENN ETWAS DRINSTEHT.
+     `start()` speichert unbedingt (`step=0;save()`), und `save()` setzt
+     `AEND`. Damit genuegte bis v56 ein Fingertipp auf eine Kachel, damit
+     45 Sekunden spaeter ein voellig leerer Vorgang auf dem Server lag —
+     `status='offen'`, und jedes andere Geraet meldete „Laeuft gerade
+     woanders". Wer nur nachsehen wollte, blockierte damit die Kollegin.
+     `hasData` ist die Schwelle, die die Oberflaeche ohnehin schon zieht
+     (Kachel-Marke „Angefangen", `angefangene()`, der Notweg
+     „Zuruecksetzen"): ein Topf ist gefuellt, also ist wirklich etwas
+     erfasst worden. Kein neuer Begriff, keine Grauzone.
+     Der leere Stand, den H3 beim Abbrechen bewusst hinausschickt, laeuft
+     nicht hier durch — er geht direkt in den Ausgang. */
+  if(!hasData(mode,d))return;
   if(AEND<=LETZTER_ZWISCHEN)return;
   LETZTER_ZWISCHEN=Date.now();
   inDenAusgang(d,"laeuft");
@@ -2804,7 +2944,11 @@ const ICONS={
   keller:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>',
   nach:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 13h6l-1 8 8-10h-6z"/></svg>',
   fuellen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3l2 3v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8l2-3z"/><path d="M8 14h8"/><path d="M12 10v3m0 0l-1.5-1.5M12 13l1.5-1.5"/></svg>',
-  ware:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12v9H2zM14 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>'};
+  ware:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12v9H2zM14 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>',
+  /* Runde 17 · Der Papierkorb an angefangenen Vorgängen. Gleiche
+     Strichstärke und gleicher Stil wie die fünf Modus-Zeichen — ein
+     zweites Symbolset gibt es in diesem Haus nicht. */
+  papierkorb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 4h4M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>'};
 /* P8 · Erst der Code, dann der Name, dann das Modul. Der Code ist eine
    Unterschrift, keine Sperre \u2014 im Klartext in einer HTML-Datei kann er
    nichts absichern, fuer die Frage \u201ewer hat gefasst\u201c reicht er. */
@@ -3061,11 +3205,21 @@ function renderMenu(){
   $("#app").style.display="none";$("#menu").style.display="";
   const card=(k)=>{
     const m=MODES[k],d=S[k],run=d&&hasData(k,d)&&!d.finished;
-    return `<button class="mi${run?" run":""}" data-m="${k}">
+    /* Runde 17 · H3 · Der Papierkorb steht NEBEN der Kachel, nicht in
+       ihr: die Kachel ist selbst ein `<button>`, und ein Knopf im Knopf
+       geht nicht (dieselbe Falle wie beim Knopf „Gesehen" in der
+       Statuszeile, Kommentar weiter unten). Deshalb die Hülle `.mi-wrap`
+       mit zwei Geschwistern. Nur an einem angefangenen Vorgang — an einer
+       leeren Kachel gäbe es nichts zu löschen. */
+    const kachel=`<button class="mi${run?" run":""}" data-m="${k}">
       <span class="ic" aria-hidden="true">${ICONS[m.ic]||ICONS[k]}</span>
       <span class="txt"><b>${m.t}</b><span>${m.d}</span>
       ${run?`<span class="when">\u25cf Angefangen · für ${deTag(d.tag)}</span>`:""}</span>
       <span class="go" aria-hidden="true">\u203a</span></button>`;
+    if(!run)return kachel;
+    return `<div class="mi-wrap">${kachel}<button type="button" class="mi-del"`
+      +` data-del="${k}" aria-label="${esc(m.t)} zurücksetzen"`
+      +` title="Vorgang zurücksetzen">${ICONS.papierkorb}</button></div>`;
   };
   /* Derselbe Zustand wie unter dem Kopf, nur als Block: Nach dem Abschluss
      landet man hier, und hier stellt sich die Frage „ist es draußen?".
@@ -3126,6 +3280,11 @@ function renderMenu(){
   $("#bJsonAlles").onclick=rohdatenSichern;
   $("#menu").querySelectorAll("[data-reset]").forEach(b=>
     b.onclick=()=>vorgangZuruecksetzen(b.dataset.reset));
+  /* Runde 17 · H3 · Der Papierkorb an der Kachel. Er liegt NEBEN dem
+     Kachelknopf, nicht darin — ein eigener Klick, der die Kachel nicht
+     mit auslöst. */
+  $("#menu").querySelectorAll("[data-del]").forEach(b=>
+    b.onclick=e=>{ e.stopPropagation(); vorgangAbbrechen(b.dataset.del); });
   netzChip();
 }
 /* 2.2 · Liste der archivierten Vorgänge */
@@ -3323,30 +3482,86 @@ function start(m){
      Organisationsproblem, kein Datenproblem — und es muss sichtbar sein. */
   const fremd=fernNeuer(m);
   if(fremd&&!start._uebernommen){
+    /* Runde 17 · H1 · Der Dialog kennt jetzt drei Lagen statt einer.
+       Vorher galt jeder fremde Stand als „laeuft", und „Abbrechen" legte
+       trotzdem einen eigenen Vorgang an — beides falsch. */
+    const wer=esc(fremd.name||"Jemand");
+    const uhr=esc(new Date(fremd.zeit||Date.now())
+      .toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}));
+    const inhalt=kurzInhalt(m,fremd.daten);
+    /* Ablehnen heisst ablehnen: zurueck ins Menue, KEIN neuer Vorgang.
+       Bis v26 stand im Abbrechen-Zweig `start._uebernommen=false`, was den
+       Dialog sofort wieder oeffnete; ab v27 stand dort `=true`, was an der
+       Frage vorbei einen eigenen Vorgang startete. Wer „Abbrechen" tippt,
+       will aber weder das eine noch das andere. Beim naechsten bewussten
+       Antippen der Kachel wird wieder gefragt. */
+    const zurueck=()=>{ $("#ov").classList.remove("on");
+      $("#ovOk").textContent="Ja"; start._uebernommen=false;
+      mode=null; ARCHREC=null; renderMenu(); window.scrollTo(0,0); };
+    $("#ovNo").onclick=zurueck;
     start._uebernommen=true;
-    $("#ovT").textContent="Auf einem anderen Gerät weiter?";
-    $("#ovBody").innerHTML=`<p>${esc(fremd.name||"Jemand")} hat
-      ${esc(MODES[m].t)} für ${esc(deTag(fremd.tag))} auf einem anderen
-      Gerät bearbeitet – zuletzt ${esc(new Date(fremd.zeit||Date.now())
-        .toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}))} Uhr.</p>
-      <p>Diesen Stand übernehmen? Dein eigener Stand auf diesem Gerät wird
-      dabei ersetzt.</p>`;
     $("#ov").classList.add("on");
+
+    /* ── Fall A · Der fremde Vorgang ist schon ABGESCHLOSSEN ──────────
+       Backlog qa-guardian Runde 1: „Uebernehmen" holte auch einen
+       fertigen Stand. `start()` archivierte ihn dann sofort (`finished`),
+       legte eine leere Fassung an und schickte den fremden Stand unter
+       der EIGENEN Geraetekennung mit hoeherer Zaehlnummer noch einmal
+       hinaus — das Journal buchte ihn ein zweites Mal gegen.
+       Jetzt sagt der Dialog, was Sache ist. „Ansehen" legt den Stand mit
+       `_gesendet` ins Archiv — `archive()` schickt einen so markierten
+       Stand NICHT in den Ausgang — und oeffnet das Protokoll. */
+    if(fremd.status==="fertig"){
+      $("#ovT").textContent=MODES[m].t+" ist schon abgeschlossen";
+      $("#ovBody").innerHTML=`<p>${wer} hat ${esc(MODES[m].t)} für
+        ${esc(deTag(fremd.tag))} auf einem anderen Gerät bereits
+        abgeschlossen – um ${uhr} Uhr${inhalt?", "+esc(inhalt):""}.</p>
+        <p>Der Stand ist damit draußen und im Backoffice zu sehen. Hier
+        lässt er sich nur noch ansehen; ein zweites Mal senden würde ihn
+        im Bestand doppelt buchen.</p>`;
+      $("#ovOk").textContent="Ansehen";
+      $("#ovOk").onclick=()=>{
+        $("#ov").classList.remove("on"); $("#ovOk").textContent="Ja";
+        start._uebernommen=false;
+        const r=Object.assign({},fremd.daten||{},{_gesendet:1});
+        const sch=fremd.schluessel||schluesselVon(r);
+        fremdZaehlnrMerken(sch,fremd.zaehlnr);
+        archive(r); openArchDoc(sch); window.scrollTo(0,0); };
+      return;
+    }
+
+    /* ── Fall B · Der fremde Vorgang LAEUFT ───────────────────────────
+       „Uebernehmen" tritt in ihn ein, der eigene Stand weicht. */
+    $("#ovT").textContent="Auf einem anderen Gerät weiter?";
+    /* Zwei Leute holen abends nun einmal gleichzeitig etwas aus dem
+       Keller: SONDERENTNAHME und NACHFUELLEN duerfen nebeneinander
+       laufen. Die TAGESFASSUNG nicht — die gibt es je Tag genau einmal,
+       ebenso Kellerzaehlung und Wareneingang. Deshalb steht der dritte
+       Weg nur bei `nach` und `fuellen`. */
+    const parallelErlaubt=(m==="nach"||m==="fuellen");
+    $("#ovBody").innerHTML=`<p>${wer} hat ${esc(MODES[m].t)} für
+      ${esc(deTag(fremd.tag))} auf einem anderen Gerät bearbeitet – zuletzt
+      ${uhr} Uhr${inhalt?", "+esc(inhalt):""}.</p>
+      <p><b>Übernehmen</b> führt diesen Stand hier fort. Dein eigener Stand
+      auf diesem Gerät wird dabei ersetzt.</p>`
+      +(parallelErlaubt?`<button class="andererweg" id="ovEigen">
+      <b>Eigenen Vorgang daneben starten</b>
+      <span>Läuft unabhängig neben ${wer}. Beide Stände bleiben erhalten
+      und werden beide gebucht.</span></button>`:"");
     $("#ovOk").textContent="Übernehmen";
     $("#ovOk").onclick=()=>{
       S[m]=Object.assign(blank(m),fremd.daten||{});
-      const z=jlese(K_ZAEHL,{}); z[m+"_"+S[m].tag]=fremd.zaehlnr||0; jschreib(K_ZAEHL,z);
+      delete S[m].sitzung;
+      fremdZaehlnrMerken(fremd.schluessel||schluesselVon(S[m]),fremd.zaehlnr);
       save();$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
       start._uebernommen=false;start(m);};
-    /* Ablehnen heisst ablehnen. Bis v26 stand hier `=false`: `start(m)`
-       fragte `fernNeuer(m)` erneut, bekam denselben fremden Stand und
-       öffnete den Dialog sofort wieder — der Weg „Abbrechen" war eine
-       Schleife, aus der nur „Übernehmen" herausführte. Mit `=true` läuft
-       `start(m)` an der Frage vorbei; die Zeile darunter setzt die Marke
-       wieder zurück, damit beim nächsten bewussten Öffnen des Vorgangs
-       erneut gefragt wird. */
-    $("#ovNo").onclick=()=>{ $("#ov").classList.remove("on");
-      $("#ovOk").textContent="Ja";start._uebernommen=true;start(m); };
+    if(parallelErlaubt)$("#ovBody").querySelector("#ovEigen").onclick=()=>{
+      /* Eigener Schluessel, eigene Zaehlnummer, eigene Ereignisse.
+         `sitzung` haengt am Geraet: zwei Geraete kollidieren nicht, und
+         dasselbe Geraet behaelt seinen Vorgang ueber den Tag. */
+      S[m]=blank(m); S[m].sitzung=GERAET.slice(0,6);
+      save();$("#ov").classList.remove("on");$("#ovOk").textContent="Ja";
+      start._uebernommen=false;start(m);};
     return;
   }
   start._uebernommen=false;
@@ -3638,7 +3853,11 @@ function render(){
   const m=$("#main");m.innerHTML="";m.className="";
   if(mode!=="tag"&&branch===null){$("#tools").style.display="none";$("#howto").style.display="none";
     $("#bedien").style.display="none";
-    $("#steps").style.display="none";rGate(m);measure();return;}
+    /* Runde 17 · H3 · Auch dieser Ausstieg zeichnet die Statusleiste
+       nach. Ohne das fehlte der Papierkorb genau dort, wo man ihn am
+       ehesten braucht: auf der Gattungsfrage Wein/Getränke, dem ersten
+       Schirm nach einem Fehlgriff auf die Kachel. */
+    $("#steps").style.display="none";rGate(m);measure();netzChip();return;}
   $("#steps").style.display="";
   buildSteps();
   renderHowto();
@@ -3671,6 +3890,11 @@ function render(){
   ringMasse(m);
   buildRail(fn===rRest||fn===rZaehl);
   renderFoot();measure();
+  /* Runde 17 · H3 · Der Papierkorb in der Statusleiste hängt an
+     `hasData`: er erscheint mit der ersten erfassten Flasche und
+     verschwindet, wenn der Vorgang zurückgesetzt wird. `netzChip()`
+     zeichnet ihn nach — sonst käme er erst mit der 45-Sekunden-Runde. */
+  netzChip();
 }
 function add(m,cls,txt){const d=document.createElement("div");d.className=cls;d.innerHTML=txt;m.appendChild(d);return d;}
 /* ── Runde 14 · Die Farbe der Rebsorte ────────────────────────────────
@@ -6278,9 +6502,70 @@ function vorgangZuruecksetzen(k){
     +" wird gelöscht und vorher ins Archiv gelegt.</p>"
     +"<p>Was schon übertragen wurde, bleibt am Server. Was noch nicht "
     +"draußen ist, geht damit nicht mehr hinaus.</p>",
-    ()=>{ archive(S[k]); S[k]=blank(k);
-      save(); renderMenu(); window.scrollTo(0,0);
+    ()=>{ vorgangVerwerfen(k);
       toast("Archiviert und zurückgesetzt"); });
+}
+
+/* Runde 17 · H3 · Eine begonnene Session wieder loswerden.
+   Der Fall aus dem Haus: Jemand tippt „Nachfuellen" statt
+   „Tagesfassung", merkt es nach zwei Flaschen und steht dann mit einem
+   halben Vorgang da, den alle anderen Geraete als „Laeuft gerade
+   woanders" sehen.
+   Drei Dinge muss das Verwerfen leisten:
+     1. Nichts geht verloren — der Stand wandert ins Archiv.
+     2. Was noch im Ausgang liegt, geht NICHT mehr hinaus. Sonst haette
+        die Warteschlange den verworfenen Stand Sekunden spaeter doch
+        gesendet.
+     3. Der falsche „in Bearbeitung"-Zustand unter meinem Namen
+        verschwindet auch auf den ANDEREN Geraeten. War der Vorgang schon
+        einmal draussen, genuegt dafuer ein leerer Stand mit hoeherer
+        Zaehlnummer: der Server leitet `status` allein aus
+        `daten.finished` ab und bucht nur beim Abschluss (src/index.js),
+        ein leerer laufender Stand ist fuer ihn also harmlos — und die
+        Inhaltsschwelle aus H2 (`fernHatInhalt`) wertet ihn auf jedem
+        Geraet als „laeuft nicht". Kein Schema, keine Migration, kein
+        DELETE. War er nie draussen, wird auch nichts gesendet. */
+function vorgangVerwerfen(k){
+  const d=S[k]; if(!d)return;
+  const sch=schluesselVon(d);
+  archive(d);
+  /* Zuerst raeumen, dann erst den leeren Stand legen — sonst naehme der
+     Filter ihn gleich wieder mit heraus. */
+  const rest=jlese(K_AUSGANG,[]).filter(x=>x.schluessel!==sch);
+  jschreib(K_AUSGANG,rest);
+  NETZ.offen=rest.length;
+  if(FERN[sch]){
+    /* Der leere Stand muss den ueberholen, der am Server liegt, sonst
+       weist der 409-Waechter ihn ab und „laeuft" bliebe stehen. Die
+       eigene Zaehlnummer kann hinter der des Servers liegen: nach einem
+       uebernommenen Fremdstand, nach Neuinstallation, nach geleertem
+       Geraetespeicher. Deshalb erst angleichen, dann senden —
+       `inDenAusgang` zaehlt danach selbst um eins hoch. */
+    fremdZaehlnrMerken(sch,FERN[sch].zaehlnr);
+    const leer=blank(k);
+    leer.tag=d.tag; if(d.sitzung)leer.sitzung=d.sitzung;
+    leer.name=d.name||whoAmI()||"";
+    inDenAusgang(leer,"laeuft");
+  }
+  S[k]=blank(k);
+  save(); ARCHREC=null; mode=null;
+  renderMenu(); window.scrollTo(0,0);
+  if(typeof schiebe==="function")schiebe();
+}
+
+/* Derselbe Weg, aber mit der Rueckfrage, die Casimir sich gewuenscht
+   hat: kurz, ein Satz, „Ja". Sie haengt an zwei Stellen — am Papierkorb
+   auf der Kachel und am Papierkorb in der Statusleiste im Vorgang. */
+function vorgangAbbrechen(k){
+  const d=S[k];
+  if(!d||!hasData(k,d)||d.finished)
+    return toast("Dieser Vorgang ist nicht angefangen.");
+  ask("Vorgang zurücksetzen?",
+    "<p><b>"+esc(MODES[k].t)+"</b> für "+esc(deTagKurz(d.tag))
+    +" – "+esc(kurzInhalt(k,d))+".</p>"
+    +"<p>Der Stand wird ins Archiv gelegt und hier gelöscht. Auf den "
+    +"anderen Geräten steht danach nicht mehr, dass du daran arbeitest.</p>",
+    ()=>{ vorgangVerwerfen(k); toast("Vorgang zurückgesetzt"); });
 }
 
 /* 2.4 · Rohdaten */

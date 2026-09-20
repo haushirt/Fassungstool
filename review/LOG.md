@@ -4210,6 +4210,66 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
 
 **STATUS:** FERTIG
 
+### Runde 17 – Hauptsitzung (H1–H3 + Z1)
+
+**Kritik am Vorgänger:**
+* ✅ übernommen — `review/BACKLOG.md:25` (software-engineer R7, „Der Fremdgerät-Dialog
+  lässt sich nicht ablehnen") und `:86` (qa-guardian R1, „`fernNeuer` sollte
+  abgeschlossene Vorgänge anders behandeln als laufende") beschreiben **denselben**
+  Dialog aus zwei Richtungen. Zusammen gelöst, wie beauftragt, nicht zweimal
+  angefasst.
+* ↩️ geändert — `review/BACKLOG.md:22` (Jäger R8, „Ein abgelehnter Fremdgerät-Dialog
+  öffnet einen Weg, den es vorher nicht gab") schlug einen Wächter gegen das
+  Überholen vor. Die Ursache war aber, dass Ablehnen überhaupt einen Vorgang
+  startete. Ablehnen startet jetzt nichts; wer bewusst parallel arbeiten will,
+  bekommt einen **eigenen Schlüssel** statt eines Überholvorgangs. Der Wächter
+  erübrigt sich damit.
+* ❌ abgelehnt — `review/BACKLOG.md:68` (software-engineer R7) schlug vor, „Trotzdem
+  neu beginnen" durch eine Korrekturbedienung im fortgeführten Vorgang zu ersetzen.
+  Der Weg bleibt, wo er ist: er gehört zum ABGESCHLOSSENEN eigenen Vorgang desselben
+  Tages und ist dort richtig. Der häufige Fall — zwei Leute gleichzeitig im Keller —
+  ist jetzt anderswo gelöst und bucht nichts gegen.
+* ✅ zur Kenntnis — `inDenAusgang(rec, status)` nimmt seinen zweiten Parameter
+  weiterhin entgegen und benutzt ihn nie (`review/BACKLOG.md`, qa-guardian R1).
+  Nicht angefasst: Regel „nur ändern, was zur Aufgabe gehört".
+
+**Umgesetzt:**
+* **H1** Der Fremdgerät-Dialog kennt drei Lagen: fremd FERTIG → sagt es und bietet nur
+  „Ansehen"; fremd LÄUFT → Übernehmen oder Abbrechen, und Abbrechen führt ins Menü
+  zurück, ohne etwas anzufangen; bei Nachfüllen und Sonderentnahme zusätzlich ein
+  eigener Vorgang daneben, mit Schlüssel `<modus>_<tag>-<sitzung>`.
+* **H2** „Läuft gerade woanders" nur noch bei echter Erfassung: `zwischenstand()`
+  prüft `hasData`, und leere Fremdstände werden auch beim Lesen übergangen — so
+  verschwinden die Altlasten aus v56 ohne Eingriff in die Datenbank.
+* **H3** Papierkorb auf der angefangenen Kachel und rechts in der Statusleiste im
+  Vorgang. Mit Rückfrage, legt den Stand ins Archiv, räumt den Ausgang und nimmt den
+  „in Bearbeitung"-Zustand auch auf den anderen Geräten zurück.
+
+**Geprüft:** `npm test` **442/442**. `node tests/ui-runde17.cjs` (neu) **38/38** —
+darin H1-A/B/C, H2, H2b und H3 einzeln. `node tests/ui-fremdgeraet.cjs` **10/10**
+(eine Erwartung nachgezogen: Ablehnen landet jetzt im Menü statt im Formular).
+`node tests/ui-zweiter-vorgang.cjs` **15/15**, `node tests/qa-schluss.cjs` alles ja.
+Zwei echte Fehler fand erst die neue Prüfung: der leere Stand ging mit zu niedriger
+Zählnummer hinaus (der 409-Wächter hätte ihn abgewiesen, „läuft" wäre stehen
+geblieben), und der Papierkorb fehlte auf der Gattungsfrage Wein/Getränke, weil
+`render()` dort früh aussteigt. Beides behoben und nachgeprüft.
+
+**Für die Nächsten:**
+* Die Zeile zur Architektur in `CLAUDE.md` braucht den Zusatz zum Sitzungsschlüssel —
+  Vorschlag steht in `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 16, Freigabe liegt vor,
+  die Änderung selbst wartet auf Casimirs ausdrückliche Bestätigung.
+* Das Backoffice zeigt an Tagen mit zwei parallelen Sonderentnahmen zwei Einträge
+  derselben Art. Gewollt — aber einmal mit echten Augen ansehen.
+* `Z1` ist diagnostiziert, nicht behoben: die Wahl zwischen sichtbarem Ablauf,
+  gleitender Frist und längerer `SITZUNG` gehört Casimir.
+
+**Phase/Thema:** A / Mehrgerätebetrieb und Vorgangssteuerung
+
+**Backlog:** neu unter „Hoch" — Z1 mit Ursache und Fundstelle (hoch). Vier Punkte
+nach „Erledigt" verschoben.
+
+---
+
 ---
 
 ### Runde 18 – software-engineer (Backoffice, Nacht auf den 20.09.2026)

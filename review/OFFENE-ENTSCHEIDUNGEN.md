@@ -712,3 +712,40 @@ SCHREIBENS, nicht die der Handlung. Genau daher kommen beide Fälle unten. Zwei 
 **Empfehlung:** Option 3, in Phase B. Es ist eine Rechenänderung mit
 fachlicher Folge — kein stiller Griff in eine Formel, die im Backoffice
 eine Zahl bewegt.
+
+---
+
+## 16. Darf ein Vorgang einen Schlüssel mit Zusatz tragen?
+
+**Status:** FREIGEGEBEN (Casimir, 19.09.2026, Runde 17)
+**Gemeldet:** Runde 17 · H1
+
+**Hintergrund:** `CLAUDE.md` sagt unter „Architektur, die bleibt": *Ein Vorgang ist
+ein vollständiger Zustand mit Schlüssel `<modus>_<tag>`.* Das hieß bisher: je Art und
+Tag genau einer. Im Haus stimmt das für Tagesfassung, Kellerzählung und Wareneingang –
+nicht aber für **Nachfüllen** und **Sonderentnahme**: Abends holen regelmäßig zwei
+Leute gleichzeitig etwas aus dem Keller. Bis Runde 16 schrieben beide auf denselben
+Schlüssel; der Server lehnte den zweiten mit 409 ab, und der Stand landete im Sackfach.
+
+**Was Runde 17 tut:** Wer im Dialog „Auf einem anderen Gerät weiter?" bei `nach` oder
+`fuellen` den dritten Weg wählt, bekommt einen Vorgang mit dem Schlüssel
+`<modus>_<tag>-<sitzung>`; `sitzung` sind die ersten sechs Zeichen der Gerätekennung.
+Ohne diesen Weg entsteht der Zusatz nie – alle bisherigen Vorgänge behalten ihren
+Schlüssel unverändert.
+
+**Folgen:**
+
+* **Kein** Eingriff in Datenbank oder Schema. `vorgang.id` ist TEXT-Primärschlüssel,
+  `PUT /api/vorgang/<id>` nimmt jeden Schlüssel, und `ereignisseAbleiten()` rechnet je
+  Vorgangs-Id – beide Vorgänge buchen also sauber getrennt.
+* Im Backoffice stehen an solchen Tagen **zwei Einträge** derselben Art. Das ist
+  gewollt und entspricht der Wirklichkeit.
+* `String(schluessel).split("_")[0]` liefert weiter den Modus – deshalb Bindestrich
+  und nicht Unterstrich.
+
+**Noch zu tun:** Die Zeile in `CLAUDE.md` um den Zusatz ergänzen. Nach Regel „CLAUDE.md
+nur nach ausdrücklicher Bestätigung" hier vorgemerkt, nicht selbst geändert. Vorschlag:
+
+> Ein Vorgang ist ein vollständiger Zustand mit Schlüssel `<modus>_<tag>`,
+> `PUT /api/vorgang/<schlüssel>`. Nachfüllen und Sonderentnahme dürfen zusätzlich
+> parallel laufen; der zweite Vorgang trägt dann `<modus>_<tag>-<sitzung>`.

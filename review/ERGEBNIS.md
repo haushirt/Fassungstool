@@ -7,7 +7,10 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 18 (Nacht auf den 20.09.2026)
 
-**Stand davor: `c78d121` (`sw.js` v56, live). Stand danach: `sw.js` v60.**
+**Stand davor: `47d65cb` (Runde 17, `sw.js` v57, live). Stand danach: `sw.js` v61.**
+
+Dieser Merge bringt Runde 18 (Backoffice). Runde 17 (Fassungsseite) ist
+bereits live; sie ist unberührt geblieben.
 
 Vier Punkte, alle im Backoffice. **`public/index.html` und `src/` sind
 unberührt** — im Keller ändert sich nichts.
@@ -153,6 +156,85 @@ soll — zwei Wege stehen ausgearbeitet in `review/BACKLOG.md` ganz oben unter
   daran hält, zeigt erst das Gerät.
 * **Einmal wirklich drucken und als PDF sichern.** Der Prüfstand misst das
   Blatt, nicht den Drucker.
+
+---
+
+# Was mit diesem Merge live geht · Runde 17 (19.09.2026)
+
+**Stand davor: `sw.js` v56 (live). Stand danach: `sw.js` v57.**
+
+**Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
+`wrangler.jsonc`, `package.json`, `src/index.js` unberührt. Kein `ALTER`,
+kein `CREATE`, kein `INSERT` in die Live-D1. `RUNDEN` unverändert —
+bestehende Anmeldungen bleiben gültig. Die Spalten `schluessel`, `zaehlnr`,
+`geraet` sind nicht angefasst (Regel 14). Geändert wurden `public/index.html`
+und `public/sw.js`.
+
+## Was im Betrieb anders ist
+
+**1 · „Abbrechen“ bricht wirklich ab.** Im Dialog „Auf einem anderen Gerät
+weiter?“ führte „Abbrechen“ bis v56 trotzdem in einen eigenen, neuen
+Vorgang. Gerade bei der Tagesfassung — die es je Tag genau einmal gibt — war
+das der falsche Ausgang: zwei Geräte arbeiteten danach still gegeneinander.
+Jetzt landet man wieder auf der Startseite, es wird nichts angefangen, und
+beim nächsten Antippen der Kachel wird erneut gefragt.
+
+**2 · Ein fremder Vorgang, der schon fertig ist, wird als fertig gemeldet.**
+Bisher bot der Dialog auch dafür „Übernehmen“ an. Wer das tat, schickte den
+fremden Abschluss unter der eigenen Gerätekennung ein zweites Mal hinaus —
+das Journal buchte ihn gegen, und der Bestand lief still auseinander. Der
+Dialog sagt jetzt, dass der Vorgang abgeschlossen ist, nennt Person, Uhrzeit
+und Inhalt und bietet nur noch „Ansehen“: der Stand geht ins Archiv und nie
+wieder hinaus.
+
+**3 · Zwei Leute dürfen gleichzeitig in den Keller.** Bei **Nachfüllen** und
+**Sonderentnahme** steht im Dialog ein dritter Weg: „Eigenen Vorgang daneben
+starten“. Beide Stände bleiben vollständig erhalten und werden beide gebucht.
+Möglich wird das durch einen Schlüssel mit Zusatz — `<modus>_<tag>-<sitzung>`
+statt `<modus>_<tag>`. Ohne diesen Weg entsteht der Zusatz nie; alle
+bestehenden Vorgänge behalten ihren Schlüssel. Server und Datenbank brauchen
+dafür nichts: `vorgang.id` ist ein freier Textschlüssel, und die Ereignisse
+werden je Vorgang abgeleitet. **Im Backoffice stehen an solchen Tagen zwei
+Einträge derselben Art — das ist gewollt.** Tagesfassung, Kellerzählung und
+Wareneingang bleiben bei einem Vorgang je Tag.
+
+**4 · „Läuft gerade woanders“ steht nur noch, wenn wirklich jemand arbeitet.**
+Bis v56 genügte ein Fingertipp auf eine Kachel: `start()` speichert, und
+45 Sekunden später lag ein völlig leerer Vorgang auf dem Server. Auf allen
+anderen Geräten stand daraufhin, die Kollegin sei dran. Jetzt wird ein
+Vorgang erst hinausgeschickt, wenn wirklich etwas erfasst ist — dieselbe
+Schwelle, die die Kachel-Marke „Angefangen“ schon zieht. **Die leeren
+Vorgänge, die v56 bereits hinterlassen hat, verschwinden von selbst:** sie
+werden auch beim Lesen übergangen. Niemand muss in die Datenbank fassen.
+
+**5 · Ein Papierkorb für die falsch gestartete Session.** Wer „Nachfüllen“
+statt „Tagesfassung“ erwischt hat, kommt jetzt heraus: ein Papierkorb steht
+rechts auf der angefangenen Kachel und ein zweiter rechts in der Statusleiste
+im Vorgang. Er fragt nach, bevor er etwas tut. Danach ist der Stand im Archiv
+gesichert, aus dem Ausgang genommen — er geht also nicht doch noch hinaus —
+und der Zustand „in Bearbeitung“ ist auch auf den anderen Geräten
+zurückgenommen. Nur angefangene, noch nicht abgeschlossene Vorgänge sind
+betroffen; ein Abschluss lässt sich so nicht löschen.
+
+## Geprüft
+
+* `npm test` — **442 von 442**.
+* `node tests/ui-runde17.cjs` (neu) — **38 von 38**, offline, 390 px:
+  fremder Vorgang fertig / laufend, dritter Weg mit eigenem Schlüssel, die
+  Schwelle für „läuft“ und der Papierkorb an beiden Orten.
+* `node tests/ui-fremdgeraet.cjs` — **10 von 10** (eine Erwartung nachgezogen:
+  Ablehnen führt jetzt ins Menü).
+* `node tests/ui-zweiter-vorgang.cjs` — **15 von 15**.
+* `node tests/qa-schluss.cjs` — alles ja.
+
+## Was danach noch offen ist
+
+* Die Architekturzeile in `CLAUDE.md` nennt weiterhin nur `<modus>_<tag>`.
+  Der Zusatz ist freigegeben, die Zeile aber noch nicht nachgezogen —
+  Vorschlag in `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 16.
+* „Nicht angemeldet – bitte neu anmelden“: **Ursache gefunden**, Fix bewusst
+  nicht in dieser Runde. Steht mit Fundstelle unter „Hoch“ in
+  `review/BACKLOG.md`; die Wahl zwischen drei Wegen gehört Casimir.
 
 ---
 
