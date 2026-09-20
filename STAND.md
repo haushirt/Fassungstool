@@ -6,17 +6,19 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 17 (Fassungsseite) ist gemergt** (PR #9, `47d65cb` auf `main`).
-- **Runde 18 (Backoffice) liegt auf `claude/backoffice-leitung-r18-clvh73`**
-  und bringt `sw.js` auf **v61**.
+- **Runde 21 ist gemergt und LIVE** (PR #14, `5eb03f7` auf `main`,
+  20.09.2026). Live gegengelesen: `sw.js` v67 wird ausgeliefert, der
+  Sammelabruf steht im Backoffice, die App im Keller ist unverändert.
+- Alle Runden bis einschliesslich 21 sind auf `main`. Die Runden 17 bis 20
+  stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
-- `npm test`: **444 von 444 grün** (Stand 20.09.2026, Laufzeit ca. 4 s).
-- Oberfläche von Hand: `node tests/ui-runde18.cjs` — **51 Urteile grün**,
-  `node tests/ui-runde17.cjs` — 38/38. Beide brauchen Playwright und sind
-  **nicht** Teil von `npm test` (Regel 8).
-- Was Runde 18 gebracht hat, steht Punkt für Punkt in
-  `review/RUNDE-18-BACKOFFICE.md` (mit Datei:Zeile und Prüfplan);
-  die PR-Beschreibung steht in `review/ERGEBNIS.md`.
+- `npm test`: **560 von 560 grün** (Stand 20.09.2026, Laufzeit ca. 4 s).
+- Oberfläche von Hand, **nicht** Teil von `npm test` (Regel 8), braucht
+  Playwright: `node tests/ui-runde21.cjs` 19/19 ·
+  `node tests/ui-leitung-echt.cjs` 44/44 · `node tests/ui-runde18.cjs` 51/51 ·
+  `node tests/ui-runde17.cjs` 38/38.
+- Die PR-Beschreibung der jeweils letzten Runde steht in
+  `review/ERGEBNIS.md`, die Übergaben aller Runden in `review/LOG.md`.
 
 ## Was Runde 18 verändert hat (nur `public/leitung.html`)
 - Die vier Kacheln des Mittagsblicks sind **Knöpfe** und führen weiter.
