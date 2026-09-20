@@ -2432,10 +2432,19 @@ function zaehlnr(sch,neu){
    Ohne das faende `fernNeuer` denselben Stand gleich wieder „neuer" und
    der Dialog kaeme bei jedem Antippen zurueck. Nur nach oben — eine
    kleinere Zahl waere ein Rueckschritt und liesse den 409-Waechter
-   des Servers ins Leere greifen. */
+   des Servers ins Leere greifen.
+
+   NACHTRICHTIGUNG (Runde 20): Seit `fernNeuer` auch den GLEICHSTAND
+   als „fremder Stand" wertet (dieselbe Schwelle wie der 409-Waechter
+   im Worker, sonst verschoebe der Waechter den Datenverlust nur um
+   45 Sekunden), genuegt „gleich hoch" zum Quittieren nicht mehr: Nach
+   dem Uebernehmen waere die eigene Nummer gleich der fremden, und der
+   Dialog kaeme beim naechsten Oeffnen wieder. Quittiert wird deshalb
+   mit EINS DARUEBER — das ist auch sachlich richtig, denn wer einen
+   fremden Stand uebernimmt, arbeitet ab jetzt auf dem neueren. */
 function fremdZaehlnrMerken(sch,nr){
   const z=jlese(K_ZAEHL,{});
-  z[sch]=Math.max(+z[sch]||0,+nr||0);
+  z[sch]=Math.max(+z[sch]||0,(+nr||0)+1);
   jschreib(K_ZAEHL,z);
 }
 
@@ -5828,11 +5837,21 @@ function vortagVon(tag){
   return d.toISOString().slice(0,10);
 }
 
-/* Was dieser Vorgang aus dem Keller genommen hat, je Artikel. Dieselbe
+/* Was dieser Vorgang aus dem KELLER genommen hat, je Artikel. Dieselbe
    Rechnung wie `ereignisseAbleiten()` im Worker (src/index.js) — sie muss
-   es sein, sonst zeigt der Abgleich etwas anderes als der Bestand.
+   es sein, sonst zeigt der Bestand etwas anderes als das Journal.
    `holtN` schlägt die Summe der Fächer, wo die Person die Zahl von Hand
-   berichtigt hat. */
+   berichtigt hat.
+
+   BERICHTIGUNG (Runde 20): Hier stand „sonst zeigt der ABGLEICH etwas
+   anderes als der Bestand". Das war der Denkfehler, schriftlich, an der
+   Stelle, an die der nächste Leser zuerst schaut. Abgleich und Bestand
+   fragen NICHT dasselbe:
+     · Der Bestand fragt, was aus dem Keller heraus ist → diese Funktion.
+     · Der Abgleich fragt, was oben verbraucht wurde → `verbrauchteMengen`
+       darunter. Dagegen rechnet der Z-Bericht.
+   Sie unterscheiden sich, sobald im Lager weniger lag als gebraucht wurde
+   („Abweichung", `holtN`/`gholtN`). */
 function gefassteMengen(d){
   const t={};
   const zu=(id,n)=>{ n=+n||0; if(n)t[id]=(t[id]||0)+n; };
@@ -5848,6 +5867,41 @@ function gefassteMengen(d){
   if(d.mode!=="ware")Object.keys(d.gent||{}).forEach(id=>zu(id,d.gent[id]));
   Object.keys(d.gzusatz||{}).forEach(id=>zu(id,d.gzusatz[id]));
   return t;
+}
+
+/* Was oben GEFEHLT hat, je Artikel — der Verbrauch. Wortgleich mit
+   `normVorgang` im Backoffice (public/leitung.html), damit der
+   Vortagsabgleich im Keller und der Abgleich am MacBook für denselben
+   Tag dieselben Zeilen zeigen. Bis Runde 20 rechneten beide mit der
+   Entnahme, und bei einer Abweichung standen zwei verschiedene
+   Ergebnisse nebeneinander.
+
+   `holtN`/`gholtN` bleiben hier aussen vor: Sie sagen, wie viele
+   Flaschen wirklich getragen wurden, nicht wie viele oben fehlten. */
+function verbrauchteMengen(d){
+  const t={};
+  const zu=(id,n)=>{ n=+n||0; if(n)t[id]=(t[id]||0)+n; };
+  if(d.mode==="tag"||d.mode==="fuellen"){
+    ["barrot","bar","backup","rest"].forEach(k=>
+      Object.keys(d[k]||{}).forEach(id=>zu(id,d[k][id])));
+    Object.keys(d.getr||{}).forEach(id=>
+      zu(id, Math.max(0,(GSOLL[id]||0)-(+d.getr[id]||0))));
+    /* Ein Getränk, das geholt wurde, ohne dass die Lade gezählt ist:
+       Dann ist die Lücke oben nicht berechenbar. Sie auf 0 zu setzen
+       hiesse „nichts verbraucht", und der Verkauf stünde als Fehlmenge
+       da. Im Zweifel gilt die geholte Menge — im echten Ablauf kann
+       dieser Fall gar nicht entstehen (`gent` entsteht aus `gFehlt`,
+       und das braucht `getr`), aber ein alter oder halber Stand darf
+       keine erfundene Differenz erzeugen. */
+    Object.keys(d.gent||{}).forEach(id=>{
+      if(!d.getr || d.getr[id]==null) zu(id,d.gent[id]); });
+    Object.keys(d.zusatz||{}).forEach(id=>zu(id,d.zusatz[id]));
+    Object.keys(d.gzusatz||{}).forEach(id=>zu(id,d.gzusatz[id]));
+    return t;
+  }
+  /* In jedem anderen Modus gibt es kein Soll oben, also keine Lücke —
+     dort ist der Verbrauch gleich der Entnahme. Siehe `normVorgang`. */
+  return gefassteMengen(d);
 }
 
 /* Der Z-Bericht zu einem Betriebstag. 404 heisst „keiner da" und ist kein
@@ -5949,7 +6003,10 @@ async function holeGebindeGroessen(){
 }
 
 function abgleichZeilen(d,z,groessen){
-  const gef=gefassteMengen(d);
+  /* Gegen die Kasse gehört der VERBRAUCH, nicht die Transportmenge
+     (Runde 20). Der Name bleibt `gef`, damit der Rest der Funktion
+     unberührt bleibt — was er meint, steht hier. */
+  const gef=verbrauchteMengen(d);
   const verk={};
   /* BERICHTIGUNG (dritte Jagd Runde 16 · B): `ohneGroesse` zaehlte seit
      der zweiten Jagd ZWEI verschiedene Ursachen in einen Topf — „keine
@@ -6375,16 +6432,30 @@ function docTag(){
   const d=D();
   const bar=sum(d.barrot)+sum(d.bar)+sum(d.backup),rest=sum(d.rest);
   let h=docHeadHtml();
+  /* „Keller" hiess die Summe aus Restaurant und Bar — das ist aber, was
+     OBEN gefehlt hat, nicht was aus dem Keller kam (Runde 20). */
   h+=`<div class="kpi"><div><span>Restaurant</span><b>${rest}</b></div>
     <div><span>Bar</span><b>${bar}</b></div>
-    <div><span>Keller</span><b>${rest+bar}</b></div>
+    <div><span>Oben gefehlt</span><b>${rest+bar}</b></div>
     <div><span>Getränke</span><b>${gFehltSum()}</b></div></div>`;
+  /* BERICHTIGUNG (Runde 20): Die Überschrift hiess „Aus dem Keller
+     geholt", darunter stand aber `it.n` — die Lücke OBEN, ohne `holtN`.
+     Bei einer Abweichung standen damit drei Zahlen an drei Orten:
+     Journal und Backoffice die getragene Menge, dieses Blatt die
+     gefehlte. Jetzt beide, jede unter ihrem Namen. */
   const hl=holList();
   if(hl.length){let t2="",lz=null;
-    hl.forEach(it=>{const z=PLAN.zone[it.w.id];if(z!==lz){lz=z;t2+=`<tr><td class="grp" colspan="3">${PLAN.zonen[z].t}</td></tr>`;}
-      t2+=`<tr><td><b>${esc(it.w.winzer)}</b> · ${esc(it.w.wein)}</td><td>${it.q.join(" · ")}</td><td class="r"><b>${it.n}</b></td></tr>`;});
-    h+=`<div class="sec"><h3>Aus dem Keller geholt</h3>
-      ${tbl(`<th>Wein</th><th>Wohin</th><th class="r">Fl.</th>`,t2,`<tr class="tot"><td colspan="2">Summe</td><td class="r">${rest+bar}</td></tr>`)}</div>`;}
+    const getragen=it=>(d.holtN&&d.holtN[it.w.id]!=null)?+d.holtN[it.w.id]:it.n;
+    const sumG=hl.reduce((a,it)=>a+getragen(it),0);
+    hl.forEach(it=>{const z=PLAN.zone[it.w.id];if(z!==lz){lz=z;t2+=`<tr><td class="grp" colspan="4">${PLAN.zonen[z].t}</td></tr>`;}
+      const g=getragen(it);
+      t2+=`<tr><td><b>${esc(it.w.winzer)}</b> · ${esc(it.w.wein)}</td><td>${it.q.join(" · ")}</td>`+
+          `<td class="r"><b>${it.n}</b></td><td class="r"><b>${g}</b></td></tr>`;});
+    h+=`<div class="sec"><h3>Fassung</h3>
+      ${tbl(`<th>Wein</th><th>Wohin</th><th class="r">oben gefehlt</th><th class="r">aus dem Keller</th>`,t2,
+        `<tr class="tot"><td colspan="2">Summe</td><td class="r">${rest+bar}</td><td class="r">${sumG}</td></tr>`)}
+      <div class="mini">Links, was oben gefehlt hat — die Zahl für den Z-Bericht.
+        Rechts, was aus dem Keller kam — die geht vom Kellerstand ab.</div></div>`;}
   const zu=WINES.filter(w=>g(d.zusatz,w.id));
   if(zu.length){let t3="";
     zu.sort(wegCmp).forEach(w=>{t3+=`<tr><td><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</td>`+

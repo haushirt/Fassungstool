@@ -1,6 +1,6 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 20.09.2026 (Analyse-Lauf Runde 19)
+**Letzte Aktualisierung:** 20.09.2026 (Runde 20 · zwei Zahlen je Position)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
@@ -62,6 +62,39 @@ Danach der laufende Tag getrennt vom Abgleichfenster, sechs Zahlen, die
 Abweichungen nach **Euro** sortiert, und 14 Tage nebeneinander.
 Der Zeitraum steht jetzt im Kopf und überlebt das Neuladen; der Chip sagt,
 wie alt die Daten sind, statt welcher Betriebstag gemeint ist.
+
+## Runde 20 (20.09.2026) — zwei Zahlen je Position und ein Vorgangsfenster
+
+Runde im Log unter „Runde 20". `sw.js` steht auf **v66**.
+`npm test`: **538 von 538** grün.
+
+Anlass war Casimirs Satz beim Öffnen eines Vorgangs: *„es sollte einfach
+nur eine Zahl pro Position sein"* — und die Nachfrage brachte heraus, dass
+es genau umgekehrt ist: **es gibt zwei Zahlen, und das Tool behielt nur
+eine.**
+
+1. **„Oben gefehlt" ist nicht dasselbe wie „aus dem Keller geholt".**
+   Die erste (Soll − Ist an Bar, Restaurant, Backup, Lade) ist der
+   **Verbrauch** — dagegen wird der Z-Bericht gerechnet. Die zweite ist,
+   was wirklich herausgetragen wurde — die geht **vom Bestand** ab. Sie
+   gehen auseinander, sobald im Lager weniger lag (`holtN`/`gholtN`).
+   Beide werden im Backoffice aus denselben Rohfeldern gerechnet:
+   **kein neues Feld, keine Migration, rückwirkend gültig.** In allen
+   sechs Live-Vorgängen sind beide Zahlen gleich — es ändert sich heute
+   keine einzige Zahl, die Unterscheidung ist da, bevor sie beisst.
+2. **Das Vorgangsfenster.** Ein Kopf (wer, wann vom Gerät, Freigabe mit
+   Grund) und **eine** Tabelle je Abschnitt statt fünf: eine Zeile je
+   Artikel, zwei Spalten mit ihrem Auftrag im Kopf („→ Z-Bericht",
+   „→ Bestand"), **eine** Sortierung — der Laufweg durch den Keller.
+   Weicht eine Zeile ab, ist sie hervorgehoben und nennt den Grund.
+   Druckblatt und Fenster kommen aus derselben Quelle.
+3. **Ein Soll für beide Dateien.** App und Backoffice rechneten das Soll
+   der Getränke aus zwei verschiedenen Ladenaufteilungen (gasteiner 15
+   gegen 18, gastill 4 gegen 1). Jetzt aus derselben, dauerhaft geprüft.
+
+**Zurückgezogen:** Analyse-Punkt A15 („Sonderentnahmen gehen in die
+Verbrauchsprognose ein") ist kein Fund — Hauskonsum wird an der Kasse
+gebucht und steht damit im Z-Bericht.
 
 ## Was als Nächstes ansteht
 - **Entscheidung von Casimir (steht ganz oben unter „Hoch"):** Was soll

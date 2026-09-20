@@ -841,6 +841,41 @@ td.geld{white-space:nowrap}
 .legende i.nix{background:repeating-linear-gradient(45deg,var(--surface-3),
   var(--surface-3) 4px,var(--surface-4) 4px,var(--surface-4) 8px)}
 
+/* ── Das Vorgangsfenster (Runde 20) ──────────────────────────────────
+   Die Klasse heisst `zweisp` und nicht `zwei`: `.zwei` ist seit Runde 19
+   das zweispaltige Raster der Übersicht (`display:grid`, Zeile 803). Die
+   Tabellenhülle hätte das geerbt und wäre selbst zum Raster geworden —
+   die Tabelle sass dann in der linken 1.3fr-Spalte und liess die halbe
+   Karte leer. Zwei Klassen, zwei Namen.
+
+   Zwei Zahlenspalten neben einem langen Weinnamen. Bei 390 px ist das
+   eng: „Weinberghof Fritsch · Ried Schlossberg 1ÖTW". Die Namensspalte
+   darf deshalb umbrechen, die Zahlen nie — eine Zahl, die zwischen
+   Ziffer und Ziffer bricht, ist keine Zahl mehr. */
+/* Am MacBook ist die Karte 820 px breit. Über die ganze Breite gezogen
+   lägen zwischen „Nittnaus · Kalk & Schiefer" und seinen zwei Zahlen
+   gut 600 px — man verliert beim Hinüberschauen die Zeile. Diese
+   Tabelle wird gelesen, nicht durchsucht; sie bleibt so breit, dass
+   Name und Zahlen in einem Blick liegen. */
+.tabhuelle.zweisp{max-width:620px}
+.tabhuelle.zweisp table{min-width:0;width:100%}
+.tabhuelle.zweisp td.zahl,.tabhuelle.zweisp th.r{white-space:nowrap}
+.tabhuelle.zweisp th:first-child,.tabhuelle.zweisp td:first-child{white-space:normal}
+/* Die Zahlenspalten nehmen nur, was sie brauchen — der Name bekommt den Rest. */
+.tabhuelle.zweisp th.r,.tabhuelle.zweisp td.zahl{width:1%}
+.spK{display:none}
+/* Der Auftrag der Spalte steht unter ihrem Namen, leiser: „oben gefehlt"
+   sagt, WAS gezählt wird, „→ Z-Bericht" sagt, WOFÜR. */
+.spuz{display:block;font-weight:var(--weight-regular);
+  text-transform:none;letter-spacing:0;color:var(--fg-subtle)}
+/* Die eine Zeile, bei der die beiden Zahlen auseinandergehen — sie ist
+   der Grund, warum es zwei Spalten gibt. */
+tr.weicht td{background:var(--warn-bg)}
+@media(max-width:700px){
+  .tabhuelle.zweisp th,.tabhuelle.zweisp td{padding-left:8px;padding-right:8px}
+  .spuz{display:none}
+  .spL{display:none} .spK{display:inline}
+}
 /* Woraus die Lücke im Abdeckungsbalken besteht — drei Ursachen, drei
    Maßnahmen, deshalb drei Zeilen statt einer Zahl. */
 .luecke{margin:var(--space-3) 0 0;padding-left:var(--space-5);
@@ -1001,6 +1036,43 @@ function colTeile(c){
   if(c && c.stapel) return c.stapel.map(x=>[x[0],x[1]]);
   return [];
 }
+/* ── Die Laden 2 und 3 ───────────────────────────────────────────────
+   NACHTRICHTIGUNG (Runde 20 · A): Diese Seite rechnete das Soll der
+   Getränke aus einer anderen Ladenaufteilung als die App. Die App nimmt
+   das alte Regal HERAUS (`GETR.laden.filter(L=>L.id!=="regal")`,
+   public/index.html) und ersetzt es durch Lade 2; hier fehlten beide
+   Zeilen. Gemessen: `gasteiner` App 15 / hier 18, `gastill` App 4 /
+   hier 1 — die übrigen 35 Getränke stimmten überein. Sichtbar war es in
+   der Spalte „Fehlt" der Getränke-Ansicht.
+
+   Übernommen wird nur, was für die ZAHL nötig ist: die Plätze. Wie die
+   Lade gezeichnet wird, geht diese Seite nichts an — das Backoffice malt
+   keine Laden. `tests/soll-gleich.test.mjs` rechnet beide Fassungen
+   gegeneinander und wird rot, sobald sie wieder auseinanderlaufen. */
+const WLADEN=[
+ {id:"gast",t:"Lade 2 · Gasteiner & Stille",kind:"fach",
+  fach:[{t:"Stille 0,75",kind:"reihen",quer:1,zeilen:[
+          [["gastill",4]]]},
+        {t:"Gasteiner 1 l",kind:"raster",fid:"gasteiner",n:15,pro:5,leerOben:1}]},
+ {id:"wein",t:"Lade 3 · Offene Weine",kind:"fach",wein:1,
+  fach:[{t:"Sekt & Champagner",kind:"reihen",leerOben:1,zeilen:[
+          [["serena",3,"bar",""],["serena",3,"bar","Serena"],["serena",3,"bar",""],
+           ["w055",3,"bar"],{stapel:[["noblier",1],["w056",2,"bar"]]}]]},
+        {t:"Offene Weine",kind:"reihen",leerOben:1,zeilen:[
+          [["w001",3,"bar"],["w005",3,"bar"],["w009",3,"bar"],["w043",3,"bar"]]]}]}];
+/* Wortgleich mit `wSlots` in public/index.html. Das dritte Feld eines
+   Platzes nennt den Topf: steht dort etwas (`"bar"`), gehört der Platz
+   NICHT zur Getränkezählung und zählt nicht ins Soll der Lade. */
+function wSlots(L){const r=[];
+  (L.fach||[]).forEach(F=>{
+    if(F.kind==="raster")r.push([F.fid,F.n,null]);
+    else (F.zeilen||[]).forEach(z=>z.forEach(c=>{
+      if(c && c.stapel) c.stapel.forEach(t=>r.push([t[0],t[1],t[2]||null]));
+      else r.push([c[0],c[1],c[2]||null]);}));});
+  (L.cols||[]).forEach(c=>r.push([c[0],c[1],c[2]||null]));
+  return r;}
+/* Das alte Regal ist durch Lade 2 ersetzt — dieselbe Zeile wie in der App. */
+GETR.laden = (GETR.laden||[]).filter(L=>L.id!=="regal");
 const GSOLL = (()=>{ const s={};
   (GETR.laden||[]).forEach(L=>{
     (L.grid||[]).forEach(c=>c.forEach(id=>s[id]=(s[id]||0)+1));
@@ -1008,6 +1080,7 @@ const GSOLL = (()=>{ const s={};
     (L.cols||[]).forEach(c=>colTeile(c).forEach(([id,n])=>s[id]=(s[id]||0)+n));
     if(L.rack) s[L.rack[0]] = (s[L.rack[0]]||0) + L.rack[1];
   });
+  WLADEN.forEach(L=>wSlots(L).forEach(([id,n,b])=>{ if(!b) s[id]=(s[id]||0)+n; }));
   return s; })();
 const GIDS = Object.keys(GSOLL);
 const GN = id => (GETR.name||{})[id] || id;
@@ -1118,6 +1191,38 @@ function normVorgang(v){
   if(!v || !v.mode) return null;
   const o={mode:v.mode, tag:v.tag||"", name:v.name||"", notiz:v.notiz||"",
            fertig:!!v.finished, ts:v.archiviert||"", wein:{}, getr:{},
+           /* ── Zwei Zahlen je Artikel, nicht eine (Runde 20) ────────
+              `wein`/`getr`      = was aus dem KELLER heraus ist.
+                                   Davon lebt der Bestand.
+              `verbraucht`       = was OBEN gefehlt hat.
+                                   Dagegen rechnet der Z-Bericht.
+
+              Sie sind fast immer gleich und gehen genau dann
+              auseinander, wenn im Lager weniger lag als gebraucht
+              wurde: `holtN`/`gholtN` (die App nennt das „Abweichung",
+              das Feld heisst „Tatsächliche Menge"). Oben fehlten dann
+              sechs, geholt wurden vier — verkauft sind trotzdem sechs,
+              abgezogen gehören vier.
+
+              Bis Runde 20 behielt diese Seite nur die Entnahme und
+              rechnete auch den Abgleich damit. Das widerspricht der
+              eigenen Festlegung: `review/OFFENE-ENTSCHEIDUNGEN.md`
+              („Soll − Ist … ist die Bezugsgröße, gegen die später der
+              Z-Bericht geprüft wird"). Der Code folgte dem Glossar in
+              `UEBERGABE-TECHNISCH.md`, das beide gleichsetzt.
+
+              Beide Zahlen entstehen HIER aus denselben Rohfeldern. Die
+              App schickt nichts Neues, das gespeicherte Format bleibt
+              unberührt, und jeder längst abgelegte Vorgang bekommt die
+              zweite Zahl rückwirkend. */
+           verbraucht:{},
+           /* Was ausserhalb der Fassungsmengen aus dem Keller ging.
+              Die App führt es bewusst getrennt („Eigener Topf, eigene
+              Rubrik im Protokoll — nie mit den Nachfuellmengen
+              vermischt", public/index.html) — das Backoffice hat es
+              bis Runde 20 eingemischt. Es zählt in BEIDE Zahlen und
+              wird zusätzlich hier ausgewiesen. */
+           extra:{},
            /* F4 (18.09.2026): `fotos` ist hier ersatzlos entfallen. Der
               Fotoschritt der Fassungsliste gibt es in der App nicht mehr,
               und eine Spalte, die ab heute immer 0 zaehlt, sagt der
@@ -1127,16 +1232,36 @@ function normVorgang(v){
   const zu=(t,id,n)=>{ n=+n||0; if(n) t[id]=(t[id]||0)+n; };
 
   if(v.mode==="tag" || v.mode==="fuellen"){
-    /* rest/bar/barrot/backup halten die Fehlmengen je Ort — genau das,
-       was aus dem Keller geholt wird. holtN überschreibt pro Wein. */
-    const soll={};
+    /* `rest/bar/barrot/backup` halten die Fehlmenge je Ort: was oben
+       gefehlt hat, also den VERBRAUCH. `holtN` sagt daneben, wie viele
+       davon wirklich aus dem Keller kamen — es ersetzt die Zahl im
+       Gerät, darf aber den Verbrauch nicht mitverändern. */
+    const fehlte={};
     ["barrot","bar","backup","rest"].forEach(k=>
-      Object.keys(v[k]||{}).forEach(id=>soll[id]=(soll[id]||0)+(+v[k][id]||0)));
-    Object.keys(soll).forEach(id=>{
-      const n=(v.holtN && v.holtN[id]!=null) ? +v.holtN[id] : soll[id];
-      zu(o.wein,id,n);
+      Object.keys(v[k]||{}).forEach(id=>fehlte[id]=(fehlte[id]||0)+(+v[k][id]||0)));
+    Object.keys(fehlte).forEach(id=>{
+      zu(o.verbraucht,id,fehlte[id]);                     /* oben gefehlt */
+      zu(o.wein,id,(v.holtN && v.holtN[id]!=null) ? +v.holtN[id] : fehlte[id]);
     });
-    Object.keys(v.zusatz||{}).forEach(id=>zu(o.wein,id,v.zusatz[id]));
+    /* Zusätzlich Entnommenes ist beides: es ging aus dem Keller UND es
+       ist verbraucht. Deshalb in beide Zahlen — und in `extra`, damit
+       es die Anzeige getrennt nennen kann. */
+    Object.keys(v.zusatz||{}).forEach(id=>{
+      zu(o.wein,id,v.zusatz[id]); zu(o.verbraucht,id,v.zusatz[id]);
+      zu(o.extra,id,v.zusatz[id]); });
+    /* Getränke: der Verbrauch ist Soll minus gezählter Ist-Stand. Diese
+       Herleitung ist dieselbe, die in Runde 19 aus `o.getr` entfernt
+       werden musste, weil sie dort DOPPELT zählte (die App schickt aus
+       genau dieser Rechnung schon `gent`). Sie kommt hier in einen
+       EIGENEN Topf zurück und läuft nie wieder in `o.getr`. */
+    Object.keys(v.getr||{}).forEach(id=>
+      zu(o.verbraucht, id, Math.max(0, (GSOLL[id]||0) - (+v.getr[id]||0))));
+    /* Geholt, aber die Lade nicht gezählt: die Lücke ist dann nicht
+       berechenbar. Im Zweifel gilt die geholte Menge — eine 0 hiesse
+       „nichts verbraucht" und machte aus dem Verkauf eine Fehlmenge.
+       Wortgleich mit `verbrauchteMengen` in public/index.html. */
+    Object.keys(v.gent||{}).forEach(id=>{
+      if(!v.getr || v.getr[id]==null) zu(o.verbraucht,id,v.gent[id]); });
     /* Getränke: `v.getr` ist der GEZÄHLTE Ist-Stand in der Lade — eine
        Angabe, keine Bewegung. Was aus dem Getränkelager geholt wurde,
        steht in `gent` und wird weiter unten EINMAL addiert.
@@ -1202,10 +1327,48 @@ function normVorgang(v){
   const gentZiel = v.mode==="ware" ? o.eingang : o.getr;
   Object.keys(v.gent||{}).forEach(id=>zu(gentZiel,id,v.gent[id]));
   /* `gzusatz` ist in JEDEM Modus eine Entnahme — im Worker steht es
-     ausserhalb des `ware`-Zweigs. */
-  Object.keys(v.gzusatz||{}).forEach(id=>zu(o.getr,id,v.gzusatz[id]));
+     ausserhalb des `ware`-Zweigs. Wie beim Wein: beides zugleich. */
+  Object.keys(v.gzusatz||{}).forEach(id=>{
+    zu(o.getr,id,v.gzusatz[id]); zu(o.verbraucht,id,v.gzusatz[id]);
+    zu(o.extra,id,v.gzusatz[id]); });
+
+  /* Eine Lücke „oben" gibt es nur, wo es ein Soll gibt: in der
+     Tagesfassung und im Nachfüllen. In JEDEM anderen Modus ist der
+     Verbrauch gleich der Entnahme — und das ist kein Notbehelf,
+     sondern Absicht:
+
+     · Die Sonderentnahme ist Entnahme UND Verbrauch. Bruch, Küche,
+       Personal und Verkostung werden im Kassensystem verbucht (der
+       Z-Bericht führt sie als eigene Positionen „… - Inner Haus" mit
+       0,00 €) — sie müssen auf beiden Seiten stehen, sonst sähe jeder
+       Bruch wie fehlender Verkauf aus. Entschieden von Casimir,
+       20.09.2026.
+     · Eine Kellerzählung kann `gent` tragen (jemand nimmt beim Zählen
+       etwas mit). Setzte man den Verbrauch dort auf 0, fiele diese
+       Entnahme beim Umstellen von `abgleich()` STILL aus dem Vergleich
+       — eine Entscheidung, die niemand getroffen hat. Sie bleibt drin.
+     · Der Wareneingang bewegt nichts nach oben: `o.wein`/`o.getr` sind
+       dort leer, die Schleife findet nichts, der Topf bleibt leer. */
+  if(v.mode!=="tag" && v.mode!=="fuellen"){
+    Object.keys(o.wein).forEach(id=>{ if(o.verbraucht[id]==null) o.verbraucht[id]=o.wein[id]; });
+    Object.keys(o.getr).forEach(id=>{ if(o.verbraucht[id]==null) o.verbraucht[id]=o.getr[id]; });
+  }
+
+  /* Zwei Angaben, die es im Vorgang gibt und die diese Seite bis
+     Runde 20 nicht gelesen hat:
+     · `zeit` — die Uhr des GERÄTS beim Absenden. `ts` ist dagegen die
+       Ankunft beim Server; bei einem Gerät, das ohne Netz gearbeitet
+       hat, liegen Stunden dazwischen (in den Live-Daten: bis zu 26).
+     · `uebersteuert` — „trotzdem abschliessen" mit dem eigenen Code.
+       Die App verspricht dem Menschen wörtlich „die Leitung sieht sie
+       morgen früh"; gesehen hat sie es nie. In den Live-Daten steht es
+       bereits einmal. */
+  o.zeit = v.zeit || "";
+  o.uebersteuert = v.uebersteuert || null;
+  o.grund = v.grund || "";
 
   o.flWein=summe(o.wein); o.flGetr=summe(o.getr);
+  o.flVerbraucht=summe(o.verbraucht);
   return o;
 }
 
@@ -2220,11 +2383,22 @@ function abgleich(tag, spanne){
      Widerspruch. */
   const umsatzFenster=berichte.reduce((x,b)=>x+(+b.umsatz||0),0);
 
-  /* Alles, was im Fenster aus dem Keller ging */
+  /* Alles, was im Fenster VERBRAUCHT wurde — nicht, was aus dem Keller
+     ging. Das sind zwei verschiedene Zahlen (siehe `normVorgang`), und
+     diese Rechnung vergleicht mit der KASSE: gegen den Verkauf gehört
+     das, was oben gefehlt hat.
+
+     NACHTRICHTIGUNG (Runde 20 · A): Hier stand `v.wein`/`v.getr`, also
+     die Entnahme. Solange niemand eine abweichende Holmenge eingetragen
+     hat, ist das dieselbe Zahl — in allen bisherigen Live-Vorgängen ist
+     sie es. Sobald im Lager einmal weniger liegt als gebraucht wird,
+     meldet die alte Rechnung „mehr verkauft als geholt — Vorrat wird
+     abgebaut" über einem Keller, in dem nichts Besonderes passiert ist.
+     Der Bestand rechnet weiter mit der Entnahme; das ist `bestand()`,
+     und das bleibt unangetastet. */
   const ent={};
   gebucht().filter(v=>imFenster(v.tag)).forEach(v=>{
-    Object.keys(v.wein).forEach(id=>ent[id]=(ent[id]||0)+v.wein[id]);
-    Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
+    Object.keys(v.verbraucht||{}).forEach(id=>ent[id]=(ent[id]||0)+v.verbraucht[id]);
   });
   /* NACHTRICHTIGUNG (Jagd nach Runde 19 · A): `gebucht()` lässt einen
      laufenden Vorgang weg — richtig, denn das Journal kennt ihn auch
@@ -2240,8 +2414,10 @@ function abgleich(tag, spanne){
   const entLaufend={}; let laufendImFenster=0;
   VORGAENGE.filter(v=>!v.fertig && imFenster(v.tag)).forEach(v=>{
     let hat=false;
-    Object.keys(v.wein).forEach(id=>{ entLaufend[id]=(entLaufend[id]||0)+v.wein[id]; hat=true; });
-    Object.keys(v.getr).forEach(id=>{ entLaufend[id]=(entLaufend[id]||0)+v.getr[id]; hat=true; });
+    /* Dieselbe Grösse wie `ent` oben — sonst meinte der Vorbehalt etwas
+       anderes als die Zeile, die er erklärt. */
+    Object.keys(v.verbraucht||{}).forEach(id=>{
+      entLaufend[id]=(entLaufend[id]||0)+v.verbraucht[id]; hat=true; });
     if(hat) laufendImFenster++;
   });
   const stkLaufend=Object.keys(entLaufend).reduce((x,id)=>x+entLaufend[id],0);
@@ -3361,29 +3537,22 @@ function drucke(titel, inhaltHtml, unterzeile){
 }
 
 /* Ein Vorgang als Blatt: Kopf, Notiz, jede Mengenliste mit Summe. */
+/* Das Blatt und das Fenster zeigen DIESELBE Tafel — eine Quelle, zwei
+   Ausgaben. Vorher baute jedes seine eigene Tabelle mit eigener
+   Sortierung; dass sie dasselbe zeigten, war Fleiss, nicht Bauart. */
 function druckVorgang(v){
-  const B=vgBloecke(v);
-  const tab=b=>{
-    const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
-                   .sort((x,y)=>(+b.o[y]||0)-(+b.o[x]||0));
-    return `<h2>${esc(b.t)}</h2><table><thead><tr>
-      <th>Position</th><th class="r">Flaschen</th></tr></thead><tbody>
-      ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r">${num(b.o[k])}</td></tr>`).join("")}
-      <tr class="zwt"><td>Summe · ${ks.length} Position${ks.length===1?"":"en"}</td>
-        <td class="r">${num(summe(b.o))}</td></tr></tbody></table>`;
-  };
+  const A=vgTafel(v);
   drucke((MODUSNAME[v.mode]||v.mode)+" · "+deTag(v.tag),
-    (v.notiz?`<div class="notiz"><b>Notiz aus dem Keller:</b> ${esc(v.notiz)}</div>`:"")
-    + (B.length?B.map(tab).join("")
-       :`<p>Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</p>`)
+    (vgFreigabeSatz(v)?`<div class="notiz"><b>Achtung:</b> ${esc(vgFreigabeSatz(v))}</div>`:"")
+    + (v.notiz?`<div class="notiz"><b>Notiz aus dem Keller:</b> ${esc(v.notiz)}</div>`:"")
+    + vgTafelHtml(v, true)
     + `<div class="fuss">Quelle der Zahlen: ${esc(QUELLE)}.${
          /* Der Satz stand auf JEDEM Blatt, auch auf einer Lieferung ohne
             eine einzige Zählung (Jagd nach Runde 18 · C). */
-         B.some(x=>x.art==="zaehlung")
+         A.some(x=>/Gezählter Bestand/.test(x.titel))
            ?" Gezählte Bestände sind Ist-Stände, keine Entnahme."
            :""} Dieses Blatt ist ein Auszug — die Wahrheit steht im Fassungstool.</div>`,
-    esc(v.name||"ohne Namen")+(v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):"")
-      +" · "+(v.fertig?"abgeschlossen":"läuft noch"));
+    vgKopfZeile(v));
 }
 
 /* Das Blatt für die Gruppe: was Verkauf und Fassung NICHT zur Deckung
@@ -4102,6 +4271,169 @@ function vgMengen(v){
 }
 const vgName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein+" "+w.jg : GN(id); };
 
+/* ── Der Laufweg durch den Keller ────────────────────────────────────
+   Dieselbe Ordnung wie `wegCmp` in public/index.html: erst die Zone in
+   der Gehrichtung (Rot, Rosé, Natural, Weiss, Cuvée Weiss, Bubbles,
+   Einzelgänger), darin der Platz im Regal, zuletzt die
+   Stammdatenreihenfolge. `ZORD` ist deshalb Zeichen für Zeichen die
+   Kopie aus der App — die Gehrichtung ist nicht die Zonennummer.
+   Der einzige Unterschied: hier wird nach Artikel-id verglichen, dort
+   nach Wein-Objekt.
+
+   Warum das hier gebraucht wird (Runde 20): Das Vorgangsfenster baute
+   je Topf eine eigene Tabelle und sortierte jede absteigend nach Menge.
+   Bei Gleichstand entschied die Einfügereihenfolge — und die ist beim
+   Zählblock die Stammdatenreihenfolge, beim Holblock dagegen
+   `barrot, bar, backup, rest`. „Gezählt" und „geholt" standen deshalb
+   in verschiedenen Reihenfolgen und mit verschiedener Zeilenzahl
+   nebeneinander, was wie ein Widerspruch aussah und keiner war.
+   Eine Tabelle, eine Zeile je Artikel, EINE Sortierung — und zwar die,
+   die auch im Keller gilt. */
+const WIDX={}; WINES.forEach((w,i)=>WIDX[w.id]=i);
+const GIDX={}; GIDS.forEach((id,i)=>GIDX[id]=i);
+const ZORD={1:1,2:2,5:3,3:4,4:5,6:6,7:7};
+const ZR = z => ZORD[z] || z || 99;
+function wegCmp(a,b){
+  return (ZR(PLAN.zone[a])-ZR(PLAN.zone[b]))
+    || ((PLAN.restorder[a]==null?999:PLAN.restorder[a])
+       -(PLAN.restorder[b]==null?999:PLAN.restorder[b]))
+    || ((WIDX[a]==null?999:WIDX[a])-(WIDX[b]==null?999:WIDX[b]));
+}
+/* Getränke haben keine Kellerzone — sie stehen in der Reihenfolge der
+   Laden, so wie sie beim Zählen durchgegangen werden. */
+const ladeCmp = (a,b) => (GIDX[a]??999)-(GIDX[b]??999);
+
+/* ── Was ein Vorgang zu sagen hat, in EINER Form ─────────────────────
+   Zwei Zahlen je Artikel, für Fenster und Druckblatt gemeinsam gebaut:
+   eine Quelle, zwei Ausgaben. Die Abschnitte mit `zwei:true` tragen
+   beide Spalten, die anderen nur eine — eine Zählung hat keinen
+   Verbrauch, eine Lieferung auch nicht, und dort steht dann nichts,
+   keine 0. */
+function vgTafel(v){
+  const A=[];
+  const istWein = id => !!byId(id);
+  const zwei=(titel, holTopf, nurArt, cmp, was)=>{
+    const ids=[...new Set([...Object.keys(holTopf||{}),
+                           ...Object.keys(v.verbraucht||{})])]
+      .filter(nurArt)
+      .filter(id=>(+((holTopf||{})[id])||0) || (+((v.verbraucht||{})[id])||0))
+      .sort(cmp);
+    if(!ids.length) return;
+    A.push({titel, was, zwei:true, ids,
+      zeilen:ids.map(id=>({ id,
+        verbraucht:(v.verbraucht||{})[id],
+        geholt:(holTopf||{})[id],
+        extra:(v.extra||{})[id]||0 })),
+      sVerbraucht:ids.reduce((x,id)=>x+(+((v.verbraucht||{})[id])||0),0),
+      sGeholt:ids.reduce((x,id)=>x+(+((holTopf||{})[id])||0),0)});
+  };
+  zwei("Wein", v.wein, istWein, wegCmp, "Flaschen");
+  zwei("Getränke", v.getr, id=>!istWein(id), ladeCmp, "Flaschen");
+  const eins=(titel, topf, nullenBehalten, cmp, fuss)=>{
+    if(!topf || !Object.keys(topf).length) return;
+    const ids=Object.keys(topf).filter(id=>nullenBehalten || +topf[id]).sort(cmp);
+    if(!ids.length) return;
+    A.push({titel, zwei:false, ids, fuss,
+      zeilen:ids.map(id=>({id, wert:topf[id]})),
+      summe:ids.reduce((x,id)=>x+(+topf[id]||0),0)});
+  };
+  eins("Wareneingang · geliefert", v.eingang, false, (a,b)=>
+    istWein(a)&&istWein(b)?wegCmp(a,b):istWein(a)?-1:istWein(b)?1:ladeCmp(a,b));
+  /* Eine gezählte 0 heisst „nichts mehr da" und ist eine Angabe — sie
+     bleibt stehen. */
+  eins("Gezählter Bestand · Weinkeller", v.zaehlung, true, wegCmp,
+       "Ist-Stand, keine Entnahme.");
+  eins("Gezählter Bestand · Getränkelade", v.gzaehlung, true, ladeCmp,
+       "Ist-Stand, keine Entnahme.");
+  return A;
+}
+/* Die beiden Spaltenköpfe sagen, wofür die Zahl da ist — sonst sind es
+   zwei Zahlen ohne Auftrag. */
+/* Lang und kurz nebeneinander: Am Schreibtisch steht der ganze Satz,
+   am Handy nur das Wort. Gemessen bei 393 px mit den langen Köpfen:
+   die Namensspalte fiel auf ein Wort je Zeile („Wern / er / Achs").
+   Die Langform bleibt unter der Tabelle stehen, sie geht nicht
+   verloren. */
+const SPALTE = (lang, kurz, wofuer) =>
+  `<span class="spL">${lang}</span><span class="spK">${kurz}</span>`
+  + `<span class="spuz">${wofuer}</span>`;
+const SP_VERBRAUCHT = ["oben gefehlt", "→ Z-Bericht"];
+const SP_GEHOLT     = ["aus dem Keller", "→ Bestand"];
+/* Die Kopfzeile eines Vorgangs: wer, wann, und ob mit Code freigegeben.
+   `zeit` ist die Uhr des GERÄTS; `ts` die Ankunft beim Server. Fehlt
+   die erste, wird die zweite gezeigt und ausdrücklich so benannt. */
+function vgWann(v){
+  if(v.zeit){ const d=new Date(v.zeit); if(!isNaN(d))
+    return "gefasst "+d.toLocaleString("de-AT",{day:"2-digit",month:"2-digit",
+      hour:"2-digit",minute:"2-digit"}); }
+  if(v.ts){ const d=new Date(v.ts); if(!isNaN(d))
+    return "angekommen "+d.toLocaleString("de-AT",{day:"2-digit",month:"2-digit",
+      hour:"2-digit",minute:"2-digit"}); }
+  return "";
+}
+function vgFreigabeSatz(v){
+  const u=v.uebersteuert; if(!u) return "";
+  const offen=Array.isArray(u.offen)?u.offen.filter(Boolean):[];
+  return "Ohne Bestätigung freigegeben"+(u.von?" von "+u.von:"")
+    +(offen.length?" — offen war: "+offen.join(" · "):"")+".";
+}
+const GRUNDWORT={bruch:"Bruch", kueche:"Küche", personal:"Personal",
+  verkostung:"Verkostung", zimmer:"Zimmer"};
+function vgKopfZeile(v){
+  const t=[esc(v.name||"ohne Namen")];
+  const w=vgWann(v); if(w) t.push(esc(w));
+  if(v.grund) t.push(esc(GRUNDWORT[v.grund]||v.grund));
+  t.push(v.fertig?"abgeschlossen":"läuft noch");
+  return t.join(" · ");
+}
+
+/* ── Die Tafel als HTML ──────────────────────────────────────────────
+   Eine Tabelle je Abschnitt, eine ZEILE je Artikel, und wo es zwei
+   Zahlen gibt, stehen sie nebeneinander in derselben Zeile. Damit kann
+   die Anzahl der einen nicht mehr von der Anzahl der anderen abweichen
+   — bis Runde 20 waren es zwei Tabellen mit zwei Sortierungen.
+
+   Die Spaltenköpfe nennen den Auftrag der Zahl. Zwei Zahlen ohne
+   Auftrag sind schlechter als eine. */
+function vgTafelHtml(v, fuerDruck){
+  const A=vgTafel(v);
+  if(!A.length) return `<div class="leer" style="margin-top:20px">Dieser Vorgang hat
+    keine Mengen bewegt und nichts gezählt.</div>`;
+  const h=fuerDruck?"h2":"h3";
+  const stil=fuerDruck?"":' style="margin-top:24px"';
+  const huelle=x=>fuerDruck?x:`<div class="tabhuelle zweisp">${x}</div>`;
+  return A.map(a=>{
+    const kopf=`<${h}${stil}>${esc(a.titel)}
+      <span class="mini">${a.ids.length} Position${a.ids.length===1?"":"en"}</span></${h}>`;
+    if(!a.zwei) return kopf+huelle(`<table><thead><tr><th>Position</th>
+      <th class="r">${esc(a.titel.startsWith("Wareneingang")?"geliefert":"gezählt")}</th>
+      </tr></thead><tbody>
+      ${a.zeilen.map(z=>`<tr><td>${esc(vgName(z.id))}</td>
+        <td class="r zahl"><b>${num(z.wert)}</b></td></tr>`).join("")}
+      <tr class="zwt"><td>Summe</td><td class="r zahl">${num(a.summe)}</td></tr>
+      </tbody></table>`)
+      +(a.fuss?`<div class="mini" style="margin-top:6px">${esc(a.fuss)}</div>`:"");
+    return kopf+huelle(`<table><thead><tr><th>Position</th>
+      <th class="r">${SPALTE(SP_VERBRAUCHT[0],"gefehlt",SP_VERBRAUCHT[1])}</th>
+      <th class="r">${SPALTE(SP_GEHOLT[0],"geholt",SP_GEHOLT[1])}</th>
+      </tr></thead><tbody>
+      ${a.zeilen.map(z=>{
+        const ab = z.verbraucht!=null && z.geholt!=null && +z.verbraucht!==+z.geholt;
+        return `<tr${ab?' class="weicht"':""}><td>${esc(vgName(z.id))}
+          ${z.extra?`<div class="mini">davon ${num(z.extra)} zusätzlich entnommen</div>`:""}
+          ${ab?`<div class="mini">im Lager lagen nur ${num(z.geholt)}</div>`:""}</td>
+        <td class="r zahl">${z.verbraucht==null?'<span class="dim">—</span>':"<b>"+num(z.verbraucht)+"</b>"}</td>
+        <td class="r zahl">${z.geholt==null?'<span class="dim">—</span>':"<b>"+num(z.geholt)+"</b>"}</td>
+        </tr>`;}).join("")}
+      <tr class="zwt"><td>Summe</td><td class="r zahl">${num(a.sVerbraucht)}</td>
+        <td class="r zahl">${num(a.sGeholt)}</td></tr>
+      </tbody></table>`);
+  }).join("")
+  + `<div class="mini" style="margin-top:10px">Links, was oben gefehlt hat — die Zahl,
+      gegen die der Z-Bericht gerechnet wird. Rechts, was aus dem Keller kam — die geht
+      vom Kellerstand ab. Sie unterscheiden sich nur, wenn im Lager weniger lag.</div>`;
+}
+
 /* Vorgänge, die NUR in diesem Browser liegen (qa-guardian, Runde 3):
    Antwortet der Server mit einer leeren Liste, gewinnt der Server — die
    alten Vorgänge dieses Geräts verschwanden damit vom Schirm, ohne dass
@@ -4240,29 +4572,18 @@ function vEingaenge(m){
     const ziel = wohin || $("#egDetail");
     if(!ziel) return;
     if(!v){ ziel.innerHTML=""; return; }
-    const B=vgBloecke(v);
-    const tab=b=>{
-      const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
-                     .sort((x,y)=>(+b.o[y]||0)-(+b.o[x]||0));
-      return `<h3 style="margin-top:24px">${esc(b.t)}
-        <span class="mini">${ks.length} Position${ks.length===1?"":"en"} · ${num(summe(b.o))} Flaschen</span></h3>
-        <div class="tabhuelle schmal"><table><thead><tr>
-        <th>Position</th><th class="r">Flaschen</th></tr></thead><tbody>
-        ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r"><b>${num(b.o[k])}</b></td></tr>`).join("")}
-        <tr class="zwt"><td>Summe</td><td class="r">${num(summe(b.o))}</td></tr></tbody></table></div>`;
-    };
     ziel.innerHTML=`<div class="karte" style="margin-top:24px">
       <div class="reihe">
         <div><h3 style="margin:0">${esc(MODUSNAME[v.mode]||v.mode)} · ${esc(deTag(v.tag))}</h3>
-          <div class="mini">${esc(v.name||"ohne Namen")}${v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):""}
-            · ${v.fertig?"abgeschlossen":"läuft noch"}</div></div>
+          <div class="mini">${vgKopfZeile(v)}</div></div>
         <span class="rechts"></span>
         <button class="b" data-pdf>Als PDF</button>
         <button class="b klein" data-json>Rohdaten</button>
         <button class="b klein" data-zu>Schließen</button></div>
+      ${vgFreigabeSatz(v)?`<div class="hinweis warn" style="margin-top:14px">
+        ${esc(vgFreigabeSatz(v))}</div>`:""}
       ${v.notiz?`<div class="hinweis" style="margin-top:14px"><b>Notiz:</b> ${esc(v.notiz)}</div>`:""}
-      ${B.length?B.map(tab).join("")
-        :`<div class="leer" style="margin-top:20px">Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</div>`}
+      ${vgTafelHtml(v)}
     </div>`;
     /* Die Knöpfe hängen an der Karte, die gerade gebaut wurde — nicht an
        einer Kennung, die es zweimal geben kann. */

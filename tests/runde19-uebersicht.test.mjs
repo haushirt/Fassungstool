@@ -54,8 +54,11 @@ function umgebung() {
 const NAME = "GV Leindl Langenlois 1/8 l";
 const bericht = (anzahl) => ({ [TAG]: { tag: TAG, nr: "Z 1", positionen:
   [{ name: NAME, anzahl, umsatz: anzahl * 4.5, ml: 125 }], umsatz: anzahl * 4.5 } });
+/* Ohne abweichende Holmenge ist der Verbrauch gleich der Entnahme —
+   siehe `normVorgang` seit Runde 20. */
 const fassung = (fertig) => ({ mode: "tag", tag: TAG, fertig, name: "Lena",
-  wein: { w001: 6 }, getr: {}, eingang: {}, zaehlung: null, gzaehlung: null,
+  wein: { w001: 6 }, getr: {}, verbraucht: { w001: 6 },
+  eingang: {}, zaehlung: null, gzaehlung: null,
   flWein: 6, flGetr: 0 });
 
 describe("Ein laufender Vorgang verschweigt seine Entnahme nicht", () => {
@@ -147,8 +150,8 @@ describe("Das Kettenglied „Zuordnung“ behauptet nichts über eine leere Meng
 
 describe("„Läuft noch offen“ zählt nur, was Inhalt hat", () => {
   const leerVerworfen = { mode: "keller", tag: TAG, fertig: false, name: "Lena",
-    wein: {}, getr: {}, eingang: {}, zaehlung: null, gzaehlung: null,
-    flWein: 0, flGetr: 0 };
+    wein: {}, getr: {}, verbraucht: {}, eingang: {}, zaehlung: null,
+    gzaehlung: null, flWein: 0, flGetr: 0 };
 
   test("ein bewusst verworfener, leerer Stand zählt nicht mit", () => {
     /* Die App schickt ihn ausdrücklich hinaus, damit andere Geräte

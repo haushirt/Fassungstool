@@ -684,7 +684,9 @@ ausgesperrt       DELETE FROM anmeldeversuch WHERE ok = 0;
 | **Schrank** | Kühlschrank im Restaurant, 1–4 |
 | **Soll** | wie viele Flaschen an den Platz gehören |
 | **Ist** | wie viele gerade da sind |
-| **Fehlmenge** | Soll − Ist, das ist, was aus dem Keller geholt wird |
+| **Fehlmenge** · „oben gefehlt“ | Soll − Ist an Bar, Restaurant, Backup und Lade. Das ist der **Verbrauch** — die Zahl, gegen die der Z-Bericht gerechnet wird |
+| **Entnahme** · „aus dem Keller geholt“ | was wirklich herausgetragen wurde. Diese Zahl geht **vom Bestand** ab |
+| ↳ Unterschied | Fast immer gleich. Sie gehen auseinander, sobald im Lager weniger lag als oben gefehlt hat (`holtN`/`gholtN`). Bis Runde 20 setzte diese Zeile beide gleich — der Code folgte dem Glossar statt der Entscheidung in `review/OFFENE-ENTSCHEIDUNGEN.md:122-127` |
 | **Zwischenstand** | laufender Vorgang, `status: "laeuft"` |
 | **Z-Bericht** | Tagesabschluss der Kasse (gastronovi) |
 | **Fassungsliste** | der zerlegte Z-Bericht in D1 |
