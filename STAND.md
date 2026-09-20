@@ -1,6 +1,6 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 20.09.2026
+**Letzte Aktualisierung:** 20.09.2026 (Analyse-Lauf Runde 19)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
@@ -32,6 +32,28 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   an denselben Zahlen, und das Wort „Schwund" steht in keiner Deutungsspalte
   mehr.
 
+## Analyse-Lauf Runde 19 (20.09.2026) — BLOCKER gefunden
+
+Voller Bericht: `review/ANALYSE-BACK-FRONT.md`. Neue Funde in `review/BACKLOG.md`
+(Runde 19). Zwei Mockups der neuen Übersicht unter `review/mockup/`.
+
+**Vier Sachen sind kaputt, alle ohne Migration behebbar:**
+1. **Jede geholte Getränkeflasche zählt im Backoffice doppelt.**
+   `normVorgang` (`leitung.html:922`) rechnet die Fehlmenge neu und addiert
+   `:968` zusätzlich `gent` — dieselbe Zahl. Gemessen: Journal 4, Backoffice 8.
+   Von 445 Prüfungen verdeckt, weil jede Prüfdatei `gent` ohne `getr` setzt.
+2. **Laufende Vorgänge werden voll mitgerechnet**, das Journal kennt nur
+   abgeschlossene. Gemessen: Worker 12, Backoffice 7.
+3. **Gleiche Zählnummer = stilles Überschreiben** mit HTTP 200
+   (`src/index.js:348` prüft nur `>`).
+4. **Die Rollen werden für Vorgänge nirgends durchgesetzt** —
+   `PUT /api/vorgang/` hat keine Rechteprüfung.
+
+Dazu: der Bestellzettel rechnet für 56 von 57 Weinen mit geratenen 6er-Kisten;
+ein beschädigter Sitzungskeks liefert 500 statt 401 und hält die Offline-Reihe
+an; das Backoffice braucht bei 60 Berichten **4,1 s leeren Schirm** beim Start
+(61 Anfragen nacheinander).
+
 ## Was als Nächstes ansteht
 - **Entscheidung von Casimir (steht ganz oben unter „Hoch"):** Was soll
   „Ignorieren" bedeuten? Heute nimmt es den Verkauf aus der Rechnung, und die
@@ -45,8 +67,8 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   an `sessionStorage`, die Sitzung am Server an einem Keks mit 12 Stunden
   Frist. **Casimir muss wählen** (sichtbarer Ablauf, gleitende Frist oder
   längere Frist).
-- **Sonderentnahme Getränke** hat keinen Weg zum Grund; der Abschluss endet
-  dauerhaft in der Code-Freigabe. Casimir macht das separat.
+- **Sonderentnahme Getränke:** der Weg zum Grund ist da (Jagd 14). Was fehlt,
+  ist die Anzeige — das Backoffice liest den Grund nicht.
 - **Betriebstag gegen Abgleich um einen Tag versetzt**, und zwar dauerhaft.
   Zwei Lösungswege stehen im Backlog, beide brauchen eine Entscheidung.
 - `/api/code` räumt die Anmeldesperre nach einem Treffer nicht auf.

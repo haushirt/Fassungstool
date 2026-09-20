@@ -4496,3 +4496,12 @@ Wer eine Auskunft ändert, zählt zuerst, wie viele Stellen sie geben.
 **Phase/Thema:** Backoffice / Abschluss Runde 18
 
 **STATUS:** FERTIG
+
+### Runde 19 – Analyse (Back- und Frontoffice)
+**Kritik am Vorgänger:** ✅ Runde 18 hat vier Deutungsstellen zusammengeführt – das hält. ↩️ Der Befund „vier Stellen deuten dieselbe Differenz" ist zu eng gefasst: es gibt eine fünfte und sechste Stelle, die dieselbe MENGE verschieden rechnen (`public/leitung.html:922` gegen `src/index.js:481`, und `leitung.html:1470` gegen `src/index.js:554`). ❌ Abgelehnt: die Annahme, `npm test` decke die Mengenrechnung ab – jede Prüfdatei setzt `gent` ohne `getr` und definiert den Fehler damit weg.
+**Umgesetzt:** Nichts am Code. Bericht `review/ANALYSE-BACK-FRONT.md`; zwei Mockups der neuen Übersicht (`review/mockup/uebersicht-a|b.html` + Bilder); neue Funde in `review/BACKLOG.md`.
+**Geprüft:** `npm test` 445/445 grün. Eigener Prüfstand (echter Worker + `docs/live-schema.sql` + echter Z-Bericht): Getränke-Doppelzählung reproduziert (Journal 4, Backoffice 8); Ladezeit des Backoffice bei 60 Berichten und 60 ms Antwortzeit gemessen: 4,1 s weißer Schirm; Screenshots des heutigen Mittagsblicks mit echten Daten unter `review/mockup/bilder/heute-vorher-macbook.png`.
+**Für die Nächsten:** software-engineer führt. A1 zuerst, mit einer Prüfung, die `getr` UND `gent` setzt. A3/A7 hängen an derselben Wurzel: das Backoffice rechnet nach, statt `/api/bestand` zu lesen.
+**Phase/Thema:** Analyse / Backoffice-Übersicht und Zahlenwege
+**Backlog:** 15 Punkte A · 13 Lücken „hoch" der Übersicht · siehe `review/BACKLOG.md`
+**STATUS:** BLOCKER (A1, A3, A4, A11 – alle ohne Migration behebbar)
