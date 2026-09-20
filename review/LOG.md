@@ -4523,3 +4523,65 @@ Wer eine Auskunft ändert, zählt zuerst, wie viele Stellen sie geben.
 **Phase/Thema:** B / Vorgangsfenster und die zwei Zahlen
 **Backlog:** A15 zurückgezogen (kein Fund). Neu: **mittel** — prüfen, ob Hauskonsum („… - Inner Haus") in den Artikelzeilen des Z-Berichts enthalten ist; davon hängt ab, ob Sonderentnahmen im Abgleich aufgehen. **niedrig** — `vSpeicher` zeigt weiter die alte, fünfteilige Form; `vgTafelHtml` läge bereit.
 **STATUS:** VERBESSERUNGEN
+
+### Runde 21 – software-engineer (Z-Bericht-Import gehärtet)
+
+**Kritik am Vorgänger:** Der Auftrag dieser Runde ging davon aus, der
+Z-Bericht-Import laufe nur über den `localStorage` und `POST /api/fassungsliste`
+existiere nicht.
+- ❌ abgelehnt: „`#bLies` schreibt nur nach localStorage (`ZBER[z.tag]=z`)" —
+  das beschreibt den Stand VOR v22. `public/leitung.html:3811` schickt den
+  Bericht seit Runde 5 an den Worker; der Client-Parser `zParse` ist ersatzlos
+  weg (Grabstein `public/leitung.html:2035-2050`).
+- ❌ abgelehnt: „der Upload-Weg existiert im Code nicht" — `src/index.js:1088`
+  (POST, Rolle `leitung`, Rohtext) und `:1087` (GET) sind gebaut, ebenso der
+  Upsert je Betriebstag und `ladeBerichte()` als Server→localStorage-Muster.
+- ❌ abgelehnt: die genannte Quelle `claude/fassungstool_review_referenz.md`
+  gibt es weder im Arbeitsbaum noch in der Git-Historie.
+- ❌ abgelehnt: „Referenzbericht Z 40, 18.–19.09.2026, extended" liegt nicht im
+  Repo. Geprüft wurde mit Bericht 37 und daraus gebauten Varianten.
+- ✅ übernommen: die Absicht dahinter. Casimir hat auf Rückfrage entschieden,
+  stattdessen die echten Lücken desselben Weges zu schliessen; Rechte bleiben
+  bei `leitung`, PR ohne Merge.
+- ✅ übernommen aus dem Entwurfsgegenlesen: Mapping-`SELECT` vor den `batch`,
+  Kostenstelle exakt statt `\b` (sonst trifft die Tabelle „Kostenstellen"),
+  keine neuen Felder in der schlichten Übersicht (sonst bricht
+  `tests/live-schema-durchlauf.test.mjs`), Rückfall an der FORM statt am Status,
+  und der gespaltene Bericht gehört in dieselbe Meldung.
+- ↩️ geändert: die Verdachtsschwelle steht bei zwei Dritteln statt der Hälfte
+  (Bar hält in Bericht 37 24 von 53 Buchungen — die Hälfte säße genau auf der
+  Kante), mit Untergrenze fünf Positionen.
+
+**Umgesetzt:**
+1. Der Import ist atomar — Kopf, `DELETE` und Zeilen in EINEM `batch`; ein
+   Bericht ohne Positionen wird abgewiesen statt eingelesen.
+2. Ersetzt ein Bericht einen anderen, steht es im Journal (beide Z-Nummern,
+   beide Positionszahlen) und bei Verdacht als stehender Hinweis im Backoffice.
+   Zweimal dieselbe Datei erzeugt keine Zeile.
+3. `kostenstelle`, `von_ts`, `bis_ts` werden gefüllt und gezeigt; das Backoffice
+   holt die Berichte in einem Abruf statt in bis zu 61.
+
+**Geprüft:** `npm test` 560 von 560 grün (vorher 538). Neu
+`tests/zimport-haerte.test.mjs` (22 Urteile), jedes Ziel einzeln gegen eine
+zurückgedrehte Fassung rot gemacht — sieben Mutationen, sieben rot.
+`node tests/ui-runde21.cjs` neu: 19 von 19 im echten Browser gegen echten
+Worker und echte SQLite, inklusive gezählter Anfragen beim Start (eine statt
+sieben, 1,0 s). `node tests/ui-leitung-echt.cjs` unverändert 44 von 44.
+Keine Migration: alle Spalten stehen live.
+
+**Für die Nächsten:** Die tägliche Automation, die als „kommt danach" im
+Auftrag stand, ist im Code fertig — der Mailempfang (`src/index.js:1145`)
+schreibt über dieselbe Funktion. Was fehlt, ist allein die Einrichtung im
+Dashboard (Weiterleitung von gastronovi, `ABSENDER`) und damit Casimirs
+Aufgabe, Regel 13. Offen bleibt der gespaltene Bericht mit Blöcken, die nicht
+„Positionen" heissen (`review/BACKLOG.md`, qa-guardian Runde 3): erkannt wird
+jetzt nur der Fall mit zwei gleichnamigen Blöcken, und das mit Absicht — enger
+heisst hier: keine Fehlalarme an den Warengruppen-Tabellen.
+
+**Phase/Thema:** A / Z-Bericht-Import
+
+**Backlog:** keine neuen Punkte. Drei geschlossen (Import nicht atomar ·
+zweiter Bericht ersetzt still · 61 Anfragen beim Start), dazu
+`review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11.
+
+**STATUS:** FERTIG

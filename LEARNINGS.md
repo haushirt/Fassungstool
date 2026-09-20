@@ -124,3 +124,26 @@
   reparieren, ohne festzulegen, was „Ignorieren" bedeuten soll. Solche Punkte
   gehören mit zwei ausgearbeiteten Wegen in den Backlog, nicht in dieselbe
   Nacht.
+
+## 20.09.2026 · Runde 21
+
+- **Vor dem Bauen nachsehen, ob es schon gebaut ist.** Der Auftrag beschrieb
+  einen Zustand von vor sechzehn Runden und nannte eine Quelldatei, die es im
+  Repo nie gab. Zehn Minuten Lesen haben eine ganze Runde Doppelarbeit
+  verhindert — und die Rückfrage hat aus der Runde das gemacht, was wirklich
+  fehlte. Eine Beschreibung des Ist-Zustands ist nie die Prüfung des
+  Ist-Zustands.
+- **Drei Schreibvorgänge sind ein Fehler, den man nur im Rückzug sieht.** Der
+  Import schrieb Kopf, Räumen und Zeilen einzeln. Solange nichts scheitert,
+  sieht das jahrelang richtig aus; der Test dazu muss den Fehler selbst
+  einspeisen, sonst beweist er nichts.
+- **Eine Warnung, die zu weit greift, ist keine Warnung.** „Ein zweiter Block
+  in Positionsgrösse" schlug an den Warengruppen-Tabellen an, die in JEDEM
+  Bericht stehen. Erst die enge Fassung (zwei Blöcke, die beide wie ein
+  Positionsblock HEISSEN) meldet nur den Fall, den es zu melden gibt. Lieber
+  einen Fall weniger erkennen als jeden Tag falschen Alarm geben.
+- **Ortszeit in einer Zahl ist eine Falle, die ein halbes Jahr wartet.** Der
+  Bericht nennt Wiener Zeit, der Worker läuft in UTC. Ein blindes `Date.UTC`
+  sieht das ganze Jahr plausibel aus. Die Prüfung dazu braucht einen Sommer-
+  UND einen Winterbericht, sonst fängt sie nichts.
+

@@ -317,7 +317,7 @@ Absicht. Sperre: 5 Fehlversuche je IP in 15 Minuten
 | `/api/bestand` | GET | angemeldet | Bestand aus dem Journal |
 | `/api/vorgaenge` | GET | angemeldet | flache Vorgangsobjekte |
 | `/api/vorgang/<id>` | PUT | angemeldet | Vorgang schreiben |
-| `/api/fassungsliste` | GET/POST | GET alle, POST `leitung` | Z-Berichte |
+| `/api/fassungsliste` | GET/POST | GET alle, POST `leitung` | Z-Berichte. `?tag=` ein Bericht mit Zeilen · `?zeilen=1&limit=60` viele auf einmal (Obergrenze 90) · ohne Parameter die schlichte Übersicht, `positionen` ist dort eine Zahl. POST nimmt den Rohtext, der Worker liest ihn. |
 | `/api/mapping` | GET/POST | POST `leitung` | Kassenname → Artikel |
 | `/api/personen` | GET/POST | `leitung` | Mitarbeiter |
 

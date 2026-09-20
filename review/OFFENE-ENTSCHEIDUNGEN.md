@@ -438,7 +438,26 @@ Vortagsabgleich baut und dabei feststeht, wie eine Rezeptur aussieht.
 
 ---
 
-## 11. Drei Spalten der Fassungsliste bleiben leer
+## 11. Drei Spalten der Fassungsliste bleiben leer — ERLEDIGT (Runde 21)
+
+**Stand 20.09.2026:** `parseZ` liest jetzt „Von", „Bis" und „Kostenstelle";
+der Worker füllt `von_ts`, `bis_ts` und `kostenstelle`. Umgerechnet über
+`Europe/Vienna` — der Bericht nennt Ortszeit, der Worker läuft in UTC —, mit
+je einer Prüfung für Sommer- und Winterzeit. Nennt ein Bericht keine Uhrzeit,
+bleibt die Spalte leer, statt Mitternacht zu erfinden.
+
+Frage 1 (ein Bericht je Betriebstag?) ist damit nicht nur beantwortet, sondern
+**sichtbar**: Im Backoffice steht der Zeitraum neben jedem Bericht, und ein
+Bericht, der nur den halben Abend abdeckt, fällt auf. Ersetzt ein Bericht einen
+anderen, steht es zusätzlich im Journal.
+
+Frage 2 (`kern`) bleibt wie ausgelegt.
+
+Der ursprüngliche Text steht darunter.
+
+---
+
+## 11a. (Ursprünglich) Drei Spalten der Fassungsliste bleiben leer
 
 *software-engineer, Runde 3*
 
