@@ -6,9 +6,8 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 22 liegt zum Merge bereit** (PR #16). Bis einschliesslich
-  Runde 21 ist alles auf `main` und **live** — live gegengelesen: der
-  Sammelabruf steht im Backoffice, die App im Keller ist unverändert.
+- **Runde 22 ist gemergt und LIVE** (PR #16, 21.09.2026). Alle Runden bis
+  einschliesslich 22 sind auf `main`.
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
 - `sw.js` steht mit Runde 22 auf **v71**.
