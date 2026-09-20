@@ -13,7 +13,7 @@
   Abhängigkeit; das PDF macht der Druckdialog.
 - Runde-Dokument mit Datei:Zeile und Prüfplan: `review/RUNDE-18-BACKOFFICE.md`.
   PR-Beschreibung: `review/ERGEBNIS.md`. Backlog abgeglichen.
-- `npm test` 444/444 grün. `node tests/ui-runde18.cjs` 26 Urteile grün.
+- `npm test` 444/444 grün. `node tests/ui-runde18.cjs` 34 Urteile grün.
 
 ## Blockaden
 - **Keine.** Zwei Dinge kann kein Prüfstand beantworten, sie brauchen das Gerät:

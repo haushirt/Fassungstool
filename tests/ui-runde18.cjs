@@ -82,6 +82,9 @@ const MAPPING = [
   { kassenname: "Moric Reserve 0,75", artikel: "w031", ignoriert: 0, gebinde_ml: 750 },
   { kassenname: "Cola 0,33", artikel: "cola", ignoriert: 0, gebinde_ml: 330 }
 ];
+/* „HP Omelett" bleibt absichtlich unzugeordnet: Genau diese Lage — ein
+   Verkauf, der gar nicht in der Rechnung steht — hat die Jagd nach
+   Runde 18 als A-Fund gemeldet. Das Blatt muss sie benennen. */
 
 const srv = http.createServer((q, a) => {
   let u = q.url.split("?")[0];
@@ -113,19 +116,26 @@ const urteil = (name, ok, was) => {
    Rückgabewert sagt, ob der Browser die Bewegung noch für sich gehabt
    hätte (`defaultPrevented === false` heißt: Safari blättert zurück). */
 const WISCH = `(von, nach, hoch) => {
-  const T = (x, y) => new Touch({ identifier: 1, target: document.body, clientX: x, clientY: y });
+  /* Der Finger setzt auf DAS Element, das an dieser Stelle liegt — nicht
+     auf den Rumpf. Genau daran hängt, ob die Geste dem Suchfeld oder der
+     Navigation gehört (Jagd nach Runde 18 · B). */
+  const ziel = document.elementFromPoint(Math.max(0, Math.min(von, window.innerWidth - 1)),
+                                         hoch) || document.body;
+  const T = (x, y) => new Touch({ identifier: 1, target: ziel, clientX: x, clientY: y });
   const schick = (art, x, y) => {
     const e = new TouchEvent(art, { bubbles: true, cancelable: true,
       touches: art === "touchend" ? [] : [T(x, y)],
       changedTouches: [T(x, y)] });
-    document.body.dispatchEvent(e); return e;
+    ziel.dispatchEvent(e); return e;
   };
+  const warOffen = document.body.classList.contains("navoffen");
   schick("touchstart", von, hoch);
   const a = schick("touchmove", von + (nach - von) * 0.4, hoch + (nach === von ? 40 : 0));
   const b = schick("touchmove", nach, hoch + (nach === von ? 90 : 0));
   schick("touchend", nach, hoch);
   return { verhindert: a.defaultPrevented || b.defaultPrevented,
-           offen: document.body.classList.contains("navoffen") };
+           offen: document.body.classList.contains("navoffen"),
+           warOffen, ziel: ziel.id || ziel.className || ziel.tagName };
 }`;
 
 (async () => {
@@ -239,6 +249,21 @@ const WISCH = `(von, nach, hoch) => {
     return document.querySelector("#egListe .leer").textContent.trim(); });
   urteil("Filter ohne Treffer sagt „passt nicht“, nicht „gibt es nicht“",
     /passt/.test(leer1), leer1);
+  /* B-Fund der Jagd: Was nicht in der Liste steht, darf nicht unter ihr stehen. */
+  const stehen = await p.evaluate(() => {
+    EGFILTER = { modus: "", wer: "", q: "" }; EGOFFEN = null; SEITE = "eingaenge"; zeichne();
+    document.querySelectorAll("#egListe [data-eg]")[1].click();
+    const vorher = !!document.querySelector("#egDetail .karte");
+    EGFILTER.q = "zzzz"; zeichne();
+    const nachher = !!document.querySelector("#egDetail .karte");
+    EGFILTER = { modus: "ware", wer: "", q: "" }; zeichne();
+    const gefiltert = !!document.querySelector("#egDetail .karte");
+    EGFILTER = { modus: "", wer: "", q: "" }; EGOFFEN = null; zeichne();
+    return { vorher, nachher, gefiltert };
+  });
+  urteil("ein Filter, der den Vorgang ausschliesst, räumt auch sein Detail",
+    stehen.vorher && !stehen.nachher && !stehen.gefiltert, stehen);
+
   const leer2 = await p.evaluate(() => { const merk = VORGAENGE; VORGAENGE = [];
     EGFILTER = { modus: "", wer: "", q: "" }; zeichne();
     const t = document.querySelector("#egListe .leer").textContent.trim();
@@ -291,6 +316,24 @@ const WISCH = `(von, nach, hoch) => {
     diff.gedruckt === 1 && /Verkauf/.test(diff.titel) && diff.einleitung.length > 30, diff);
   urteil("Differenz-PDF führt die Positionen auf, die nicht aufgehen",
     diff.abschnitte.includes("Nicht ausgeglichen") && diff.zeilen >= 2, diff);
+
+  /* A-Fund der Jagd: Das Blatt geht aus dem Haus. Es muss dieselben
+     Vorbehalte tragen wie der Bildschirm — und darf niemanden mit einer
+     halben Rechnung des Schwunds bezichtigen. */
+  const vorb = await p.evaluate(() => {
+    const d = document.querySelector("#druck");
+    const k = d.querySelector(".notiz.vorbehalt");
+    return { kasten: !!k,
+      punkte: k ? [...k.querySelectorAll("li")].map(li => li.textContent.trim()) : [],
+      schwund: /Schwund/.test([...d.querySelectorAll("tbody td")].map(c => c.textContent).join(" ")),
+      unterzeile: (d.querySelector(".druckunter") || {}).textContent || "" };
+  });
+  urteil("Differenz-PDF nennt die Vorbehalte des Bildschirms",
+    vorb.kasten && vorb.punkte.length >= 2
+      && vorb.punkte.some(s => /nicht eingelesen/.test(s))
+      && vorb.punkte.some(s => /keinem Artikel zugeordnet/.test(s)), vorb);
+  urteil("Differenz-PDF sagt bei halber Rechnung nirgends „Schwund“",
+    !vorb.schwund && /unvollständige Rechnung/.test(vorb.unterzeile), vorb);
   await p.emulateMedia({ media: "print" });
   await p.screenshot({ path: path.join(OUT, "druck-differenzen.png"), fullPage: true });
   await p.emulateMedia({ media: "screen" });
@@ -332,6 +375,23 @@ const WISCH = `(von, nach, hoch) => {
   await q.evaluate(() => { EGOFFEN = null; SEITE = "heute"; zeichne(); });
   await q.waitForTimeout(200);
 
+  /* B-Fund der Jagd: Die Kachel verspricht „Positionen und Mengen
+     ansehen" und legte die Karte bei 390px 921px unter den Falz. */
+  await q.evaluate(() => { EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" };
+    SEITE = "heute"; zeichne(); window.scrollTo(0, 0); });
+  await q.waitForTimeout(250);
+  await q.evaluate(() => document.querySelectorAll(".kpi")[0].click());
+  await q.waitForTimeout(900);          /* das Rollen ist weich */
+  const falz = await q.evaluate(() => {
+    const d = document.querySelector("#egDetail .karte");
+    return d ? { oben: Math.round(d.getBoundingClientRect().top),
+                 fenster: window.innerHeight } : { fehlt: true };
+  });
+  urteil("Kachel „Tagesfassung“ bringt das Detail am Handy ins Bild",
+    !falz.fehlt && falz.oben < falz.fenster, falz);
+  await q.evaluate(() => { EGOFFEN = null; SEITE = "heute"; zeichne(); window.scrollTo(0, 0); });
+  await q.waitForTimeout(200);
+
   const rein = await q.evaluate(`(${WISCH})(8, 160, 420)`);
   urteil("vom Rand nach rechts: Navigation offen UND Zurück-Geste genommen",
     rein.offen && rein.verhindert, rein);
@@ -347,6 +407,60 @@ const WISCH = `(von, nach, hoch) => {
 
   const hoch = await q.evaluate(`(${WISCH})(8, 8, 500)`);
   urteil("senkrecht am Rand bleibt Scrollen", !hoch.offen && !hoch.verhindert, hoch);
+
+  /* B-Fund der Jagd: Die Zone reichte bis 32px, der Inhalt beginnt bei 16px. */
+  const bedarf = await q.evaluate(async WISCHQ => {
+    EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" }; SEITE = "eingaenge"; zeichne();
+    await new Promise(r => setTimeout(r, 250));
+    const wisch = eval("(" + WISCHQ + ")");
+    const mass = s => { const e = document.querySelector(s);
+      return e ? Math.round(e.getBoundingClientRect().left) : null; };
+    const feld = document.querySelector("#egQ").getBoundingClientRect();
+    const huelle = document.querySelector("#egListe .tabhuelle");
+    /* Der Finger setzt MITTEN auf das Suchfeld bzw. die Rollfläche. */
+    const zu = () => document.body.classList.remove("navoffen");
+    zu();
+    const aufFeld = (() => { const y = Math.round(feld.top + feld.height / 2);
+      return wisch(Math.round(feld.left) + 4, Math.round(feld.left) + 90, y); })();
+    zu();
+    const r = huelle.getBoundingClientRect();
+    const aufTabelle = wisch(Math.round(r.left) + 4, Math.round(r.left) + 90,
+      Math.round(r.top + r.height / 2));
+    zu();
+    return { feldLinks: mass("#egQ"), huelleLinks: mass("#egListe .tabhuelle"),
+      rollt: huelle.scrollWidth > huelle.clientWidth,
+      aufFeld, aufTabelle };
+  }, WISCH);
+  urteil("über dem Suchfeld greift die Geste nicht",
+    !bedarf.aufFeld.verhindert && !bedarf.aufFeld.offen, bedarf.aufFeld);
+  urteil("über einer waagrecht rollenden Tabelle greift die Geste nicht",
+    bedarf.rollt && !bedarf.aufTabelle.verhindert && !bedarf.aufTabelle.offen, bedarf);
+
+  /* …und bei offener Leiste wird keine Geste geschluckt, die nichts tut. */
+  const leerlauf = await q.evaluate(WISCHQ => {
+    SEITE = "heute"; zeichne();
+    document.body.classList.add("navoffen");
+    const e = eval("(" + WISCHQ + ")")(200, 340, 420);
+    document.body.classList.remove("navoffen");
+    return e;
+  }, WISCH);
+  urteil("bei offener Leiste wird ein Wisch nach rechts nicht geschluckt",
+    !leerlauf.verhindert, leerlauf);
+
+  /* Die Zeile selbst öffnet das Detail — „Ansehen" liegt bei 390px
+     ausserhalb der Rollfläche. */
+  const zeile = await q.evaluate(async () => {
+    EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" }; SEITE = "eingaenge"; zeichne();
+    await new Promise(r => setTimeout(r, 200));
+    const tr = document.querySelectorAll("#egListe [data-egzeile]")[1];
+    const t = tr.getBoundingClientRect();
+    const knopf = tr.querySelector("[data-eg]").getBoundingClientRect();
+    tr.querySelector("td").click();
+    return { imBild: Math.round(knopf.right) <= window.innerWidth,
+      offen: !!document.querySelector("#egDetail .karte") };
+  });
+  urteil("die Zeile öffnet das Detail, auch wenn „Ansehen“ ausserhalb liegt",
+    !zeile.imBild && zeile.offen, zeile);
 
   await ctx2.close(); await ctx.close(); await b.close();
   await new Promise(r => srv.close(r));

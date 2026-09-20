@@ -4243,7 +4243,7 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
   dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs` (neu, Playwright,
-nicht Teil von `npm test`): **26 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+nicht Teil von `npm test`): **34 Urteile grün, 0 rot, keine JS-Fehler** — darunter
 echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
 aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
 Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
@@ -4260,5 +4260,54 @@ Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
 
 **Backlog:** drei neue Punkte (niedrig/niedrig/mittel), siehe `review/BACKLOG.md`,
 Abschnitt „Runde 18".
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (Nachtrichtigung nach der Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Das Differenzblatt nannte „Schwund", wo der Verkauf
+  schlicht nicht in der Rechnung war.** Der Jäger hat es mit Bericht 37 und
+  leerem Mapping nachgestellt: 136 von 145 verkauften Stück nicht zugeordnet,
+  Bildschirm sagt es, Blatt schweigt — und daneben steht das Wort Schwund. Der
+  Kommentar in `:1704` sagte wörtlich: „Das Backoffice druckt hier kein Wort
+  dazu, also blieb der Fehler folgenlos." Mit B5 endete diese Bedingung, und
+  ich habe sie nicht mitgelesen. Behoben: Vorbehaltskasten, „unvollständige
+  Rechnung" in der Unterzeile, und das Wort fällt weg, solange die Rechnung
+  halb ist.
+* ✅ übernommen — **B: `scrollTo(0,0)` statt `scrollIntoView`.** Die Kachel
+  verspricht „Positionen und Mengen ansehen" und legte die Karte bei 390 px
+  921 px unter den Falz. Ich hatte den Weg über den Knopf geprüft und den über
+  die Kachel nicht — zwei Wege ans selbe Ziel, einer gemessen.
+* ✅ übernommen — **B: `finde()` suchte in `alle` statt in `L`.** Ein Filter
+  ohne Treffer sagte „Kein Vorgang passt" und ließ die volle Karte darunter
+  stehen. Meine eigene Nachtrichtigung davor hatte nur die halbe Hälfte des
+  Problems getroffen (den fremden Schlüssel), nicht die eigentliche.
+* ✅ übernommen — **B: Die Randzone war 32 px breit, der Inhalt beginnt bei
+  16 px.** Ich hatte diesen Zielkonflikt gesehen und bewusst „konsequent
+  abfangen" gewählt. Falsch: In den Eingängen stehen „Ansehen"/„PDF" bei
+  390 px erst nach dem waagrechten Rollen — die Geste, die ich genommen habe,
+  war der einzige Weg dorthin. Jetzt 20 px, ausdrückliches Nein für
+  Eingabefelder und rollende Hüllen, und die ganze Zeile öffnet das Detail.
+* ↩️ geändert — **C: der Satz über gezählte Bestände** stand auf jedem Blatt,
+  auch auf einer Lieferung. Sofort behoben statt Backlog, es war eine Zeile.
+  Die drei übrigen C-Funde stehen im Backlog.
+
+**Umgesetzt:** Der A-Fund und alle drei B-Funde, jeder mit eigener Prüfung;
+dazu der Zeilenklick in den Eingängen als zweiter Weg zum Detail.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**34 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
+genau die Funde der Jagd. Der Wischprüfstand setzt den Finger jetzt auf das
+Element, das an der Stelle wirklich liegt (`elementFromPoint`) statt auf den
+Rumpf; vorher hätte er den Fund gar nicht sehen können.
+
+**Für die Nächsten:** Die drei Schwellen für dieselbe Frage (0,5 / 1,0 / 2,0)
+sind der nächste Punkt, der Vertrauen kostet — eine Zahl, die sich beim
+Weiterklicken ändert. Steht im Backlog.
+
+**Phase/Thema:** Backoffice / Nachtrichtigung nach der Jagd
 
 **STATUS:** FERTIG

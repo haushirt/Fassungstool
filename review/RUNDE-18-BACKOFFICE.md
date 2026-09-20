@@ -279,7 +279,7 @@ Prüfstand misst das Blatt, nicht den Drucker.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** (ca. 4 s) |
-| `node tests/ui-runde18.cjs` | **26 Urteile grün, 0 rot, keine JS-Fehler** |
+| `node tests/ui-runde18.cjs` | **34 Urteile grün, 0 rot, keine JS-Fehler** |
 | Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v57**, keine neue Abhängigkeit in `package.json` |
 
 `tests/ui-runde18.cjs` ist wie `ui-leitung.cjs` **nicht** Teil von `npm test`
@@ -303,3 +303,58 @@ weil „Eingänge“ davor einsortiert ist.
   wirkt auch in „Eingänge“ und im Differenzblatt. Er braucht eine Entscheidung,
   keine Runde.
 * Die App (`public/index.html`) ist unberührt.
+
+---
+
+## Nachtrag · was die Jagd gefunden hat (und was daraufhin geschah)
+
+Der Jäger hat den Stand `dc4a068` gelesen und **1 × A, 3 × B, 4 × C** gemeldet.
+Alle A- und B-Funde sind in derselben Nacht behoben, mit je einer eigenen
+Prüfung. Die Einzelheiten stehen in `review/JAGD.md`.
+
+### A · Das Blatt für die Gruppe nannte „Schwund", wo der Verkauf fehlte
+
+Das ist der schwerste Fund der Runde, und er betrifft genau das Blatt, das aus
+dem Haus geht. `druckDifferenzen()` übernahm die Vorbehalte des Bildschirms
+nicht: dass Z-Berichte fehlen, dass Kassennamen keinem Artikel zugeordnet sind,
+dass zugeordnete Namen keine bestätigte Größe haben. Mit dem Mapping, wie es
+live steht, ist das kein Randfall — in Bericht 37 sind **136 von 145 verkauften
+Stück nicht zugeordnet**. „Verkauft 0 · Geholt 6 · +6 · Schwund" ist dann keine
+Messung, sondern eine Lücke mit einem Vorwurf daneben.
+
+**Behoben:** Ein eigener Kasten unter der Einleitung nennt jeden Vorbehalt mit
+Zahl. Solange einer davon gilt, fällt das Wort „Schwund" aus der Deutungsspalte
+(sie sagt dann „mehr geholt als GERECHNETER Verkauf — es fehlt Verkauf in der
+Rechnung"), die Summenzeile trägt „Verkaufsseite unvollständig", und die
+Unterzeile des Kopfs sagt **„unvollständige Rechnung"**.
+
+Prüfung: zwei Urteile in `tests/ui-runde18.cjs` — der Kasten nennt die fehlenden
+Berichte **und** die nicht zugeordneten Namen, und im ganzen Blatt steht nirgends
+das Wort „Schwund", solange die Rechnung halb ist.
+
+### B · drei Funde, alle behoben
+
+| Fund | Behebung | Prüfung |
+|---|---|---|
+| Die Kachel „Tagesfassung" legte das Detail am Handy 921 px unter den Falz — `scrollTo(0,0)` statt `scrollIntoView` | Ist ein Detail offen, gewinnt es | „Kachel bringt das Detail am Handy ins Bild": `top=139` bei 844 px Fensterhöhe |
+| Das offene Detail überlebte einen Filter, der seinen Vorgang ausschloss (`finde()` suchte in `alle` statt in `L`) | `finde()` sucht in der gefilterten Liste; ohne Treffer wird `#egDetail` geräumt | „ein Filter, der den Vorgang ausschliesst, räumt auch sein Detail" |
+| `randwisch()` nahm Gesten über dem Suchfeld und über der waagrecht rollenden Vorgangstabelle — Randzone 32 px, Inhalt ab 16 px; bei offener Leiste wurde jede waagrechte Geste geschluckt | Zone auf 20 px, ausdrückliches Nein für Eingabefelder und rollende Hüllen, `preventDefault` nur in der Richtung, die etwas bewirkt | vier Urteile: Suchfeld, rollende Tabelle, Leerlauf bei offener Leiste, und die Zeile als zweiter Weg |
+
+Dazu ein Zusatz, den derselbe Fund nötig machte: In den Eingängen stehen
+„Ansehen“ und „PDF“ bei 390 px erst nach dem waagrechten Rollen. **Die ganze
+Zeile öffnet jetzt das Detail**; die Knöpfe bleiben für Maus und Tastatur.
+
+### C · vier Funde
+
+Drei davon stehen in `review/BACKLOG.md` (drei Schwellen für dieselbe Frage,
+zwei Menüpunkte mit derselben Zahl, Trefferflächen unter 44 px). Einer ist
+sofort behoben: Der Satz „Gezählte Bestände sind Ist-Stände, keine Entnahme"
+stand im Fuß **jedes** Vorgangsblatts, auch auf einer Lieferung ohne eine
+einzige Zählung. Er steht jetzt nur noch dort, wo ein Zählblock im Blatt ist.
+
+### Stand nach der Behebung
+
+| Prüfung | Ergebnis |
+|---|---|
+| `npm test` | **444 von 444 grün** |
+| `node tests/ui-runde18.cjs` | **34 Urteile grün, 0 rot, keine JS-Fehler** |

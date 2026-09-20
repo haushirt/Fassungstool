@@ -939,3 +939,35 @@ fällt ohne Netz still durch und lässt `NETZ.zustand` unangetastet.
   `tests/zbericht-37.test.mjs` weiterhin auf; `src/gnparse.js` und
   `src/gnmap.js` sind in dieser Runde nicht angefasst worden. `ml()` und
   `mlAusText()` sind unverändert wortgleich.
+
+---
+
+## Jagd nach Runde 18 (Stand `dc4a068`, Zweig `claude/backoffice-leitung-r18-clvh73`)
+
+**1 × A, 3 × B, 4 × C.** Alle A- und B-Funde sind in derselben Nacht behoben
+(`b5573ab`ff). Die C-Funde stehen in `review/BACKLOG.md`.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgestellt | Nächste Rolle | Stand |
+|---|---|---|---|---|---|---|
+| A | 18 | **`druckDifferenzen()` ließ alle drei Vorbehalte des Bildschirms weg und druckte „mehr geholt als verkauft — Vorrat aufgebaut oder Schwund" als Messwert.** Das Blatt geht in eine WhatsApp-Gruppe. | `public/leitung.html` (`druckDifferenzen`) gegen `:2315`, `:2321`, `csvAbgleich` | Bericht 37 mit leerem Mapping wie in der Live-D1: Bildschirm sagt „44 Kassennamen ohne Zuordnung — ihr Verkauf fehlt in dieser Rechnung" (136 von 145 Stück), CSV trägt denselben Abschnitt. Das Blatt trug keines von beidem und schrieb „Cola 0 verkauft / 6 geholt / +6 — Schwund", Summe „Verkauft 0 · Geholt 16". An diesem Tag gingen 145 Stück und 602,50 € über die Kasse. | software-engineer | **behoben in Runde 18** — ein Vorbehaltskasten nennt fehlende Berichte, nicht zugeordnete Kassennamen und Namen ohne bestätigte Größe; solange einer davon gilt, fällt das Wort „Schwund" aus der Deutung, die Unterzeile sagt „unvollständige Rechnung". Geprüft: `tests/ui-runde18.cjs`, zwei Urteile |
+| B | 18 | **Die Kachel „Tagesfassung" versprach „Positionen und Mengen ansehen" und legte das Detail am Handy 921 px unter den Falz.** Der Weg über den Knopf rollte hin, der über die Kachel nicht. | `public/leitung.html` (`[data-ziel]`-Horcher) gegen den `[data-eg]`-Horcher | 390 × 844: nach dem Klick `scrollY=0`, `#egDetail .karte` bei `top=921`. | software-engineer | **behoben in Runde 18** — ist ein Detail offen, gewinnt es über `scrollTo(0,0)`. Gemessen: `top=139` bei 844 px |
+| B | 18 | **Das offene Detail überlebte einen Filter, der seinen Vorgang ausschloss.** `finde()` suchte in `alle` statt in der gefilterten Liste. | `public/leitung.html` (`vEingaenge.malListe`) | „zzzz" ins Suchfeld: Liste sagt „Kein Vorgang passt zu dieser Suche", darunter stand unverändert die volle Karte der Tagesfassung. Dasselbe beim Modusfilter. | software-engineer | **behoben in Runde 18** — `finde()` sucht in `L`, und ohne Treffer wird `#egDetail` geräumt. Geprüft: ein Urteil |
+| B | 18 | **`randwisch()` nahm Gesten, die ihm nicht gehörten**: Randzone bis 32 px, der Inhalt beginnt bei 16 px. Über dem Suchfeld und über der waagrecht rollenden Vorgangstabelle sprang die Navigation auf; bei offener Leiste wurde jede waagrechte Geste geschluckt. | `public/leitung.html` (`randwisch`) | 390 px: Wisch ab x=20 über `#egQ` → `defaultPrevented`, Navigation auf. Über `#egListe .tabhuelle` (`scrollWidth 703` gegen `clientWidth 356`) → Tabelle rollt nicht, „Ansehen"/„PDF" bleiben unerreichbar. | software-engineer | **behoben in Runde 18** — Zone auf 20 px, ausdrückliches Nein für Eingabefelder und waagrecht rollende Hüllen, `preventDefault` nur noch in der Richtung, die etwas bewirkt. Zusätzlich öffnet die ganze Zeile das Detail. Geprüft: vier Urteile |
+
+### Ausdrücklich geprüft, kein Fund
+* **`vgSchluessel` kollidiert nicht.** Serverdaten tragen `roh.id`; lokal ist
+  `hh_archiv` nach `mode_tag` und `hh_keller_v12` nach Modus verschlüsselt.
+* **`nurImBrowser()` stürzt nicht ab** — gegen sechs Sorten Schrott im
+  `localStorage` geprüft, je 0 Ergebnisse, keine Ausnahme.
+* **`drucke()` ist sauber** — Cmd-P ohne Knopf druckt weiter die Seite, nach
+  `afterprint` ist alles geräumt, die 180-s-Frist kann keinen jüngeren Druck
+  abräumen.
+* **Gegenprobe Bericht 37 geht auf**: 48 Positionen, 145 Stück, 602,50 €.
+  Der Wareneingang rechnet richtig: 2×6 + 2×24 + 12 = 72 Flaschen.
+* **Regeln**: vier Dateien in `public/`, `VERSION` v56 → v57, Gestaltungsschicht
+  wortgleich, keine neue Abhängigkeit.
+
+### Ungeprüft geblieben
+* Echtes Safari/iOS: ob `preventDefault()` die Zurück-Geste wirklich nimmt und
+  ob `window.print()` nach 80 ms Verzug dort noch als Nutzergeste gilt.
+* Notch/Safe-Area und die eingeblendete Tastatur.

@@ -90,11 +90,30 @@ Befehlstaste-P ohne Knopf bringt weiterhin die Seite selbst aufs Papier.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **26 Urteile grün, 0 rot, keine JS-Fehler** |
+| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **34 Urteile grün, 0 rot, keine JS-Fehler** |
 | Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v57, keine neue Abhängigkeit |
 
 Fundstellen, Lösungswege und Prüfpläne Punkt für Punkt:
 **`review/RUNDE-18-BACKOFFICE.md`**.
+
+## Die Jagd hat noch einmal zugeschlagen — und wurde beantwortet
+
+Der Jäger fand **1 × A und 3 × B**; alle vier sind vor diesem Merge behoben
+(`review/JAGD.md`). Der schwerste betrifft genau das Blatt, das aus dem Haus
+geht:
+
+> Das Differenzblatt übernahm die Vorbehalte des Bildschirms nicht. Mit dem
+> Mapping, wie es live steht, sind in einem echten Z-Bericht **136 von 145
+> verkauften Stück gar nicht zugeordnet** — der Bildschirm sagt das, das Blatt
+> schwieg und schrieb daneben „Vorrat aufgebaut oder Schwund".
+
+Das Blatt trägt jetzt einen eigenen Kasten mit jedem Vorbehalt, die Unterzeile
+sagt „unvollständige Rechnung", und solange die Rechnung halb ist, **fällt das
+Wort „Schwund" weg**. Dazu behoben: die Kachel führte am Handy nicht bis zum
+Detail, ein Filter ließ ein fremdes Detail stehen, und die Wischgeste nahm
+Gesten, die dem Suchfeld und der rollenden Tabelle gehörten. In den Eingängen
+öffnet deshalb jetzt die ganze Zeile das Detail — „Ansehen" steht am Handy
+rechts ausserhalb.
 
 ## Am Gerät nachzusehen
 

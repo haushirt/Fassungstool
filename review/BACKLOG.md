@@ -364,3 +364,12 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 |---|---|
 | B4 · Zurück-Geste | Chromium bestätigt, dass `preventDefault()` gerufen wird. Ob Safari am iPad daraufhin wirklich nicht mehr zurückblättert, zeigt erst das iPad. |
 | B5 · Druckbild | Der Prüfstand misst das Blatt im Druckmedium, nicht den Drucker. Einmal wirklich als PDF sichern. |
+
+### Nachtrag · Jagd nach Runde 18 · die vier C-Funde
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| niedrig | **Drei Schwellen für dieselbe Frage.** Bildschirm `BEFUND` ab 0,5 („kleine Abweichung"), Druckblatt ab 1,0 („Nicht ausgeglichen"), Mittagsblick-Kachel ab 2,0 („Auffällige Differenzen"). Bei Bericht 37 zeigt die Kachel **4** und das Blatt zwei Klicks später **5**. Eine Zahl, die sich beim Weiterklicken ändert, kostet Vertrauen. Vorschlag: eine Schwelle, an einer Stelle benannt. | `public/leitung.html` (`BEFUND`, `druckDifferenzen`, `vHeute` · `grob`) |
+| niedrig | **Zwei Menüpunkte tragen dieselbe Zahl über denselben Bestand.** „Eingänge" und „Speicher" zählen beide `VORGAENGE.length`. Löst sich von selbst, sobald einer der beiden verschwindet. | `public/leitung.html` (`zaehler`) |
+| niedrig | **Zehn neue Trefferflächen unter 44 px** im Abschnitt „Eingänge" („Ansehen" 73×36, „PDF" 48×36, „Alles als CSV" 101×36). Gleiche Bauart wie im „Speicher", also kein Rückschritt — aber zehn neue. Entschärft, seit die ganze Zeile das Detail öffnet; die Knöpfe selbst bleiben klein. | `public/leitung.html` (`vEingaenge`, `.b klein`) |
+| **erledigt** | Der Fuß jedes Vorgangsblatts sagte „Gezählte Bestände sind Ist-Stände, keine Entnahme" — auch auf einem Wareneingang ohne eine einzige Zählung. Behoben in Runde 18: der Satz steht nur noch, wo ein Zählblock im Blatt ist. | `public/leitung.html` (`druckVorgang`) |

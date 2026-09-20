@@ -10,7 +10,7 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   `sw.js` steht auf **v57**. Runde 16 ist auf `main` (PR #5).
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
 - `npm test`: **444 von 444 grün** (Stand 20.09.2026, Laufzeit ca. 4 s).
-- Oberfläche: `node tests/ui-runde18.cjs` — 26 Urteile grün. Braucht Playwright
+- Oberfläche: `node tests/ui-runde18.cjs` — 34 Urteile grün. Braucht Playwright
   und ist **nicht** Teil von `npm test` (Regel 8).
 - Was Runde 18 gebracht hat, steht Punkt für Punkt in
   `review/RUNDE-18-BACKOFFICE.md` (mit Datei:Zeile und Prüfplan).
