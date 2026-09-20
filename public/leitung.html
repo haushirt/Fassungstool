@@ -2535,9 +2535,11 @@ function drucke(titel, inhaltHtml, unterzeile){
   document.body.classList.add("drucken");
   const lauf=++DRUCKLAUF;
   const auf=()=>{
+    /* Der Horcher geht IMMER ab, auch wenn dieser Lauf nichts mehr zu
+       räumen hat — sonst sammelt sich bei jedem Druck einer mehr an. */
+    window.removeEventListener("afterprint",auf);
     if(lauf!==DRUCKLAUF) return;           /* ein neuerer Druck läuft schon */
     document.body.classList.remove("drucken"); d.innerHTML="";
-    window.removeEventListener("afterprint",auf);
   };
   window.addEventListener("afterprint",auf);
   setTimeout(auf, 180000);
@@ -3249,8 +3251,11 @@ function vEingaenge(m){
           <td class="r"><button class="b klein" data-fremd="${i}">Ansehen</button></td>
         </tr>`).join("")}</tbody></table></div>`;
     m.appendChild(s);
+    /* `EGOFFEN` bleibt hier leer: Es zeigt auf die Serverliste, und ein
+       Schlüssel, den `finde()` dort nicht findet, liesse beim nächsten
+       Neuzeichnen ein Detail stehen, das zur Liste darüber nicht passt. */
     s.querySelectorAll("[data-fremd]").forEach(b=>b.onclick=()=>{
-      EGOFFEN=vgSchluessel(fremd[+b.dataset.fremd]); malDetail(fremd[+b.dataset.fremd]);
+      EGOFFEN=null; malDetail(fremd[+b.dataset.fremd]);
       $("#egDetail").scrollIntoView({behavior:"smooth", block:"start"}); });
   }
 
