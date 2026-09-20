@@ -13,15 +13,23 @@
   Abhängigkeit; das PDF macht der Druckdialog.
 - Runde-Dokument mit Datei:Zeile und Prüfplan: `review/RUNDE-18-BACKOFFICE.md`.
   PR-Beschreibung: `review/ERGEBNIS.md`. Backlog abgeglichen.
-- **Die Jagd fand danach 1 × A und 3 × B — alle vier behoben.** Der schwerste:
-  Das Blatt für die WhatsApp-Gruppe nannte „Schwund", wo der Verkauf gar nicht
-  in der Rechnung stand (mit dem Mapping, wie es live steht, sind das in einem
-  echten Z-Bericht 136 von 145 Stück). Es trägt jetzt einen Kasten, der sagt,
-  was fehlt — und das Wort „Schwund" fällt weg, solange die Rechnung halb ist.
+- **Vier Jagden, jede mit einem A-Fund — alle behoben.** Es war viermal
+  derselbe: Vier Stellen deuten dieselbe Differenz, und behoben wurde immer nur
+  die, die gerade genannt war. Der Anlass: Das Blatt für die WhatsApp-Gruppe
+  nannte „Schwund", wo der Verkauf gar nicht in der Rechnung stand — mit dem
+  Mapping, wie es live steht, sind das in einem echten Z-Bericht 136 von 145
+  Stück. Das Wort steht jetzt nirgends mehr, und ein Kasten sagt, was fehlt.
 - `npm test` 444/444 grün. `node tests/ui-runde18.cjs` 51 Urteile grün.
 
 ## Blockaden
-- **Keine.** Zwei Dinge kann kein Prüfstand beantworten, sie brauchen das Gerät:
+- **Eine Entscheidung steht aus, kein Fehler.** Eine Zeile, deren Verkauf über
+  „Ignorieren" aus der Rechnung fällt, trägt weiter die grüne Plakette
+  „stimmt". Gemessen: neun Flaschen verkauft, drei geholt — gezeigt „stimmt".
+  Behoben ist, dass Bildschirm, CSV, Kachel und Blatt die ignorierten Namen
+  jetzt alle benennen; was die EINZELNE Zeile sagen soll, hängt daran, was
+  „Ignorieren" bedeuten soll. Zwei Wege stehen ausgearbeitet in
+  `review/BACKLOG.md` ganz oben.
+- Sonst **keine.** Zwei Dinge kann kein Prüfstand beantworten, sie brauchen das Gerät:
   1. Blättert Safari am iPad nach dem Wisch wirklich nicht mehr zurück?
   2. Einmal wirklich drucken und als PDF sichern — der Prüfstand misst das
      Blatt, nicht den Drucker.
@@ -39,6 +47,11 @@ Zuerst nachsehen, ob Runde 18 am Gerät hält:
   1. iPad: Wisch von links — öffnet die Seitenleiste oder springt Safari zurück?
   2. MacBook: ein Vorgang und ein Differenzblatt wirklich als PDF sichern.
      Sieht das Blatt aus, wie es soll? Fehlt etwas, das in die Gruppe gehört?
+
+Zuerst entscheiden (steht ganz oben in review/BACKLOG.md unter „Hoch"):
+  Was soll „Ignorieren" bedeuten? Heute nimmt es den Verkauf aus der Rechnung,
+  und die betroffene Zeile sagt trotzdem „stimmt" in Grün. Zwei Wege stehen
+  dort ausgearbeitet.
 
 Danach in dieser Reihenfolge:
   A. vSpeicher trägt die alten Mängel weiter (zwei Striche, ein leerer Satz,
