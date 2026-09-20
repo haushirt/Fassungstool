@@ -6,16 +6,16 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 16 ist gemergt** (PR #5, `d19cfcb` auf `main`). Live steht `sw.js` v56.
-- **Runde 17 liegt auf `claude/runde17`**, noch nicht gemergt — `sw.js` **v57**.
-  Sie bringt drei Dinge: der Fremdgerät-Dialog lässt sich wirklich abbrechen,
-  „Läuft gerade woanders“ steht nur noch bei echter Erfassung, und ein
-  Papierkorb setzt eine falsch gestartete Session zurück. Einzelheiten in
-  `review/LOG.md` (Runde 17).
+- **Runde 17 ist gemergt und live** (PR #9, `47d65cb` auf `main`).
+  `sw.js` steht auf **v57**. Sie bringt drei Dinge: der Fremdgerät-Dialog
+  lässt sich wirklich abbrechen, „Läuft gerade woanders“ steht nur noch bei
+  echter Erfassung, und ein Papierkorb setzt eine falsch gestartete Session
+  zurück. Einzelheiten in `review/ERGEBNIS.md` und `review/LOG.md` (Runde 17).
+- Davor: Runde 16 (PR #5, `d19cfcb`), `sw.js` v56.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
 - `npm test`: **442 von 442 grün** (Stand 19.09.2026, Laufzeit ca. 4 s).
   Dazu von Hand: `node tests/ui-runde17.cjs` **38/38**.
-- Was mit Runde 16 live ging, steht in `review/ERGEBNIS.md`;
+- Was mit Runde 17 live ging, steht oben in `review/ERGEBNIS.md`;
   was Casimir am Gerät tun muss, in `review/MORGENBRIEF.md`.
 - Die Live-Datenbank ist **nur lesbar**. Migrationen spielt Casimir selbst ein.
 
