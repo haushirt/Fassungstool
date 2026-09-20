@@ -204,11 +204,16 @@ const VORAB_GETRAENK = {
   "Stiegl alkoholfrei 0,3l": "st03",
   /* „Stiegl Freibier alkoholfrei" — schon bestätigt. */
   "Stiegl alkoholfrei 0,5l": "st05",
-  /* „Mango" (Lade 1 · Säfte) — schon bestätigt. */
-  "Mango gespritzt 0,25l 0,25l": "mango",
-  /* „Schwarze Johannisbeere" (Lade 1 · Säfte) — dasselbe Muster wie
-     „Mango gespritzt", derselbe Saft, dieselbe Lade. */
-  "Johannisbeer gespritzt 0,25l 0,25l": "johan"
+  /* „Mango" (Lade 1 · Säfte) — schon bestätigt.
+     „gespritzt" heisst Saft plus Soda; hier steht trotzdem der ganze
+     Saft. Das hat das Haus so entschieden, es steht seit Wochen in der
+     Datenbank, und diese Zeile schreibt nur mit, was ohnehin gilt. */
+  "Mango gespritzt 0,25l 0,25l": "mango"
+  /* Hier stand bis zur vierten Jagd „Johannisbeer gespritzt 0,25l 0,25l"
+     → `johan`, begründet mit „dasselbe Muster wie Mango gespritzt".
+     Das war ein SCHLUSS, kein Nachschlagen — und genau davon lebt diese
+     Liste nicht. „Mango gespritzt" hat das Haus selbst bestätigt;
+     „Johannisbeer gespritzt" niemand. Es steht jetzt im Morgenbrief. */
 };
 
 /* Kommt nicht aus dem Keller. Diese Namen stehen im Z-Bericht, zehren

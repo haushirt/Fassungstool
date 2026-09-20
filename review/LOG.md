@@ -4634,3 +4634,48 @@ heute über die Vorabliste gelöst), „Gasteiner-Artikel klären: 1 l, 0,25 l,
 still, und eine 0,75-Flasche, die keinen Artikel hat" (mittel).
 
 **STATUS:** FERTIG
+
+### Runde 22 · Nachtrag – software-engineer (nach der Jagd)
+
+**Kritik am Vorgänger (mir selbst):** `public/leitung.html` `#bAuto` —
+der Nachbarknopf `#bGebAlle` trägt den Riegel gegen Rezeptzeilen seit
+Runde 16, samt ausgeschriebener Begründung zehn Zeilen tiefer; ich habe
+den neuen Knopf daneben gebaut und ihn nicht mitgenommen. ✅ übernommen.
+`sel.onchange` — „— offen —" war als Zustand nie vorgesehen, also schrieb
+ich `delete MAP[nm]`, und die Vorabliste holte den abgelehnten Vorschlag
+sofort zurück. Der Fehler ist meiner: die zweite Stufe muss einen Weg
+lassen, sie abzulehnen, sonst ist sie keine Empfehlung, sondern ein
+Zwang. ✅ übernommen. `src/gnmap.js` „Johannisbeer gespritzt" — die
+Begründung war „dasselbe Muster wie Mango gespritzt", also eine
+Analogie. Genau das sollte diese Liste nicht tun. ✅ übernommen, Eintrag
+entfernt. ↩️ geändert beim Fund „Datenbank kann kein Keller nicht von
+offen unterscheiden": richtig, aber es braucht eine Migration — Backlog.
+
+**Umgesetzt:**
+1. `#bAuto` überspringt Rezeptzeilen und sendet, bevor er merkt; bei
+   Fehlschlag bleibt nichts auf dem Gerät stehen.
+2. Eine Ablehnung hält: `ladeZuordnung()` liest die Zeile ohne Artikel
+   als `__offen`, `zuordnung()` gibt „offen" zurück, der Worker zählt
+   sie in `offen` mit. Ohne Migration — die Datenbank konnte das immer.
+3. Karte über der Tabelle mit der Zahl der wartenden Vorschläge;
+   „geprüfte Liste sagt …" in lesbarer Größe; ein Eintrag entfernt.
+
+**Geprüft:** `npm test` 572/572, `node tests/ui-runde22.cjs` **29 von 29**
+(acht neue Punkte: Rezeptzeile unangetastet, Ablehnung hält über das
+Neuladen und gegen den Sammelklick, Worker zählt sie als offen),
+`node tests/ui-leitung-echt.cjs` 44/44, `node tests/ui-runde21.cjs` 19/19.
+`sw.js` auf v69.
+
+**Für die Nächsten:** Die Ablehnung nutzt aus, dass `mapping` eine Zeile
+mit `status='zugeordnet'` und `artikel=NULL` tragen kann. Das ist kein
+Trick, sondern die genaue Bedeutung — aber es steht nirgends im Schema.
+Wer dort aufräumt, muss es wissen.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**Backlog:** sechs C-Funde der Jagd eingetragen (Spalte für „kein
+Keller", Ausschank gegen Gebinde, `ml()` ohne „l", ungeprüfte
+Reihenfolge in `zuordnung()`, `vorabAbweichung` im umgekehrten Fall,
+harter Ausschluss der Spirituosen).
+
+**STATUS:** FERTIG

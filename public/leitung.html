@@ -1756,6 +1756,13 @@ async function ladeZuordnung(){
     (j.mapping||[]).forEach(m=>{
       if(m.ignoriert) neu[m.kassenname]="__ignoriert";
       else if(m.artikel) neu[m.kassenname]=m.artikel;
+      /* Zugeordnet, aber ohne Artikel: das ist KEINE leere Zeile, das ist
+         eine Entscheidung — „ich habe hingesehen, und es ist nichts davon".
+         Bis Runde 22 wurde sie hier weggeworfen; danach griff die
+         Vorabliste wieder, und der abgelehnte Vorschlag stand am nächsten
+         Morgen erneut da (erste Jagd Runde 22 · A). Die Datenbank hat ihn
+         die ganze Zeit gehabt, nur diese Seite hat ihn nicht gelesen. */
+      else neu[m.kassenname]="__offen";
       /* Die bestätigte Gebindegröße liefert der Server seit je mit; bis v24
          hat diese Seite sie weggeworfen und statt dessen geraten. */
       if(+m.gebinde_ml>0) gb[m.kassenname]=+m.gebinde_ml;
@@ -2148,7 +2155,6 @@ const VORAB={
   "Stiegl alkoholfrei 0,3l":"st03",
   "Stiegl alkoholfrei 0,5l":"st05",
   "Mango gespritzt 0,25l 0,25l":"mango",
-  "Johannisbeer gespritzt 0,25l 0,25l":"johan",
   "Champignons":null, "Käse":null, "Paprika":null, "Pinien":null,
   "Rucola":null, "Schinken":null, "Schnittlauch":null, "Speck":null,
   "Zwiebeln":null, "HP Omelett 1 Portion":null, "HP Rührei 1 Portion":null,
@@ -2164,13 +2170,17 @@ const VORAB={
    es nur. Genau so sind zwei Vertipper aufgefallen („Cola Zero" stand
    auf Cola, „Now-Limo Orange" auf Lemon). */
 const vorabAbweichung = name =>
-  (MAP[name] && MAP[name]!=="__ignoriert" && Object.hasOwn(VORAB,name)
+  (MAP[name] && MAP[name]!=="__ignoriert" && MAP[name]!=="__offen"
+   && Object.hasOwn(VORAB,name)
    && VORAB[name] && MAP[name]!==VORAB[name]) ? VORAB[name] : null;
 
 function zuordnung(pos){
   if(REZ[pos.name] && REZ[pos.name].length) return {status:"rezept"};
   const z=MAP[pos.name];
   if(z==="__ignoriert") return {status:"ignoriert"};
+  /* Abgelehnt. Steht VOR der Vorabliste, sonst wäre die Ablehnung
+     wirkungslos — genau der Fehler, den die erste Jagd gefunden hat. */
+  if(z==="__offen") return {status:"offen", abgelehnt:true};
   if(z) return {status:"fest", id:z};
   /* Zweite Stufe, genau wie im Worker. `null` ist ein Wert, kein Fehlen
      — deshalb `hasOwn` und nicht `VORAB[name]`. */
@@ -4172,6 +4182,17 @@ function vZuordnung(m){
     m.insertAdjacentHTML("beforeend",`<section><div class="karte leer">Noch kein Z-Bericht eingelesen.</div></section>`);
     return;
   }
+  /* Die Zahl neben dem Menüpunkt zählt nur, was OFFEN ist — ein
+     unbestätigter Vorschlag steht dort nicht und rechnet trotzdem schon
+     mit (zweite Jagd Runde 22 · B). Deshalb steht sie hier, wo der Knopf
+     danebensteht, der sie auf einmal erledigt. */
+  const wartend=L.filter(p=>{ const z=zuordnung(p);
+    return z.status==="vorab" || z.status==="auto" || z.vorab; }).length;
+  if(wartend) m.insertAdjacentHTML("beforeend",
+    `<section><div class="karte" style="border-left:4px solid var(--warn-fg)">`
+    + `<b>${wartend} ${wartend===1?"Vorschlag wartet":"Vorschläge warten"} auf einen Klick.</b> `
+    + `Sie rechnen schon mit — bestätigt sind sie erst mit dem Knopf unten.</div></section>`);
+
   const optionen=`<option value="">— offen —</option><option value="__ignoriert">Ignorieren</option>`+
     `<optgroup label="Wein">${WINES.map(w=>`<option value="${w.id}">${esc(w.winzer)} · ${esc(w.wein)} ${esc(w.jg)}</option>`).join("")}</optgroup>`+
     `<optgroup label="Getränke">${GIDS.map(id=>`<option value="${id}">${esc(GN(id))}</option>`).join("")}</optgroup>`;
@@ -4193,7 +4214,11 @@ function vZuordnung(m){
                Zuordnung. Geändert wird nichts — die Bestätigung gilt.
                Hier steht nur, was auffällt, damit ein Vertipper nicht
                für immer stehen bleibt. */
-            ab?`<div class="mini">geprüfte Liste sagt: ${esc((w=>w?w.winzer+" · "+w.wein:GN(ab))(byId(ab)))}</div>`:""
+            /* Nicht in `.mini`: diese Zeile meldet einen möglichen
+               Vertipper mit Geldfolge und war in der kleinsten Schrift
+               des Schirms kaum zu sehen (sechste Jagd Runde 22 · C). */
+            ab?`<div style="margin-top:4px;color:var(--warn-fg);font-size:13px">`
+               +`geprüfte Liste sagt: <b>${esc((w=>w?w.winzer+" · "+w.wein:GN(ab))(byId(ab)))}</b></div>`:""
           }</td></tr>`;
     }).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:16px">
@@ -4203,43 +4228,70 @@ function vZuordnung(m){
   s.querySelectorAll("select[data-name]").forEach(sel=>{
     const nm=sel.dataset.name, z=zuordnung({name:nm});
     /* Das Feld zeigt, was gelten WÜRDE — sonst steht daneben
-       „vorgeschlagen" und im Feld „— offen —". */
-    sel.value = MAP[nm] ? MAP[nm]
+       „vorgeschlagen" und im Feld „— offen —". `__offen` ist eine
+       Ablehnung und gehört ins leere Feld, nicht als Wert hinein. */
+    sel.value = (MAP[nm] && MAP[nm]!=="__offen") ? MAP[nm]
       : z.status==="vorab" ? z.id
       : z.status==="auto" ? z.id
       : (z.status==="ignoriert" && z.vorab) ? "__ignoriert" : "";
     sel.onchange=async()=>{
       const wert=sel.value, vorher=MAP[nm];
-      if(wert) MAP[nm]=wert; else delete MAP[nm];
+      /* „— offen —" ist eine Entscheidung und wird als solche gemerkt:
+         `__offen` statt `delete`. Sonst griffe beim nächsten Zeichnen
+         wieder die Vorabliste, und der abgelehnte Vorschlag stünde erneut
+         da (erste Jagd Runde 22 · A). Der Server bekommt dasselbe wie
+         bisher — eine Zeile ohne Artikel; nur gelesen wird sie jetzt. */
+      MAP[nm] = wert || "__offen";
       schreib(K_MAP,MAP);
       /* Die bestätigte Gebindegröße gehörte zum bisherigen Artikel. Nach
          einem Wechsel ist sie nicht mehr bestätigt — sonst rechnet die
          neue Zuordnung mit der Flasche der alten. */
       if(GEB_BEST[nm]!=null && wert!==vorher){ delete GEB_BEST[nm]; schreib(K_GEB,GEB_BEST); }
       const ok=await sendeZuordnung(nm, wert);
+      /* Kam sie nicht durch (kein Recht, kein Netz), gilt sie auch hier
+         nicht. Sonst behauptet der Schirm „festgelegt", während in der
+         Datenbank nichts steht (dritte Jagd Runde 22 · B). */
+      if(!ok){ if(vorher===undefined) delete MAP[nm]; else MAP[nm]=vorher;
+               schreib(K_MAP,MAP); }
       zeichne();
-      if(ok) toast("Zuordnung gespeichert");
+      if(ok) toast(wert ? "Zuordnung gespeichert" : "Als offen vermerkt");
     };
   });
   /* Ein Knopf für beide Arten von Vorschlag: das Kassenmuster der Weine
-     und die geprüfte Vorabliste. Eine schon bestätigte Zuordnung wird
-     nie überschrieben — `MAP[p.name]` bricht ab, bevor irgendetwas
-     hinausgeht. „Kein Keller" geht als `__ignoriert` hinaus, denselben
-     Weg, den die Leitung von Hand nimmt. */
+     und die geprüfte Vorabliste. „Kein Keller" geht als `__ignoriert`
+     hinaus, denselben Weg, den die Leitung von Hand nimmt.
+
+     Zwei Dinge fasst er NIE an:
+
+     1. Eine schon getroffene Entscheidung — `MAP[p.name]` bricht ab. Das
+        gilt auch für eine Ablehnung (`__offen`), die ist eine.
+     2. Eine Kassenposition mit Rezeptur. Für die ist eine Artikel-Id ein
+        BESTANDTEIL, kein Artikel; `MAP[name]=id` hiesse „Aperol Spritz
+        IST Prosecco", und `__ignoriert` hiesse, dass ihre Bestandteile
+        aus der Rechnung fallen. Der Nachbarknopf `#bGebAlle` hat diesen
+        Riegel seit Runde 16, dieser hatte ihn nicht (erste Jagd Runde 22
+        · A): auf dem Gerät, das das Rezept angelegt hat, blieb es
+        unsichtbar — auf jedem anderen stand die Position danach
+        dauerhaft auf „ignoriert". Rezepte liegen bis heute nur im
+        Gerätespeicher (`hh_rezepte_v1`), der Server kennt sie nicht. */
   $("#bAuto").onclick=async()=>{
     const neu=[];
     L.forEach(p=>{
       if(MAP[p.name]) return;
+      if(REZ[p.name] && REZ[p.name].length) return;
       if(Object.hasOwn(VORAB,p.name)) return neu.push([p.name, VORAB[p.name] ?? "__ignoriert"]);
       const a=autoWein(p.name); if(a) neu.push([p.name,a.id]);
     });
     if(!neu.length) return toast("Kein Vorschlag offen");
     $("#bAuto").disabled=true;
+    /* Erst hinaus, dann merken. Andersherum steht auf dem Schirm
+       „festgelegt", während in der Datenbank nichts angekommen ist —
+       bei 33 Namen auf einmal (dritte Jagd Runde 22 · B). */
     let n=0;
-    for(const [nm,id] of neu){ MAP[nm]=id; if(await sendeZuordnung(nm,id)) n++; }
+    for(const [nm,id] of neu) if(await sendeZuordnung(nm,id)){ MAP[nm]=id; n++; }
     schreib(K_MAP,MAP); $("#bAuto").disabled=false; zeichne();
     toast(n===neu.length ? n+" Zuordnungen übernommen"
-      : n+" von "+neu.length+" übernommen — der Rest nur auf diesem Gerät");
+      : n+" von "+neu.length+" übernommen — der Rest ist NICHT gespeichert");
   };
 }
 

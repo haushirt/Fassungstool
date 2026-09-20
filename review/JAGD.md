@@ -1071,3 +1071,30 @@ fällt stumm durch; und für die VERSION-Regel gibt es keinen Wächter.
 Ein einzelner `npm test`-Lauf meldete einmal `443/1`; in über zwanzig weiteren
 Läufen nicht wiederholbar. Zwölf Prüfdateien hängen an `Date.now()`. Wer Zeit
 hat, wiederholt den Lauf um Mitternacht (Wien). Steht im Backlog.
+
+## Jagd nach Runde 22 · die Vorabliste
+
+Sechs Felder abgesucht: 2 A, 4 B, 7 C. `npm test` 572/572, `ui-runde22`
+21/21, `ui-leitung-echt` 44/44, `ui-runde21` 19/19 — alle nachgelaufen,
+alle grün. Die Funde lagen an Stellen, an denen keine dieser Prüfungen
+hinsah.
+
+| Stufe | Fund | Datei | Nachgestellt | Behoben |
+|---|---|---|---|---|
+| A | „Alle Vorschläge übernehmen" fasst Rezeptzeilen an und setzt sie auf „ignoriert" | `public/leitung.html` `#bAuto` | Rezept auf „Amaro Averna Siciliano 2 cl", Knopf geklickt → `mapping.status='ignoriert'`; auf jedem zweiten Gerät ist die Position danach dauerhaft ignoriert, ihre Bestandteile fallen aus der Rechnung | ✅ `#bAuto` überspringt `REZ` — derselbe Riegel, den `#bGebAlle` seit Runde 16 hat. Prüfung in `tests/ui-runde22.cjs` §3 |
+| A | Ein Vorschlag lässt sich nicht ablehnen; Datenbank sagt NULL, Schirm sagt `colaz` | `leitung.html` `sel.onchange` · `ladeZuordnung()` · `src/index.js` | „— offen —" gewählt: Toast „gespeichert", Zeile steht sofort wieder auf „vorgeschlagen". Der Worker zählte sie weder als zugeordnet noch als offen | ✅ Die Datenbank hatte die Ablehnung die ganze Zeit (`status='zugeordnet', artikel=NULL`) — nur las sie niemand. `ladeZuordnung()` liest sie jetzt als `__offen`, `zuordnung()` gibt „offen" zurück, der Sammelknopf lässt sie in Ruhe, und `offen` im Worker zählt sie mit. Prüfung §4b |
+| B | 33 Zuordnungen bleiben nach 403 oder ohne Netz als „festgelegt" stehen | `leitung.html` `#bAuto` · `sel.onchange` | Rolle „wirtschaft" klickt: D1 leer, Gerät voll, 29 Pillen springen auf „festgelegt" | ✅ Erst senden, dann merken; bei Fehlschlag zurück auf den alten Wert. Die Meldung sagt jetzt „ist NICHT gespeichert" |
+| B | 29 unbestätigte Vorschläge erzeugen kein Signal | `leitung.html` `zaehler("zuordnung")` | Zähler 44 → 15; die Vorschläge rechnen schon mit, stehen aber nirgends als Zahl | ✅ Eine Karte über der Tabelle: „n Vorschläge warten auf einen Klick. Sie rechnen schon mit." Die Zahl neben dem Menüpunkt bleibt, was sie ist |
+| B | Die Datenbank kann „kein Keller" nicht von „noch offen" unterscheiden | `src/index.js` | Beides landet als `fassungszeile.artikel = NULL` | ↩️ Nicht behoben, in den Backlog. Heute liest niemand diese Spalte so; die erste Abfrage `WHERE artikel IS NULL` würde Käse und Aperol Spritz gleich zählen. Braucht eine Migration, die nur Casimir einspielt |
+| B | „Johannisbeer gespritzt" → `johan`: aus dem Nachbarn geschlossen, nicht nachgeschlagen | `src/gnmap.js` | Die Begründung im Quelltext war eine Analogie zu „Mango gespritzt" — und es ist nicht derselbe Saft | ✅ Eintrag entfernt. Er steht jetzt im Morgenbrief. Von 37 Einträgen bleiben 36 |
+| C | „geprüfte Liste sagt …" stand in der kleinsten Schrift des Schirms | `leitung.html` | 11 px, 5,3:1 — für eine Zeile, die einen Vertipper mit Geldfolge meldet | ✅ 13 px in der Warnfarbe, der Artikel fett |
+| C | Sechs weitere (`ml()` ohne „l", Ausschank gegen Gebinde, Reihenfolge in `zuordnung()` ungeprüft, `vorabAbweichung` schweigt im umgekehrten Fall, Spirituosen hart ausgeschlossen, „live" im Morgenbrief) | — | — | ↩️ In den Backlog, `review/BACKLOG.md` |
+
+**Was aufgegangen ist:** Bericht 37 rechnet unverändert (48 Positionen,
+145 Stück, 602,50 €, Rabatt 3, Storno 1). Alle Artikel-Ids der Liste
+stehen im Stamm und sind im Auswahlfeld wählbar. `ml()` und
+`mlAusText()` stimmen auf allen 56 geprüften Namen überein. `vorab()`
+schlägt wirklich nur nach — „Käse ", „ Käse", „käse", „Käsebrot",
+„Cola Zero", „Cola Zero 0,5l" gehen alle nicht durch. `mappe()` ist
+unangetastet. Bei 390 px kein waagrechter Überlauf, Sammelknopf
+208 × 44 px.

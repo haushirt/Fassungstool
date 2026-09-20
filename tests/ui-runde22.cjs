@@ -167,10 +167,36 @@ const ok = (satz, bedingung, dazu) => {
 
   /* ── 3 · Ein Klick ──────────────────────────────────────────────────── */
   console.log("\n3 · Ein Klick für alles");
+
+  /* Vorher eine Rezeptur anlegen — genau auf einen Namen, der in der
+     Vorabliste steht. Erste Jagd Runde 22 · A: der Sammelknopf hat sie
+     überfahren und die Position auf „ignoriert" gesetzt. Für eine
+     Kassenposition mit Rezeptur ist eine Artikel-Id ein BESTANDTEIL;
+     „ignoriert" hiesse, dass ihre Bestandteile aus der Rechnung fallen,
+     und es gibt keinen Papierkorb. */
+  const REZEPTNAME = "Amaro Averna Siciliano 2 cl";
+  await p.evaluate(n => {
+    REZ[n] = [{ id: "zitrone", ml: 20 }];
+    schreib(K_REZ, REZ);
+    zeichne();
+  }, REZEPTNAME);
+  await p.waitForTimeout(400);
+  ok("die Rezeptzeile steht als solche da",
+     await p.evaluate(n => zuordnung({ name: n }).status, REZEPTNAME) === "rezept");
+
   const vorher = DB.zeilen("mapping").length;
   await p.locator("#bAuto").click();
   await p.waitForTimeout(2500);
   const m = DB.zeilen("mapping");
+  ok("der Sammelklick hat die Rezeptzeile NICHT angefasst",
+     !m.some(x => x.fremd === REZEPTNAME),
+     (m.find(x => x.fremd === REZEPTNAME) || { status: "keine Zeile" }).status);
+  ok("die Position ist nach dem Klick immer noch eine Rezeptzeile",
+     await p.evaluate(n => zuordnung({ name: n }).status, REZEPTNAME) === "rezept");
+  /* Der eigentliche Schaden lag in der Datenbank: von dort holt sich
+     JEDES Gerät die Zuordnung, und eine `ignoriert`-Zeile hätte die
+     Rezeptur auf allen anderen dauerhaft ausgeschaltet. Sie darf also
+     gar nicht erst entstehen — das prüft der Punkt darüber. */
   ok("vorher stand nichts in der Zuordnungstabelle", vorher === 0, String(vorher));
   ok("ein Klick schreibt alle Vorschläge in die Datenbank", m.length >= 25,
      m.length + " Zeilen");
@@ -215,6 +241,53 @@ const ok = (satz, bedingung, dazu) => {
   const zeile = DB.zeilen("fassungszeile").find(x => x.rohbez === "Cola Zero 0,35l");
   ok("die Berichtszeile folgt der Bestätigung, nicht der Liste",
      zeile.artikel === "cola", zeile.artikel);
+
+  /* ── 4b · Einen Vorschlag ablehnen ──────────────────────────────────── */
+  console.log("\n4b · „Nein, das ist es nicht“");
+  /* Zweite Jagd Runde 22 · A: „— offen —" schickte eine Zeile ohne
+     Artikel hinaus, die Seite warf sie beim Laden weg, die Vorabliste
+     griff wieder — der abgelehnte Vorschlag stand sofort erneut da, mit
+     einem Toast „Zuordnung gespeichert". Die Datenbank sagte NULL, der
+     Schirm sagte `colaz`. */
+  const ABGELEHNT = "Prosecco, Serena 0,1l";
+  await offen("zuordnung");
+  await p.evaluate(n => {
+    const r = [...document.querySelectorAll("tr")]
+      .find(x => x.firstElementChild && x.firstElementChild.textContent === n);
+    const s = r.querySelector("select");
+    s.value = ""; s.dispatchEvent(new Event("change"));
+  }, ABGELEHNT);
+  await p.waitForTimeout(1000);
+  const nein = await p.evaluate(n => {
+    const r = [...document.querySelectorAll("tr")]
+      .find(x => x.firstElementChild && x.firstElementChild.textContent === n);
+    return { zustand: r.children[3].textContent.trim(),
+             feld: r.querySelector("select").value,
+             status: zuordnung({ name: n }).status };
+  }, ABGELEHNT);
+  ok("die Ablehnung hält — der Vorschlag kommt nicht zurück",
+     nein.status === "offen" && /offen/.test(nein.zustand), nein.zustand);
+  ok("und das Feld steht auf „— offen —“", nein.feld === "", "»" + nein.feld + "«");
+
+  /* Und sie überlebt das Neuladen: dort kommt alles vom Server. */
+  await offen("zuordnung");
+  const nachLaden = await p.evaluate(n => zuordnung({ name: n }).status, ABGELEHNT);
+  ok("sie überlebt das Neuladen der Seite", nachLaden === "offen", nachLaden);
+
+  /* Der Sammelknopf darf sie nicht wieder einsammeln. */
+  await p.locator("#bAuto").click();
+  await p.waitForTimeout(1200);
+  ok("und der Sammelklick holt sie nicht zurück",
+     (DB.zeilen("mapping").find(x => x.fremd === ABGELEHNT) || {}).artikel === null,
+     String((DB.zeilen("mapping").find(x => x.fremd === ABGELEHNT) || {}).artikel));
+
+  /* Und der Worker zählt sie als offen — vor der Jagd war sie weder
+     zugeordnet noch offen, also nirgends. */
+  const j = await (await fetch(BASIS + "/api/fassungsliste", {
+    method: "POST", headers: { "content-type": "text/plain", cookie: keks },
+    body: TEXT })).json();
+  ok("der Worker zählt eine abgelehnte Position als offen",
+     j.offen >= 1, j.offen + " offen");
 
   /* ── 5 · Kein Name rutscht durch ────────────────────────────────────── */
   console.log("\n5 · Gegenprobe");

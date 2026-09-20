@@ -2,8 +2,8 @@
 
 ## Erledigt
 
-- **`VORAB` in `src/gnmap.js`** — 37 geprüfte, GANZE Kassennamen:
-  16 zeigen auf einen Artikel, 21 sind „kommt nicht aus dem Keller"
+- **`VORAB` in `src/gnmap.js`** — 36 geprüfte, GANZE Kassennamen:
+  15 zeigen auf einen Artikel, 21 sind „kommt nicht aus dem Keller"
   (Speisen, Kaffee, Spirituosen pur auf 2 cl). Jeder Eintrag trägt seinen
   Grund in der Zeile daneben. Quelle: die beiden echten Berichte im Haus
   (Z 40 vom 19.09.2026 aus der Live-D1, nur gelesen; Bericht 37 aus
@@ -22,13 +22,13 @@
 - **Zwei Vertipper gefunden** (stehen live, nichts geändert):
   „Cola Zero 0,35l" liegt auf `cola` statt `colaz`, „Now-Limo Orange
   0,35l" auf `lemon` statt `orange`.
-- `sw.js` auf **v68**. `public/index.html` nicht angefasst.
+- `sw.js` auf **v69**. `public/index.html` nicht angefasst.
   **Keine Migration.**
 
 **Zahlen:** Bericht 37 — 15 statt 44 offene Namen. Echter Bericht vom
 19.09. — 20 statt 43 von 57 (dort sind 13 Namen schon von Hand bestätigt).
 
-**Geprüft:** `npm test` 572/572 · `node tests/ui-runde22.cjs` 21/21 ·
+**Geprüft:** `npm test` 572/572 · `node tests/ui-runde22.cjs` 29/29 ·
 `node tests/ui-leitung-echt.cjs` 44/44 · `node tests/ui-runde21.cjs` 19/19.
 
 ## Blockaden

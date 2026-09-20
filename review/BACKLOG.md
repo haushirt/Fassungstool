@@ -472,3 +472,38 @@ Name für Name. Eine allgemeine Lösung müsste den Winzer erst abtrennen
 und dann den Rest gegen die Weinnamen desselben Winzers prüfen — machbar
 ohne Ähnlichkeitssuche, aber es ist ein Eingriff in `mappe()` und damit in
 die Regel-5-Fläche. Nur mit Freigabe.
+
+### Aus der Jagd nach Runde 22
+
+**Mittel — Die Datenbank kann „kein Keller" nicht von „noch offen"
+unterscheiden.** `fassungszeile.artikel` ist in beiden Fällen `NULL`.
+Das Backoffice hat den Unterschied (`{status:"ignoriert", vorab:true}`),
+die Zeile trägt ihn nicht. Heute liest niemand die Spalte so; die erste
+Abfrage `WHERE artikel IS NULL` zählt Käse und Aperol Spritz gleich.
+Eine saubere Lösung braucht eine Spalte und damit eine Migration.
+
+**Mittel — Ausschank aus dem Kassennamen gegen Gebindegröße.**
+„Stiegl alkoholfrei 0,3l" (300 ml) liegt auf einem Artikel namens
+„Stiegl 0,0 % · 0,33", „Coca Cola 0,35l" (350 ml) auf `cola`.
+Bestätigt jemand 330 ml als Gebinde, zählt eine verkaufte Flasche 0,909
+statt 1. Heute unerreichbar, weil es für die Getränke keinen
+Gebindevorschlag gibt — aber es wartet.
+
+**Niedrig — „Weizen alkoholfrei 0,5" erzeugt nie eine Zahl.**
+`ml()` liest die Größe nur mit „l" am Ende; dieser Kassenname hört ohne
+auf. Der Eintrag ist richtig, er verschiebt den Namen aber nur von
+„offen" nach „zugeordnet, Menge fehlt".
+
+**Niedrig — Nichts prüft, dass `zuordnung()` die Datenbank vor die
+Vorabliste stellt.** `tests/vorab-gleich.test.mjs` hält den Worker per
+Textsuche fest; im Backoffice könnte jemand die Reihenfolge umdrehen,
+und alle Prüfungen blieben grün.
+
+**Niedrig — `vorabAbweichung` schweigt im umgekehrten Fall.** Steht ein
+Artikel bestätigt, während die geprüfte Liste „kein Keller" sagt, gibt
+es keinen Hinweis.
+
+**Niedrig — Spirituosen sind hart ausgeschlossen.** Die drei 2-cl-Namen
+stehen auf „für immer kein Keller", begründet damit, dass es im Stamm
+keinen Artikel dazu gibt. Kommen Spirituosen dazu, bleiben die Namen
+ausgeschlossen und ihr Verbrauch fällt lautlos heraus. Nichts warnt.

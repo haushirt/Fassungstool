@@ -1,7 +1,7 @@
 # Morgenbrief · 21.09.2026
 
-Runde 22 ist durch und **live**. Sie betrifft nur eines: welche
-Kassennamen das Tool von selbst erkennt.
+Runde 22 ist fertig und gemergt — mit dem Merge geht sie live. Sie
+betrifft nur eines: welche Kassennamen das Tool von selbst erkennt.
 
 ---
 
@@ -70,6 +70,13 @@ kommen, braucht es ein Rezept. Wenn nicht, „Ignorieren".
 
 **d) Weißer Spritzer.** Im Keller liegt ein „Spritzerwein" — ist das
 der? Dann ein Wort, und er ist erledigt.
+
+**e) Johannisbeer gespritzt (0,25 l).** Im Keller liegt „Schwarze
+Johannisbeere" (Saft). „Gespritzt" heißt aber Saft plus Soda — es geht
+also nicht der ganze Viertelliter Saft weg. Beim „Mango gespritzt"
+steht es heute so in der Datenbank, weil du es selbst bestätigt hast.
+Soll ich die Johannisbeere genauso eintragen, oder brauchen beide ein
+Rezept?
 
 ### 4 · Die Cocktails (15 Namen) — eine grundsätzliche Frage
 

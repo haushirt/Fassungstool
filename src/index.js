@@ -769,6 +769,14 @@ async function fassungsliste(env, text, wer) {
   const fest = Object.fromEntries(
     bek.map(r => [r.fremd, r.status === "ignoriert" ? null : r.artikel]));
   const kennt = new Set(bek.map(r => r.fremd));
+  /* Zugeordnet, aber ohne Artikel — die Leitung hat hingesehen und
+     abgelehnt. Das ist etwas anderes als „ignoriert" (raus aus der
+     Rechnung) und etwas anderes als „noch nie angefasst": die Position
+     wartet weiter auf einen Artikel und muss deshalb in die Zahl der
+     offenen. Vor der ersten Jagd der Runde 22 fiel sie in keine der
+     beiden Gruppen und war damit unsichtbar. */
+  const abgelehnt = new Set(
+    bek.filter(r => r.status !== "ignoriert" && !r.artikel).map(r => r.fremd));
 
   const stmt = env.DB.prepare(
     `INSERT INTO fassungszeile (liste, rohbez, kern, anzahl, betrag, ausschankMl, artikel)
@@ -847,7 +855,8 @@ async function fassungsliste(env, text, wer) {
   }
 
   const offen = z.positionen.filter(
-    p => !kennt.has(p.name) && !vorab(p.name) && !mappe(p.name)).length;
+    p => abgelehnt.has(p.name)
+      || (!kennt.has(p.name) && !vorab(p.name) && !mappe(p.name))).length;
   /* Storno und Rabatt gehen mit hinaus. Beides ist Verbrauch (Vorgabe vom
      17.09.), aber nur der Rabatt steht schon in den Positionen — der
      Storno nennt einen Grund („Bedienerfehler"), keinen Artikel, und

@@ -176,3 +176,23 @@
   echte Bericht von gestern 57 — 23 davon stehen in keiner Fixture. Wer nur
   gegen `tests/fixtures/` arbeitet, baut an einem Viertel der Namen vorbei.
   Die Live-D1 zu LESEN ist erlaubt und war hier der halbe Ertrag.
+- **Einen neuen Knopf neben einen alten bauen heisst, dessen Riegel zu
+  erben.** `#bGebAlle` überspringt Rezeptzeilen seit Runde 16, mit
+  ausgeschriebener Begründung zehn Zeilen tiefer in derselben Datei. Der
+  neue Sammelknopf stand direkt daneben und hatte den Riegel nicht. Wer
+  eine Massenaktion baut, muss zuerst nachsehen, wovor sich die
+  bestehende Massenaktion schützt.
+- **Eine Empfehlung braucht ein Nein.** Die Vorabliste konnte
+  vorschlagen, aber nicht abgelehnt werden: „— offen —" löschte den
+  Eintrag, und beim nächsten Zeichnen stand der Vorschlag wieder da. Eine
+  zweite Stufe, die man nicht abwählen kann, ist keine Empfehlung,
+  sondern ein Zwang. Die Lösung brauchte keine Migration — die Datenbank
+  konnte den Zustand die ganze Zeit (`status='zugeordnet'`,
+  `artikel=NULL`), nur las ihn niemand. Vor dem Schemawunsch erst prüfen,
+  was das Schema schon hergibt.
+- **„Dasselbe Muster wie nebenan" ist ein Schluss, kein Nachschlagen.**
+  Ein Eintrag der Liste war aus seinem Nachbarn abgeleitet
+  („Johannisbeer gespritzt" aus „Mango gespritzt"). Bei 36 geprüften
+  Einträgen fällt der eine nicht auf — und genau er ist der, der die
+  Liste zu dem macht, wogegen sie gebaut wurde. Analogie gehört in den
+  Morgenbrief, nicht in den Code.
