@@ -1,205 +1,73 @@
-# Morgenbrief · Nacht auf den 19.09.2026 · Runde 16
+# Morgenbrief · 20.09.2026
 
-Eine Runde, ohne dich, durchgearbeitet. Ausgangsstand: **`ac8d93a`**
-(`sw.js` v38), live. Neuer Stand: **`sw.js` v56** — die Runde, dreizehn
-Jagden danach und drei Gegenprüfungen des qa-guardian.
-
-Der Brief der Nacht auf den 18.09. ist abgelöst — er beschrieb einen Pull
-Request, der inzwischen gemergt ist, und schickte dich auf **sechs bis acht
-Ziffern**. Das war schon beim Schreiben überholt und ist seit Runde 15
-falsch: Es sind **vier**. Dieser Brief gilt.
+Runde 18 (Backoffice) ist gemergt und damit **live**. `sw.js` steht auf v61.
+Runde 17 (Fassungsseite) war schon vorher live und ist unberührt geblieben.
 
 ---
 
-## 1 · Was du tun musst, bevor gefasst wird
+## Was du jetzt kannst
 
-| ✔ | Was | Min. |
-|---|---|---|
-| ☐ | **Jedes Gerät einmal mit Netz neu laden.** iPhone/iPad: Seite herunterziehen. Als Web-App vom Startbildschirm: einmal ganz schließen und neu öffnen. | 5 |
-| ☐ | ⚠️ **In DEINER eigenen Zeile nichts anfassen.** Der Rollen-Auswahlkasten in der Liste hat keine Rückfrage: Stellst du ihn in deiner eigenen Zeile auf „Service", bist du sofort ausgesperrt — `GET /api/personen` antwortet 403, und zurück geht es nur über die D1-Konsole. („Sperren" daneben fragt zweimal nach, der Rollenkasten nicht.) Das ist **nicht neu**, es steht so schon live; ich schreibe es hier hin, weil dich Punkt 3 genau dorthin schickt. | 0 |
-| ☐ | **Erkennungszeichen prüfen:** Auf der Startseite steht ganz unten, unter den Kacheln, der Block **„WENN ETWAS KLEMMT"** (er steht in Großbuchstaben) mit „Rohdaten sichern (JSON)". Steht er nicht da, läuft noch die alte App — dann noch einmal laden. | 1 |
-| ☐ | **Drei Leute anlegen** im Backoffice unter „Mitarbeiter" (Gruppe „Verwaltung" — nicht „Team", so heißt der Menüpunkt nicht): **Asad Karakiri** (service), **Ian Lauchbein** (service), **Marinus** (wirtschaft). Namen und Rolle eintragen, Code irgendeinen vierstelligen — dann in der Zeile **„PIN zurücksetzen"** drücken und den gewürfelten Code notieren. Er ist **nur einmal** zu sehen. **Achtung:** Nach dem Speichern werden Name und Code geleert, das Rollenfeld aber NICHT — wer zügig hintereinander tippt, gibt dem nächsten sonst die Rolle des vorigen. (In der Reihenfolge oben geht es gut: service, service, wirtschaft.) *(Neu seit dieser Nacht: Das Anlegen-Formular legt nur NEUE Menschen an. Kommt „ist schon angelegt", steht der Mensch bereits da — dann die Rolle in seiner Zeile ändern und den Code dort über „PIN zurücksetzen" holen. Vorher hat das Formular die vorhandene Person still überschrieben: Code tot, Rolle zurück auf „Service", Sperre aufgehoben.)* | 10 |
-| ☐ | **Gebindegrößen bestätigen:** Backoffice → „Verkauf ↔ Fassung" → Abschnitt „Nicht gerechnet" → „Alle N Vorschläge übernehmen". Ohne sie rechnet der Abgleich im Keller nichts. Sechs Positionen (Cola, Sanbitter, Almdudler, Gasteiner still) haben keinen Vorschlag und brauchen die Zahl von Hand. | 5 |
-| ☐ | **Gasteiner 0,25 l in Lade 1 nachzählen.** Das Soll steht auf **8**. Passen dort acht Flaschen in die Spalte oder sieben? Die Zahl geht über das Nachfüllen ins Journal, und das Journal lässt sich nicht zurücknehmen. Sag mir die Zahl, dann ändere ich sie — ich habe sie ausdrücklich **nicht** angefasst. | 3 |
-
-Mehr nicht. **Keine Migration, kein Dashboard-Schritt, kein Codewechsel.**
-
-### Zwei Dinge, die nur du nachsehen kannst
-
-* **`ANLAGE_OFFEN` im Dashboard — der wichtigste der drei Punkte.** Solange
-  die Variable gesetzt ist, steht `POST /api/anlage` **ohne Anmeldung**
-  offen, und der Aufrufer bestimmt die Rolle selbst: Jeder Name legt damit
-  eine Zeile mit voller Leitung an. `/api/ping` gibt `anlage: true` oder
-  `false` zurück — wenn `true`, gehört die Variable weg. Der Namenswächter
-  dieser Nacht bremst dort nur die exakte Wiederholung eines vorhandenen
-  Namens; ein Punkt dahinter genügt, um an ihm vorbeizukommen. Dashboard
-  und Secrets sind für mich nicht erreichbar.
-* **Stehen in der Datenbank schon zwei Personen mit demselben Namen?** Eine
-  Zeile in der D1-Konsole, nur lesend:
-  `SELECT lower(trim(name)) n, COUNT(*) c FROM person GROUP BY n HAVING c > 1;`
-  Kommt nichts zurück, ist alles sauber. Kommt etwas zurück, sag es mir —
-  dann sperren wir die überzählige Zeile (löschen geht nicht, §8).
-
-### Was ich live NICHT prüfen konnte
-
-Der Klick-Durchgang auf `fassungstool.ikrathc.workers.dev` ging aus meiner
-Umgebung nicht: Der Ausgangs-Proxy weist die Adresse per
-Organisationsrichtlinie ab (403). Geprüft habe ich stattdessen, dass der
-Workers-Build durchgelaufen ist, dass der Worker einen neuen
-Deploy-Zeitstempel trägt, und dass die Zählungen in der Live-D1 danach
-unverändert sind — also keine Testdaten entstanden sind. **Was du beim
-ersten Gerät am Morgen selbst prüfen musst:** anmelden, das
-Erkennungszeichen oben sehen, abmelden (danach muss `/leitung.html` keine
-Leitung mehr zeigen) und eine Tagesfassung bis zum Pop-up durchklicken —
-**nicht** abschließen, sonst stehen Testdaten in der Datenbank.
+1. **Auf jede Kachel im Mittagsblick tippen.** Alle vier führen weiter —
+   zur Tagesfassung mit ihren Mengen, zum eingelesenen Z-Bericht, zum
+   Abgleich, zum Bestellvorschlag.
+2. **„Eingänge"** (links unter Nachschlagen): alles, was aus dem Keller
+   gemeldet wurde — mit den Mengen. Auch Lieferungen und Zählungen, die
+   vorher nur zwei Striche zeigten. Am Handy steht die Anzahl jetzt im Bild.
+3. **Wischen von links** öffnet am iPad die Seitenleiste, statt aus dem
+   Backoffice herauszuspringen.
+4. **PDF.** Neben jedem Vorgang steht „PDF", und unter „Verkauf ↔ Fassung"
+   gibt es „Differenzen als PDF" — das Blatt für die WhatsApp-Gruppe.
 
 ---
 
-## 2 · Was in der Nacht passiert ist
+## Was du selbst tun musst
 
-### Die Funde der letzten Jagd — alle behoben
+### 1 · Eine Entscheidung (wichtig)
 
-**„abmelden" hat nicht abgemeldet.** Der Knopf leerte nur den Speicher des
-Geräts; die Sitzung am Server galt weitere zwölf Stunden. Am geteilten iPad
-war die nächste Person damit über `/leitung.html` **volle Leitung** — samt
-„PIN zurücksetzen". Der schwerste Fund der Nacht. Jetzt ruft der Knopf den
-Server, wartet auf die Antwort und gibt das Gerät erst danach frei. Ohne
-Netz wird die Abmeldung vorgemerkt, gesagt und beim nächsten Empfang
-nachgeholt. Das Backoffice hat jetzt selbst einen Ausgang: unten in der
-Navigation, „abmelden".
+**Was soll „Ignorieren" bedeuten?**
 
-**Zwei Personen konnten denselben Code haben.** Beim Anmelden gewann dann
-die letzte Zeile — und im Journal, das sich nicht ändern lässt, stünde
-dauerhaft der falsche Name an einer Fassung. Ein doppelter Code wird jetzt
-abgelehnt, auch gegen gesperrte Personen geprüft.
+Heute nimmt „Ignorieren" den Verkauf aus der Rechnung. Für Speisen, Kaffee
+und Fassbier ist das richtig. Steht dort aber ein Getränk aus dem Keller —
+und in einem echten Z-Bericht sind das **19 Cocktails** (Aperol Spritz,
+Pisco Sour, Monkey Sour …) —, dann fehlt sein Verkauf, und seine Zeile sagt
+trotzdem **„stimmt" in Grün**.
 
-**Ein zurückgesetzter Code gab weiter frei.** „Trotzdem abschließen" prüfte
-nur, was auf dem Gerät schon einmal geklappt hatte. Wer einen alten Code
-kannte, gab damit im Protokoll unter dem Namen der alten Person frei. Jetzt
-entscheidet der Server, und der tote Code fliegt dabei vom Gerät.
+Gemessen: neun Flaschen Cola verkauft, drei aus dem Keller geholt — der
+Bildschirm zeigt „stimmt". Seit heute sagen Bildschirm, CSV, Kachel und
+PDF-Blatt wenigstens, **dass** ignorierte Namen dabei sind. Was die einzelne
+Zeile sagen soll, kann nur jemand entscheiden, der weiß, was in eurem Haus
+„Ignorieren" heißen soll.
 
-**Der neue Code konnte beim Zurücksetzen verloren gehen.** Brach die
-Verbindung nach dem Speichern ab, war der Code vergeben und niemand hatte
-ihn gesehen — die Person ausgesperrt, auf dem Schirm nur „Keine
-Verbindung". Das Backoffice würfelt ihn jetzt selbst und kennt ihn, bevor
-die Antwort unterwegs ist.
+Zwei Wege stehen ausgearbeitet ganz oben in `review/BACKLOG.md`:
 
-Dazu: Die Sperrmeldung sagte in allen drei Stufen „15 Minuten" und zählte
-die Restversuche falsch. Und in einem privaten Fenster sprang die Anmeldung
-stumm auf Anfang, ohne ein Wort.
+* **(a) Zweiteilen:** „kommt nicht aus dem Keller" (Speisen, Kaffee) gegen
+  „kommt aus dem Keller, zählt aber nicht" (Sonderausschank). Nur der
+  zweite wertet Zeilen ab.
+* **(b) Zuordnen statt ignorieren:** Jeder ignorierte Name bekommt wahlweise
+  einen Artikel, damit sein Verkauf gerechnet wird, ohne im roten Balken zu
+  stehen.
 
-### Die vier Punkte der Runde
+### 2 · Zwei Dinge am Gerät nachsehen
 
-**1 · Der Doppeltipp zoomt nicht mehr.** Zwei Flaschen, zweimal schnell auf
-dieselbe Zeile — und die Seite sprang vergrößert. Weg. Der
-Zwei-Finger-Zoom bleibt. Kein Eingabefeld ist mehr unter 16 px, damit
-Safari beim Antippen nicht hineinspringt.
+* **iPad:** Wisch von links — öffnet sich die Seitenleiste, oder springt
+  Safari doch noch zurück? Das kann kein Prüfstand beantworten.
+* **MacBook:** Einmal wirklich drucken und als PDF sichern. Sieht das Blatt
+  aus, wie es soll? Fehlt etwas, das in die Gruppe gehört?
 
-**2 · Der Abschluss ist eine Handlung geworden.** Ein Knopf: **„Fertig –
-Speichern"**, in jedem Modus. „Protokoll senden", „Als PDF sichern", „Auch
-als CSV" und das Notizfeld auf der Seite sind weg. Beim Drücken:
+### 3 · Weiterhin offen aus früheren Runden
 
-* Liegt ein **Z-Bericht vom Vorabend** vor, kommt das Fenster **Abgleich**:
-  gefasst gegen verkauft, **nur die Abweichungen**, darunter **ein**
-  Notizfeld für alles. Speichern → fertig, zurück zur Startseite.
-* Liegt keiner vor: ein kurzes **„Fertig"**, dann die Startseite.
-
-Gerechnet wird wie im Backoffice: `anzahl × Ausschank ÷ Gebindegröße`.
-**Solange du die Gebindegrößen nicht bestätigt hast** (heute hat keine der
-dreizehn Zuordnungen eine), kann das Fenster nichts rechnen — dann sagt es
-das auch: „Nichts zu vergleichen". Es behauptet nie „Keine Abweichung",
-wo es nichts verglichen hat.
-
-„Rohdaten sichern (JSON)" und „Zurücksetzen" sind nicht gelöscht — sie
-stehen jetzt dezent am Ende des Menüs, als Notweg, wenn ein Gerät offline
-klemmt.
-
-**3 · Die Startseite.** Service hat den hellsten Grund und den kräftigsten
-Ton, Bestand tritt zurück.
-
-**4 · Die Verbindung.** Die Statuszeile sagt **„Verbunden"** statt „Nichts
-liegt mehr auf diesem Gerät". Unter „Fertig – Speichern" steht ohne Netz
-ein Hinweis („Keine Verbindung – der Abgleich kommt nach"), der von selbst
-verschwindet, sobald wieder Empfang da ist.
-
-**Hier bin ich von deinem Auftrag abgewichen — bitte lies das.** Du hast
-geschrieben: „‚Fertig – Speichern' ist nur bei bestehender Verbindung
-drückbar." So war es gebaut. Gemessen hat es genau das getan, **auch bei
-der Kellerzählung**, die weder Z-Bericht noch Abgleich kennt und die du
-unter „Nicht anfassen" geführt hast. Im Keller ist kein Netz: Eine fertige
-Tagesfassung war dort **nicht abzuschließen** — der Vorgang blieb „läuft",
-ging nicht in die Warteschlange, es entstand keine Journalzeile.
-
-Das bricht deine harte Regel 6 („Offline-Queue nicht aufweichen") und
-§9 der Projektanleitung („Offline ist der Normalfall"), und die Hilfe der
-App sagt zwei Bildschirme weiter das Gegenteil. Du hast in derselben Nacht
-das Urteil von Jäger und qa-guardian zur Merge-Bedingung gemacht; beide
-haben genau diesen Punkt gemeldet — der Jäger als A-Fund, der qa-guardian
-als Veto. **Deshalb ist die Sperre draußen**, der Rest von Punkt 4 steht.
-
-Willst du sie doch: zwei Zeilen, und sie ist zurück. Dann gehört „Offline
-ist der Normalfall" mit derselben Runde aus Projektanleitung, Hilfe und
-CLAUDE.md gestrichen — sonst widersprechen sich die Unterlagen.
+* **„Nicht angemeldet"**, obwohl man angemeldet ist — drei Wege stehen zur
+  Wahl (Runde 17).
+* **Sonderentnahme Getränke** hat keinen Weg zum Grund.
+* **Betriebstag gegen Abgleich um einen Tag versetzt** — zwei Wege im Backlog.
 
 ---
 
-## 3 · Was ich allein entschieden habe
+## Wie du ein PDF machst
 
-Du warst nicht erreichbar; hier sind die Entscheidungen, die ich getroffen
-habe, und wie du sie zurückdrehst.
+* **MacBook:** Knopf drücken → Drucken-Fenster → links unten „PDF" →
+  „Als PDF sichern". Oder „In Mail senden".
+* **iPad:** Knopf drücken → Teilen → Drucken → die Vorschau mit zwei Fingern
+  aufziehen → Teilen.
 
-0. **Die Verbindungssperre am Abschluss ist draußen** — die eine Abweichung
-   von deinem Auftrag, ausführlich oben unter Punkt 4. *Zurückdrehen: zwei
-   Zeilen in `finishNetz()`.*
-1. **Der Abgleich kommt nur bei Tagesfassung und Nachfüllen.** Bei
-   Kellerzählung, Wareneingang und Sonderentnahme wäre jede Zeile eine
-   „Abweichung" — dort kommt das kurze „Fertig". *Zurückdrehen: drei Zeilen
-   in `abschlussSchritt`.*
-2. **Ohne bestätigte Gebindegröße wird nichts geraten.** Die Position
-   bleibt aus der Rechnung und wird im Fuß gezählt; sind es alle, sagt das
-   Fenster „Nichts zu vergleichen". *Sobald du die Größen bestätigt hast,
-   rechnet es von selbst.*
-3. **„Fertig – Speichern" heißt in jedem Modus so**, auch wo bisher
-   „Entnahme melden" / „Lieferung melden" stand.
-4. **Ohne Netz meldet sich das Gerät trotzdem ab** und holt die Abmeldung
-   am Server nach, sobald Empfang da ist. Sonst käme im Keller ohne Netz
-   niemand mehr an ein Gerät.
-
----
-
-## 4 · Was offen bleibt
-
-* **Gasteiner 0,25 l** (siehe oben) — nur du kannst es nachzählen.
-* **Die Anmeldesperre zählt pro IP.** Im Haus-WLAN teilen sich alle Geräte
-  eine; zehn Vertipper an der Bar sperren den Keller mit aus. Der Ausweg
-  wäre, pro Gerät zu zählen, und das braucht eine Migration — also dich.
-* **Der Abgleich im Backoffice** („Verkauf ↔ Fassung") paart weiter um
-  einen Tag versetzt. Der neue Abgleich im Keller paart richtig; die beiden
-  widersprechen sich, bis das Backoffice nachzieht. Braucht deine
-  Entscheidung (Backlog, seit 18.09.).
-* **Die Selbstschutz-Abfragen** („dich selbst kannst du nicht sperren")
-  stehen nur im Browser, nicht im Worker. Wer den Endpunkt direkt ruft,
-  kommt daran vorbei. Nur die Leitung kann das, also kein Loch — aber es
-  gehört in den Worker.
-* Der Rest steht in `review/BACKLOG.md`, Abschnitt „Runde 16".
-
----
-
-## 5 · Wenn etwas klemmt
-
-**Erkennungszeichen** noch einmal: der Block **„Wenn etwas klemmt"** ganz
-unten auf der Startseite.
-
-**Zurückdrehen** (der Merge ist der Livegang, das Zurückdrehen auch):
-
-```
-git revert -m 1 <merge-commit> && git push origin main
-```
-
-Der Stand davor ist `ac8d93a` — die Fassung, mit der heute gearbeitet
-wurde. **Es gibt keine Schemaänderung und keine Migration in diesem Stand**,
-zurück geht also ohne Datenbankarbeit.
-
-**Kommt niemand mehr herein:** `ANLAGE_OFFEN` im Dashboard setzen →
-`POST /api/anlage` mit `{"name":"…","rolle":"leitung","code":"1234"}`
-(vier Ziffern) → anmelden → `ANLAGE_OFFEN` wieder löschen.
+Es steckt **keine** neue Fremdsoftware dahinter; das PDF macht der Browser.
