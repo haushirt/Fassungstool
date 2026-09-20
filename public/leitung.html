@@ -585,6 +585,16 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
   .g4{grid-template-columns:repeat(2,1fr)}
   /* Waagrecht scrollen statt umbrechen, erste Spalte bleibt stehen. */
   .tabhuelle{max-height:none;overflow:auto;-webkit-overflow-scrolling:touch}
+  /* B3 (Runde 18) · AUSSER bei zwei Spalten. Die Mindestbreite von 560px
+     ist für die breiten Tabellen gedacht; eine Tabelle „Position |
+     Flaschen" schob damit am Handy genau die Zahl aus dem Bild — und das
+     ist der Grund, aus dem das Detail im Speicher „nur Positionen, keine
+     Anzahl" zeigte. Die Zahl stand immer da, nur 170px rechts daneben.
+     Zwei Spalten passen auf 390px; sie bekommen deshalb keine
+     Mindestbreite und keine klebende erste Spalte. */
+  .tabhuelle.schmal table{min-width:0}
+  .tabhuelle.schmal th:first-child,.tabhuelle.schmal td:first-child{
+    position:static;box-shadow:none}
   /* Nur Tabellen in einer Scrollhuelle duerfen breiter sein als der Schirm.
      Die Quelle-Tabelle in den Einstellungen steht in einer .karte ohne
      Scrollflaeche und schob sonst die ganze Seite auf 597px. */
@@ -603,6 +613,72 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
 }
 @media(max-width:560px){
   .g4,.g3{grid-template-columns:1fr}
+}
+
+/* ═══════════════ Randwisch ═══════════════
+   B4 (Runde 18) · Chrome und die Android-Browser blättern bei einem
+   waagrechten Überzug über den Rand hinaus zurück. `contain` nimmt
+   genau das weg und lässt Scrollen unberührt. Safari hört nicht darauf —
+   dort erledigt es der Horcher `randwisch()` im Skript. */
+html{overscroll-behavior-x:contain}
+
+/* ═══════════════ Kachel als Knopf ═══════════════
+   B2 (Runde 18) · Die vier Kacheln des Mittagsblicks waren reine
+   Anzeigen. „7 auffällige Differenzen" ist aber genau die Zeile, auf die
+   getippt wird — und es passierte nichts. Wer ein Ziel hat, ist jetzt
+   ein <button> und sagt am Fuss, wohin er führt. Wer keines hat (weil es
+   nichts zu zeigen gibt), bleibt ein <div> und sieht unverändert aus. */
+button.kpi{display:flex;flex-direction:column;width:100%;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;-webkit-appearance:none;appearance:none;
+  transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+button.kpi:hover{border-color:var(--fg-subtle);box-shadow:0 2px 10px rgba(28,34,32,.10)}
+button.kpi:active{box-shadow:none}
+/* `margin-top:auto` hält die Zeile am Fuss: Die vier Kacheln stehen
+   nebeneinander und sind verschieden hoch gefüllt — ohne das säße der
+   Weg bei jeder woanders. */
+.kpi .weiter{margin-top:auto;padding-top:14px;color:var(--fg-subtle);
+  text-transform:none;letter-spacing:0;font-size:var(--text-sm)}
+
+/* ═══════════════ Druckblatt ═══════════════
+   B5 (Runde 18) · Siehe `drucke()` im Skript: Das PDF macht der Browser,
+   diese Seite macht das Blatt. `#druck` ist am Schirm nie zu sehen.
+   Gedruckt wird NUR, wenn `body.drucken` gesetzt ist — ein Druck mit
+   Befehlstaste-P ohne Knopf bringt weiter die Seite selbst aufs Papier
+   und nicht ein leeres Blatt. */
+#druck{display:none}
+@media print{
+  @page{margin:16mm 14mm}
+  body.drucken{background:#fff}
+  body.drucken>*{display:none}
+  body.drucken>#druck{display:block;color:#000;
+    font:12pt/1.45 var(--font-body,Georgia,"Times New Roman",serif)}
+  #druck h1{font-size:19pt;line-height:1.15;margin:0 0 2mm;letter-spacing:-.01em}
+  #druck h2{font-size:12.5pt;margin:7mm 0 2mm;padding-bottom:1mm;
+    border-bottom:.8pt solid #000;break-after:avoid;page-break-after:avoid}
+  #druck p{margin:0 0 3mm}
+  #druck .druckkopf{border-bottom:1.2pt solid #000;padding-bottom:3mm;margin-bottom:5mm}
+  #druck .druckhaus{font-size:9pt;letter-spacing:.09em;text-transform:uppercase;color:#333}
+  #druck .druckunter{font-size:10.5pt;margin-top:1mm}
+  #druck .druckzeit{font-size:9pt;color:#555;margin-top:2mm}
+  #druck .notiz{border:.6pt solid #000;padding:2.5mm 3mm;margin:0 0 5mm}
+  #druck table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:3mm}
+  /* Kein Flächenton auf Papier: die Bildschirmregel färbt `th` und die
+     Summenzeile, und eine graue Fläche über die ganze Blattbreite kostet
+     Toner, ohne etwas zu sagen. */
+  #druck th,#druck td{border-bottom:.4pt solid #aaa;padding:1.5mm 2mm;
+    text-align:left;vertical-align:top;background:none;box-shadow:none}
+  #druck th{border-bottom:.8pt solid #000;font-weight:700;font-size:9.5pt;
+    text-transform:uppercase;letter-spacing:.05em}
+  #druck th.r,#druck td.r{text-align:right;font-variant-numeric:tabular-nums;
+    white-space:nowrap}
+  #druck tr{break-inside:avoid;page-break-inside:avoid}
+  #druck thead{display:table-header-group}
+  #druck .zwt td{font-weight:700;border-top:.8pt solid #000;border-bottom:none;
+    background:none;text-transform:none;letter-spacing:0}
+  #druck .plus{font-weight:700}
+  #druck .mini{font-size:9pt;color:#444}
+  #druck .fuss{margin-top:8mm;padding-top:2mm;border-top:.4pt solid #aaa;
+    font-size:9pt;color:#444}
 }
 
 </style>
@@ -1877,7 +1953,8 @@ const SEITEN=[
   {id:"bestellen", t:"Nachbestellen"},
   {id:"getraenke", t:"Getränke"},
   {id:"zaehlliste",t:"Zählliste"},
-  {id:"speicher",  t:"Speicher",          grp:"Nachschlagen"},
+  {id:"eingaenge", t:"Eingänge",         grp:"Nachschlagen"},
+  {id:"speicher",  t:"Speicher"},
   {id:"zuordnung", t:"Zuordnung"},
   {id:"rezepte",   t:"Rezepturen"},
   {id:"team",      t:"Mitarbeiter",       grp:"Verwaltung"},
@@ -1901,6 +1978,7 @@ function zaehler(id){
   if(id==="bestellen"){ return bestellliste().length||null; }
   if(id==="zaehlliste"){ return zaehlliste().length||null; }
   if(id==="speicher"){ return VORGAENGE.length||null; }
+  if(id==="eingaenge"){ return VORGAENGE.length||null; }
   if(id==="abgleich"){ const a=abgleich(t, SPANNE);
     /* Ohne Z-Bericht im Fenster ist jede „Differenz" die reine Entnahme.
        Eine rote Zahl in der Navigation behauptete dann einen Befund, den
@@ -2010,16 +2088,28 @@ function vHeute(m){
   /* Der große Slot ist für Ziffern gebaut. Ein grünes „eingegangen" darin
      wiegt schwerer als die rote 7 daneben — obwohl nur die 7 eine Handlung
      auslöst. Zustände bekommen deshalb die schmale Variante. */
-  const kachel=(t,w,u,kl,status)=>
-    `<div class="kpi ${kl||""}${status?" kpi--status":""}"><span>${t}</span>`+
-    `<b>${w}</b><small>${u||"&nbsp;"}</small></div>`;
+  /* B2 (Runde 18) · Jede Kachel, hinter der etwas liegt, ist ein Knopf
+     und sagt am Fuss, wohin sie führt. Das ist keine Verzierung: Alle
+     vier beantworten eine Frage mit einer Zahl („7"), und die nächste
+     Frage ist immer dieselbe — WELCHE sieben? Bis Runde 18 musste man
+     dafür das Menü links lesen und raten, welcher Punkt gemeint ist. */
+  const kachel=(t,w,u,kl,status,ziel,fuehrt)=>{
+    const innen=`<span>${t}</span><b>${w}</b><small>${u||"&nbsp;"}</small>`
+      +(ziel?`<span class="weiter">${esc(fuehrt)} &rsaquo;</span>`:"");
+    const klassen=`kpi ${kl||""}${status?" kpi--status":""}`;
+    return ziel
+      ? `<button type="button" class="${klassen}" data-ziel="${esc(ziel)}">${innen}</button>`
+      : `<div class="${klassen}">${innen}</div>`;
+  };
   k.innerHTML=
     kachel("Tagesfassung", fassung?"eingegangen":"fehlt",
       fassung?esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein":"noch keine Fassung für diesen Tag",
-      fassung?"ok":"warn", true)+
+      fassung?"ok":"warn", true,
+      "fassung", fassung?"Positionen und Mengen ansehen":"Frühere Tagesfassungen")+
     kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE+" Tagen":"fehlen",
       a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
-      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true)+
+      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true,
+      "zbericht", a.z?"Eingelesene Positionen ansehen":"Bericht einlesen")+
     /* Eine grüne Null heißt „geprüft, alles in Ordnung". Ohne Z-Bericht im
        Fenster ist aber nichts geprüft, und ohne Kellerzählung ist kein
        Bestand berechenbar (§4.3: ohne Zählung kein Bestand, nur Bewegung) —
@@ -2037,13 +2127,33 @@ function vHeute(m){
             ?(ohneUrteil+" Positionen ohne Abgleich — "+esc(gruendeSatz))
             :"Verkauf und Entnahme decken sich")
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
-      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
+      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"", false,
+      "diff", a.berichte?"Welche Positionen, welche Differenz":"Zum Abgleich")+
     kachel("Nachbestellen", B.hat?best.length:"—",
       B.hat
         ?(best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle")
         :"keine Kellerzählung — Bestand nicht berechenbar",
-      B.hat?(best.length?"warn":"ok"):"");
+      B.hat?(best.length?"warn":"ok"):"", false,
+      "bestellen", B.hat?"Welche Weine, wie viele Kisten":"Zum Bestellvorschlag");
   m.appendChild(k);
+
+  /* Wohin die vier Kacheln führen. Kein Ziel ist eine Sackgasse: Fehlt
+     die Tagesfassung, führt die Kachel auf die Liste der FRÜHEREN
+     Tagesfassungen — dort steht, wann zuletzt eine kam. Fehlt der
+     Z-Bericht, führt sie dorthin, wo er eingelesen wird. */
+  k.querySelectorAll("[data-ziel]").forEach(b=>b.onclick=()=>{
+    const z=b.dataset.ziel;
+    if(z==="fassung"){
+      EGFILTER={modus:fassung?"":"tag", wer:"", q:""};
+      EGOFFEN=fassung?vgSchluessel(fassung):null;
+      SEITE="eingaenge";
+    }
+    else if(z==="zbericht"){ vImport.zeig=(a.z&&a.z.tag)||tag; SEITE="import"; }
+    else if(z==="diff"){ vAbgleich.tag=tag; SEITE="abgleich"; }
+    else if(z==="bestellen"){ SEITE="bestellen"; }
+    document.body.classList.remove("navoffen");
+    zeichne(); window.scrollTo(0,0);
+  });
 
   /* Was heute noch fehlt */
   const fehlt=[];
@@ -2187,11 +2297,16 @@ function vAbgleich(m){
     <select id="selSpanne">${[1,7,14,30].map(n=>`<option value="${n}" ${n===SPANNE?"selected":""}>${n===1?"nur dieser Tag":n+" Tage"}</option>`).join("")}</select>
     <span class="mini">${a.berichte} Z-Bericht${a.berichte===1?"":"e"} im Zeitraum</span>
     <span class="rechts"></span>
-    <button class="b klein" id="bCsv">Als CSV</button>`;
+    <button class="b klein" id="bCsv">Als CSV</button>
+    <button class="b klein" id="bPdf">Differenzen als PDF</button>`;
   m.appendChild(w);
   $("#selTag").onchange=e=>{ vAbgleich.tag=e.target.value; zeichne(); };
   $("#selSpanne").onchange=e=>{ SPANNE=+e.target.value; zeichne(); };
   $("#bCsv").onclick=()=>csvAbgleich(tag,a);
+  /* B5 · Das Blatt für die Gruppe. Es druckt auch dann, wenn nichts
+     abweicht — „es geht auf" ist eine Nachricht, die verschickt werden
+     darf, und ein Knopf, der manchmal nichts tut, wird nicht benutzt. */
+  $("#bPdf").onclick=()=>druckDifferenzen(tag,a);
 
   if(!a.berichte){
     const s=document.createElement("section");
@@ -2388,6 +2503,130 @@ function hol(name, inhalt, typ){
   setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
 
+/* ── Druckblatt statt PDF-Bibliothek ─────────────────────────────────
+   B5 (Runde 18) · Verlangt war ein PDF je Vorgang und eines für die
+   Differenzen, zum Sichern und zum Verschicken in die WhatsApp-Gruppe.
+
+   Diese Seite baut KEIN PDF. Sie baut ein Blatt und übergibt es dem
+   Browser; das PDF macht der Browser:
+     · MacBook · Safari/Chrome: Drucken ▸ links unten „PDF" ▸ „Als PDF sichern"
+     · iPad/iPhone: Teilen ▸ Drucken ▸ Vorschau mit zwei Fingern aufziehen ▸ Teilen
+   Der Grund ist Regel 8: eine PDF-Bibliothek wäre eine neue Abhängigkeit
+   und ein Bauschritt, und sie wöge mehr als alles andere in dieser Datei.
+   Der Weg über den Druckdialog kostet nichts, funktioniert offline und
+   hängt an keiner Version, die veraltet.
+
+   `#druck` steht sonst auf `display:none` und ist leer; nur zwischen
+   Klick und `afterprint` trägt es Inhalt. Aufgeräumt wird über
+   `afterprint` — und zur Sicherheit über eine lange Frist, falls ein
+   Browser das Ereignis nicht schickt. Die Frist ist bewusst LANG: räumt
+   sie, während der Druckdialog noch offen steht, kommt ein leeres Blatt
+   aus dem Drucker. */
+let DRUCKLAUF=0;
+function drucke(titel, inhaltHtml, unterzeile){
+  let d=$("#druck");
+  if(!d){ d=document.createElement("div"); d.id="druck"; document.body.appendChild(d); }
+  d.innerHTML=`<div class="druckkopf">
+      <div class="druckhaus">Haus Hirt · Bad Gastein · Fassungstool</div>
+      <h1>${esc(titel)}</h1>
+      ${unterzeile?`<div class="druckunter">${unterzeile}</div>`:""}
+      <div class="druckzeit">Ausgedruckt ${esc(new Date().toLocaleString("de-AT"))}</div>
+    </div>`+inhaltHtml;
+  document.body.classList.add("drucken");
+  const lauf=++DRUCKLAUF;
+  const auf=()=>{
+    if(lauf!==DRUCKLAUF) return;           /* ein neuerer Druck läuft schon */
+    document.body.classList.remove("drucken"); d.innerHTML="";
+    window.removeEventListener("afterprint",auf);
+  };
+  window.addEventListener("afterprint",auf);
+  setTimeout(auf, 180000);
+  /* Ein Atemzug, damit der Browser das neue Blatt gesetzt hat, bevor er
+     es abbildet — Safari druckte sonst den Stand von davor. */
+  setTimeout(()=>window.print(), 80);
+}
+
+/* Ein Vorgang als Blatt: Kopf, Notiz, jede Mengenliste mit Summe. */
+function druckVorgang(v){
+  const B=vgBloecke(v);
+  const tab=b=>{
+    const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
+                   .sort((x,y)=>(+b.o[y]||0)-(+b.o[x]||0));
+    return `<h2>${esc(b.t)}</h2><table><thead><tr>
+      <th>Position</th><th class="r">Flaschen</th></tr></thead><tbody>
+      ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r">${num(b.o[k])}</td></tr>`).join("")}
+      <tr class="zwt"><td>Summe · ${ks.length} Position${ks.length===1?"":"en"}</td>
+        <td class="r">${num(summe(b.o))}</td></tr></tbody></table>`;
+  };
+  drucke((MODUSNAME[v.mode]||v.mode)+" · "+deTag(v.tag),
+    (v.notiz?`<div class="notiz"><b>Notiz aus dem Keller:</b> ${esc(v.notiz)}</div>`:"")
+    + (B.length?B.map(tab).join("")
+       :`<p>Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</p>`)
+    + `<div class="fuss">Quelle der Zahlen: ${esc(QUELLE)}. Gezählte Bestände sind Ist-Stände,
+       keine Entnahme. Dieses Blatt ist ein Auszug — die Wahrheit steht im Fassungstool.</div>`,
+    esc(v.name||"ohne Namen")+(v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):"")
+      +" · "+(v.fertig?"abgeschlossen":"läuft noch"));
+}
+
+/* Das Blatt für die Gruppe: was Verkauf und Fassung NICHT zur Deckung
+   bringt. Bewusst ohne Preise und ohne Umsatz — es geht in eine
+   WhatsApp-Gruppe, in der nicht alle alles sehen müssen. */
+function druckDifferenzen(tag, a){
+  const auf=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1)
+                    .sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
+  const ohne=a.zeilen.filter(r=>r.unklar);
+  const plus=auf.filter(r=>r.diff>0), minus=auf.filter(r=>r.diff<0);
+
+  const kopf=`<div class="notiz">
+    ${a.berichte
+      ? (auf.length
+         ? `<b>${auf.length} Position${auf.length===1?"":"en"} gehen nicht auf.</b><br>
+            Verglichen wurde, was die Kasse gebucht hat, gegen das, was aus dem Keller
+            geholt wurde — über ${a.spanne} Tag${a.spanne===1?"":"e"}, ${a.berichte}
+            Z-Bericht${a.berichte===1?"":"e"}. Ein Plus heisst: mehr geholt als verkauft.
+            Ein Minus heisst: mehr verkauft als geholt.`
+         : `<b>Verkauf und Entnahme decken sich.</b><br>
+            Keine Position weicht über eine Flasche ab.`)
+      : `<b>In diesem Zeitraum liegt kein Z-Bericht vor.</b><br>
+         Ohne ihn ist der Verkauf unbekannt — verglichen ist damit nichts.`}
+    </div>`;
+
+  const zeilen = auf.length ? `<h2>Nicht ausgeglichen</h2><table><thead><tr>
+      <th>Artikel</th><th class="r">Verkauft</th><th class="r">Geholt</th>
+      <th class="r">Differenz</th><th>Was das heisst</th></tr></thead><tbody>
+      ${auf.map(r=>`<tr>
+        <td>${esc(r.name)}<br><span class="mini">${esc(r.art)}</span></td>
+        <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
+        <td class="r plus">${r.diff>0?"+":""}${num(r.diff)}</td>
+        <td>${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund"
+                      :"mehr verkauft als geholt — Vorrat wird abgebaut"}
+          ${r.vorbehalt?`<br><span class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</span>`:""}</td>
+      </tr>`).join("")}
+      <tr class="zwt"><td>Summe</td><td class="r">${num(auf.reduce((s,r)=>s+r.verkauf,0))}</td>
+        <td class="r">${num(auf.reduce((s,r)=>s+r.entnahme,0))}</td>
+        <td class="r">${(x=>(x>0?"+":"")+num(x))(auf.reduce((s,r)=>s+r.diff,0))}</td>
+        <td>${plus.length} zu viel geholt · ${minus.length} zu wenig geholt</td></tr>
+      </tbody></table>` : "";
+
+  const rest = ohne.length ? `<h2>Ohne Abgleich</h2>
+    <p class="mini">Für diese Positionen ist der Verkauf nicht bestimmbar. Ihre Entnahme ist
+      weder Abweichung noch Schwund — sie gehören nicht in die Rechnung oben.</p>
+    <table><thead><tr><th>Artikel</th><th class="r">Geholt</th><th>Warum kein Abgleich</th>
+      </tr></thead><tbody>${ohne.map(r=>`<tr>
+        <td>${esc(r.name)}</td><td class="r">${num(r.entnahme)}</td>
+        <td>${esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")}</td></tr>`).join("")}
+      </tbody></table>` : "";
+
+  drucke("Verkauf ↔ Fassung · was nicht aufgeht",
+    kopf + zeilen + rest
+    + `<div class="fuss">Gerechnet in Flaschen: Anzahl × Ausschank in Millilitern, geteilt durch
+       das Gebinde. Was am Abend verkauft wird, holt oft erst der nächste Tag nach — über einen
+       einzelnen Tag verschiebt das jede Zeile, über eine Woche gleicht es sich aus.
+       Quelle der Zahlen: ${esc(QUELLE)}.</div>`,
+    "Betriebstag "+esc(deTag(a.bis))+(a.spanne>1?" · Zeitraum "+esc(deTag(a.von))+" bis "+esc(deTag(a.bis)):"")
+      +" · "+a.berichte+" Z-Bericht"+(a.berichte===1?"":"e"));
+}
+
 /* ── Z-Bericht einlesen ─────────────────────────────────────────────── */
 function vImport(m){
   m.innerHTML=`<section><h2>Z-Bericht</h2>
@@ -2500,6 +2739,13 @@ function vImport(m){
     : `<div class="karte leer">Auf dem Server liegt noch kein Z-Bericht.</div>`);
   m.appendChild(s2);
   s2.querySelectorAll("[data-auf]").forEach(b=>b.onclick=()=>zeigeVorschau(b.dataset.auf));
+
+  /* B2 · Die Kachel „Z-Berichte" im Mittagsblick hinterlässt hier den
+     Tag, den sie meint, und die Vorschau öffnet sich von selbst. Die
+     Notiz wird beim Lesen verbraucht, damit sie beim nächsten Besuch
+     dieser Seite nicht ein zweites Mal aufspringt. */
+  const zeig=vImport.zeig; vImport.zeig=null;
+  if(zeig && ZBER[zeig]) zeigeVorschau(zeig);
 }
 
 /* ── Kellerbestand ──────────────────────────────────────────────────── */
@@ -2886,7 +3132,200 @@ function vZaehlliste(m){
   };
 }
 
-/* ════════════ 7e · Speicher ════════════
+/* ════════════ 7e · Eingänge ════════════
+   B3 (Runde 18) · Alles, was aus dem Keller gemeldet wurde — je Vorgang
+   mit MENGEN, nicht nur mit Positionsnamen.
+
+   Warum neben „Speicher" und nicht statt dessen: „Speicher" ist die
+   Werkbank der Leitung (Suche, CSV, Rohdaten) und bleibt, wie sie ist.
+   „Eingänge" ist der Blick von aussen auf denselben Bestand — was ist
+   hereingekommen, wie viel, von wem. Drei Dinge, die der Speicher nicht
+   zeigte und die hier stehen:
+
+   · `eingang` (Wareneingang) und `zaehlung` (Kellerzählung) zählten nie
+     in die Spalten „Wein"/„Getränke" — ein Wareneingang über 24 Kisten
+     stand mit zwei Strichen da (hospitality-pro, Runde 5). Die Liste
+     nennt deshalb JEDE Menge des Vorgangs, nicht nur die Entnahme.
+   · `gzaehlung` (der gezählte Ist-Stand der Getränkelade) wurde in
+     `normVorgang` berechnet und nirgends gezeigt. Eine Kellerzählung,
+     die nur Getränke gezählt hat, sagte deshalb „Dieser Vorgang hat
+     keine Mengen bewegt" — bei 57 gezählten Flaschen.
+   · Die Notiz stand nur im Detail, nicht in der Liste; bei einer
+     Sonderentnahme ist sie oft der ganze Inhalt.
+
+   Zwei leere Zustände, nicht einer (ui-designer, Runde 3): „nichts da"
+   und „nichts passt" sind verschiedene Nachrichten. */
+let EGFILTER={modus:"", wer:"", q:""}, EGOFFEN=null;
+
+/* Ein Vorgang hat auf dem Server eine `id`; lokal (Rückfall auf den
+   Gerätespeicher) hat er keine. Der Schlüssel muss beides überstehen,
+   weil er ein neu gezeichnetes Detail wiederfindet. */
+const vgSchluessel = v => (v && v.roh && v.roh.id)
+  || (v ? v.mode+"_"+v.tag+"_"+(v.ts||"")+"_"+(v.name||"") : "");
+
+/* Die Mengenblöcke eines Vorgangs, in der Reihenfolge, in der sie im
+   Keller entstehen. `art:"zaehlung"` behält die Nullen: eine gezählte 0
+   heisst „nichts mehr da" und ist eine Angabe, keine fehlende Zeile. */
+function vgBloecke(v){
+  const B=[], hat=o=>o&&Object.keys(o).length,
+        bewegt=o=>o&&Object.keys(o).some(k=>+o[k]);
+  if(bewegt(v.wein))     B.push({t:"Aus dem Weinkeller geholt",         o:v.wein,      art:"bewegung"});
+  if(bewegt(v.getr))     B.push({t:"Aus dem Getränkelager geholt",      o:v.getr,      art:"bewegung"});
+  if(bewegt(v.eingang))  B.push({t:"Wareneingang · geliefert",          o:v.eingang,   art:"bewegung"});
+  if(hat(v.zaehlung))    B.push({t:"Gezählter Bestand · Weinkeller",    o:v.zaehlung,  art:"zaehlung"});
+  if(hat(v.gzaehlung))   B.push({t:"Gezählter Bestand · Getränkelade",  o:v.gzaehlung, art:"zaehlung"});
+  return B;
+}
+/* Kurzfassung derselben Blöcke für die Liste — je Zeile eine Zahl mit
+   Einheit, statt zweier Spalten, die bei drei von fünf Vorgangsarten
+   leer bleiben. */
+function vgMengen(v){
+  return vgBloecke(v).map(b=>{
+    const s=num(summe(b.o));
+    if(b.t.startsWith("Aus dem Weinkeller"))    return s+" Fl. Wein";
+    if(b.t.startsWith("Aus dem Getränkelager")) return s+" Fl. Getränke";
+    if(b.t.startsWith("Wareneingang"))          return s+" Fl. geliefert";
+    if(b.t.endsWith("Weinkeller"))              return s+" Fl. gezählt (Wein)";
+    return s+" Fl. gezählt (Getränke)";
+  });
+}
+const vgName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein+" "+w.jg : GN(id); };
+
+/* Vorgänge, die NUR in diesem Browser liegen (qa-guardian, Runde 3):
+   Antwortet der Server mit einer leeren Liste, gewinnt der Server — die
+   alten Vorgänge dieses Geräts verschwanden damit vom Schirm, ohne dass
+   irgendwo stand, dass es sie noch gibt. Sie werden nicht eingemischt
+   (der Server bleibt die Wahrheit), aber sie werden benannt. */
+function nurImBrowser(){
+  const arch=lese(K_ARCHIV)||{}, akt=lese(K_STAND)||{}, roh=[];
+  Object.values(arch).forEach(v=>roh.push(v));
+  Object.values(akt).forEach(v=>{ if(v&&v.mode) roh.push(v); });
+  const da=new Set(VORGAENGE.map(v=>v.mode+"_"+v.tag));
+  return roh.map(normVorgang).filter(Boolean)
+            .filter(v=>!da.has(v.mode+"_"+v.tag))
+            .sort(nachZeit).reverse();
+}
+
+function vEingaenge(m){
+  const alle=VORGAENGE.slice().reverse();
+  const leute=Array.from(new Set(alle.map(v=>v.name).filter(Boolean))).sort();
+  const fremd=QUELLE==="Server" ? nurImBrowser() : [];
+
+  m.innerHTML=`<section><h2>Eingänge</h2>
+    <div class="unter">Jede Fassung, jede Zählung, jede Lieferung — mit den Mengen dahinter.
+    Ein Klick auf „Ansehen“ öffnet die Positionen samt Anzahl; „PDF“ macht daraus ein
+    Blatt zum Sichern oder Verschicken.</div></section>`;
+
+  const w=document.createElement("section"); w.className="reihe";
+  w.innerHTML=`<input type="text" id="egQ" placeholder="Name, Notiz oder Datum" value="${esc(EGFILTER.q)}" style="width:250px">
+    <select id="egM"><option value="">Alle Vorgänge</option>
+      ${Object.keys(MODUSNAME).map(k=>`<option value="${k}"${EGFILTER.modus===k?" selected":""}>${MODUSNAME[k]}</option>`).join("")}</select>
+    <select id="egW"><option value="">Alle Personen</option>
+      ${leute.map(n=>`<option value="${esc(n)}"${EGFILTER.wer===n?" selected":""}>${esc(n)}</option>`).join("")}</select>
+    <span class="rechts"></span><button class="b klein" id="egCsv">Alles als CSV</button>`;
+  m.appendChild(w);
+  $("#egQ").oninput=e=>{EGFILTER.q=e.target.value; malListe();};
+  $("#egM").onchange=e=>{EGFILTER.modus=e.target.value; malListe();};
+  $("#egW").onchange=e=>{EGFILTER.wer=e.target.value; malListe();};
+  $("#egCsv").onclick=()=>csvSpeicher(gefiltert());
+
+  const liste=document.createElement("section"); liste.id="egListe"; m.appendChild(liste);
+  const detail=document.createElement("section"); detail.id="egDetail"; m.appendChild(detail);
+  malListe();
+
+  if(fremd.length){
+    const s=document.createElement("section");
+    s.innerHTML=`<h3 style="margin-top:32px">Nur auf diesem Gerät</h3>
+      <div class="hinweis">Der Server kennt diese ${fremd.length} Vorgänge nicht.
+        Sie liegen im Speicher dieses Browsers und sind an keinem anderen Gerät zu sehen.
+        Sie zählen in keine Rechnung dieser Seite hinein — sie stehen hier, damit sie
+        nicht unbemerkt verschwinden.</div>
+      <div class="tabhuelle" style="margin-top:12px"><table><thead><tr>
+        <th>Betriebstag</th><th>Vorgang</th><th>Wer</th><th>Mengen</th><th></th>
+        </tr></thead><tbody>${fremd.map((v,i)=>`<tr>
+          <td>${esc(deTag(v.tag))}</td><td>${esc(MODUSNAME[v.mode]||v.mode)}</td>
+          <td>${esc(v.name||"—")}</td>
+          <td>${vgMengen(v).map(esc).join(" · ")||'<span class="dim">keine</span>'}</td>
+          <td class="r"><button class="b klein" data-fremd="${i}">Ansehen</button></td>
+        </tr>`).join("")}</tbody></table></div>`;
+    m.appendChild(s);
+    s.querySelectorAll("[data-fremd]").forEach(b=>b.onclick=()=>{
+      EGOFFEN=vgSchluessel(fremd[+b.dataset.fremd]); malDetail(fremd[+b.dataset.fremd]);
+      $("#egDetail").scrollIntoView({behavior:"smooth", block:"start"}); });
+  }
+
+  function gefiltert(){
+    const q=EGFILTER.q.trim().toLowerCase();
+    return alle.filter(v=>
+      (!EGFILTER.modus || v.mode===EGFILTER.modus) &&
+      (!EGFILTER.wer   || v.name===EGFILTER.wer) &&
+      (!q || (v.name+" "+v.notiz+" "+v.tag+" "+deTag(v.tag)).toLowerCase().includes(q)));
+  }
+  function malListe(){
+    const L=gefiltert(), gefiltertWird=!!(EGFILTER.q.trim()||EGFILTER.modus||EGFILTER.wer);
+    /* Zwei leere Zustände, zwei Sätze: „es gibt nichts" schickt niemanden
+       auf die Suche nach dem eigenen Filter, „nichts passt" schon. */
+    const leerSatz = !alle.length
+      ? "Es ist noch kein Vorgang eingegangen. Sobald im Keller eine Fassung abgeschlossen wird, steht sie hier."
+      : "Kein Vorgang passt zu dieser Suche. Filter zurücksetzen, dann stehen wieder alle "+alle.length+" da.";
+    $("#egListe").innerHTML=`<div class="tabhuelle"><table><thead><tr>
+      <th>Betriebstag</th><th>Vorgang</th><th>Wer</th><th>Mengen</th>
+      <th>Zustand</th><th>Notiz</th><th></th></tr></thead><tbody>
+      ${L.length?L.map(v=>`<tr>
+        <td>${esc(deTag(v.tag))}</td><td>${esc(MODUSNAME[v.mode]||v.mode)}</td>
+        <td>${esc(v.name||"—")}</td>
+        <td>${vgMengen(v).map(esc).join("<br>")||'<span class="dim">keine Menge</span>'}</td>
+        <td>${v.fertig?'<span class="pill p-ok">fertig</span>':'<span class="pill p-warn">läuft</span>'}
+            ${v.zaehlung||v.gzaehlung?' <span class="pill p-neu">Zählung</span>':""}</td>
+        <td class="deutung">${esc(v.notiz||"")}</td>
+        <td class="r" style="white-space:nowrap">
+          <button class="b klein" data-eg="${esc(vgSchluessel(v))}">Ansehen</button>
+          <button class="b klein leise" data-egpdf="${esc(vgSchluessel(v))}">PDF</button></td></tr>`).join("")
+        :`<tr><td colspan="7" class="leer">${esc(leerSatz)}</td></tr>`}
+      </tbody></table></div>`
+      + (L.length&&gefiltertWird?`<div class="mini" style="margin-top:8px">${L.length} von ${alle.length} Vorgängen</div>`:"");
+    const finde=s=>alle.find(v=>vgSchluessel(v)===s);
+    $("#egListe").querySelectorAll("[data-eg]").forEach(b=>b.onclick=()=>{
+      EGOFFEN=b.dataset.eg; malDetail(finde(EGOFFEN));
+      $("#egDetail").scrollIntoView({behavior:"smooth", block:"start"});});
+    $("#egListe").querySelectorAll("[data-egpdf]").forEach(b=>b.onclick=()=>{
+      const v=finde(b.dataset.egpdf); if(v) druckVorgang(v);});
+    if(EGOFFEN && finde(EGOFFEN)) malDetail(finde(EGOFFEN));
+  }
+  function malDetail(v){
+    if(!v){ $("#egDetail").innerHTML=""; return; }
+    const B=vgBloecke(v);
+    const tab=b=>{
+      const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
+                     .sort((x,y)=>(+b.o[y]||0)-(+b.o[x]||0));
+      return `<h3 style="margin-top:24px">${esc(b.t)}
+        <span class="mini">${ks.length} Position${ks.length===1?"":"en"} · ${num(summe(b.o))} Flaschen</span></h3>
+        <div class="tabhuelle schmal"><table><thead><tr>
+        <th>Position</th><th class="r">Flaschen</th></tr></thead><tbody>
+        ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r"><b>${num(b.o[k])}</b></td></tr>`).join("")}
+        <tr class="zwt"><td>Summe</td><td class="r">${num(summe(b.o))}</td></tr></tbody></table></div>`;
+    };
+    $("#egDetail").innerHTML=`<div class="karte" style="margin-top:24px">
+      <div class="reihe">
+        <div><h3 style="margin:0">${esc(MODUSNAME[v.mode]||v.mode)} · ${esc(deTag(v.tag))}</h3>
+          <div class="mini">${esc(v.name||"ohne Namen")}${v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):""}
+            · ${v.fertig?"abgeschlossen":"läuft noch"}</div></div>
+        <span class="rechts"></span>
+        <button class="b" id="egPdf">Als PDF</button>
+        <button class="b klein" id="egJson">Rohdaten</button>
+        <button class="b klein" id="egZu">Schließen</button></div>
+      ${v.notiz?`<div class="hinweis" style="margin-top:14px"><b>Notiz:</b> ${esc(v.notiz)}</div>`:""}
+      ${B.length?B.map(tab).join("")
+        :`<div class="leer" style="margin-top:20px">Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</div>`}
+    </div>`;
+    $("#egZu").onclick=()=>{EGOFFEN=null; $("#egDetail").innerHTML="";};
+    $("#egPdf").onclick=()=>druckVorgang(v);
+    $("#egJson").onclick=()=>hol(`vorgang_${v.mode}_${v.tag}.json`,
+      JSON.stringify(v.roh,null,2), "application/json");
+  }
+}
+
+/* ════════════ 7f · Speicher ════════════
    Jede Fassung, die je durchgelaufen ist — vollständig, nicht als
    Zusammenfassung. Wer wissen will, warum vor drei Wochen zwölf Flaschen
    gebucht wurden, braucht die Zeilen, nicht die Summe. */
@@ -2948,7 +3387,7 @@ function vSpeicher(m){
     const nm=id=>{const w=byId(id); return w?w.winzer+" · "+w.wein+" "+w.jg:GN(id);};
     const tab=(titel,o,einheit)=>{
       const ks=Object.keys(o||{}).filter(k=>+o[k]); if(!ks.length) return "";
-      return `<h3 style="margin-top:24px">${titel}</h3><div class="tabhuelle"><table><thead><tr>
+      return `<h3 style="margin-top:24px">${titel}</h3><div class="tabhuelle schmal"><table><thead><tr>
         <th>Position</th><th class="r">${einheit}</th></tr></thead><tbody>
         ${ks.sort((a,b)=>o[b]-o[a]).map(k=>`<tr><td>${esc(nm(k))}</td><td class="r"><b>${num(o[k])}</b></td></tr>`).join("")}
         <tr class="zwt"><td>Summe</td><td class="r">${num(summe(o))}</td></tr></tbody></table></div>`;
@@ -2989,7 +3428,7 @@ function csvSpeicher(L){
   hol("speicher.csv","\uFEFF"+R.join("\r\n"),"text/csv");
 }
 
-/* ════════════ 7f · Rezepturen ════════════
+/* ════════════ 7g · Rezepturen ════════════
    Ein Gin Tonic verbraucht ein Tonic, ein Aperol Spritz Prosecco und Soda.
    Ohne diese Zerlegung steht der Mixer für immer als Überhang da: geholt,
    nie verkauft. Es sind ein paar Rezepte, keine Kartei. */
@@ -3061,7 +3500,7 @@ function vRezepte(m){
     delete REZ[b.dataset.rw]; schreib(K_REZ,REZ); zeichne(); toast("Gelöscht");});
 }
 
-/* ════════════ 7g · Mitarbeiter ════════════
+/* ════════════ 7h · Mitarbeiter ════════════
    Codes und Rollen gehören der Leitung, nicht dem Quelltext. Solange
    alles im Browser läuft, ist ein Code eine Unterschrift und keine
    Sperre — das steht hier auch so, damit niemand mehr hineinliest. */
@@ -3409,7 +3848,8 @@ function vTeam(m){
 
 /* ════════════ 8 · Aufbau ════════════ */
 const ANSICHT={heute:vHeute, abgleich:vAbgleich, import:vImport, bestand:vBestand,
-  bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste, speicher:vSpeicher,
+  bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste,
+  eingaenge:vEingaenge, speicher:vSpeicher,
   zuordnung:vZuordnung, rezepte:vRezepte, team:vTeam, einst:vEinst};
 
 /* Die Erklärtexte sind gut geschrieben, stehen aber dauerhaft über jeder
@@ -3462,6 +3902,56 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape")document.body.classList.remove("navoffen");
 });
+
+/* ═══ B4 (Runde 18) · Wischen von links öffnet die Navigation ═══
+   Am iPad las Safari denselben Wisch als „zurück" und sprang aus dem
+   Backoffice heraus — meist ins Fassungstool, die Seite davor. Die Geste
+   gehört aber dieser Seite: Unter 900px liegt die Navigation als Blatt
+   links, genau dort, wo der Daumen ansetzt.
+
+   Wie die Zurück-Geste genommen wird: Safari entscheidet früh, ob ein
+   Randwisch ihm gehört. `preventDefault()` auf der ERSTEN waagrechten
+   Bewegung nimmt sie ihm — deshalb muss der Horcher `passive:false`
+   sein. Er greift nur in zwei Lagen, sonst nie:
+     · Der Finger setzt in den linken 32px auf und die Navigation ist zu.
+     · Die Navigation ist offen (dann schliesst ein Wisch nach links sie).
+   Senkrechte Bewegungen fallen vorher heraus, damit Scrollen unberührt
+   bleibt. `touch-action:manipulation` (Gestaltungsschicht) bleibt, wie
+   es ist; `none` würde den Zwei-Finger-Zoom mitnehmen. */
+(function randwisch(){
+  const RAND=32, SCHWELLE=48, TOTZONE=10;
+  let x0=null, y0=0, aktiv=false, hin=0;
+  const offen=()=>document.body.classList.contains("navoffen");
+
+  addEventListener("touchstart", e=>{
+    x0=null; aktiv=false; hin=0;
+    if(e.touches.length!==1) return;
+    const t=e.touches[0];
+    if(!(t.clientX<=RAND || offen())) return;
+    x0=t.clientX; y0=t.clientY;
+  }, {passive:true});
+
+  addEventListener("touchmove", e=>{
+    if(x0===null || e.touches.length!==1) return;
+    const t=e.touches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+    if(!aktiv){
+      if(Math.abs(dx)<TOTZONE && Math.abs(dy)<TOTZONE) return;
+      /* Senkrecht: das ist Scrollen, und es bleibt Scrollen. */
+      if(Math.abs(dy)>=Math.abs(dx)){ x0=null; return; }
+      aktiv=true; hin=dx>0?1:-1;
+    }
+    /* Ab hier gehört die Bewegung dieser Seite. */
+    if(e.cancelable) e.preventDefault();
+    if(hin>0 && !offen() && dx>=SCHWELLE){
+      document.body.classList.add("navoffen"); x0=null; }
+    else if(hin<0 && offen() && dx<=-SCHWELLE){
+      document.body.classList.remove("navoffen"); x0=null; }
+  }, {passive:false});
+
+  const ende=()=>{ x0=null; aktiv=false; };
+  addEventListener("touchend", ende, {passive:true});
+  addEventListener("touchcancel", ende, {passive:true});
+})();
 
 /* Zweite Ansicht im selben Browser: neue Stände kommen von selbst an */
 window.addEventListener("storage", e=>{

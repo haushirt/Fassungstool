@@ -29,7 +29,7 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import { ausschnitt } from "./hilfe/dateien.mjs";
 
-const QUELLE = ausschnitt("const STAMM = {", "/* ════════════ 7e · Speicher",
+const QUELLE = ausschnitt("const STAMM = {", "/* ════════════ 7f · Speicher",
                           "public/leitung.html");
 
 function backoffice() {
