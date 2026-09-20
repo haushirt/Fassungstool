@@ -4243,7 +4243,7 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
   dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs` (neu, Playwright,
-nicht Teil von `npm test`): **43 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+nicht Teil von `npm test`): **51 Urteile grün, 0 rot, keine JS-Fehler** — darunter
 echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
 aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
 Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
@@ -4299,7 +4299,7 @@ Abschnitt „Runde 18".
 dazu der Zeilenklick in den Eingängen als zweiter Weg zum Detail.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
-**43 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
+**51 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
 genau die Funde der Jagd. Der Wischprüfstand setzt den Finger jetzt auf das
 Element, das an der Stelle wirklich liegt (`elementFromPoint`) statt auf den
 Rumpf; vorher hätte er den Fund gar nicht sehen können.
@@ -4346,7 +4346,7 @@ Weiterklicken ändert. Steht im Backlog.
 `abgleich()`, additiv), alle vier B-Funde, zwei der vier C-Funde.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
-**43 Urteile grün, 0 rot** — sechs davon sind neu und stellen genau die zwei
+**51 Urteile grün, 0 rot** — sechs davon sind neu und stellen genau die zwei
 stillen Wege nach (alles auf „Ignorieren", und eine Rezeptur mit 0 ml).
 
 **Für die Nächsten:** Die Lehre dieser Nacht steht in `LEARNINGS.md`: Wer eine
@@ -4388,7 +4388,7 @@ Entscheidung von Lücke getrennt, Bericht ohne Positionen abgefangen, der
 Prüfstand zu einem Wächter gemacht.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
-**43 Urteile grün, 0 rot.** `sw.js` v59.
+**51 Urteile grün, 0 rot.** `sw.js` v59.
 
 **Für die Nächsten:** Die Lehre dieser Nacht: **Wenn derselbe Fund dreimal
 kommt, ist die Behebung falsch, nicht der Fund.** Zweimal habe ich eine
@@ -4396,5 +4396,43 @@ Textstelle berichtigt; erst beim dritten Mal die beiden Textstellen zu einer
 gemacht.
 
 **Phase/Thema:** Backoffice / dritte Nachtrichtigung
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (vierte Nachtrichtigung, Abschluss)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Vier Leser, und ich habe immer nur den behoben, der
+  gerade genannt war.** Druckblatt (Nachtrag 1), Mittagsblick (Nachtrag 3) —
+  Bildschirm und CSV hat niemand genannt, also blieben sie stehen. Gemessen:
+  neun Flaschen verkauft, drei geholt, und auf dem Schirm steht eine grüne
+  Plakette „stimmt". Jetzt sind alle vier angeschlossen.
+* ✅ übernommen — **B: Die Kachel meldete im selben Fall eine grüne Null.**
+  Der Kommentar drei Zeilen darüber verlangt wörtlich das Gegenteil.
+* ✅ übernommen — **B: Der Randwisch, zum dritten Mal.** Bei offener Leiste
+  blätterte Safari ab x = 21 wieder zurück. Ich hatte die Zone auf 20 px
+  gesetzt, weil der Inhalt bei 16 px beginnt — bei offener Leiste liegt dort
+  aber das Blatt, und der Grund gilt gar nicht.
+* ✅ übernommen — **B: Mein Prüfstand bewachte vier meiner eigenen Änderungen
+  nicht.** Die Jagd hat sie zurückgedreht, und alle 43 Urteile blieben grün.
+  Acht neue stehen jetzt an genau diesen Stellen.
+* ❌ abgelehnt (mit Begründung) — die **Plakette der einzelnen Zeile**. Welcher
+  Artikel hinter einem ignorierten Kassennamen steckt, ist nicht bestimmbar;
+  ein pauschales Abwerten träfe jeden Tag mit Speisen. Zwei Wege stehen
+  ausgearbeitet im Backlog (hoch). Das ist eine Entscheidung, keine Runde.
+
+**Umgesetzt:** Alle vier Leser der Differenz an dieselben Zahlen angeschlossen,
+die drei B-Funde behoben, zwei C-Funde mit, der Prüfstand zum Wächter gemacht.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**51 Urteile grün, 0 rot.** `sw.js` v60.
+
+**Für die Nächsten:** Die Form, die vier Jagden gebraucht haben, um sichtbar zu
+werden: **Eine Wahrheit mit mehreren Lesern heilt man nicht bei einem Leser.**
+Wer eine Auskunft ändert, zählt zuerst, wie viele Stellen sie geben.
+
+**Phase/Thema:** Backoffice / Abschluss Runde 18
 
 **STATUS:** FERTIG

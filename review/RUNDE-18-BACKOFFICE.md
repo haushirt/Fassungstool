@@ -279,8 +279,8 @@ Prüfstand misst das Blatt, nicht den Drucker.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** (ca. 4 s) |
-| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
-| Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v59**, keine neue Abhängigkeit in `package.json` |
+| `node tests/ui-runde18.cjs` | **51 Urteile grün, 0 rot, keine JS-Fehler** |
+| Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v60**, keine neue Abhängigkeit in `package.json` |
 
 `tests/ui-runde18.cjs` ist wie `ui-leitung.cjs` **nicht** Teil von `npm test`
 (Playwright ist keine Abhängigkeit des Projekts). Aufruf:
@@ -357,7 +357,7 @@ einzige Zählung. Er steht jetzt nur noch dort, wo ein Zählblock im Blatt ist.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
+| `node tests/ui-runde18.cjs` | **51 Urteile grün, 0 rot, keine JS-Fehler** |
 
 ---
 
@@ -420,8 +420,8 @@ markiert ist.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
-| `sw.js` | **v59** |
+| `node tests/ui-runde18.cjs` | **51 Urteile grün, 0 rot, keine JS-Fehler** |
+| `sw.js` | **v60** |
 
 ---
 
@@ -461,5 +461,67 @@ Blatt zeigt endlich auch Zeilen mit echtem Verkauf (`Cola · 10 verkauft ·
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` | **43 Urteile grün, 0 rot, keine JS-Fehler** |
-| `sw.js` | **v59** |
+| `node tests/ui-runde18.cjs` | **51 Urteile grün, 0 rot, keine JS-Fehler** |
+| `sw.js` | **v60** |
+
+---
+
+## Nachtrag 4 · die vierte Jagd — und wo die Schleife endet
+
+**1 × A, 3 × B, 6 × C.** Der A-Fund war zum vierten Mal derselbe, und diesmal
+war die Form ganz deutlich: **eine Wahrheit, vier Leser — und die Behebung
+landete jedes Mal nur bei den Lesern, die in der Kritik standen.**
+
+Die vier Leser einer Differenz sind: das Druckblatt, der Mittagsblick, der
+Bildschirm „Verkauf ↔ Fassung" und die CSV-Ausfuhr. Nachtrag 1 erreichte den
+ersten, Nachtrag 3 den zweiten. Die beiden übrigen hatte niemand genannt.
+
+### Der gemessene Fall
+
+Ein Z-Bericht, 1 von 1 Tagen eingelesen. Zwei Kassennamen führen auf dieselbe
+Flasche: „Cola 0,33 l" ×3 (zugeordnet) und „Cola Sonderausschank 0,33 l" ×6
+(auf „Ignorieren"). Aus dem Keller gehen 3 Flaschen.
+
+* **Wahr:** 9 verkauft, 3 geholt → **−6**.
+* **Gezeigt:** `Cola · 3 · 3 · 0 ·` **`stimmt`** in Grün, kein Hinweis, und die
+  CSV, die weitergereicht wird, trägt dieselbe Zeile.
+
+`abgleich()` weiss es die ganze Zeit: `stkGesamt 9 · stkGerechnet 3 ·
+stkIgnoriert 6`.
+
+### Was behoben ist
+
+Alle vier Leser sind jetzt angeschlossen: ein eigener Hinweiskasten auf dem
+Bildschirm mit Weg zur Zuordnung, eine Bilanz im CSV-Kopf plus eigener
+Abschnitt „Auf Ignorieren", die Zahl in der Kachel „Auffällige Differenzen"
+und die Zeile in „Was noch fehlt". Dazu die drei B-Funde: die Kachel, der
+Randwisch bei offener Leiste (ab x = 21 blätterte Safari wieder zurück — das
+Blatt selbst zählt jetzt als Rand) und der Prüfstand.
+
+### Was offen bleibt — und warum
+
+**Die Plakette der einzelnen Zeile bleibt grün.** Welcher Artikel hinter einem
+ignorierten Kassennamen steckt, ist nicht bestimmbar — genau deshalb ist er
+ignoriert. Ein pauschales Abwerten aller Zeilen träfe jeden Tag, an dem Speisen
+ignoriert sind, und dann leuchtet die Warnung immer und sagt nichts mehr.
+
+Das ist kein Fehler dieser Runde: „Ignorieren" hat den Verkauf seit jeher
+stumm gestellt, und `BEFUND()` hat ihn seit jeher nicht gekannt. Diese Runde
+hat es sichtbar gemacht und an vier Stellen benannt. Die Entscheidung, was
+eine einzelne Zeile daraufhin sagen soll, gehört Casimir — sie steht als
+**hoch** im Backlog, mit zwei ausgearbeiteten Wegen.
+
+### Der Prüfstand ist jetzt ein Wächter
+
+Die vierte Jagd hat ihn mutiert: Vier Änderungen dieser Runde liessen sich
+zurückdrehen, ohne dass ein Urteil rot wurde. Acht neue Urteile stehen jetzt an
+genau diesen Stellen.
+
+### Endstand
+
+| Prüfung | Ergebnis |
+|---|---|
+| `npm test` | **444 von 444 grün** |
+| `node tests/ui-runde18.cjs` | **51 Urteile grün, 0 rot, keine JS-Fehler** |
+| `sw.js` | **v60** |
+| Jagden | vier · alle A- und B-Funde behoben oder mit Begründung im Backlog |

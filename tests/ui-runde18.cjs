@@ -433,6 +433,69 @@ const WISCH = `(von, nach, hoch) => {
   urteil("das Wort „Schwund“ steht auf diesem Blatt nie",
     !still.ignoriert.schwund && !still.nullRezept.schwund && !still.heil.schwund,
     { a: still.ignoriert.schwund, b: still.nullRezept.schwund, c: still.heil.schwund });
+  /* Der Grund, den eine 0-ml-Rezeptur hinterlässt, muss „keine Menge im
+     Kassennamen" sein — nicht „Größe fehlt". Dreht man
+     `zaehlePos(…,"ausschank")` auf `"menge"` zurück, wird dieses Urteil
+     rot (vierte Jagd · B). */
+  const grund = await p.evaluate(() => {
+    const merkMap = MAP, merkRez = REZ, merkGeb = GEB_BEST, merkS = SPANNE;
+    MAP = { "Cola 0,33 l": "cola" }; GEB_BEST = { "Cola 0,33 l": 330 };
+    REZ = { "HP Omelett": [{ id: "cola", ml: 0 }] };
+    SPANNE = 1; vAbgleich.tag = letzterTag();
+    const a = abgleich(letzterTag(), 1);
+    const z = a.zeilen.find(r => r.id === "cola");
+    const og = a.ohneGroesse.find(o => o.id === "cola" || o.artikel === "cola");
+    const erg = { unklar: z ? z.unklar : null,
+      vorbehalt: z && z.vorbehalt ? { menge: z.vorbehalt.menge, gebinde: z.vorbehalt.gebinde } : null,
+      fehlt: og ? og.fehlt : null };
+    MAP = merkMap; REZ = merkRez; GEB_BEST = merkGeb; SPANNE = merkS;
+    return erg;
+  });
+  urteil("eine Rezeptzutat ohne Menge zählt als „keine Menge“, nicht als „Größe fehlt“",
+    (grund.vorbehalt ? grund.vorbehalt.menge > 0 && grund.vorbehalt.gebinde === 0
+                     : grund.unklar === "menge"), grund);
+
+  /* Die neue Zeile in „Was noch fehlt" — dort, wo sie wirklich steht. */
+  const fehltZeile = await p.evaluate(() => {
+    const merkMap = MAP, merkS = SPANNE;
+    MAP = {}; Object.keys(ZBER).forEach(tg => ZBER[tg].positionen.forEach(
+      q => { MAP[q.name] = "__ignoriert"; }));
+    SPANNE = 1; SEITE = "heute"; zeichne();
+    const txt = document.querySelector("main").textContent;
+    const kachel = [...document.querySelectorAll(".kpi")]
+      .map(k => k.textContent).join(" ");
+    MAP = merkMap; SPANNE = merkS;
+    return { zeile: /auf „Ignorieren“ und .*nicht als Verkauf/.test(txt),
+      kachel: /ignoriert \(/.test(kachel) };
+  });
+  urteil("„Was noch fehlt“ nennt die ignorierten Kassennamen",
+    fehltZeile.zeile, fehltZeile);
+  urteil("die Kachel „Auffällige Differenzen“ nennt sie ebenfalls",
+    fehltZeile.kachel, fehltZeile);
+
+  /* Bildschirm und CSV kennen den vierten Weg jetzt auch (vierte Jagd · A). */
+  const leser = await p.evaluate(() => {
+    const merkMap = MAP, merkS = SPANNE;
+    MAP = {}; Object.keys(ZBER).forEach(tg => ZBER[tg].positionen.forEach(
+      q => { MAP[q.name] = "__ignoriert"; }));
+    SPANNE = 1; vAbgleich.tag = letzterTag(); SEITE = "abgleich"; zeichne();
+    const hinweise = [...document.querySelectorAll("main .hinweis")]
+      .map(h => h.textContent.replace(/\s+/g, " ").trim());
+    const a = abgleich(letzterTag(), 1);
+    /* Die CSV ohne Datei: derselbe Aufbau, nur abgefangen. */
+    let csv = ""; const merkHol = window.hol;
+    window.hol = (n, inhalt) => { csv = inhalt; };
+    csvAbgleich(letzterTag(), a);
+    window.hol = merkHol;
+    MAP = merkMap; SPANNE = merkS;
+    return { hinweis: hinweise.some(h => /Ignorieren/.test(h)),
+      csvKopf: /Ignorieren/.test(csv), csvZahl: /Verkaufte Einheiten im Zeitraum/.test(csv) };
+  });
+  urteil("der Bildschirm „Verkauf ↔ Fassung“ nennt die ignorierten Namen",
+    leser.hinweis, leser);
+  urteil("die CSV trägt die Bilanz im Kopf und einen eigenen Abschnitt",
+    leser.csvKopf && leser.csvZahl, leser);
+
   /* Zweite Deutungsspalte: der Mittagsblick (dritte Jagd · A). */
   const schirm = await p.evaluate(() => {
     SEITE = "heute"; zeichne();
@@ -549,14 +612,17 @@ const WISCH = `(von, nach, hoch) => {
   /* …bei offener Leiste: aus der MITTE nach rechts bewirkt nichts und
      wird losgelassen — AM RAND aber bliebe sonst die Zurück-Geste des
      Browsers stehen, und genau dort liegt der Daumen (zweite Jagd · B). */
-  const leerlauf = await q.evaluate(WISCHQ => {
+  const leerlauf = await q.evaluate(async WISCHQ => {
     SEITE = "heute"; zeichne();
     document.body.classList.add("navoffen");
-    const e = eval("(" + WISCHQ + ")")(200, 340, 420);
+    await new Promise(r => setTimeout(r, 400));
+    /* NEBEN dem Blatt, nicht darauf: Das Blatt selbst zählt seit der
+       vierten Jagd als Rand, weil Safari dort sonst zurückblättert. */
+    const e = eval("(" + WISCHQ + ")")(340, 380, 420);
     document.body.classList.remove("navoffen");
     return e;
   }, WISCH);
-  urteil("bei offener Leiste wird ein Wisch aus der MITTE nicht geschluckt",
+  urteil("bei offener Leiste wird ein Wisch NEBEN dem Blatt nicht geschluckt",
     !leerlauf.verhindert, leerlauf);
   const randOffen = await q.evaluate(WISCHQ => {
     SEITE = "heute"; zeichne();
@@ -567,6 +633,48 @@ const WISCH = `(von, nach, hoch) => {
   }, WISCH);
   urteil("bei offener Leiste bleibt die Zurück-Geste AM RAND abgefangen",
     randOffen.verhindert, randOffen);
+
+  /* Nach LINKS am Rand bei geschlossener Leiste: bewirkt nichts und ist
+     nichts zu schützen — Safaris Zurück am linken Rand ist ein Wisch nach
+     rechts (dritte Jagd · C). Dreht man `!(schutz && hin>0)` auf
+     `!schutz` zurück, wird dieses Urteil rot. */
+  const linksAmRand = await q.evaluate(WISCHQ => {
+    SEITE = "heute"; zeichne(); document.body.classList.remove("navoffen");
+    const e = eval("(" + WISCHQ + ")")(12, 12 - 90, 420);
+    document.body.classList.remove("navoffen");
+    return e;
+  }, WISCH);
+  urteil("nach links am Rand bleibt die Geste bei der Seite darunter",
+    !linksAmRand.verhindert && !linksAmRand.offen, linksAmRand);
+
+  /* Bei offener Leiste reicht das Blatt selbst als Rand — ab x=21 blieb
+     die Zurück-Geste sonst offen (vierte Jagd · B). */
+  const blattRand = await q.evaluate(async WISCHQ => {
+    SEITE = "heute"; zeichne();
+    document.body.classList.add("navoffen");
+    await new Promise(r => setTimeout(r, 400));   /* das Blatt fährt ein */
+    const breite = document.querySelector("nav.seite").offsetWidth;
+    const e = eval("(" + WISCHQ + ")")(60, 200, 420);
+    document.body.classList.remove("navoffen");
+    return Object.assign(e, { breite });
+  }, WISCH);
+  urteil("bei offener Leiste ist auch x=60 noch geschützt",
+    blattRand.verhindert && blattRand.breite > 60, blattRand);
+
+  /* Am Rand gewinnt die Randgeste auch über einem Eingabefeld — dreht man
+     den `amRand`-Vorrang in `eigenerBedarf` zurück, wird dies rot. */
+  const feldAmRand = await q.evaluate(async WISCHQ => {
+    EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" }; SEITE = "eingaenge"; zeichne();
+    await new Promise(r => setTimeout(r, 200));
+    document.body.classList.remove("navoffen");
+    const f = document.querySelector("#egQ").getBoundingClientRect();
+    const e = eval("(" + WISCHQ + ")")(Math.round(f.left) + 2, Math.round(f.left) + 120,
+      Math.round(f.top + f.height / 2));
+    document.body.classList.remove("navoffen");
+    return e;
+  }, WISCH);
+  urteil("am Rand gewinnt die Randgeste auch über dem Suchfeld",
+    feldAmRand.verhindert && feldAmRand.offen, feldAmRand);
 
   /* 4px-Streifen zwischen Inhaltsbeginn (16) und Randzone (20): dort
      gewinnt die Randgeste, sonst bliebe ein Loch (zweite Jagd · C). */

@@ -82,3 +82,21 @@
   Die Kassennamen trugen keine Einheit; `mlAusText()` fand nichts, und die
   Verkaufsseite war im ganzen Prüfstand leer. Alle Urteile über Differenzen
   liefen über reine Entnahme, ohne dass es jemandem auffiel.
+
+## 20.09.2026 · Runde 18, nach vier Jagden
+
+- **Eine Wahrheit mit mehreren Lesern heilt man nicht bei einem Leser.**
+  Vier Stellen deuten dieselbe Differenz: Druckblatt, Mittagsblick,
+  Bildschirm „Verkauf ↔ Fassung", CSV. Vier Jagden haben denselben A-Fund
+  gemeldet, und dreimal habe ich den Leser behoben, der gerade in der Kritik
+  stand. Wer eine Auskunft ändert, zählt zuerst, wie viele Stellen sie geben —
+  und legt sie zusammen, statt sie nachzuziehen.
+- **Ein Prüfstand, der die eigene Änderung nicht rot macht, bewacht nichts.**
+  Die Mutationsprobe („dreh die Änderung zurück und sieh nach, ob es rot
+  wird") hat vier von fünf Änderungen dieser Runde als unbewacht entlarvt.
+  Sie gehört zu jedem neuen Urteil.
+- **Manche Befunde sind keine Aufgaben, sondern Entscheidungen.** Dass eine
+  Zeile mit ignoriertem Verkauf grün „stimmt" sagt, lässt sich nicht
+  reparieren, ohne festzulegen, was „Ignorieren" bedeuten soll. Solche Punkte
+  gehören mit zwei ausgearbeiteten Wegen in den Backlog, nicht in dieselbe
+  Nacht.

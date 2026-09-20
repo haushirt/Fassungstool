@@ -1045,3 +1045,29 @@ liest die Ausschankmenge über `mlAusText(p.name)` — ohne Einheit findet es
 nichts, und **die Verkaufsseite blieb im ganzen Prüfstand leer**. Jede
 Differenz bestand nur aus der Entnahme. Seit dieser Jagd tragen die Namen eine
 Einheit, und das Blatt zeigt endlich auch Zeilen mit echtem Verkauf.
+
+## Vierte Jagd nach Runde 18 (Stand `f41c7dc`)
+
+**1 × A, 3 × B, 6 × C.** Der A-Fund ist zum vierten Mal derselbe — eine
+Wahrheit, mehrere Leser, und die Behebung landet jedes Mal nur bei den Lesern,
+die in der Kritik standen. Diesmal sind es die beiden, die niemand genannt
+hatte: der Bildschirm „Verkauf ↔ Fassung" und die CSV-Ausfuhr.
+
+| Klasse | Runde | Fund | Wie nachgerechnet | Stand |
+|---|---|---|---|---|
+| A | 18 | **Bildschirm und CSV kennen „Ignorieren" nicht — die grüne Plakette „stimmt" steht über einer Rechnung, in der zwei Drittel des Verkaufs fehlen.** `stkGesamt/stkGerechnet/stkIgnoriert` waren an zwei von vier Lesern angeschlossen. | Ein Z-Bericht, 1 von 1 eingelesen. „Cola 0,33 l" ×3 zugeordnet, „Cola Sonderausschank 0,33 l" ×6 auf „Ignorieren". Keller gibt 3 Flaschen. **Wahr: 9 verkauft, 3 geholt → −6.** Gezeigt: `Cola · 3 · 3 · 0 · `**`stimmt`** in Grün, keine Hinweise; die CSV wortgleich. `abgleich()` weiss es die ganze Zeit: `stkGesamt 9 · stkGerechnet 3 · stkIgnoriert 6`. | **teilweise behoben in Runde 18** — Bildschirm, CSV, Kachel und Blatt benennen die ignorierten Namen jetzt alle. **Offen bleibt die Plakette der EINZELNEN Zeile**: Welcher Artikel hinter einem ignorierten Kassennamen steckt, ist nicht bestimmbar; ein pauschales Abwerten aller Zeilen träfe jeden Tag, an dem Speisen ignoriert sind. Steht als **hoch** im Backlog, mit zwei Wegen zur Entscheidung |
+| B | 18 | Die Kachel „Auffällige Differenzen" meldete im selben Fall „0 · Verkauf und Entnahme decken sich" in Grün — gegen den Kommentar drei Zeilen darüber, der wörtlich verlangt: „Eine grüne Null darf nur dastehen, wenn auch wirklich verglichen wurde." | Gemessener Kacheltext. | **behoben in Runde 18** — die Kachel nennt „N ignoriert (M Einheiten)" |
+| B | 18 | `randwisch()` gab Safari bei OFFENER Leiste die Zurück-Geste ab x = 21 px zurück — der B-Fund der zweiten Jagd, um fünf Pixel verschoben. Bei offener Leiste liegt das Blatt über 0–280 px; der Grund für die schmale Zone gilt dort gar nicht. | 390 × 844, Blatt `left 0 · right 280`, Wisch ab x = 25 → `verhindert:false`. | **behoben in Runde 18** — bei offener Leiste zählt die Breite des Blattes als Rand (`offsetWidth`, nicht die animierte Kante). Geprüft: zwei Urteile |
+| B | 18 | **Der Prüfstand bewachte drei der fünf Änderungen nicht.** Mutationsprobe: `zaehlePos(…,"ausschank")` zurückgedreht → 43 grün. Ignorier-Zeile entfernt → 43 grün. `!(amRand && hin>0)` zurück → 43 grün. `amRand`-Vorrang zurück → 43 grün. | Mutationsprobe auf einer Kopie. | **behoben in Runde 18** — acht neue Urteile, jedes an genau der Stelle, die es bewacht. 51 Urteile, 0 rot |
+
+### C-Funde der vierten Jagd
+Zwei sofort behoben (falscher Numerus in beiden neuen Texten, fehlender
+Zeitraum in der Zeile „Was noch fehlt"). Vier stehen im Backlog: eine Rezeptur
+schattet „Ignorieren" still ab; am Rand gewinnt die Randgeste auch über dem
+Suchfeld (bewusst); ein einzelner leerer Bericht in einem Fenster mit sieben
+fällt stumm durch; und für die VERSION-Regel gibt es keinen Wächter.
+
+### Beobachtung ohne Klasse
+Ein einzelner `npm test`-Lauf meldete einmal `443/1`; in über zwanzig weiteren
+Läufen nicht wiederholbar. Zwölf Prüfdateien hängen an `Date.now()`. Wer Zeit
+hat, wiederholt den Lauf um Mitternacht (Wien). Steht im Backlog.

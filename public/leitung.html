@@ -2193,11 +2193,17 @@ function vHeute(m){
        geprüft — das steht dann da, statt „decken sich". */
     kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
       a.berichte
-        ?(grob.length
+        ?((grob.length
           ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
           :ohneUrteil
             ?(ohneUrteil+" Positionen ohne Abgleich — "+esc(gruendeSatz))
             :"Verkauf und Entnahme decken sich")
+          /* NACHTRICHTIGUNG (vierte Jagd · B): Eine grüne Null darf nur
+             dastehen, wenn wirklich verglichen wurde — das verlangt der
+             Kommentar zwei Absätze weiter oben, und für den vierten Weg
+             („Ignorieren") galt es noch nicht. */
+          +(a.ignoriert&&a.ignoriert.length
+            ?" · "+a.ignoriert.length+" ignoriert ("+num(a.stkIgnoriert)+" Einheiten)":""))
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
       a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"", false,
       "diff", a.berichte?"Welche Positionen, welche Differenz":"Zum Abgleich")+
@@ -2282,9 +2288,12 @@ function vHeute(m){
      steht bewusst hier und nicht bei den Abweichungen: Es ist eine
      Entscheidung, kein Befund. */
   if(a.ignoriert && a.ignoriert.length) fehlt.push(
-    a.ignoriert.length+" Kassennamen ("+num(a.stkIgnoriert)+" Einheiten) stehen auf "
-    +"„Ignorieren“ und zählen nicht als Verkauf — richtig für Speisen, Kaffee und Fassbier. "
-    +"Steht dort ein Getränk aus dem Keller, erscheint seine Entnahme unten als volle Abweichung.");
+    a.ignoriert.length+(a.ignoriert.length===1?" Kassenname":" Kassennamen")
+    +" ("+num(a.stkIgnoriert)+" Einheiten) im Zeitraum "
+    +(a.ignoriert.length===1?"steht":"stehen")+" auf „Ignorieren“ und "
+    +(a.ignoriert.length===1?"zählt":"zählen")+" nicht als Verkauf — richtig für Speisen, "
+    +"Kaffee und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf, "
+    +"und seine Zeile unten sieht aus, als stimme sie.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else {
     /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
@@ -2415,6 +2424,23 @@ function vAbgleich(m){
       ${a.offen.length===1?"sein":"ihr"} Verkauf fehlt in dieser Rechnung.
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
+  }
+  /* NACHTRICHTIGUNG (vierte Jagd · A): Der vierte Weg, auf dem Verkauf
+     aus der Rechnung fällt, stand auf diesem Schirm nirgends. Er ist
+     nicht rot: „Ignorieren" ist für Speisen, Kaffee und Fassbier genau
+     richtig und der Alltag. Er steht hier, weil unter denselben Namen
+     auch ein Getränk aus dem Keller liegen kann — und dann trägt seine
+     Zeile eine grüne Plakette über einer halben Rechnung. */
+  if(a.ignoriert && a.ignoriert.length){
+    const s=document.createElement("section");
+    s.innerHTML=`<div class="hinweis">${a.ignoriert.length} Kassenname${a.ignoriert.length===1?"":"n"}
+      (${num(a.stkIgnoriert)} Einheiten) ${a.ignoriert.length===1?"steht":"stehen"} auf „Ignorieren“
+      im Zeitraum ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))} und
+      ${a.ignoriert.length===1?"zählt":"zählen"} nicht als Verkauf — richtig für Speisen, Kaffee
+      und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf hier, und seine
+      Zeile sieht aus, als stimme sie.
+      <button class="b klein" id="bIgn" style="margin-left:8px">Nachsehen</button></div>`;
+    m.appendChild(s); $("#bIgn").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
   }
   /* Der dritte Zustand: zugeordnet, aber die Größe ist nicht bestätigt.
      Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
@@ -2553,7 +2579,17 @@ function csvAbgleich(tag,a){
            ["Betriebstag",tag].map(e).join(";"),
            ["Zeitraum der Zahlen",a.von+" bis "+a.bis].map(e).join(";"),
            ["Spanne",a.spanne+(a.spanne===1?" Tag":" Tage")].map(e).join(";"),
-           ["Z-Berichte im Zeitraum",a.berichte+" von "+a.spanne].map(e).join(";"),"",
+           ["Z-Berichte im Zeitraum",a.berichte+" von "+a.spanne].map(e).join(";"),
+           /* NACHTRICHTIGUNG (vierte Jagd · A): Diese Datei wird
+              weitergereicht. Sie kannte zwei der vier Wege, auf denen
+              Verkauf aus der Rechnung fällt, und trug deshalb Zeilen mit
+              dem Befund „stimmt" über einer halben Rechnung. Jetzt steht
+              die Bilanz im Kopf, in Einheiten, wie sie die Kasse zählt. */
+           ["Verkaufte Einheiten im Zeitraum",num(a.stkGesamt||0)].map(e).join(";"),
+           ["davon in dieser Rechnung gerechnet",num(a.stkGerechnet||0)].map(e).join(";"),
+           ["davon auf Ignorieren",num(a.stkIgnoriert||0)].map(e).join(";"),
+           ["davon ohne Zuordnung oder ohne Größe",
+             num(Math.max(0,(a.stkGesamt||0)-(a.stkGerechnet||0)-(a.stkIgnoriert||0)))].map(e).join(";"),"",
            ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
   /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
      Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
@@ -2566,6 +2602,10 @@ function csvAbgleich(tag,a){
     ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
+  if(a.ignoriert && a.ignoriert.length){
+    L.push("",["Auf Ignorieren — zählt nicht als Verkauf"].map(e).join(";"),
+           ["Kassenname","Anzahl"].map(e).join(";"));
+    a.ignoriert.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
   /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
      des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
   /* Drei Zustände wie auf dem Schirm, nicht zwei (neunte Jagd · C): Die
@@ -2729,7 +2769,8 @@ function druckDifferenzen(tag, a){
     tOG.ausschank.length+" zugeordnete Kassennamen ("+num(tOG.stkAusschank)
     +" Einheiten) sagen nicht, wie viel ausgeschenkt wurde, und zählen nicht als Verkauf.");
   if(a.ignoriert && a.ignoriert.length) vorbehalte.push(
-    a.ignoriert.length+" Kassennamen ("+num(a.stkIgnoriert)+" Einheiten) stehen auf "
+    a.ignoriert.length+(a.ignoriert.length===1?" Kassenname (":" Kassennamen (")
+    +num(a.stkIgnoriert)+(a.ignoriert.length===1?" Einheiten) steht auf ":" Einheiten) stehen auf ")
     +"\u201eIgnorieren\u201c: Speisen, Kaffee, Fassbier — alles, was nicht aus dem Keller "
     +"kommt. Steht dort ein Getränk, fehlt sein Verkauf in dieser Rechnung.");
   /* Solange irgendein Verkauf fehlt, ist ein Plus kein Befund über den
@@ -4197,8 +4238,20 @@ document.addEventListener("keydown",e=>{
       /* Safaris Zurück-Geste am linken Rand ist ein Wisch nach RECHTS.
          Nach links am Rand bewirkt nichts und ist nichts zu schützen —
          das gehört der Seite darunter (dritte Jagd · C). */
+      /* NACHTRICHTIGUNG (vierte Jagd · B): Bei OFFENER Leiste liegt das
+         Navigationsblatt über den ersten 280px — dort gibt es nichts
+         darunter, das die Geste braucht, und der Grund für die schmale
+         Zone (der Inhalt beginnt bei 16px) gilt gar nicht. Ab x = 21
+         blätterte Safari wieder zurück. Bei offener Leiste zählt deshalb
+         die Breite des Blattes als Rand. */
+      /* `offsetWidth`, nicht die gerade gemessene Kante: Das Blatt
+         fährt ein, und mitten in der Bewegung stünde seine rechte Kante
+         noch bei 3 px. */
+      const blatt=document.querySelector("nav.seite");
+      const schutz = amRand ||
+        (offen() && blatt && blatt.offsetWidth && x0<=blatt.offsetWidth);
       const wirkt = (hin>0 && !offen()) || (hin<0 && offen());
-      if(!wirkt && !(amRand && hin>0)){ x0=null; return; }
+      if(!wirkt && !(schutz && hin>0)){ x0=null; return; }
       aktiv=true;
     }
     /* Ab hier gehört die Bewegung dieser Seite. */

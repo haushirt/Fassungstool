@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 18 (Nacht auf den 20.09.2026)
 
-**Stand davor: `c78d121` (`sw.js` v56, live). Stand danach: `sw.js` v59.**
+**Stand davor: `c78d121` (`sw.js` v56, live). Stand danach: `sw.js` v60.**
 
 Vier Punkte, alle im Backoffice. **`public/index.html` und `src/` sind
 unberührt** — im Keller ändert sich nichts.
@@ -90,8 +90,8 @@ Befehlstaste-P ohne Knopf bringt weiterhin die Seite selbst aufs Papier.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **43 Urteile grün, 0 rot, keine JS-Fehler** |
-| Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v59, keine neue Abhängigkeit |
+| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **51 Urteile grün, 0 rot, keine JS-Fehler** |
+| Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v60, keine neue Abhängigkeit |
 
 Fundstellen, Lösungswege und Prüfpläne Punkt für Punkt:
 **`review/RUNDE-18-BACKOFFICE.md`**.
