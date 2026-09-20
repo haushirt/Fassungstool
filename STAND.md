@@ -14,6 +14,10 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   und ist **nicht** Teil von `npm test` (Regel 8).
 - Was Runde 18 gebracht hat, steht Punkt für Punkt in
   `review/RUNDE-18-BACKOFFICE.md` (mit Datei:Zeile und Prüfplan).
+- Die Jagd fand danach **1 × A und 3 × B** — alle vier sind in derselben Nacht
+  behoben, je mit eigener Prüfung (`review/JAGD.md`). Der schwerste: Das
+  Differenzblatt nannte „Schwund", wo der Verkauf gar nicht in der Rechnung
+  stand. Es trägt jetzt einen Vorbehaltskasten.
 - Die Live-Datenbank ist **nur lesbar**. Migrationen spielt Casimir selbst ein.
 
 ## Was Runde 18 verändert hat (nur `public/leitung.html`)

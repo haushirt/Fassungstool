@@ -13,6 +13,11 @@
   Abhängigkeit; das PDF macht der Druckdialog.
 - Runde-Dokument mit Datei:Zeile und Prüfplan: `review/RUNDE-18-BACKOFFICE.md`.
   PR-Beschreibung: `review/ERGEBNIS.md`. Backlog abgeglichen.
+- **Die Jagd fand danach 1 × A und 3 × B — alle vier behoben.** Der schwerste:
+  Das Blatt für die WhatsApp-Gruppe nannte „Schwund", wo der Verkauf gar nicht
+  in der Rechnung stand (mit dem Mapping, wie es live steht, sind das in einem
+  echten Z-Bericht 136 von 145 Stück). Es trägt jetzt einen Kasten, der sagt,
+  was fehlt — und das Wort „Schwund" fällt weg, solange die Rechnung halb ist.
 - `npm test` 444/444 grün. `node tests/ui-runde18.cjs` 34 Urteile grün.
 
 ## Blockaden
