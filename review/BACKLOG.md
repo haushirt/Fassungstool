@@ -507,3 +507,16 @@ es keinen Hinweis.
 stehen auf „für immer kein Keller", begründet damit, dass es im Stamm
 keinen Artikel dazu gibt. Kommen Spirituosen dazu, bleiben die Namen
 ausgeschlossen und ihr Verbrauch fällt lautlos heraus. Nichts warnt.
+
+### Aus der zweiten Jagd nach Runde 22
+
+**Niedrig — `bestaetigeGebinde()` merkt weiter vor dem Senden.** Der
+Zuordnung-Bildschirm nimmt seit der zweiten Jagd bei einem Fehlschlag
+alles zurück; dieser Weg tut es nicht und behält Artikel und Größe auf
+dem Gerät („Nur auf diesem Gerät gemerkt"). Das ist alt und nicht
+falsch, aber jetzt uneinheitlich.
+
+**Niedrig — Ein ignorierter Name kommt nicht in den Rezeptur-Schirm.**
+`__offen` ist seit der zweiten Jagd wieder wählbar, `__ignoriert` nicht.
+Wer eine Speise versehentlich ignoriert hat und merkt, dass es doch ein
+Mischgetränk ist, muss sie erst wieder zuordnen.

@@ -281,6 +281,31 @@ const ok = (satz, bedingung, dazu) => {
      (DB.zeilen("mapping").find(x => x.fremd === ABGELEHNT) || {}).artikel === null,
      String((DB.zeilen("mapping").find(x => x.fremd === ABGELEHNT) || {}).artikel));
 
+  /* Eine Ablehnung darf keine Sackgasse sein. Zweite Jagd Runde 22 · A:
+     `vRezepte()` bot nur Namen ohne MAP-Eintrag an, `__offen` ist aber
+     einer — wer „nein, das ist es nicht" sagte, verlor damit den einzigen
+     Weg zu sagen, was es statt dessen ist. Zurück führte nichts: der
+     Select kennt kein „nie angefasst", und ein DELETE auf `mapping`
+     gibt es nicht. */
+  const rezeptwahl = await p.evaluate(n => {
+    SEITE = "rezepte"; zeichne();
+    const s = document.getElementById("rzName");
+    return s ? [...s.options].some(o => o.value === n || o.textContent.includes(n)) : null;
+  }, ABGELEHNT);
+  ok("ein abgelehnter Name steht weiter zur Rezeptur bereit",
+     rezeptwahl === true, String(rezeptwahl));
+  await offen("zuordnung");
+
+  /* Und die Ablehnung ist als solche sichtbar — nicht als „offen" wie
+     am ersten Tag. */
+  const pille = await p.evaluate(n => {
+    const r = [...document.querySelectorAll("tr")]
+      .find(x => x.firstElementChild && x.firstElementChild.textContent === n);
+    return r ? r.children[3].textContent.trim() : null;
+  }, ABGELEHNT);
+  ok("und die Zeile zeigt, dass jemand hingesehen hat",
+     /abgelehnt/.test(pille || ""), pille);
+
   /* Und der Worker zählt sie als offen — vor der Jagd war sie weder
      zugeordnet noch offen, also nirgends. */
   const j = await (await fetch(BASIS + "/api/fassungsliste", {

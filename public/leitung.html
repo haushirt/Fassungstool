@@ -1146,7 +1146,10 @@ function gebArtikelBestaetigt(){
   const t={};
   Object.keys(GEB_BEST).forEach(nm=>{
     const id=MAP[nm], ml=+GEB_BEST[nm]||0;
-    if(!id || id==="__ignoriert" || !ml) return;
+    /* `__ignoriert` und `__offen` sind Zustände, keine Artikel. Ohne den
+       zweiten entstand unter dem Schlüssel „__offen" ein Eintrag
+       (zweite Jagd Runde 22 · C). */
+    if(!id || id==="__ignoriert" || id==="__offen" || !ml) return;
     if(t[id]===undefined) t[id]=ml;
     else if(t[id]!==ml) t[id]=null;        /* Widerspruch → lieber keine Zahl */
   });
@@ -1779,7 +1782,7 @@ async function ladeZuordnung(){
    src/index.js). Wer nur ein Feld schickt, löscht die anderen. Artikel und
    Gebindegröße gehen deshalb immer gemeinsam hinaus; `gebindeMl` ist
    optional und heisst „unverändert lassen". */
-async function sendeZuordnung(name, wert, gebindeMl){
+async function sendeZuordnung(name, wert, gebindeMl, stumm){
   const ml = gebindeMl!==undefined ? gebindeMl : (+GEB_BEST[name]||null);
   const koerper={ kassenname:name,
     artikel: wert && wert!=="__ignoriert" ? wert : null,
@@ -1789,8 +1792,14 @@ async function sendeZuordnung(name, wert, gebindeMl){
     const r=await fetch("/api/mapping",{method:"POST",
       headers:{"content-type":"application/json"}, body:JSON.stringify(koerper)});
     if(r.ok) return true;
-    toast(r.status===403 ? "Nur die Leitung darf zuordnen" : "Nicht gespeichert");
-  }catch(e){ toast("Keine Verbindung — die Zuordnung ist nur auf diesem Gerät"); }
+    if(!stumm) toast(r.status===403 ? "Nur die Leitung darf zuordnen" : "Nicht gespeichert");
+  }catch(e){
+    /* „nur auf diesem Gerät" stimmt nur dort, wo der Aufrufer den Wert
+       behält. Im Zuordnung-Bildschirm wird er seit der zweiten Jagd der
+       Runde 22 zurückgenommen — dort sagt der Aufrufer selbst, was
+       wirklich geschehen ist, und schaltet diese Zeile stumm (· B). */
+    if(!stumm) toast("Keine Verbindung — die Zuordnung ist nur auf diesem Gerät");
+  }
   return false;
 }
 
@@ -4203,7 +4212,13 @@ function vZuordnung(m){
     ${L.map(p=>{ const z=zuordnung(p); const ab=vorabAbweichung(p.name);
       return `<tr><td>${esc(p.name)}</td><td class="r">${num(p.anzahl)}</td>
         <td><select class="klein" data-name="${esc(p.name)}">${optionen}</select></td>
-        <td>${z.status==="offen"?'<span class="pill p-bad">offen</span>'
+        <td>${z.status==="offen"
+              /* „abgelehnt" ist offen MIT Vorgeschichte: jemand hat
+                 hingesehen. Ohne diesen Unterschied stünde die Zeile
+                 morgen wieder da wie am ersten Tag, und die Arbeit wäre
+                 unsichtbar (zweite Jagd Runde 22 · C). */
+              ?(z.abgelehnt?'<span class="pill p-grau">abgelehnt — offen</span>'
+                           :'<span class="pill p-bad">offen</span>')
             :z.status==="vorab"?'<span class="pill p-neu">vorgeschlagen — bestätigen</span>'
             :z.status==="auto"?'<span class="pill p-neu">automatisch — bestätigen</span>'
             :z.status==="ignoriert"
@@ -4235,7 +4250,7 @@ function vZuordnung(m){
       : z.status==="auto" ? z.id
       : (z.status==="ignoriert" && z.vorab) ? "__ignoriert" : "";
     sel.onchange=async()=>{
-      const wert=sel.value, vorher=MAP[nm];
+      const wert=sel.value, vorher=MAP[nm], gebVorher=GEB_BEST[nm];
       /* „— offen —" ist eine Entscheidung und wird als solche gemerkt:
          `__offen` statt `delete`. Sonst griffe beim nächsten Zeichnen
          wieder die Vorabliste, und der abgelehnte Vorschlag stünde erneut
@@ -4247,14 +4262,24 @@ function vZuordnung(m){
          einem Wechsel ist sie nicht mehr bestätigt — sonst rechnet die
          neue Zuordnung mit der Flasche der alten. */
       if(GEB_BEST[nm]!=null && wert!==vorher){ delete GEB_BEST[nm]; schreib(K_GEB,GEB_BEST); }
-      const ok=await sendeZuordnung(nm, wert);
+      const ok=await sendeZuordnung(nm, wert, undefined, true);
       /* Kam sie nicht durch (kein Recht, kein Netz), gilt sie auch hier
          nicht. Sonst behauptet der Schirm „festgelegt", während in der
-         Datenbank nichts steht (dritte Jagd Runde 22 · B). */
-      if(!ok){ if(vorher===undefined) delete MAP[nm]; else MAP[nm]=vorher;
-               schreib(K_MAP,MAP); }
+         Datenbank nichts steht (dritte Jagd Runde 22 · B).
+
+         BEIDES zurück, nicht nur die Zuordnung: die Gebindegröße ist
+         oben schon gelöscht. Blieb sie es, stand die alte Zuordnung
+         wieder da, aber ohne ihre Flasche — die Position fiel aus dem
+         Abgleich, und die Datenbank hielt die Größe unverändert weiter
+         (zweite Jagd Runde 22 · B). */
+      if(!ok){
+        if(vorher===undefined) delete MAP[nm]; else MAP[nm]=vorher;
+        if(gebVorher!=null) GEB_BEST[nm]=gebVorher;
+        schreib(K_MAP,MAP); schreib(K_GEB,GEB_BEST);
+      }
       zeichne();
-      if(ok) toast(wert ? "Zuordnung gespeichert" : "Als offen vermerkt");
+      toast(!ok ? "Nicht gespeichert — es bleibt beim alten Stand"
+                : wert ? "Zuordnung gespeichert" : "Als offen vermerkt");
     };
   });
   /* Ein Knopf für beide Arten von Vorschlag: das Kassenmuster der Weine
@@ -4331,7 +4356,12 @@ function vEinst(m){
       <tr><td>Aktive Quelle</td><td class="r"><b>${esc(QUELLE)}</b></td></tr>
       <tr><td>Vorgänge</td><td class="r">${VORGAENGE.length}</td></tr>
       <tr><td>Z-Berichte</td><td class="r">${Object.keys(ZBER).length}</td></tr>
-      <tr><td>Feste Zuordnungen</td><td class="r">${Object.keys(MAP).length}</td></tr>
+      <tr><td>Feste Zuordnungen</td><td class="r">${
+        /* „fest" heisst: ein Artikel steht da. Ignoriert und abgelehnt
+           sind Entscheidungen, aber keine Zuordnungen — sie zählten bis
+           zur zweiten Jagd der Runde 22 mit (· C). */
+        Object.values(MAP).filter(v=>v && v!=="__ignoriert" && v!=="__offen").length
+      }</td></tr>
       <tr><td>Weine · Getränke im Stamm</td><td class="r">${WINES.length} · ${GIDS.length}</td></tr>
     </tbody></table></div>`;
   m.appendChild(s2);
@@ -4904,8 +4934,15 @@ function vRezepte(m){
 
   /* Dritte Stelle, die dieselbe Menge zusammenzählte — jetzt dieselbe
      Zählstelle wie Navigation und Zuordnungsseite (elfte Jagd Runde 16). */
+  /* `__offen` heisst „hingesehen, und es ist keiner dieser Artikel" —
+     das ist die halbe Antwort auf „dann ist es ein Mischgetränk", nicht
+     das Gegenteil davon. Bis zur zweiten Jagd der Runde 22 sperrte eine
+     Ablehnung die Position hier aus, und zurück führte kein Weg: der
+     Select kennt keinen Zustand „nie angefasst", und ein DELETE auf
+     `mapping` gibt es nicht. Betroffen war ausgerechnet „Mango
+     gespritzt", für das der Morgenbrief selbst ein Rezept vorschlägt. */
   const kandidaten=alleKassennamen()
-    .filter(p=>!MAP[p.name] && !REZ[p.name])
+    .filter(p=>(!MAP[p.name] || MAP[p.name]==="__offen") && !REZ[p.name])
     .sort((a,b)=>b.anzahl-a.anzahl);
 
   const s=document.createElement("section");

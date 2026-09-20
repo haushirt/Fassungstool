@@ -15,8 +15,8 @@ der Zeile daneben. Die Namen stammen aus den beiden echten Berichten,
 die im Haus liegen: Z 40 vom 19.09.2026 aus dem Backoffice und
 Bericht 37 aus `tests/fixtures/` — 71 Namen zusammen.
 
-Im echten Bericht von gestern bleiben danach **20 von 57** offen statt
-43 (dort sind 13 Namen schon von Hand bestätigt). Und diese 20 sind
+Im echten Bericht von gestern bleiben danach **21 von 57** offen statt
+43 (dort sind 13 Namen schon von Hand bestätigt). Und diese 21 sind
 keine Tipparbeit mehr, sondern Fragen, die eine Entscheidung brauchen
 (`review/MORGENBRIEF.md`).
 
@@ -67,7 +67,7 @@ Tomatensaft im Keller). Sechs Fragen, alle im Morgenbrief.
   `tests/vorab-gleich.test.mjs` mit 11 Urteilen: beide Dateien Eintrag
   für Eintrag gleich, jede Artikel-Id im Stamm, kein Name doppelt, und
   fünf Gegenproben, dass ein nur ähnlicher Name nicht durchgeht.
-- Neu `node tests/ui-runde22.cjs`: **29 von 29** im echten Browser
+- Neu `node tests/ui-runde22.cjs`: **31 von 31** im echten Browser
   gegen echten Worker und echte SQLite. Darin gemessen: 15 statt 44
   offene Namen in Bericht 37, ein Klick schreibt 32 Zeilen in die
   Zuordnungstabelle, und eine widersprechende Bestätigung setzt sich
@@ -93,9 +93,15 @@ Tomatensaft im Keller). Sechs Fragen, alle im Morgenbrief.
   ein Eintrag **entfernt**, dessen Begründung ein Schluss statt eines
   Nachschlagens war („Johannisbeer gespritzt" — geschlossen aus
   „Mango gespritzt", und es ist nicht derselbe Saft).
+- **Und eine zweite Jagd auf die Reparatur**: 1 A, 2 B, 7 C. Der A-Fund
+  war eine Sackgasse — eine Ablehnung sperrte die Position dauerhaft aus
+  dem Rezeptur-Bildschirm aus, und zurück führte kein Weg. Behoben, samt
+  beider B-Funde: die Rücknahme bei Fehlschlag nimmt jetzt auch die
+  bestätigte Gebindegröße zurück, und die Meldung danach sagt, was
+  wirklich geschehen ist. Alles in `review/JAGD.md`.
 
 ## Keine Migration
 
 Es kommt keine Spalte und keine Tabelle dazu. Die Liste steht im Code,
-die Zuordnungstabelle bleibt, wie sie ist. `sw.js` steht auf **v69**.
+die Zuordnungstabelle bleibt, wie sie ist. `sw.js` steht auf **v70**.
 `public/index.html` ist nicht angefasst.

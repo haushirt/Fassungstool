@@ -10,7 +10,7 @@ betrifft nur eines: welche Kassennamen das Tool von selbst erkennt.
 **Den Z-Bericht einlesen und mit einem Klick fertig sein.**
 
 Im Bericht von gestern (Z 40, 57 Kassennamen) blieben vorher 43 Namen
-offen. Jetzt sind es **20** — und die restlichen sind keine Tipparbeit
+offen. Jetzt sind es **21** — und die restlichen sind keine Tipparbeit
 mehr, sondern echte Fragen, die unten stehen.
 
 Im Zuordnung-Bildschirm gibt es dafür einen neuen Zustand:

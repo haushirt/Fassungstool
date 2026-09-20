@@ -1098,3 +1098,30 @@ schlägt wirklich nur nach — „Käse ", „ Käse", „käse", „Käsebrot",
 „Cola Zero", „Cola Zero 0,5l" gehen alle nicht durch. `mappe()` ist
 unangetastet. Bei 390 px kein waagrechter Überlauf, Sammelknopf
 208 × 44 px.
+
+### Zweite Jagd (auf die Reparatur)
+
+1 A, 2 B, 7 C. Die Reparatur der beiden ersten A-Funde hält — Worker und
+Schirm zählen identisch, die Ablehnung überlebt Neuladen und
+Sammelklick. Aber `__offen` war an einer Stelle nicht mitgedacht.
+
+| Stufe | Fund | Nachgestellt | Behoben |
+|---|---|---|---|
+| A | Eine Ablehnung sperrt die Position dauerhaft aus dem Rezeptur-Schirm aus | `vRezepte()` bot nur Namen ohne MAP-Eintrag an; `__offen` ist einer. Betroffen ausgerechnet „Mango gespritzt", für das der Morgenbrief selbst ein Rezept vorschlägt. Zurück führte kein Weg: der Select kennt kein „nie angefasst", ein DELETE auf `mapping` gibt es nicht | ✅ Ein abgelehnter Name bleibt wählbar. Prüfung in `tests/ui-runde22.cjs` §4b |
+| B | Die Rücknahme bei Fehlschlag war halb: die Zuordnung kam zurück, die bestätigte Gebindegröße blieb gelöscht | Cola Zero auf 330 ml bestätigt, Netz gekappt, Wechsel scheitert: Zeile sagt „festgelegt", 4,24 Flaschen fallen aus dem Abgleich, die Datenbank hält die Größe weiter | ✅ Beides zurück |
+| B | Die Meldung nach einem Fehlschlag sagte das Gegenteil: „die Zuordnung ist nur auf diesem Gerät" — dort ist sie seit der Reparatur gerade nicht | Gemessener Toast-Text | ✅ „Nicht gespeichert — es bleibt beim alten Stand"; der Aufrufer schaltet die alte Zeile stumm |
+| C | `gebArtikelBestaetigt()` legte einen Eintrag unter dem Schlüssel `__offen` an | `Object.keys(t) = ["__offen"]` | ✅ Eine Zeile |
+| C | „Feste Zuordnungen" zählte Ablehnungen und Ignorierte mit | Eine Ablehnung, sonst nichts: angezeigt „1" | ✅ Zählt nur echte Artikel |
+| C | `abgelehnt:true` wurde nirgends gelesen | grep: kein zweites Vorkommen | ✅ Die Zeile sagt jetzt „abgelehnt — offen" statt „offen" |
+| C | Die Zahl zum Bericht vom 19.09. war nach dem Entfernen von „Johannisbeer gespritzt" nicht nachgerechnet | Der Name steht in keiner Fixture, also nur im Live-Bericht | ✅ Nachgerechnet gegen die Live-D1: **21**, nicht 20. Überall berichtigt |
+| C | Drei weitere (32 gegen 33 Zeilen je nach Rezeptur, `bestaetigeGebinde()` merkt weiter vor dem Senden) | — | ↩️ Backlog |
+
+**Geprüft, ohne Fund:** kein Doppelzählen zwischen `abgelehnt` und
+`kennt` (ohne mapping 15/15, nach Sammelklick 15/15, nach einer
+Ablehnung 16/16, nach „Käse → offen" 17/17 — Worker und Schirm gleich).
+Es entsteht keine `mapping`-Zeile, die vorher nicht entstanden wäre. Das
+Rückrollen stimmt für alle vier Ausgangszustände. Alle elf Leser von
+`MAP` durchgesehen — `__offen` wird nirgends als Artikel-Id
+weitergereicht. Die neue Karte bei 390 px ohne Überlauf, und sie
+verschwindet, wenn nichts mehr wartet. Gestaltungsschicht wortgleich
+(11 344 Zeichen, beide Dateien identisch).

@@ -4679,3 +4679,41 @@ Reihenfolge in `zuordnung()`, `vorabAbweichung` im umgekehrten Fall,
 harter Ausschluss der Spirituosen).
 
 **STATUS:** FERTIG
+
+### Runde 22 · Zweiter Nachtrag – software-engineer (nach der zweiten Jagd)
+
+**Kritik am Vorgänger (wieder mir selbst):** `public/leitung.html`
+`vRezepte()` filtert `!MAP[p.name]` — ich habe mit `__offen` einen neuen
+wahren Wert in `MAP` eingeführt und die elf Stellen, die `MAP` lesen,
+nicht alle durchgesehen. Die Ablehnung wurde damit zur Sackgasse:
+ausgerechnet „Mango gespritzt", für das der Morgenbrief selbst ein
+Rezept vorschlägt, liess sich nach einer Ablehnung nicht mehr für eine
+Rezeptur wählen, und zurück führte nichts. ✅ übernommen. Die Rücknahme
+bei Fehlschlag nahm nur `MAP` zurück, nicht `GEB_BEST` — eine halbe
+Rücknahme ist schlimmer als keine, weil der Schirm danach „festgelegt"
+sagt und die Flaschenzahl trotzdem fehlt. ✅ übernommen. Und die Meldung
+„die Zuordnung ist nur auf diesem Gerät" sagte nach der Reparatur das
+Gegenteil dessen, was geschieht. ✅ übernommen.
+
+**Umgesetzt:**
+1. Ein abgelehnter Name bleibt für eine Rezeptur wählbar; die Zeile
+   sagt „abgelehnt — offen" statt „offen".
+2. Rücknahme bei Fehlschlag nimmt Zuordnung UND Gebindegröße zurück;
+   die Meldung sagt „es bleibt beim alten Stand".
+3. `gebArtikelBestaetigt()` und die Zahl „Feste Zuordnungen" kennen die
+   beiden Zustandswerte jetzt.
+
+**Geprüft:** `npm test` 572/572, `node tests/ui-runde22.cjs` **31 von 31**
+(zwei neue Punkte für die Sackgasse und die sichtbare Ablehnung),
+`node tests/ui-leitung-echt.cjs` 44/44, `node tests/ui-runde21.cjs` 19/19.
+`sw.js` auf v70. Die Zahl zum Bericht vom 19.09. gegen die Live-D1
+nachgerechnet: **21** offen, nicht 20 — überall berichtigt.
+
+**Für die Nächsten:** `MAP` trägt jetzt zwei Zustandswerte (`__ignoriert`,
+`__offen`) neben echten Artikel-Ids. Wer eine neue Stelle schreibt, die
+`MAP` liest, muss beide behandeln. Eine Prüfung, die das erzwingt, gibt
+es nicht — sie steht als C-Fund im Backlog.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**STATUS:** FERTIG

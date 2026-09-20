@@ -6,7 +6,7 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runden 17 bis 22 sind gemergt und live.** `sw.js` steht auf **v69**.
+- **Runden 17 bis 22 sind gemergt und live.** `sw.js` steht auf **v70**.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
 - `npm test`: **572 von 572 grün** (Stand 21.09.2026, Laufzeit ca. 4 s).
 - Oberfläche von Hand (brauchen Playwright, **nicht** Teil von `npm test`,
@@ -130,14 +130,14 @@ Einrichtung im Dashboard, siehe unten.
 
 ## Runde 22 (21.09.2026) — die Vorabliste
 
-Runde im Log unter „Runde 22". `sw.js` steht auf **v69**.
+Runde im Log unter „Runde 22". `sw.js` steht auf **v70**.
 `npm test`: **572 von 572** grün. Browser: `node tests/ui-runde22.cjs`
-29 von 29, `node tests/ui-leitung-echt.cjs` 44 von 44,
+31 von 31, `node tests/ui-leitung-echt.cjs` 44 von 44,
 `node tests/ui-runde21.cjs` 19 von 19. **Keine Migration.**
 
 Nach dem Einlesen standen 44 von 48 Kassennamen offen und warteten auf
 ein Auswahlfeld. Jetzt sind es 15 — und im echten Bericht vom 19.09.
-noch 20 von 57 statt 43.
+noch 21 von 57 statt 43.
 
 1. **`VORAB` in `src/gnmap.js`:** 36 geprüfte GANZE Kassennamen, 15 auf
    einen Artikel, 21 als „kommt nicht aus dem Keller" (Speisen, Kaffee,
