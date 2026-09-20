@@ -166,33 +166,48 @@ const WISCH = `(von, nach, hoch) => {
   await p.evaluate(() => { SEITE = "heute"; zeichne(); });
   await p.waitForTimeout(200);
 
-  /* ── B2 ─────────────────────────────────────────────────────────── */
-  console.log("\nB2 · Kacheln im Mittagsblick");
-  await p.screenshot({ path: path.join(OUT, "macbook-mittagsblick.png"), fullPage: true });
-  const kacheln = await p.$$eval(".kpi", ks => ks.map(k => ({
+  /* ── B2 ─────────────────────────────────────────────────────────────
+     UMGESCHRIEBEN in Runde 19. Geprüft wurden hier die vier Kacheln des
+     Mittagsblicks: jede ein Knopf, jede mit Ziel, jede führt weiter.
+     Die Kacheln gibt es nicht mehr — an ihrer Stelle steht die Kette
+     („Der Weg der Zahlen"), und sie erbt die Zusicherung: Jedes Glied
+     ist ein Knopf, jedes trägt ein Ziel, jedes führt dorthin, wo man
+     dieses Glied repariert. Dieselbe Prüfung, fünf statt vier Elemente,
+     und zusätzlich der Punkt, um den es Runde 19 ging: ein Glied, das
+     nichts sagen kann, muss GRAU sein und nicht rot. */
+  console.log("\nB2 · Die Kette auf der Übersicht");
+  await p.screenshot({ path: path.join(OUT, "macbook-uebersicht.png"), fullPage: true });
+  const glieder = await p.$$eval(".glied", ks => ks.map(k => ({
     art: k.tagName, ziel: k.dataset.ziel || null,
-    titel: (k.querySelector("span") || {}).textContent,
-    weiter: (k.querySelector(".weiter") || {}).textContent || null })));
-  urteil("alle vier sind Knöpfe mit Ziel",
-    kacheln.length === 4 && kacheln.every(k => k.art === "BUTTON" && k.ziel && k.weiter),
-    kacheln.map(k => k.titel + "→" + k.ziel));
+    titel: (k.querySelector(".gt") || {}).textContent,
+    wort: (k.querySelector(".gw") || {}).textContent || null,
+    unter: (k.querySelector(".gu") || {}).textContent || null,
+    tot: k.classList.contains("glied--tot") })));
+  urteil("alle fünf Glieder sind Knöpfe mit Ziel, Wort und Erklärung",
+    glieder.length === 5 && glieder.every(g =>
+      g.art === "BUTTON" && g.ziel && g.wort && g.unter),
+    glieder.map(g => g.titel + "→" + g.ziel));
 
-  for (const [i, erwartet] of [[0, "eingaenge"], [1, "import"], [2, "abgleich"], [3, "bestellen"]]) {
+  const ZIELE = [["Fassung", ["eingaenge"]], ["Z-Bericht", ["import"]],
+                 ["Zuordnung", ["zuordnung"]], ["Abgleich", ["abgleich"]],
+                 ["Bestand", ["bestand", "zaehlliste"]]];
+  for (const [i, [name, erlaubt]] of ZIELE.entries()) {
     await p.evaluate(() => { SEITE = "heute"; zeichne(); });
     await p.waitForTimeout(150);
-    await p.evaluate(n => document.querySelectorAll(".kpi")[n].click(), i);
+    await p.evaluate(n => document.querySelectorAll(".glied")[n].click(), i);
     await p.waitForTimeout(250);
     const lage = await p.evaluate(() => ({
       seite: SEITE, ueber: (document.querySelector("main h2") || {}).textContent,
-      detail: !!document.querySelector("#egDetail .karte"),
-      vorschau: !!document.querySelector("#vor h3") }));
-    urteil("Kachel " + (i + 1) + " führt nach „" + erwartet + "“", lage.seite === erwartet, lage);
+      detail: !!document.querySelector("#egDetail .karte") }));
+    urteil("Glied " + (i + 1) + " („" + name + "“) führt nach „" + erlaubt.join(" oder ") + "“",
+      erlaubt.includes(lage.seite), lage);
   }
-  /* Die Tagesfassungs-Kachel soll nicht nur die Seite wechseln, sondern
-     den Vorgang aufschlagen, um den es geht. */
+
+  /* Das Glied „Fassung" soll nicht nur die Seite wechseln, sondern den
+     Vorgang aufschlagen, um den es geht — wie vorher die erste Kachel. */
   await p.evaluate(() => { SEITE = "heute"; zeichne(); });
   await p.waitForTimeout(150);
-  await p.evaluate(() => document.querySelectorAll(".kpi")[0].click());
+  await p.evaluate(() => document.querySelectorAll(".glied")[0].click());
   await p.waitForTimeout(300);
   const auf = await p.evaluate(() => {
     const d = document.querySelector("#egDetail .karte");
@@ -200,8 +215,29 @@ const WISCH = `(von, nach, hoch) => {
       zeilen: d ? d.querySelectorAll("tbody tr").length : 0,
       mengen: d ? [...d.querySelectorAll("tbody tr td.r b")].map(e => e.textContent) : [] };
   });
-  urteil("Kachel 1 schlägt die Tagesfassung mit Mengen auf",
+  urteil("Glied 1 schlägt die Tagesfassung mit Mengen auf",
     auf.offen && auf.zeilen > 0 && auf.mengen.length > 0, auf);
+
+  /* Der Kern von Runde 19: Solange Kassennamen offen sind, kann das
+     Glied „Abgleich" nichts sagen. Es muss grau stehen, nicht rot — eine
+     rote Zahl wäre dort eine Behauptung über den Keller. */
+  await p.evaluate(() => { SEITE = "heute"; zeichne(); });
+  await p.waitForTimeout(200);
+  const lage4 = await p.evaluate(() => {
+    const a = abgleich(letzterTag(), SPANNE);
+    const g = document.querySelectorAll(".glied")[3];
+    return { offen: a.offen.length, berichte: a.berichte,
+             tot: g.classList.contains("glied--tot"),
+             wort: g.querySelector(".gw").textContent };
+  });
+  urteil("das Glied „Abgleich“ ist grau, solange etwas davor fehlt",
+    (lage4.offen > 0 || !lage4.berichte) ? lage4.tot : !lage4.tot, lage4);
+
+  /* Und die Übersicht muss den laufenden Tag überhaupt erwähnen — bis
+     Runde 19 endete sie immer bei gestern. */
+  const heute = await p.evaluate(() =>
+    [...document.querySelectorAll("main h3")].some(h => /^Heute · /.test(h.textContent)));
+  urteil("der laufende Tag steht auf der Übersicht", heute, { heute });
 
   /* ── B3 ─────────────────────────────────────────────────────────── */
   console.log("\nB3 · Eingänge");
@@ -462,15 +498,20 @@ const WISCH = `(von, nach, hoch) => {
       q => { MAP[q.name] = "__ignoriert"; }));
     SPANNE = 1; SEITE = "heute"; zeichne();
     const txt = document.querySelector("main").textContent;
-    const kachel = [...document.querySelectorAll(".kpi")]
+    /* Die vier Kacheln sind in Runde 19 der Kette und dem
+       Abdeckungsbalken gewichen. Die Zusicherung bleibt dieselbe: Die
+       ZAHL der ignorierten Namen muss in der Zusammenfassung stehen,
+       nicht nur im Fließtext darunter — sonst liest sie niemand. Neuer
+       Ort: die Legende unter dem Balken. */
+    const kopf = [...document.querySelectorAll(".vlegende, .vbalken")]
       .map(k => k.textContent).join(" ");
     MAP = merkMap; SPANNE = merkS;
     return { zeile: /auf „Ignorieren“ und .*nicht als Verkauf/.test(txt),
-      kachel: /ignoriert \(/.test(kachel) };
+      kachel: /ignoriert\)/.test(kopf) };
   });
   urteil("„Was noch fehlt“ nennt die ignorierten Kassennamen",
     fehltZeile.zeile, fehltZeile);
-  urteil("die Kachel „Auffällige Differenzen“ nennt sie ebenfalls",
+  urteil("die Zusammenfassung über dem Abgleich nennt sie ebenfalls",
     fehltZeile.kachel, fehltZeile);
 
   /* Bildschirm und CSV kennen den vierten Weg jetzt auch (vierte Jagd · A). */
@@ -501,12 +542,17 @@ const WISCH = `(von, nach, hoch) => {
     SEITE = "heute"; zeichne();
     /* Nur die DEUTUNGSSPALTE. Der Hinweis darüber verneint das Wort —
        das ist der Punkt, nicht der Fehler. */
-    const txt = [...document.querySelectorAll("main td.deutung")]
+    /* `td.deutung` war die eigene Spalte des Mittagsblicks. Die
+       Übersicht aus Runde 19 stellt die Deutung unter den Artikelnamen,
+       damit daneben der Wert in Euro Platz hat — dieselbe Aussage, ein
+       anderes Element. Geprüft wird weiter, dass es sie ÜBERHAUPT gibt
+       und dass in ihr das Wort „Schwund" nicht vorkommt. */
+    const txt = [...document.querySelectorAll("main .deutung")]
       .map(c => c.textContent).join(" ");
-    return { schwund: /Schwund/.test(txt), zeilen: document.querySelectorAll("main td.deutung").length,
+    return { schwund: /Schwund/.test(txt), zeilen: document.querySelectorAll("main .deutung").length,
       ignorierzeile: /auf .Ignorieren. und zählen nicht als Verkauf/.test(txt) };
   });
-  urteil("auch die Deutungsspalte des Mittagsblicks sagt nirgends „Schwund“",
+  urteil("auch die Deutung auf der Übersicht sagt nirgends „Schwund“",
     !schirm.schwund && schirm.zeilen > 0, schirm);
 
   /* ── B4 ─────────────────────────────────────────────────────────── */
@@ -544,19 +590,21 @@ const WISCH = `(von, nach, hoch) => {
   await q.evaluate(() => { EGOFFEN = null; SEITE = "heute"; zeichne(); });
   await q.waitForTimeout(200);
 
-  /* B-Fund der Jagd: Die Kachel verspricht „Positionen und Mengen
-     ansehen" und legte die Karte bei 390px 921px unter den Falz. */
+  /* B-Fund der Jagd nach Runde 18: Die Kachel versprach „Positionen und
+     Mengen ansehen" und legte die Karte bei 390px 921px unter den Falz.
+     Die Kacheln sind in Runde 19 der Kette gewichen — die Zusicherung
+     hängt jetzt am ersten Glied, das dasselbe verspricht. */
   await q.evaluate(() => { EGOFFEN = null; EGFILTER = { modus: "", wer: "", q: "" };
     SEITE = "heute"; zeichne(); window.scrollTo(0, 0); });
   await q.waitForTimeout(250);
-  await q.evaluate(() => document.querySelectorAll(".kpi")[0].click());
+  await q.evaluate(() => document.querySelectorAll(".glied")[0].click());
   await q.waitForTimeout(900);          /* das Rollen ist weich */
   const falz = await q.evaluate(() => {
     const d = document.querySelector("#egDetail .karte");
     return d ? { oben: Math.round(d.getBoundingClientRect().top),
                  fenster: window.innerHeight } : { fehlt: true };
   });
-  urteil("Kachel „Tagesfassung“ bringt das Detail am Handy ins Bild",
+  urteil("Glied „Fassung“ bringt das Detail am Handy ins Bild",
     !falz.fehlt && falz.oben >= 0 && falz.oben < falz.fenster, falz);
   await q.evaluate(() => { EGOFFEN = null; SEITE = "heute"; zeichne(); window.scrollTo(0, 0); });
   await q.waitForTimeout(200);

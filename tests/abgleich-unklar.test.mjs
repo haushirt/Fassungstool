@@ -51,7 +51,12 @@ function umgebung() {
 }
 
 /* Ein Vorgang in der Form, die `normVorgang` liefert. */
-const vorgang = (wein, getr) => ({ mode: "tag", tag: TAG, wein: wein || {}, getr: getr || {} });
+/* `fertig: true` seit Runde 19: `abgleich()` rechnet nur noch mit
+   GEBUCHTEN Vorgängen — so wie das Journal, das seine Zeilen erst beim
+   Abschluss bekommt. Ein Prüfstand, der das weglässt, prüft einen
+   Zustand, den es nach dem Abschluss nie gibt. */
+const vorgang = (wein, getr) => ({ mode: "tag", tag: TAG, fertig: true,
+  wein: wein || {}, getr: getr || {} });
 /* Ein Z-Bericht in der Form, die `vomServer()` ablegt. */
 const bericht = positionen => ({ [TAG]: { tag: TAG, nr: 99, positionen, umsatz: 0 } });
 
@@ -375,8 +380,11 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
        sie in Ansichtsfunktionen stehen: geprüft wird, dass keiner mehr
        `a.ohneGroesse.length` neben das Wort „Größe fehlt" setzt. */
     const BO = lies("public", "leitung.html");
-    assert.match(BO, /const t=teileOhneGroesse\(a\.ohneGroesse\);/,
-      "der Mittagsblick zählt nicht mehr getrennt");
+    /* Der Name der Hilfsvariablen ist gleichgültig, der Aufruf nicht:
+       geprüft ist, dass die Übersicht die drei Ursachen über
+       `teileOhneGroesse` trennt statt selbst zu zählen. */
+    assert.match(BO, /=\s*teileOhneGroesse\(a\.ohneGroesse\);/,
+      "die Übersicht zählt nicht mehr getrennt");
     assert.doesNotMatch(BO, /fehlt\.push\("Größe fehlt: "\+a\.ohneGroesse\.length/,
       "der Mittagsblick wirft beide Ursachen wieder in einen Topf");
     assert.match(BO, /Menge fehlt im Kassennamen: /,
@@ -450,9 +458,22 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
       "die Kachel nennt einen Grund, den es seit v29 nicht mehr gibt");
     assert.doesNotMatch(BO, /nicht bestimmbar \(keine bestätigte Größe oder kein Z-Bericht\)/,
       "der Hinweis lässt die fehlende Menge im Kassennamen aus");
-    assert.match(BO, /ohne Abgleich — "\+esc\(gruendeSatz\)/,
-      "die Kachel liest die Gründe nicht aus den Zeilen oder ohne esc()");
-    assert.match(BO, /nicht bestimmbar \(\$\{esc\(gruendeSatz\)\}\)/,
-      "der Hinweis liest die Gründe nicht aus den Zeilen");
+    /* BIS RUNDE 19 hing diese Zusicherung am Wortlaut EINER Kachel
+       („… ohne Abgleich — " + esc(gruendeSatz)). Die vier Kacheln des
+       Mittagsblicks gibt es nicht mehr; an ihrer Stelle stehen Urteil,
+       Abdeckungsbalken und Kette. Der PRÜFZWECK bleibt derselbe und
+       wird hier weiter geprüft: Der Grund, aus dem eine Zeile kein
+       Urteil bekommt, muss auf der Übersicht ERSCHEINEN, aus den Zeilen
+       stammen (`gruendeSatz`, oben geprüft) und escaped sein. Nur der
+       Ort ist nicht mehr vorgeschrieben. */
+    assert.match(BO, /esc\(gruendeSatz\)/,
+      "die Übersicht zeigt die Gründe nicht, oder ohne esc()");
+    /* Derselbe Zweck wie die Zusicherung darüber, nur am zweiten Ort:
+       Auch die Tabelle, die die Abweichungen zeigt, muss sagen, WIE VIELE
+       Zeilen sie weglässt und WARUM — sonst liest sich eine kurze Liste
+       wie ein vollständiges Bild. Der Wortlaut hat sich mit der
+       Übersicht aus Runde 19 geändert, die Pflicht nicht. */
+    assert.match(BO, /nicht beurteilbar: "\+esc\(gruendeSatz\)/,
+      "die Abweichungstabelle sagt nicht, wie viele Zeilen sie weglässt und warum");
   });
 });

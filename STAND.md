@@ -1,6 +1,6 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 20.09.2026
+**Letzte Aktualisierung:** 20.09.2026 (Analyse-Lauf Runde 19)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
@@ -32,6 +32,37 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   an denselben Zahlen, und das Wort „Schwund" steht in keiner Deutungsspalte
   mehr.
 
+## Runde 19 (20.09.2026) — Reparatur und neue Übersicht
+
+Bericht: `review/ANALYSE-BACK-FRONT.md`. Runde im Log unter „Runde 19".
+`sw.js` steht auf **v64**. `npm test`: **490 von 490** grün.
+
+**Behoben (alles ohne Migration):**
+1. **Getränke zählten im Backoffice doppelt.** `normVorgang` leitete die
+   geholte Menge selbst her UND addierte `gent`, das dieselbe Zahl ist.
+   Gemessen: Journal 4, Backoffice 8. Jetzt 4.
+2. **Laufende Vorgänge** gingen voll in Bestand, Verbrauch und Abgleich
+   ein — das Journal kennt sie nicht. Neuer Filter `gebucht()`; die
+   ausgelassene Menge wird überall benannt, wo auch die anderen
+   Vorbehalte stehen.
+3. **Gleiche Zählnummer zweier Geräte** überschrieb still mit 200. Jetzt
+   409 — und `fernNeuer` in der App fragt bei derselben Schwelle, sonst
+   hätte der Wächter den Verlust nur um 45 Sekunden verschoben.
+4. **Beschädigter Sitzungskeks** lieferte 500 statt 401 und hielt damit
+   die Offline-Reihe an.
+5. **Rechte werden gemeldet, nicht gesperrt** (Entscheidung Casimir).
+   Dazu `GET /api/journal` — damit sind abgewiesene Mail-Berichte zum
+   ersten Mal sichtbar.
+
+**Neu: die Übersicht (ehemals Mittagsblick).** Sie beantwortet drei Fragen
+in dieser Reihenfolge: Kann ich den Zahlen trauen (Urteil und
+Abdeckungsbalken) · Wo reißt es (die Kette aus fünf Gliedern) · Was ist zu
+tun (höchstens drei Aufgaben mit Knopf, darunter „Außerdem" vollständig).
+Danach der laufende Tag getrennt vom Abgleichfenster, sechs Zahlen, die
+Abweichungen nach **Euro** sortiert, und 14 Tage nebeneinander.
+Der Zeitraum steht jetzt im Kopf und überlebt das Neuladen; der Chip sagt,
+wie alt die Daten sind, statt welcher Betriebstag gemeint ist.
+
 ## Was als Nächstes ansteht
 - **Entscheidung von Casimir (steht ganz oben unter „Hoch"):** Was soll
   „Ignorieren" bedeuten? Heute nimmt es den Verkauf aus der Rechnung, und die
@@ -45,8 +76,8 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   an `sessionStorage`, die Sitzung am Server an einem Keks mit 12 Stunden
   Frist. **Casimir muss wählen** (sichtbarer Ablauf, gleitende Frist oder
   längere Frist).
-- **Sonderentnahme Getränke** hat keinen Weg zum Grund; der Abschluss endet
-  dauerhaft in der Code-Freigabe. Casimir macht das separat.
+- **Sonderentnahme Getränke:** der Weg zum Grund ist da (Jagd 14). Was fehlt,
+  ist die Anzeige — das Backoffice liest den Grund nicht.
 - **Betriebstag gegen Abgleich um einen Tag versetzt**, und zwar dauerhaft.
   Zwei Lösungswege stehen im Backlog, beide brauchen eine Entscheidung.
 - `/api/code` räumt die Anmeldesperre nach einem Treffer nicht auf.

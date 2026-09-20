@@ -142,12 +142,22 @@ async function tokenBauen(env, person) {
   const sig = b64(await crypto.subtle.sign("HMAC", await hmacKey(env), roh(nutz)));
   return nutz + "." + sig;
 }
+/* Ein beschädigter Keks ist eine ungültige Anmeldung, kein Serverfehler.
+   NACHTRICHTIGUNG (Analyse Runde 19 · B): `vonB64(sig)` stand ausserhalb
+   des `try`. Ein um wenige Zeichen gekürzter Keks liess `atob` werfen,
+   und die Antwort war 500 mit „The string to be decoded is not correctly
+   encoded." — nicht 401. Das ist nicht nur unschön: `schiebe()` in der
+   App (public/index.html) wertet alles ab 500 als `serverfehler` und
+   HÄLT DIE OFFLINE-REIHE AN. Im Keller stand dann „Server antwortet
+   nicht", während der Server sehr wohl antwortete und die Anmeldung
+   schlicht neu gemacht gehört hätte. `abc.def` und `x.y` lieferten immer
+   schon richtig 401; es traf allein ungültiges Base64. */
 async function tokenPruefen(env, token) {
   if (!token || !token.includes(".")) return null;
   const [nutz, sig] = token.split(".");
-  const ok = await crypto.subtle.verify("HMAC", await hmacKey(env), vonB64(sig), roh(nutz));
-  if (!ok) return null;
   try {
+    const ok = await crypto.subtle.verify("HMAC", await hmacKey(env), vonB64(sig), roh(nutz));
+    if (!ok) return null;
     const d = JSON.parse(new TextDecoder().decode(vonB64(nutz)));
     return d.bis > Date.now() ? d : null;
   } catch { return null; }
@@ -331,6 +341,62 @@ async function vorgaengeLesen(env, url) {
   });
 }
 
+/* ── Das Journal von aussen lesen ─────────────────────────────────────
+   NUR LESEN, kein Schemaeingriff. Bis Runde 19 gab es diesen Weg nicht,
+   und damit war das Herz der Architektur von aussen unsichtbar: Der
+   Mailempfang legt jeden abgewiesenen Absender, jeden fehlenden Anhang
+   und jeden abgelehnten Bericht hier ab (`notiz()`), der Wochenbrief
+   ebenfalls — und niemand konnte es ansehen. Im Backoffice stand dann
+   „Z-Bericht noch nicht eingelesen", gleichlautend für „kommt noch" und
+   „wurde abgewiesen".
+
+   Die Notizen tragen den leeren `artikel` (die Spalte ist live NOT NULL,
+   siehe `notiz()`); daran werden sie erkannt. `alles=1` gibt zusätzlich
+   die echten Buchungen heraus — die Ansicht dafür kommt später, der Weg
+   soll aber nicht zweimal gebaut werden.
+
+   Die vier Abfragen stehen ausgeschrieben da, statt aus Bedingungen
+   zusammengesetzt zu werden: `tests/schema.test.mjs` verlangt zu Recht,
+   dass keine Abfrage im Worker aus Zeichenketten entsteht — auch dann
+   nicht, wenn die Teile wie hier aus dem eigenen Code stammen und keine
+   Eingabe berühren. Vier feste Sätze sind länger und bleiben lesbar. */
+const JOURNAL_SQL = "SELECT ts, tag, art, quelle, artikel, ort, menge, wer, notiz FROM ereignis";
+const JOURNAL = {
+  notizen:       `${JOURNAL_SQL} WHERE artikel = '' ORDER BY ts DESC LIMIT ?1`,
+  notizenQuelle: `${JOURNAL_SQL} WHERE artikel = '' AND quelle = ?2 ORDER BY ts DESC LIMIT ?1`,
+  alles:         `${JOURNAL_SQL} ORDER BY ts DESC LIMIT ?1`,
+  allesQuelle:   `${JOURNAL_SQL} WHERE quelle = ?2 ORDER BY ts DESC LIMIT ?1`
+};
+async function journalLesen(env, url) {
+  const alles = url.searchParams.get("alles") === "1";
+  const quelle = url.searchParams.get("quelle") || "";
+  const grenze = Math.min(500, Math.max(1, +url.searchParams.get("limit") || 100));
+  const sql = alles ? (quelle ? JOURNAL.allesQuelle : JOURNAL.alles)
+                    : (quelle ? JOURNAL.notizenQuelle : JOURNAL.notizen);
+  const stmt = env.DB.prepare(sql);
+  const { results } = await (quelle ? stmt.bind(grenze, quelle) : stmt.bind(grenze)).all();
+  return json({ zeilen: results });
+}
+
+/* ── Wer darf welchen Vorgang schreiben ───────────────────────────────
+   Entscheidung Casimir, 20.09.2026: ERST MELDEN, NICHT SPERREN. Bis
+   Runde 19 gab es an `PUT /api/vorgang/…` überhaupt keine Rechteprüfung
+   — eine Sitzung mit der Rolle `service` schrieb eine vollständige
+   Kellerzählung, HTTP 200. Das Backoffice behauptete derweil
+   „wirtschaft: zusätzlich Kellerzählung · Wareneingang · Protokolle";
+   die Leitung glaubte also, sie habe jemanden eingeschränkt.
+
+   Sofort zuzusperren wäre das falsche Risiko: Steht in der Live-D1 bei
+   jemandem die falsche Rolle, kann er ab dem Livegang im Keller nicht
+   mehr speichern — mitten im Dienst, ohne Ausweg. Der Vorgang wird
+   deshalb ANGENOMMEN und der Fall im Journal vermerkt. Nach ein paar
+   Tagen steht unter „Journal" (`GET /api/journal?quelle=rechte`), wen
+   eine Sperre träfe; dann kann sie bewusst scharf geschaltet werden.
+   Vermerkt wird nur der ERSTE Verstoß je Vorgang — ein Zwischenstand
+   geht alle 45 Sekunden hinaus und soll das Journal nicht fluten. */
+const MODUS_AB = { tag: "service", fuellen: "service", nach: "service",
+                   keller: "wirtschaft", ware: "wirtschaft" };
+
 /* Der Client schickt seine eigene UUID. Doppeltes Senden schadet damit
    nicht — wichtig für die Warteschlange, die offline weiterläuft. */
 async function vorgangSchreiben(env, p, id, daten) {
@@ -341,12 +407,52 @@ async function vorgangSchreiben(env, p, id, daten) {
      im Zweifel gewinnt die höhere Zählnummer, nicht die spätere Ankunft.
      Die App fragt den Benutzer dann beim nächsten Start, ob sie den
      Serverstand übernehmen soll. */
+  /* NACHTRICHTIGUNG (Analyse Runde 19 · A): Der Wächter prüfte nur
+     „echt grösser" und liess den GLEICHSTAND durch — und der ist der
+     häufigere Fall, nicht der seltenere: `zaehlnr()` zählt JE GERÄT
+     (public/index.html), zwei Geräte, die beide offline beginnen, haben
+     beide die 1. Gemessen: Gerät A schickt eine Kellerzählung mit drei
+     Weinen, Gerät B eine mit einem — beide 200, danach steht nur B im
+     Vorgang. Gerät A bekam „gespeichert", kein Sackfach, keine Zeile;
+     Lenas Arbeit war vom Schirm, lebte aber im append-only-Journal
+     weiter. Genau das „stille Zusammenführen", das die Projektregeln
+     verbieten.
+     Ein blosses `>=` wäre aber falsch: die Warteschlange sendet ein
+     Paket bei Netzabbruch UNVERÄNDERT noch einmal, mit derselben
+     Zählnummer. Dieser Wiederholungsversuch muss weiter durchgehen,
+     sonst landet der eigene, gerade angekommene Stand im Sackfach.
+     Unterschieden wird deshalb am Gerät: `daten.geraet` reist im Vorgang
+     mit (public/index.html, `inDenAusgang`) — dieselbe Kennung heisst
+     „nochmal ich", eine andere heisst Konflikt. Die Spalte `geraet` wird
+     dabei NICHT angefasst (Regel 14); gelesen wird allein das Feld im
+     JSON, genauso wie `zaehlnr`.
+     Fehlt die Kennung (alte Pakete aus einer Offline-Reihe), bleibt es
+     beim alten Verhalten: durchlassen. Ein Konflikt, den man nicht
+     beweisen kann, darf keine Arbeit ins Sackfach schicken. */
   const alt = await env.DB.prepare(
     `SELECT daten FROM vorgang WHERE id = ?1`).bind(id).first();
   if (alt) {
     const a = JSON.parse(alt.daten || "{}");
-    if ((+a.zaehlnr || 0) > (+daten.zaehlnr || 0))
+    const zAlt = +a.zaehlnr || 0, zNeu = +daten.zaehlnr || 0;
+    const fremd = !!(a.geraet && daten.geraet && a.geraet !== daten.geraet);
+    if (zAlt > zNeu || (zAlt === zNeu && zAlt > 0 && fremd))
       return json({ konflikt: true, server: a }, 409);
+  }
+
+  /* Rechte: melden, nicht sperren (siehe `MODUS_AB`). Nur beim ERSTEN
+     Schreiben dieses Vorgangs, sonst schriebe jeder Zwischenstand eine
+     Zeile. `ctx` gibt es hier nicht — die Notiz wird abgewartet; sie ist
+     ein einzelnes INSERT und nur im Ausnahmefall überhaupt fällig. */
+  if (!alt) {
+    const RANG = { service: 1, wirtschaft: 2, leitung: 3 };
+    const noetig = MODUS_AB[daten.mode];
+    if (noetig && (RANG[p.rolle] || 0) < RANG[noetig]) {
+      try {
+        await notiz(env, "rechte",
+          `${p.name} (Rolle ${p.rolle}) hat „${daten.mode}“ für ${daten.tag} `
+          + `geschrieben — dafür wäre ${noetig} nötig. Angenommen, nicht gesperrt.`);
+      } catch (e) { console.error("rechte-notiz", String(e)); }
+    }
   }
 
   const jetzt = Date.now();
@@ -964,6 +1070,10 @@ export default {
       }
       if (pfad === "/api/bestand") return await bestand(env);
       if (pfad === "/api/vorgaenge") return await vorgaengeLesen(env, url);
+      if (pfad === "/api/journal") {
+        if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
+        return await journalLesen(env, url);
+      }
 
       if (pfad.startsWith("/api/vorgang/") && m === "PUT") {
         let id;

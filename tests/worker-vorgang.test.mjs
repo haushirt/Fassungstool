@@ -201,7 +201,8 @@ describe("Korrektur nach dem Abschluss", () => {
 
     await zaehl(1, 2);                                /* 12 */
     await zaehl(2, 3);                                /* doch 18 */
-    const e = env.DB.tabellen.ereignis;
+    /* Ohne Vermerkzeile: siehe „Kellerzählung: Reihen mal sechs". */
+    const e = env.DB.tabellen.ereignis.filter(x => x.artikel !== "");
     assert.deepEqual(e.map(x => x.menge), [12, 18],
       "die 12 bleibt stehen, die 18 kommt dazu — nicht 6 als Differenz");
     assert.ok(e[1].ts > e[0].ts,
@@ -261,7 +262,13 @@ describe("Ereignisse aus der Tagesfassung", () => {
       einzel: { w001: 2, w002: 5 } };
     await worker.fetch(anfrage("/api/vorgang/keller_2026-09-16",
       { method: "PUT", keks, body: d }), env);
-    const e = env.DB.tabellen.ereignis;
+    /* `artikel <> ''` seit Runde 19: Dieser Prüfstand meldet sich als
+       `service` an und schreibt eine Kellerzählung — dafür wäre
+       `wirtschaft` nötig. Der Worker lässt das durch (Entscheidung
+       Casimir: melden, nicht sperren) und legt einen Vermerk ins
+       Journal. Ein Vermerk ist keine Buchung; der Worker selbst trennt
+       beide genauso (`bestand()`, `artikel <> ''`). */
+    const e = env.DB.tabellen.ereignis.filter(x => x.artikel !== "");
     assert.equal(e.find(x => x.artikel === "w001").menge, 20);
     assert.equal(e.find(x => x.artikel === "w002").menge, 5);
     assert.ok(e.every(x => x.art === "zaehlung"));
@@ -274,7 +281,8 @@ describe("Ereignisse aus der Tagesfassung", () => {
             { id: "__neu", kisten: 5 }, { id: "w004", kisten: 0 }] };
     await worker.fetch(anfrage("/api/vorgang/ware_2026-09-16",
       { method: "PUT", keks, body: d }), env);
-    const e = env.DB.tabellen.ereignis;
+    /* Ohne Vermerkzeile: siehe „Kellerzählung: Reihen mal sechs". */
+    const e = env.DB.tabellen.ereignis.filter(x => x.artikel !== "");
     assert.equal(e.find(x => x.artikel === "w001").menge, 12);
     assert.equal(e.find(x => x.artikel === "w003").menge, 12);
     assert.equal(e.find(x => x.artikel === "__neu"), undefined, "Platzhalter zählt nicht");

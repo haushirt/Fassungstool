@@ -272,10 +272,14 @@ table{border-collapse:collapse;width:100%}
    hinter dem Kopf. Die Hoehe steht deshalb an EINER Stelle, als
    `--kopfh`, und alle vier lesen sie. */
 :root{--kopfh:calc(56px + max(12px,env(safe-area-inset-top)))}
+/* `flex-wrap` und `min-height` statt `height` seit Runde 19: Unter 900px
+   rutscht die Zeitraumwahl in eine eigene Zeile (siehe unten). Mit fester
+   Höhe lief sie aus dem Bild — bei 393px war „30 Tage" abgeschnitten. */
 .kopf{position:sticky;top:0;z-index:var(--z-top);background:var(--accent);
-  color:var(--fg-on-dark);display:flex;align-items:center;gap:var(--space-4);
+  color:var(--fg-on-dark);display:flex;flex-wrap:wrap;align-items:center;
+  gap:var(--space-4);
   padding:max(12px,env(safe-area-inset-top)) var(--space-6) 0;
-  box-sizing:content-box;height:56px}
+  box-sizing:content-box;min-height:56px}
 .kopf h1{font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
   letter-spacing:.01em}
 .kopf .haus{font-size:var(--text-xs);text-transform:uppercase;
@@ -690,6 +694,213 @@ tr.klickbar:hover td{background:var(--surface-2)}
     font-size:9pt;color:#444}
 }
 
+
+/* ═══════════════ Übersicht (Runde 19) ═══════════════
+   Die Bausteine der Startseite. Sie stehen hier, im Block der Leitung,
+   und NICHT in der gemeinsamen Gestaltungsschicht darüber: Die
+   Fassungsseite kennt weder Kette noch Abdeckungsbalken, und die
+   gemeinsame Schicht muss in beiden Dateien wortgleich bleiben. */
+
+/* Der Urteilssatz. Ein Satz, der sagt, woran man ist — darum trägt er
+   die Farbe, nicht die Kacheln darunter. */
+.urteil{border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);
+  line-height:var(--leading-normal);border:1px solid var(--border);
+  background:var(--surface);color:var(--fg-secondary)}
+.urteil b{display:block;font-size:var(--text-lg);margin-bottom:4px;color:var(--fg)}
+.urteil--bad{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-fg)}
+.urteil--bad b{color:var(--danger-fg)}
+.urteil--warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
+.urteil--warn b{color:var(--warn-fg)}
+.urteil--ok{background:var(--success-bg);border-color:var(--success-border);color:var(--success-fg)}
+.urteil--ok b{color:var(--success-fg)}
+
+/* Abdeckungsbalken. Die Beschriftung steht IM Balken, nicht nur in der
+   Farbe: Wer Rot und Grün nicht unterscheidet, liest sonst nichts. */
+.vbalken{display:flex;height:38px;border-radius:var(--radius-md);overflow:hidden;
+  border:1px solid var(--border-strong)}
+.vbalken i{display:flex;align-items:center;justify-content:center;font-style:normal;
+  font-size:var(--text-xs);font-weight:var(--weight-medium);white-space:nowrap;
+  overflow:hidden;min-width:0}
+.vbalken i span{padding:0 6px;overflow:hidden;text-overflow:ellipsis}
+.v-ok{background:var(--success);color:#fff}
+.v-aus{background:var(--surface-4);color:var(--fg-secondary)}
+.v-fehlt{background:var(--danger);color:#fff}
+.vlegende{display:flex;gap:var(--space-4);margin-top:var(--space-2);
+  font-size:var(--text-xs);color:var(--fg-secondary)}
+.vlegende .rechts{margin-left:auto}
+
+/* Die Kette. Jedes Glied ist ein Knopf und führt dorthin, wo man das
+   Glied repariert. `--tot` heißt: kann nichts sagen, weil ein Glied
+   davor gerissen ist. */
+.kette{display:flex;align-items:stretch;gap:var(--space-2)}
+.glied{flex:1;min-width:0;text-align:left;background:var(--surface);
+  border:1px solid var(--border);border-left-width:4px;
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);
+  position:relative;font:inherit;color:inherit;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease)}
+.glied:hover{background:var(--surface-2)}
+.glied:focus-visible{outline:var(--ring-width) solid var(--ring);outline-offset:var(--ring-offset)}
+.glied--ok{border-left-color:var(--success)}
+.glied--warn{border-left-color:var(--warn)}
+.glied--bad{border-left-color:var(--danger)}
+.glied--tot{border-left-color:var(--border-heavy);background:var(--surface-3)}
+.gnr{position:absolute;top:8px;right:10px;font-size:var(--text-xs);color:var(--fg-subtle)}
+.gt{display:block;font-size:var(--text-xs);letter-spacing:var(--track-caps);
+  text-transform:uppercase;color:var(--fg-muted)}
+.gw{display:block;font-size:var(--text-lg);font-weight:var(--weight-bold);margin:2px 0}
+.glied--ok .gw{color:var(--success-fg)}
+.glied--warn .gw{color:var(--warn-fg)}
+.glied--bad .gw{color:var(--danger-fg)}
+.glied--tot .gw{color:var(--fg-muted)}
+.gu{display:block;font-size:var(--text-xs);color:var(--fg-secondary)}
+/* Zierde, kein Text: Die Reihenfolge steht als Ziffer IM Glied. Als
+   Schriftzeichen „›" gemessen fiel der Pfeil mit 1,8:1 durch den
+   Kontrast (`tests/ui-mass.cjs`) — dunkler wäre er lauter als die
+   Glieder, die er verbindet. Gezeichnet statt geschrieben: kein Text,
+   keine Vorlesestimme, dasselbe Bild. */
+.gpfeil{display:flex;align-items:center;flex:0 0 auto}
+.gpfeil::after{content:"";width:7px;height:7px;
+  border-top:2px solid var(--border-heavy);border-right:2px solid var(--border-heavy);
+  transform:rotate(45deg)}
+.gpfeil--tot::after{opacity:.4}
+
+/* Aufgaben. Jede Zeile hat einen Knopf — der alte Kasten „Was noch
+   fehlt" hatte bis zu acht Sätze Fließtext und keinen einzigen. */
+.tun{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden}
+.tunz{display:flex;align-items:center;gap:var(--space-4);
+  padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border)}
+.tunz:last-child{border-bottom:0}
+.tunt{flex:1;min-width:0}
+.tunt b{font-size:var(--text-base)}
+.tunz > .pill{flex:0 0 92px;text-align:center}
+.tunr{flex:0 0 auto}
+
+/* Der laufende Tag. */
+.heutzeile{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3)}
+.ht{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4)}
+.ht > span{display:block;font-size:var(--text-xs);letter-spacing:var(--track-caps);
+  text-transform:uppercase;color:var(--fg-muted)}
+.ht b{display:block;font-size:var(--text-lg);margin:2px 0}
+.ht b.ok{color:var(--success-fg)} .ht b.bad{color:var(--danger-fg)}
+.ht small{font-size:var(--text-xs);color:var(--fg-secondary)}
+
+/* Die Zahlen. `--tot` ist die Kachel ohne berechenbare Zahl: ein Strich
+   und der Grund, nie eine 0. */
+.zahlwand{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--space-3)}
+.zw{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);min-width:0}
+.zw > span{display:block;font-size:var(--text-xs);letter-spacing:var(--track-caps);
+  text-transform:uppercase;color:var(--fg-muted)}
+.zw b{display:block;font-family:var(--font-display);font-size:var(--text-display);
+  line-height:1.1;margin:4px 0;white-space:nowrap}
+.zw small{display:block;font-size:var(--text-xs);color:var(--fg-secondary)}
+.zw--tot{background:var(--surface-3)}
+.zw--tot b{color:var(--fg-muted)}
+
+/* Zwei Spalten am Schreibtisch, eine am Gerät. */
+.zwei{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--space-6);
+  padding:0 var(--space-7)}
+/* `min-width:0` ist hier kein Feinschliff, sondern die ganze Miete: Ein
+   Gitterfeld hat von sich aus `min-width:auto` und schrumpft deshalb
+   NICHT unter den Inhalt. Die Tabellen darin tragen unter 900px
+   `min-width:560px` (damit die Spalten lesbar bleiben und die Hülle
+   waagrecht rollt) — ohne diese Zeile wuchs die Spalte auf 594px und
+   schob die ganze Seite bei 390px und 430px aus dem Bild. Gemessen mit
+   `tests/ui-mass.cjs`: „Seite rollt waagrecht: 594 > 390". */
+.zwei > section{padding:0;margin-bottom:var(--space-6);min-width:0}
+tr.tot td{background:var(--surface-3);color:var(--fg-muted)}
+/* Ein Betrag darf nicht zwischen Zahl und Zeichen umbrechen — „245,00"
+   in der einen und „€" in der nächsten Zeile liest sich wie zwei Zahlen. */
+td.geld{white-space:nowrap}
+
+/* Vierzehn Tage. Schraffur heißt „keine Angabe" — sie sieht anders aus
+   als jede Farbe und lässt sich mit keiner verwechseln. */
+.kalender{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5)}
+.kzeile{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.kzeile:last-child{margin-bottom:0}
+.klab{flex:0 0 96px;font-size:var(--text-xs);color:var(--fg-muted);
+  letter-spacing:var(--track-caps);text-transform:uppercase}
+.kzeile i{flex:1;min-width:0;height:22px;border-radius:var(--radius-sm);font-style:normal}
+.kzeile i.ok{background:var(--success-tint)}
+.kzeile i.warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+.kzeile i.bad{background:var(--danger)}
+.kzeile i.nix{background:repeating-linear-gradient(45deg,var(--surface-3),
+  var(--surface-3) 4px,var(--surface-4) 4px,var(--surface-4) 8px)}
+.ktage i{height:auto;text-align:center;font-size:var(--text-xs);
+  color:var(--fg-subtle);background:none}
+.legende{display:flex;flex-wrap:wrap;gap:var(--space-5);margin-top:var(--space-3);
+  font-size:var(--text-xs);color:var(--fg-secondary)}
+.legende i{display:inline-block;width:14px;height:14px;border-radius:3px;
+  margin-right:6px;vertical-align:-3px;font-style:normal}
+.legende i.ok{background:var(--success-tint)}
+.legende i.warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+.legende i.bad{background:var(--danger)}
+.legende i.nix{background:repeating-linear-gradient(45deg,var(--surface-3),
+  var(--surface-3) 4px,var(--surface-4) 4px,var(--surface-4) 8px)}
+
+/* Woraus die Lücke im Abdeckungsbalken besteht — drei Ursachen, drei
+   Maßnahmen, deshalb drei Zeilen statt einer Zahl. */
+.luecke{margin:var(--space-3) 0 0;padding-left:var(--space-5);
+  font-size:var(--text-xs);color:var(--fg-secondary);
+  line-height:var(--leading-normal)}
+.luecke li{margin-bottom:4px}
+/* „Außerdem" — alles, was nicht unter die ersten drei Aufgaben passt,
+   aber nicht verschwinden darf. Knapp, aber vollständig. */
+.auch{margin-top:var(--space-4);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:var(--space-4) var(--space-5)}
+.auch h4{margin:0 0 var(--space-3);font-size:var(--text-xs);
+  letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-muted)}
+.auch ul{list-style:none;margin:0;padding:0}
+.auch li{display:flex;align-items:flex-start;gap:var(--space-3);
+  padding:6px 0;font-size:var(--text-xs);color:var(--fg-secondary);
+  line-height:var(--leading-normal)}
+.auch li > :first-child{flex:0 0 auto}
+/* Der Zeitraum im Kopf. */
+.zeitwahl{display:inline-flex;background:var(--surface-on-dark);
+  border-radius:var(--radius-pill);padding:3px;gap:2px}
+.zeitwahl button{background:none;border:0;color:var(--fg-on-dark-2);font:inherit;
+  font-size:var(--text-xs);padding:5px 12px;border-radius:var(--radius-pill);
+  cursor:pointer;white-space:nowrap}
+.zeitwahl button:hover{color:var(--fg-on-dark)}
+.zeitwahl button.on{background:var(--surface);color:var(--fg);
+  font-weight:var(--weight-medium)}
+.zeitwahl button:focus-visible{outline:2px solid var(--fg-on-dark);outline-offset:1px}
+
+@media(max-width:1100px){
+  .zahlwand{grid-template-columns:repeat(3,1fr)}
+  .zwei{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  /* Die Kette bricht auf eine Spalte. Die Pfeile fallen weg: Untereinander
+     zeigen sie nach rechts ins Leere, und die Reihenfolge sagt die
+     Nummer im Glied ohnehin. */
+  .kette{flex-wrap:wrap}
+  .glied{flex:1 1 100%}
+  .gpfeil{display:none}
+  .zahlwand{grid-template-columns:repeat(2,1fr)}
+  .heutzeile{grid-template-columns:repeat(2,1fr)}
+  .zwei{padding:0 var(--space-4)}
+  .tunz{flex-wrap:wrap}
+  .tunz > .pill{flex:0 0 auto}
+  .tunr{flex:1 1 100%}
+  .tunr .b{width:100%}
+  .klab{flex:0 0 72px}
+  .vlegende{flex-direction:column;gap:2px}
+  .vlegende .rechts{margin-left:0}
+  /* Im Kopf ist unter 900px kein Platz mehr: Der Zeitraum rutscht unter
+     die Leiste und nimmt die ganze Breite. */
+  .zeitwahl{order:10;flex:1 1 100%;justify-content:space-between;margin-top:6px}
+  .zeitwahl button{flex:1;text-align:center}
+}
+@media(max-width:560px){
+  .zahlwand{grid-template-columns:repeat(2,1fr)}
+  .zw b{font-size:22px}
+  .heutzeile{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -700,8 +911,15 @@ tr.klickbar:hover td{background:var(--surface-2)}
   </button>
   <div><div class="haus">Haus Hirt</div><h1>Fassungstool · Leitung</h1></div>
   <div class="sp"></div>
+  <!-- Runde 19 · Der Zeitraum stand bis dahin als Auswahlfeld MITTEN in
+       „Verkauf ↔ Fassung", wirkte aber global: Er änderte stillschweigend
+       auch die Übersicht, die Zahl neben dem Menüpunkt und die Zählliste.
+       Wer ihn dort auf einen Tag stellte, fand auf der Startseite andere
+       Zahlen und nirgends einen Hinweis warum. Jetzt steht er dort, wo er
+       gilt: über allem, auf jeder Seite sichtbar. -->
+  <span class="zeitwahl" id="zeitwahl" role="group" aria-label="Zeitraum"></span>
   <span class="chip" id="cQuelle" title="Woher die Daten gerade kommen"><span class="pkt"></span><span id="tQuelle">—</span></span>
-  <span class="chip aus" id="cStand" title="Jüngster Betriebstag mit Daten"><span class="pkt"></span><span id="tStand">—</span></span>
+  <span class="chip aus" id="cStand" title="Wie alt die gezeigten Daten sind"><span class="pkt"></span><span id="tStand">—</span></span>
   <button class="k" id="bNeu">Aktualisieren</button>
   <button class="k" id="bFass">Fassungstool &rsaquo;</button>
 </header>
@@ -757,6 +975,7 @@ const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
 const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
 const K_GEB="hh_gebinde_v1";        /* Abschrift von mapping.gebinde_ml */
 const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
+const K_SPANNE="hh_spanne_v1";      /* gewählter Zeitraum, überlebt das Neuladen */
 
 const lese = k => {try{const r=localStorage.getItem(k); return r?JSON.parse(r):null;}catch(e){return null;}};
 const schreib = (k,v) => {try{localStorage.setItem(k,JSON.stringify(v));}catch(e){toast("Speicher voll");}};
@@ -918,13 +1137,30 @@ function normVorgang(v){
       zu(o.wein,id,n);
     });
     Object.keys(v.zusatz||{}).forEach(id=>zu(o.wein,id,v.zusatz[id]));
-    /* Getränke: getr[id] ist der Ist-Stand in der Lade, Fehlmenge = Soll − Ist */
-    GIDS.forEach(id=>{
-      const ist=(v.getr && v.getr[id]!=null) ? +v.getr[id] : GSOLL[id];
-      const fehlt=Math.max(0, GSOLL[id]-ist);
-      const n=(v.gholtN && v.gholtN[id]!=null) ? +v.gholtN[id] : fehlt;
-      zu(o.getr,id,n);
-    });
+    /* Getränke: `v.getr` ist der GEZÄHLTE Ist-Stand in der Lade — eine
+       Angabe, keine Bewegung. Was aus dem Getränkelager geholt wurde,
+       steht in `gent` und wird weiter unten EINMAL addiert.
+
+       NACHTRICHTIGUNG (Analyse Runde 19 · A): Hier stand bis v61 eine
+       zweite Herleitung derselben Menge — `Soll − Ist`, wahlweise
+       überschrieben von `gholtN`. Genau daraus baut aber schon die App
+       ihr `gent` (`geholteGetraenke`, public/index.html:4751, mit
+       demselben `gholtN`-Vorrang), und vierzig Zeilen weiter unten
+       läuft `gent` in denselben Topf. JEDE geholte Flasche zählte damit
+       doppelt.
+       Gemessen (echter Worker, echte D1): Lade Soll 7, Ist 3, 4 geholt
+       und abgehakt → Journal `entnahme 4 lager`, dieser Schirm `getr 8`,
+       „Verkauf ↔ Fassung" verkauft 4 · entnahme 8 · Differenz +4 ·
+       „prüfen". Für jedes Getränk, an jedem Tag, eine erfundene
+       Abweichung in exakter Höhe der geholten Menge — bis hinaus auf das
+       gedruckte Blatt.
+       Die Gegenrichtung war ebenso falsch: ohne Haken „geholt" bleibt
+       `gent` leer, die Herleitung hier zählte trotzdem, der Worker gar
+       nicht. Deshalb keine zweite Herleitung mehr, sondern dieselbe
+       Quelle wie im Journal (`src/index.js`, `zu("entnahme", …, d.gent)`).
+       `tests/getraenke-doppelt.test.mjs` bestückt einen Vorgang mit
+       `getr` UND `gent` — genau diese Kombination fehlte in jeder
+       Prüfdatei und hat den Fehler 445 grüne Prüfungen lang verdeckt. */
     if(v.getr && Object.keys(v.getr).length) o.gzaehlung=Object.assign({},v.getr);
   }
 
@@ -1017,6 +1253,10 @@ function nachZeit(a,b){
 
 /* ════════════ 3 · Quelle ════════════ */
 let QUELLE="—", VORGAENGE=[], STAND=null;
+/* Die Notizzeilen des Ereignisjournals (Mailempfang, Wochenbrief,
+   Rechtevermerke). Leer, solange niemand angemeldet ist oder die Rolle
+   nicht Leitung ist — das ist kein Fehler, nur keine Auskunft. */
+let NOTIZEN=[];
 
 /* Wie viele Ziffern ein Code hat. Genau eine Stelle nennt die Zahl — im
    Worker (`PIN_LAENGE` in src/index.js) und in der App (`PIN_LAENGE` in
@@ -1285,6 +1525,35 @@ async function ladeBerichte(){
   }catch(e){ return false; }
 }
 
+/* ── Was das Journal zu melden hat ───────────────────────────────────
+   Der Mailempfang legt jeden abgewiesenen Absender und jeden Bericht
+   ohne lesbaren Anhang hier ab, der Wochenbrief ebenso, und seit
+   Runde 19 auch jeden Vorgang, den jemand ohne die passende Rolle
+   geschrieben hat. Bis es diesen Aufruf gab, war all das unsichtbar:
+   Im Mittagsblick stand „Z-Bericht noch nicht eingelesen" — derselbe
+   Satz für „kommt noch" und für „wurde an der Tür abgewiesen".
+   Nur Leitung; alles andere antwortet 403 und lässt die Liste leer. */
+async function ladeNotizen(){
+  try{
+    const r=await fetch("/api/journal?limit=60",{headers:{Accept:"application/json"}});
+    if(!r.ok){ NOTIZEN=[]; return false; }
+    const j=await r.json();
+    NOTIZEN=(j.zeilen||[]).filter(z=>z && z.notiz);
+    return true;
+  }catch(e){ return false; }
+}
+/* Die jüngste Notiz je Quelle — mehr braucht der Mittagsblick nicht,
+   und eine Liste mit zwanzig gleichlautenden Zeilen liest niemand. */
+function letzteNotiz(quelle){
+  return NOTIZEN.find(z=>z.quelle===quelle) || null;
+}
+function notizZeit(z){
+  if(!z || !z.ts) return "";
+  const d=new Date(+z.ts);
+  return d.toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit"})
+    +" "+d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
+}
+
 async function ladeZuordnung(){
   try{
     const r=await fetch("/api/mapping",{headers:{Accept:"application/json"}});
@@ -1467,6 +1736,27 @@ function quellBanner(m){
 /* ════════════ 4 · Bestand fortschreiben ════════════
    Bestand = jüngste Zählung + alles danach Eingegangene − alles danach Entnommene.
    Ohne Zählung gibt es keinen Bestand, nur Bewegung — das wird auch so gesagt. */
+/* ── Was gebucht ist, und was erst läuft ──────────────────────────────
+   NACHTRICHTIGUNG (Analyse Runde 19 · A): Der Worker leitet Journalzeilen
+   ERST beim Abschluss ab (`src/index.js`, `ereignisseAbleiten` läuft nur
+   bei `fertig`). Die App schickt aber alle 45 Sekunden ihren
+   Zwischenstand hinaus (`public/index.html`, `zwischenstand`), der Server
+   legt ihn mit `status='offen'` ab, und `/api/vorgaenge` gibt ihn
+   ungefiltert wieder heraus.
+
+   `bestand()`, `verbrauch()`, `abgleich()` und die Getränkeansicht haben
+   `fertig` an keiner Stelle geprüft und damit gerechnet, was noch gar
+   nicht gebucht ist. Gemessen: Kellerzählung 12 Flaschen abgeschlossen,
+   darauf eine LAUFENDE Tagesfassung mit 5 entnommenen — Worker 12,
+   dieser Schirm 7. Solange im Keller gefasst wird (Stunden), zeigte die
+   Leitung die Entnahme schon als Tatsache; blieb ein Gerät hängen (Akku
+   leer), dauerhaft.
+
+   Die Rechnungen sehen ab hier dasselbe wie das Journal. Wer den
+   laufenden Vorgang SEHEN will, ist richtig in „Eingänge" und im
+   Mittagsblick — beide lesen weiter `VORGAENGE` und sagen „läuft". */
+const gebucht = () => VORGAENGE.filter(v=>v.fertig);
+
 function bestand(){
   /* Je Artikel die JÜNGSTE Zählung, nicht eine Zählung für alle.
 
@@ -1480,13 +1770,14 @@ function bestand(){
      die Leitung sah den falschen der beiden Wege. */
   const zuletzt={};                 /* Artikel → der Vorgang, dessen Zählung gilt */
   let basis=null;
-  VORGAENGE.forEach(v=>{
+  const GEB=gebucht();
+  GEB.forEach(v=>{
     if(!v.zaehlung) return;
     basis=v;                        /* die jüngste Zählung trägt die Zeile im Banner */
     Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=v; });
   });
   const b={}, seit={ein:{}, raus:{}}, unklar={};
-  VORGAENGE.forEach(v=>{
+  GEB.forEach(v=>{
     if(v.zaehlung) Object.keys(v.zaehlung).forEach(id=>{
       if(v.zaehlung[id]!=null && zuletzt[id]===v) b[id]=v.zaehlung[id];
     });
@@ -1565,7 +1856,7 @@ function tagMinus(iso,n){
 function verbrauch(){
   const g=tagMinus(wienTag(),EINST.tage);
   const w={}, gt={}; const tage=new Set();
-  VORGAENGE.forEach(v=>{
+  gebucht().forEach(v=>{
     if((v.tag||"") < g) return;
     if(v.mode==="ware"||v.mode==="keller") return;
     tage.add(v.tag);
@@ -1733,7 +2024,26 @@ const vorbehaltSatz = v => {
    Flasche fehlt oder im Vorrat steht, entscheidet ein Mensch im Keller;
    die Rechnung kann es nicht wissen, solange „Ignorieren" ein
    vollwertiger Zustand ist. Ein Satz, eine Stelle. */
-const DEUTUNG = r => r.diff>0
+/* NACHTRICHTIGUNG (Analyse Runde 19 · A): Eine Zeile mit Verkauf GENAU
+   NULL, während im Fenster noch Kassennamen ohne Zuordnung stehen, bekam
+   denselben Satz wie eine echte Abweichung — „mehr geholt als verkauft —
+   Vorrat aufgebaut oder im Keller nachsehen". Gemessen an der Live-Lage
+   (44 von 48 Namen offen) stand dieser Satz zehnmal untereinander, und
+   kein einziges Mal war er eine Auskunft: Der Verkauf steckte in den
+   offenen Namen.
+
+   Entscheidung Nr. 9 bleibt unangetastet — die ZAHL bleibt stehen, die
+   Zeile zählt weiter in die rote Kachel, und eine offene Speise schaltet
+   keinem Wein den Befund ab. Was fällt, ist allein die BEHAUPTUNG einer
+   Ursache dort, wo die Rechnung keine kennt. Eine Null, die auch eine
+   Lücke sein kann, darf nicht als Messung gedeutet werden.
+
+   Sobald alles zugeordnet ist, ist eine Null wieder eine Messung und der
+   alte Satz steht wieder da. */
+const DEUTUNG = (r, offen) => (r.diff>0 && !(r.verkauf>0) && offen>0)
+  ? "0 verkauft laut Kasse — aber "+offen+(offen===1?" Kassenname ist":" Kassennamen sind")
+    +" noch nicht zugeordnet; der Verkauf kann dort stecken"
+  : r.diff>0
   ? "mehr geholt als verkauft — Vorrat aufgebaut oder im Keller nachsehen"
   : "mehr verkauft als geholt — Vorrat wird abgebaut";
 
@@ -1764,6 +2074,17 @@ function abgleich(tag, spanne){
      die Rechnung geschafft haben — unabhängig vom Grund. Diese eine Zahl
      ist gegen jeden künftigen stillen Weg dicht. */
   let stkGesamt=0, stkGerechnet=0, stkIgnoriert=0;
+  /* Was eine Position an der Kasse eingebracht hat, je Artikel.
+     Runde 19: Der Umsatz liegt seit je in jeder Berichtszeile
+     (`vomServer`), gezeigt wurde er an zwei Randstellen. Damit war jede
+     Abweichung mengengleich — „4 Flaschen Cola" und „4 Flaschen Moric
+     Reserve" standen als dieselbe Zeile da, obwohl die eine 12 € und die
+     andere 280 € ist. Die neue Übersicht sortiert danach.
+     NUR bei der direkten Zuordnung: Eine Rezeptur teilt eine Position
+     auf mehrere Bestandteile auf; denselben Umsatz jedem Bestandteil
+     zuzuschreiben, hiesse ihn zu vervielfachen. Solche Artikel bekommen
+     deshalb keinen Betrag, und die Zeile sagt das (`euroTeilweise`). */
+  const umsatzJe={}; const euroTeilweise={};
   const ignoriert=[];
   /* Artikel, deren VERKAUF in diesem Zeitraum nicht bestimmbar ist.
      Für sie gibt es keine Differenz und keine Deutung — die Entnahme
@@ -1850,6 +2171,7 @@ function abgleich(tag, spanne){
           return;
         }
         r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
+          euroTeilweise[x.id]=true;          /* Mischgetränk: Betrag nicht teilbar */
           zaehlePos(x.id,true); });
         stkGerechnet+=(+p.anzahl||0);
         return;
@@ -1887,17 +2209,42 @@ function abgleich(tag, spanne){
       const f=flaschen(p, zu.id);
       if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false,f.fehlt); return; }
       verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
+      umsatzJe[zu.id]=(umsatzJe[zu.id]||0)+(+p.umsatz||0);
       stkGerechnet+=(+p.anzahl||0);
     });
   });
   const z=berichte.length?berichte[berichte.length-1]:null;
+  /* Der Umsatz des ganzen Fensters, nicht nur des letzten Tages: Die
+     Übersicht nennt eine Zahl neben einem Zeitraum, und `z.umsatz` ist
+     die Zahl EINES Tages. Beides nebeneinander las sich wie ein
+     Widerspruch. */
+  const umsatzFenster=berichte.reduce((x,b)=>x+(+b.umsatz||0),0);
 
   /* Alles, was im Fenster aus dem Keller ging */
   const ent={};
-  VORGAENGE.filter(v=>imFenster(v.tag)).forEach(v=>{
+  gebucht().filter(v=>imFenster(v.tag)).forEach(v=>{
     Object.keys(v.wein).forEach(id=>ent[id]=(ent[id]||0)+v.wein[id]);
     Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
   });
+  /* NACHTRICHTIGUNG (Jagd nach Runde 19 · A): `gebucht()` lässt einen
+     laufenden Vorgang weg — richtig, denn das Journal kennt ihn auch
+     nicht. Damit fällt aber zum ersten Mal die ENTNAHME aus der
+     Rechnung, und alle vorhandenen Vorbehalte (Druckblatt, CSV,
+     Mittagsblick) decken nur die Wege ab, auf denen der VERKAUF
+     herausfällt. Gerechnet: 8 Fl. verkauft, 6 geholt, Vorgang noch
+     nicht abgeschlossen → Entnahme 0, Differenz −8, Deutung „mehr
+     verkauft als geholt — Vorrat wird abgebaut". Eine Deutung über
+     einen Keller, in dem nichts passiert ist.
+     Die ausgelassene Menge wird deshalb mitgeführt und überall dort
+     genannt, wo die anderen Vorbehalte stehen. */
+  const entLaufend={}; let laufendImFenster=0;
+  VORGAENGE.filter(v=>!v.fertig && imFenster(v.tag)).forEach(v=>{
+    let hat=false;
+    Object.keys(v.wein).forEach(id=>{ entLaufend[id]=(entLaufend[id]||0)+v.wein[id]; hat=true; });
+    Object.keys(v.getr).forEach(id=>{ entLaufend[id]=(entLaufend[id]||0)+v.getr[id]; hat=true; });
+    if(hat) laufendImFenster++;
+  });
+  const stkLaufend=Object.keys(entLaufend).reduce((x,id)=>x+entLaufend[id],0);
 
   /* Jetzt erst, mit dem vollständigen Lauf im Rücken: keine einzige
      Position gerechnet → kein Befund; wenigstens eine gerechnet → Befund
@@ -1920,7 +2267,8 @@ function abgleich(tag, spanne){
     if(!(verk[id]>0)) nichtRechenbar(id,"keinbericht");
   });
 
-  const ids=Array.from(new Set([...Object.keys(verk), ...Object.keys(ent)]));
+  const ids=Array.from(new Set([...Object.keys(verk), ...Object.keys(ent),
+                               ...Object.keys(entLaufend)]));
   const zeilen=ids.map(id=>{
     const w=byId(id);
     const v=verk[id]||0, e=ent[id]||0, u=unklar[id]||null;
@@ -1929,13 +2277,24 @@ function abgleich(tag, spanne){
        und `Math.abs(null)` ist 0 — die Zeile fällt damit aus jeder
        Auffälligkeitsliste heraus, auch wenn eine Stelle die Prüfung auf
        `r.unklar` vergessen sollte. */
+    /* Der Wert einer Abweichung: der Durchschnittserlös je verkaufter
+       Flasche mal den Flaschen, die nicht aufgehen. Kein Einkaufspreis —
+       den kennt das Tool nicht (es gibt keine Preisliste in den
+       Stammdaten). Ohne gerechneten Verkauf gibt es auch keinen
+       Durchschnitt, dann bleibt das Feld leer statt zu raten. */
+    const wertEur = (v>0 && umsatzJe[id]>0 && !u && !euroTeilweise[id])
+      ? Math.abs(e-v)*(umsatzJe[id]/v) : null;
     return {id, name: w ? (w.winzer+" · "+w.wein) : GN(id), art: w?"Wein":"Getränk",
             verkauf:v, entnahme:e, diff: u?null:e-v, unklar:u,
+            umsatz: umsatzJe[id]||0, wert:wertEur, euroTeilweise:!!euroTeilweise[id],
+            laufend: entLaufend[id]||0,
             vorbehalt: u?null:(vorbehalt[id]||null)};
   }).sort((a,b)=>(a.unklar?1:0)-(b.unklar?1:0)
                  || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
-  return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, von, bis, spanne,
+  return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, umsatzJe,
+          entLaufend, stkLaufend, laufendImFenster,
+          umsatzFenster, von, bis, spanne,
           berichte:berichte.length,
           /* Die eine Zahl, an der ablesbar ist, wie viel von der
              Verkaufsseite überhaupt in der Rechnung steht. */
@@ -2018,7 +2377,7 @@ function offeneKassennamen(){
 
 /* ════════════ 7 · Ansichten ════════════ */
 const SEITEN=[
-  {id:"heute",     t:"Mittagsblick",     grp:"Täglich"},
+  {id:"heute",     t:"Übersicht",        grp:"Täglich"},
   {id:"abgleich",  t:"Verkauf ↔ Fassung"},
   {id:"import",    t:"Z-Bericht"},
   {id:"bestand",   t:"Kellerbestand",    grp:"Bestand"},
@@ -2032,7 +2391,15 @@ const SEITEN=[
   {id:"team",      t:"Mitarbeiter",       grp:"Verwaltung"},
   {id:"einst",     t:"Einstellungen"}
 ];
-let SEITE="heute", SPANNE=7;
+let SEITE="heute";
+/* Die vier angebotenen Fenster. Sie stehen hier oben und nicht bei der
+   Zeichenfunktion, weil `SPANNE` sie gleich in der nächsten Zeile
+   braucht — beim Laden der Seite, nicht erst beim ersten Zeichnen. */
+const SPANNEN=[{n:1,t:"1 Tag"},{n:7,t:"7 Tage"},{n:14,t:"14 Tage"},{n:30,t:"30 Tage"}];
+/* Runde 19: Der Zeitraum kommt aus dem Speicher dieses Geräts. Nur die
+   vier angebotenen Werte sind gültig — ein krummer Wert aus einer alten
+   Fassung fiele sonst durch jede Anzeige. */
+let SPANNE=(x=>SPANNEN.some(s=>s.n===x)?x:7)(+lese(K_SPANNE)||0);
 
 function zaehler(id){
   const t=letzterTag();
@@ -2130,96 +2497,544 @@ function deTag(iso){
   return d.toLocaleDateString("de-AT",{weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"});
 }
 
-/* ── Mittagsblick ───────────────────────────────────────────────────── */
+/* ── Übersicht ───────────────────────────────────────────────────────
+   Runde 19. Die Seite hieß „Mittagsblick" und war ein Kachelraster mit
+   vier Zahlen, einem Kasten Fließtext und zwei Tabellen. Was sie nie
+   beantwortet hat, ist die erste Frage, die sich morgens stellt: Kann
+   ich diesen Zahlen überhaupt trauen? Sie fing bei der zweiten an
+   („Was stimmt nicht?") und gab auf eine Lücke dieselbe Antwort wie auf
+   einen Befund.
+
+   Die Seite beantwortet jetzt drei Fragen in dieser Reihenfolge:
+     1 · Kann ich den Zahlen trauen?   → Urteil und Abdeckungsbalken
+     2 · Wo reißt es?                  → die Kette
+     3 · Was muss ich tun?             → höchstens drei Aufgaben
+   Danach erst die Zahlen, die Zeilen und der Verlauf.
+
+   Zwei Grundsätze, die überall gelten:
+   · Eine Lücke ist keine Null. Wo nichts gerechnet werden kann, steht
+     ein Strich und der Grund, nie eine 0 und nie ein Haken.
+   · Der laufende Tag steht getrennt. Das Abgleichfenster endet bei
+     gestern (`letzterTag`); was seit Mitternacht gefasst wurde, kam auf
+     dieser Seite bis Runde 19 überhaupt nicht vor.                    */
+
+/* Wie alt ist die Zählung, auf der der Bestand steht? */
+function zaehlAlter(B){
+  if(!B.hat || !B.basis || !B.basis.tag) return null;
+  const a=new Date(B.basis.tag+"T12:00:00Z"), b=new Date(wienTag()+"T12:00:00Z");
+  return Math.max(0, Math.round((b-a)/86400000));
+}
+
+/* Die fünf Glieder der Kette, in der Reihenfolge, in der die Zahlen
+   entstehen. `tot` heißt: Dieses Glied kann nichts sagen, weil ein
+   Glied davor gerissen ist — nicht grün und nicht rot, sondern grau.
+   Genau das fehlte: Der alte Schirm zeigte eine rote 12 neben
+   „Auffällige Differenzen", während zwei Zentimeter darüber stand, dass
+   44 Kassennamen keinem Artikel zugeordnet sind. */
+function kette(a, B, fassung, tag){
+  const alter=zaehlAlter(B), M=minusGeteilt(B);
+  const g=[];
+  g.push(fassung
+    ? (fassung.fertig
+        ? {k:"ok",   t:"Fassung", w:"da",
+           u:(fassung.name||"ohne Namen")+" · "+num(fassung.flWein)+" Fl. Wein", ziel:"fassung"}
+        : {k:"warn", t:"Fassung", w:"läuft noch",
+           u:"geht in keine Zahl ein", ziel:"fassung"})
+    : {k:"bad", t:"Fassung", w:"fehlt", u:"für "+deTag(tag), ziel:"fassung"});
+  g.push(a.berichte>=a.spanne
+    ? {k:"ok",   t:"Z-Bericht", w:"vollständig", u:a.spanne+" von "+a.spanne+" Tagen", ziel:"zbericht"}
+    : a.berichte
+    ? {k:"warn", t:"Z-Bericht", w:a.berichte+" von "+a.spanne,
+       u:(a.spanne-a.berichte)+" Tage fehlen", ziel:"zbericht"}
+    : {k:"bad",  t:"Z-Bericht", w:"fehlt", u:"kein Bericht im Zeitraum", ziel:"zbericht"});
+  /* NACHTRICHTIGUNG (Jagd nach Runde 19 · B): Ohne Z-Bericht gibt es
+     überhaupt keine Kassennamen — „vollständig · jeder Name hat einen
+     Artikel" stand dann in Grün neben einem roten „Z-Bericht fehlt".
+     Eine Aussage über eine leere Menge ist keine Auskunft. */
+  g.push(!a.berichte
+    ? {k:"tot", t:"Zuordnung", w:"wartet", u:"braucht Schritt 2", ziel:"zuordnung"}
+    : a.offen.length
+    ? {k:"bad", t:"Zuordnung", w:num(a.offen.length)+" offen",
+       u:"ihr Verkauf fehlt in der Rechnung", ziel:"zuordnung"}
+    : {k:"ok",  t:"Zuordnung", w:"vollständig", u:"jeder Name hat einen Artikel", ziel:"zuordnung"});
+  /* Das vierte Glied urteilt nur, wenn die drei davor tragen. */
+  const traegt = a.berichte>0 && !a.offen.length;
+  const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
+  g.push(!traegt
+    ? {k:"tot", t:"Abgleich", w:"wartet",
+       u:a.berichte?"braucht Schritt 3":"braucht Schritt 2", ziel:"diff"}
+    : grob.length
+    ? {k:grob.length>4?"bad":"warn", t:"Abgleich", w:num(grob.length)+" gehen nicht auf",
+       u:"über "+a.spanne+" Tage nicht ausgeglichen", ziel:"diff"}
+    : {k:"ok", t:"Abgleich", w:"geht auf", u:"keine Abweichung über zwei Flaschen", ziel:"diff"});
+  g.push(!B.hat
+    ? {k:"bad", t:"Bestand", w:"keine Zählung", u:"ohne Zählung kein Bestand", ziel:"bestand"}
+    : M.echt.length
+    ? {k:"bad", t:"Bestand", w:num(M.echt.length)+" unter null",
+       u:"Zählung vom "+deTag(B.basis.tag)+" überholt", ziel:"zaehlliste"}
+    : alter>7
+    ? {k:"warn", t:"Bestand", w:alter+" Tage alt", u:"zuletzt "+deTag(B.basis.tag), ziel:"bestand"}
+    : {k:"ok", t:"Bestand", w:"aktuell", u:"gezählt am "+deTag(B.basis.tag), ziel:"bestand"});
+  return g;
+}
+
+/* Die Aufgaben, sortiert nach dem, was sie freischalten — nicht nach der
+   Reihenfolge im Quelltext. Was den Abgleich blockiert, steht oben; was
+   nur eine Zahl verbessert, unten. Höchstens drei: Eine Liste mit neun
+   Punkten liest im Dienst niemand, und der alte Kasten „Was noch fehlt"
+   hatte bis zu acht Sätze Fließtext ohne einen einzigen Knopf. */
+function aufgaben(a, B, tOG){
+  const L=[], M=minusGeteilt(B);
+  /* Eine Abweichung, die man nachsehen kann, IST eine Aufgabe. Ohne
+     diese Zeile sagte die Übersicht oben „14 Positionen gehen nicht
+     auf" und unten „Nichts offen" — zwei Sätze auf einem Schirm, die
+     sich widersprechen. Sie steht bewusst hinter der Zuordnung und den
+     Berichten: Solange die fehlen, ist die Zahl nicht belastbar, und
+     dann ist Nachsehen die falsche Arbeit. */
+  const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
+  const traegt = a.berichte>0 && !a.offen.length;
+  if(traegt && grob.length){
+    const wert=grob.reduce((x,r)=>x+(r.wert||0),0);
+    L.push({rang:2, art:"nachsehen",
+      t:num(grob.length)+(grob.length===1?" Position geht":" Positionen gehen")+" nicht auf",
+      u:"Verkauf und Entnahme decken sich nicht"
+        +(wert?", zusammen rund "+eur(wert):"")
+        +". Grösste zuerst unter „Verkauf ↔ Fassung“.",
+      knopf:"Ansehen", ziel:"diff", stark:grob.length>4});
+  }
+  if(a.offen.length) L.push({rang:0, art:"blockiert",
+    t:num(a.offen.length)+" Kassennamen zuordnen",
+    u:"Betrifft "+num(a.offen.reduce((x,o)=>x+o.anzahl,0))+" Einheiten"
+      +(a.offen.some(o=>o.umsatz) ? " und "+eur(a.offen.reduce((x,o)=>x+(+o.umsatz||0),0)) : "")
+      +". Gilt rückwirkend für alle Tage.",
+    knopf:"Zuordnen", ziel:"zuordnung", stark:true});
+  if(a.berichte<a.spanne) L.push({rang:1, art:"fehlt",
+    t:num(a.spanne-a.berichte)+" Z-Berichte nachreichen",
+    u:"Für diese Tage ist nur die Entnahme bekannt — die Differenzen fallen zu hoch aus.",
+    knopf:"Einlesen", ziel:"zbericht", stark:!a.berichte});
+  if(tOG.sammelbar.length) L.push({rang:3, art:"bestätigen",
+    t:num(tOG.sammelbar.length)+" Gebindegrößen bestätigen",
+    u:num(tOG.stkSammelbar)+" Einheiten zählen weder als Verkauf noch als Abweichung. "
+      +"Unter „Verkauf ↔ Fassung“ gesammelt in einem Klick.",
+    knopf:"Bestätigen", ziel:"diff"});
+  if(tOG.handisch.length) L.push({rang:4, art:"eintragen",
+    t:num(tOG.handisch.length)+" Gebindegrößen von Hand eintragen",
+    u:num(tOG.stkHandisch)+" Einheiten haben weder bestätigte Größe noch Vorschlag. "
+      +"Der Sammelknopf fasst sie nicht an — die Zahl muss je Artikel hinein.",
+    knopf:"Öffnen", ziel:"zuordnung"});
+  if(M.echt.length) L.push({rang:5, art:"prüfen",
+    t:num(M.echt.length)+" Positionen stehen unter null",
+    u:"Die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Die Zählliste nennt genau diese.",
+    knopf:"Zählliste", ziel:"zaehlliste"});
+  const laufend=offeneVorgaenge();
+  if(laufend.length) L.push({rang:6, art:"offen",
+    t:num(laufend.length)+(laufend.length===1?" Vorgang läuft noch":" Vorgänge laufen noch"),
+    u:"Ältester vom "+deTag(laufend.map(v=>v.tag).filter(Boolean).sort()[0])
+      +". Sie gehen in keine Zahl ein, bis sie im Keller abgeschlossen sind.",
+    knopf:"Ansehen", ziel:"eingaenge"});
+  if(!B.hat) L.push({rang:7, art:"fehlt", t:"Kellerzählung fehlt",
+    u:"Ohne Zählung gibt es keinen Bestand, nur Bewegung.",
+    knopf:"Zählliste", ziel:"zaehlliste"});
+  return L.sort((x,y)=>x.rang-y.rang);
+}
+
+/* Was das Journal meldet — kein Arbeitsvorrat, aber auch nichts, das
+   verschwinden darf. Beides war bis Runde 19 überhaupt nicht sichtbar:
+   Der Mailempfang legt jeden abgewiesenen Absender und jeden Bericht
+   ohne lesbaren Anhang im Journal ab, und dort kam niemand hin. Im
+   Mittagsblick stand dann „Z-Bericht noch nicht eingelesen" — derselbe
+   Satz für „kommt noch" und für „wurde an der Tür abgewiesen". */
+/* Ein Vorgang, der noch läuft UND Inhalt hat. Die App schickt beim
+   Verwerfen ausdrücklich einen LEEREN, nicht abgeschlossenen Stand
+   hinaus, damit andere Geräte „läuft nicht mehr" sehen
+   (`vorgangVerwerfen`, public/index.html) — und filtert ihn danach
+   selbst mit `fernHatInhalt` wieder heraus. Das Backoffice hatte diese
+   Schwelle nicht und zählte jeden verworfenen Vorgang für immer als
+   „läuft noch offen", mit dem Satz „bis er im Keller abgeschlossen ist"
+   an etwas, das niemand mehr abschliessen kann (Jagd nach Runde 19 · B). */
+function offeneVorgaenge(){
+  return VORGAENGE.filter(v=>!v.fertig && (
+    summe(v.wein)>0 || summe(v.getr)>0 || summe(v.eingang)>0
+    || (v.zaehlung && Object.keys(v.zaehlung).length)
+    || (v.gzaehlung && Object.keys(v.gzaehlung).length)));
+}
+
+function meldungen(){
+  const M=[];
+  const mail=letzteNotiz("email");
+  if(mail) M.push("Mailempfang "+notizZeit(mail)+": "+mail.notiz
+    +" — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein.");
+  const rechte=NOTIZEN.filter(z=>z.quelle==="rechte");
+  if(rechte.length) M.push(rechte.length
+    +(rechte.length===1?" Vorgang wurde":" Vorgänge wurden")
+    +" ohne die passende Rolle geschrieben (zuletzt "+notizZeit(rechte[0])+": "
+    +rechte[0].notiz+"). Angenommen, nicht gesperrt.");
+  const brief=letzteNotiz("wochenbrief");
+  if(brief) M.push("Wochenbrief "+notizZeit(brief)+" liegt vor.");
+  return M;
+}
+
+/* Vierzehn Betriebstage nebeneinander. Drei Reihen, weil genau drei
+   Dinge je Tag entweder da sind oder fehlen — und eine fehlende Angabe
+   muss anders aussehen als eine Null. Schraffiert heißt „keine Angabe". */
+function verlauf(bisTag, n){
+  const T=[];
+  for(let i=n-1;i>=0;i--){
+    const t=tagMinus(bisTag,i);
+    const V=gebucht().filter(v=>v.tag===t);
+    const hatF=V.some(v=>v.mode==="tag");
+    const hatZ=!!ZBER[t];
+    let ab="nix";
+    if(hatZ){
+      const a=abgleich(t,1);
+      const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2).length;
+      const klein=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1).length;
+      ab = a.offen.length ? "nix" : grob ? "bad" : klein ? "warn" : "ok";
+    }
+    T.push({t, f:hatF?"ok":"nix", z:hatZ?"ok":"nix", a:ab});
+  }
+  return T;
+}
+
 function vHeute(m){
   const tag=letzterTag(), a=abgleich(tag, SPANNE), B=bestand(), V=verbrauch();
   const heutigeVorg=VORGAENGE.filter(v=>v.tag===tag);
   const fassung=heutigeVorg.find(v=>v.mode==="tag");
   const best=bestellliste();
+  const tOG=teileOhneGroesse(a.ohneGroesse);
   const grob=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=2);
-  const ohneUrteil=a.zeilen.filter(r=>r.unklar).length;
-  /* Die Gründe aus den Zeilen selbst, nicht aus dem Gedächtnis: Hier
-     standen zwei feste Aufzählungen, und beide waren falsch. Die eine
-     nannte „Position nicht zugeordnet" — den Grund gibt es seit v29
-     nicht mehr (`review/ENTSCHIEDEN-NACHTS.md`, Punkt 9), eine offene
-     Kassenposition schaltet keinen Artikel mehr stumm. Die andere nannte
-     Größe und Z-Bericht, aber nicht „keine Menge im Kassennamen" — den
-     häufigeren der beiden Gründe (in Bericht 37: 26 von 48 Positionen).
-     `UNKLAR_GRUND` ist die eine Wahrheit; wer daneben eine zweite Liste
-     pflegt, pflegt sie irgendwann nicht mehr mit. */
+  const ohneUrteil=a.zeilen.filter(r=>r.unklar);
+  /* Die Gründe kommen aus den Zeilen, nie aus dem Gedächtnis:
+     `UNKLAR_GRUND` ist die eine Wahrheit. Wer daneben eine zweite Liste
+     pflegt, pflegt sie irgendwann nicht mehr mit — beide fest getippten
+     Aufzählungen, die hier bis Runde 16 standen, waren falsch. */
   const gruendeSatz=[...new Set(a.zeilen.filter(r=>r.unklar)
     .map(r=>UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar"))].join(" · ");
-  const minus=minusGeteilt(B);
+
+  /* ── 1 · Urteil ───────────────────────────────────────────────────
+     Ein Satz, der sagt, woran man ist. Vier Kacheln mit Zahlen sagen es
+     nicht: Sie beantworten vier Fragen und keine davon ist „und nun?". */
+  const urteil = !a.berichte
+    ? {k:"bad", t:"Für diesen Zeitraum ist kein Verkauf bekannt.",
+       u:"Ohne Z-Bericht ist jede Entnahme unten nur eine Entnahme — keine Differenz "
+        +"und kein Schwund. Das ist noch kein Abgleich."}
+    : a.offen.length
+    ? {k:"bad", t:"Den Differenzen ist noch nicht zu trauen.",
+       u:num(a.offen.length)+" Kassennamen sind keinem Artikel zugeordnet. Solange das so "
+        +"ist, zählt ihr Verkauf als „nicht vorhanden“ — und jede Zeile darunter sieht "
+        +"schlechter aus, als sie ist."}
+    : grob.length
+    ? {k:"warn", t:num(grob.length)+(grob.length===1?" Position geht":" Positionen gehen")+" nicht auf.",
+       u:"Der Verkauf ist bekannt, die Entnahme auch — sie decken sich nicht. Unten stehen "
+        +"sie nach Wert sortiert."}
+    : {k:"ok", t:"Verkauf und Entnahme decken sich.",
+       u:"Keine Abweichung über zwei Flaschen im Zeitraum"
+        +(ohneUrteil.length?" — "+ohneUrteil.length+" Positionen bleiben ohne Urteil ("+gruendeSatz+").":".")};
 
   m.innerHTML=`<section>
-    <h2>Mittagsblick</h2>
-    <div class="unter">Betriebstag ${esc(deTag(tag))} · Abgleich über ${SPANNE} Tage · ${esc(quelleSatz())}</div></section>`;
+    <h2>Übersicht · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h2>
+    <div class="urteil urteil--${urteil.k}">
+      <b>${esc(urteil.t)}</b>${esc(urteil.u)}</div></section>`;
 
-  const k=document.createElement("section");
-  k.className="gitter g4";
-  /* Der große Slot ist für Ziffern gebaut. Ein grünes „eingegangen" darin
-     wiegt schwerer als die rote 7 daneben — obwohl nur die 7 eine Handlung
-     auslöst. Zustände bekommen deshalb die schmale Variante. */
-  /* B2 (Runde 18) · Jede Kachel, hinter der etwas liegt, ist ein Knopf
-     und sagt am Fuss, wohin sie führt. Das ist keine Verzierung: Alle
-     vier beantworten eine Frage mit einer Zahl („7"), und die nächste
-     Frage ist immer dieselbe — WELCHE sieben? Bis Runde 18 musste man
-     dafür das Menü links lesen und raten, welcher Punkt gemeint ist. */
-  const kachel=(t,w,u,kl,status,ziel,fuehrt)=>{
-    const innen=`<span>${t}</span><b>${w}</b><small>${u||"&nbsp;"}</small>`
-      +(ziel?`<span class="weiter">${esc(fuehrt)} &rsaquo;</span>`:"");
-    const klassen=`kpi ${kl||""}${status?" kpi--status":""}`;
-    return ziel
-      ? `<button type="button" class="${klassen}" data-ziel="${esc(ziel)}">${innen}</button>`
-      : `<div class="${klassen}">${innen}</div>`;
-  };
-  k.innerHTML=
-    kachel("Tagesfassung", fassung?"eingegangen":"fehlt",
-      fassung?esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein":"noch keine Fassung für diesen Tag",
-      fassung?"ok":"warn", true,
-      "fassung", fassung?"Positionen und Mengen ansehen":"Frühere Tagesfassungen")+
-    kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE+" Tagen":"fehlen",
-      a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
-      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true,
-      "zbericht", a.z?"Eingelesene Positionen ansehen":"Bericht einlesen")+
-    /* Eine grüne Null heißt „geprüft, alles in Ordnung". Ohne Z-Bericht im
-       Fenster ist aber nichts geprüft, und ohne Kellerzählung ist kein
-       Bestand berechenbar (§4.3: ohne Zählung kein Bestand, nur Bewegung) —
-       die Bestellliste KANN dann nichts finden. Am ersten Tag nach dem
-       Livegang stand hier zweimal Grün über einer leeren Datenbank.
-       Fehlt die Grundlage, steht ein Strich da, kein Haken. */
-    /* Eine grüne Null darf nur dastehen, wenn auch wirklich verglichen
-       wurde. Sind alle Zeilen ohne bestimmbaren Verkauf, ist nichts
-       geprüft — das steht dann da, statt „decken sich". */
-    kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
-      a.berichte
-        ?((grob.length
-          ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
-          :ohneUrteil
-            ?(ohneUrteil+" Positionen ohne Abgleich — "+esc(gruendeSatz))
-            :"Verkauf und Entnahme decken sich")
-          /* NACHTRICHTIGUNG (vierte Jagd · B): Eine grüne Null darf nur
-             dastehen, wenn wirklich verglichen wurde — das verlangt der
-             Kommentar zwei Absätze weiter oben, und für den vierten Weg
-             („Ignorieren") galt es noch nicht. */
-          +(a.ignoriert&&a.ignoriert.length
-            ?" · "+a.ignoriert.length+" ignoriert ("+num(a.stkIgnoriert)+" Einheiten)":""))
-        :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
-      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"", false,
-      "diff", a.berichte?"Welche Positionen, welche Differenz":"Zum Abgleich")+
-    kachel("Nachbestellen", B.hat?best.length:"—",
-      B.hat
-        ?(best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle")
-        :"keine Kellerzählung — Bestand nicht berechenbar",
-      B.hat?(best.length?"warn":"ok"):"", false,
-      "bestellen", B.hat?"Welche Weine, wie viele Kisten":"Zum Bestellvorschlag");
-  m.appendChild(k);
+  /* ── 2 · Abdeckung ───────────────────────────────────────────────
+     Die eine Zahl, die sagt, wie viel eine Differenz wert ist. Sie wird
+     seit v27 gerechnet und stand bis Runde 19 ausschließlich auf dem
+     Druckblatt — nicht auf dem Schirm, den die Leitung morgens öffnet. */
+  if(a.berichte){
+    const ges=a.stkGesamt||0, ger=a.stkGerechnet||0, ign=a.stkIgnoriert||0;
+    const fehlt=Math.max(0, ges-ger-ign);
+    const pz=x=>ges?Math.round(x/ges*1000)/10:0;
+    /* Unter rund einem Sechstel der Breite passt keine Beschriftung mehr
+       hinein — bei 393px stand dort „8…". Der Abschnitt bleibt farbig,
+       die Zahl steht in der Zeile darunter, und beide zusammen stehen im
+       `title`. Eine abgeschnittene Zahl ist schlechter als keine. */
+    const abschnitt=(kl,wert,wort)=>{ if(!wert) return "";
+      const p=pz(wert), text=num(wert)+" "+wort;
+      return `<i class="${kl}" style="width:${p}%" title="${esc(text)} (${p} %)">`
+        +(p>=16?`<span>${esc(text)}</span>`:"")+`</i>`; };
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Wie viel vom Verkauf steckt in der Rechnung</h3>
+      <div class="vbalken" role="img" aria-label="${pz(ger)} Prozent gerechnet, ${pz(ign)} Prozent ausgenommen, ${pz(fehlt)} Prozent fehlen">
+        ${abschnitt("v-ok", ger, "gerechnet")}
+        ${abschnitt("v-aus", ign, "ausgenommen")}
+        ${abschnitt("v-fehlt", fehlt, "fehlen")}
+      </div>
+      <div class="vlegende"><span><b>${num(ges)}</b> verkaufte Einheiten laut Kasse${
+        a.umsatzFenster?" · <b>"+esc(eur(a.umsatzFenster))+"</b> Umsatz":""}
+        <br>${num(ger)} gerechnet · ${num(ign)} ausgenommen${
+          a.ignoriert&&a.ignoriert.length?" ("+a.ignoriert.length+" ignoriert)":""
+        } · ${num(fehlt)} fehlen</span>
+        <span class="rechts">${a.berichte} von ${a.spanne} Z-Berichten eingelesen</span></div>
+      <div class="unter">„Ausgenommen“ sind Speisen, Kaffee und Fassbier — alles auf „Ignorieren“.
+        „Fehlen“ heißt: der Verkauf ist da, aber die Rechnung kann ihn nicht rechnen.</div>`;
 
-  /* Wohin die vier Kacheln führen. Kein Ziel ist eine Sackgasse: Fehlt
-     die Tagesfassung, führt die Kachel auf die Liste der FRÜHEREN
-     Tagesfassungen — dort steht, wann zuletzt eine kam. Fehlt der
-     Z-Bericht, führt sie dorthin, wo er eingelesen wird. */
-  k.querySelectorAll("[data-ziel]").forEach(b=>b.onclick=()=>{
+    /* Woraus die Lücke besteht. Drei Ursachen mit drei verschiedenen
+       Maßnahmen — wer sie in einen Topf wirft, schickt einen Teil der
+       Leitung vor eine leere Wand (achte Jagd Runde 16). „Größe fehlt"
+       ist Arbeit im Backoffice, „ohne Vorschlag" ist Handarbeit am
+       einzelnen Artikel, „keine Menge im Kassennamen" ist überhaupt
+       keine Arbeit hier — das fehlt der KASSE.
+       Die Sätze standen bis Runde 19 im Kasten „Was noch fehlt"; sie
+       stehen jetzt dort, wo sie etwas erklären: unter dem Balken, dessen
+       roten Abschnitt sie ausmachen. */
+    const t=teileOhneGroesse(a.ohneGroesse);
+    const nam=n=>n+(n===1?" zugeordneter Kassenname":" zugeordnete Kassennamen");
+    const einh=x=>num(x)+(x===1?" Einheit":" Einheiten");
+    const L=[];
+    if(a.offen.length) L.push("Nicht zugeordnet: "+num(a.offen.length)
+      +(a.offen.length===1?" Kassenname":" Kassennamen")
+      +" ("+einh(a.offen.reduce((x,o)=>x+o.anzahl,0))+") haben keinen Artikel.");
+    if(t.sammelbar.length) L.push("Größe fehlt: "+nam(t.sammelbar.length)
+      +" ("+einh(t.stkSammelbar)+") haben keine bestätigte Größe."
+      +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
+    if(t.handisch.length) L.push("Größe fehlt ohne Vorschlag: "+nam(t.handisch.length)
+      +" ("+einh(t.stkHandisch)+") haben weder bestätigte Größe noch Vorschlag."
+      +" Die Gebindegröße muss von Hand eingetragen werden; bei Mischgetränken"
+      +" an der eigenen Kassenposition des Bestandteils.");
+    /* NACHTRICHTIGUNG (Jagd nach Runde 19 · Rückfall): Dieser Satz stand
+       seit der dritten Jagd im Kasten „Was noch fehlt" und ist mit der
+       neuen Übersicht zunächst verschwunden. Er gehört hierher, weil
+       „Ignorieren" der einzige Weg ist, einen Cocktail ohne Menge im
+       Namen aus dem roten Balken zu bekommen — und seine Flaschen
+       kommen trotzdem aus dem Keller. */
+    if(a.ignoriert && a.ignoriert.length) L.push(
+      "Ausgenommen: "+a.ignoriert.length
+      +(a.ignoriert.length===1?" Kassenname":" Kassennamen")
+      +" ("+einh(a.stkIgnoriert)+") "+(a.ignoriert.length===1?"steht":"stehen")
+      +" auf „Ignorieren“ und "+(a.ignoriert.length===1?"zählt":"zählen")
+      +" nicht als Verkauf — richtig für Speisen, Kaffee und Fassbier. Steht dort "
+      +"ein Getränk aus dem Keller, fehlt sein Verkauf, und seine Zeile unten "
+      +"sieht aus, als stimme sie.");
+    if(t.ausschank.length) L.push("Menge fehlt im Kassennamen: "+nam(t.ausschank.length)
+      +" ("+einh(t.stkAusschank)+") sagen nicht, wie viel ausgeschenkt wurde."
+      +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge"
+      +" oder eine Rezeptur.");
+    if(L.length) s.insertAdjacentHTML("beforeend",
+      `<ul class="luecke">${L.map(x=>"<li>"+esc(x)+"</li>").join("")}</ul>`);
+    m.appendChild(s);
+  }
+
+  /* ── 3 · Die Kette ───────────────────────────────────────────────── */
+  {
+    const G=kette(a, B, fassung, tag);
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Der Weg der Zahlen</h3>
+      <div class="unter">Von der Fassung im Keller bis zum fertigen Abgleich.
+        Reißt ein Glied, ist alles dahinter grau — nicht grün und nicht rot.</div>
+      <div class="kette">${G.map((g,i)=>
+        (i?`<div class="gpfeil${G[i-1].k==="tot"||g.k==="tot"?" gpfeil--tot":""}" aria-hidden="true"></div>`:"")
+        +`<button type="button" class="glied glied--${g.k}" data-ziel="${esc(g.ziel)}">
+            <span class="gnr">${i+1}</span><span class="gt">${esc(g.t)}</span>
+            <span class="gw">${esc(g.w)}</span><span class="gu">${esc(g.u)}</span>
+          </button>`).join("")}</div>`;
+    m.appendChild(s);
+  }
+
+  /* ── 4 · Jetzt zu tun ────────────────────────────────────────────── */
+  {
+    /* Drei Aufgaben stehen gross da, der Rest als eine Zeile. Der alte
+       Kasten „Was noch fehlt" hatte bis zu acht Sätze Fließtext ohne
+       einen einzigen Knopf und wurde ab dem dritten Mal überlesen; eine
+       Liste, die nach drei Punkten aufhört, verliert dafür Dinge, die
+       niemand verlieren darf (eine hängengebliebene Fassung, eine
+       abgewiesene Mail). Beides zusammen: oben, was jetzt dran ist —
+       darunter, vollständig und knapp, alles Übrige. */
+    const A=aufgaben(a, B, tOG), OBEN=A.slice(0,3), REST=A.slice(3), MELD=meldungen();
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Jetzt zu tun</h3>`
+      +(OBEN.length
+        ? `<div class="tun">${OBEN.map(x=>`
+            <div class="tunz">
+              <span class="pill ${x.art==="blockiert"?"p-bad":x.art==="offen"?"p-grau":"p-warn"}">${esc(x.art)}</span>
+              <div class="tunt"><b>${esc(x.t)}</b><div class="mini">${esc(x.u)}</div></div>
+              <div class="tunr"><button class="b${x.stark?" stark":""}" data-ziel="${esc(x.ziel)}">${esc(x.knopf)}</button></div>
+            </div>`).join("")}</div>`
+        : `<div class="karte leer">Nichts offen. Berichte sind eingelesen, alles ist
+            zugeordnet, der Bestand ist gezählt.</div>`)
+      +((REST.length||MELD.length)
+        ? `<div class="auch"><h4>Außerdem</h4><ul>
+            ${REST.map(x=>`<li><button class="b klein leise" data-ziel="${esc(x.ziel)}">${esc(x.knopf)}</button>
+              <span>${esc(x.t)} — ${esc(x.u)}</span></li>`).join("")}
+            ${MELD.map(x=>`<li><span class="mini pill p-grau">Journal</span>
+              <span>${esc(x)}</span></li>`).join("")}
+          </ul></div>`
+        : "");
+    m.appendChild(s);
+  }
+
+  /* ── 5 · Heute ───────────────────────────────────────────────────
+     Der laufende Tag, ausdrücklich getrennt vom Abgleichfenster oben.
+     Er endet bei gestern (`letzterTag`) — was heute früh gefasst wurde,
+     kam auf dieser Seite bis Runde 19 nirgends vor. */
+  {
+    const h=wienTag(), HV=VORGAENGE.filter(v=>v.tag===h);
+    const hf=HV.find(v=>v.mode==="tag");
+    const sonder=HV.filter(v=>v.mode==="nach");
+    const laufend=offeneVorgaenge();
+    const summeW=HV.reduce((x,v)=>x+summe(v.wein),0);
+    const summeG=HV.reduce((x,v)=>x+summe(v.getr),0);
+    const uhr=v=>{ const t=v.ts||v.roh&&v.roh.zeit; if(!t) return "";
+      const d=new Date(t); return isNaN(d)?"":d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}); };
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Heute · ${esc(deTag(h))}
+        <span class="mini">läuft noch — nicht im Abgleich oben</span></h3>
+      <div class="heutzeile">
+        <div class="ht"><span>Tagesfassung</span>
+          <b class="${hf?(hf.fertig?"ok":""):"bad"}">${hf?(hf.fertig?esc(uhr(hf)||"da"):"läuft"):"fehlt"}</b>
+          <small>${hf?esc(hf.name||"ohne Namen")+" · "+num(hf.flWein)+" Fl. Wein":"noch keine Fassung"}</small></div>
+        <div class="ht"><span>Seit Mitternacht</span>
+          <b>${num(HV.length)}</b>
+          <small>${num(summeW)} Fl. Wein · ${num(summeG)} Fl. Getränke</small></div>
+        <div class="ht"><span>Sonderentnahmen</span>
+          <b>${num(sonder.length)}</b>
+          <small>${sonder.length?esc(sonder.map(v=>v.name||"?").join(" · ")):"keine"}</small></div>
+        <div class="ht"><span>Läuft noch offen</span>
+          <b class="${laufend.length?"bad":""}">${laufend.length?num(laufend.length):"—"}</b>
+          <small>${laufend.length
+            ? esc(MODUSNAME[laufend[0].mode]||laufend[0].mode)+" · "+esc(laufend[0].name||"?")
+            : "nichts offen"}</small></div>
+      </div>`;
+    m.appendChild(s);
+  }
+
+  /* ── 6 · Die Zahlen ──────────────────────────────────────────────
+     Sechs Angaben, jede mit ihrem Zeitraum. Ein Strich, wo nichts
+     berechenbar ist — der Preis dafür ist eine leere Kachel, der Preis
+     für eine 0 wäre eine falsche Auskunft. */
+  {
+    const entGes=Object.keys(a.ent).reduce((x,id)=>x+a.ent[id],0);
+    const gerechnet=a.zeilen.filter(r=>!r.unklar);
+    const diffFl=gerechnet.reduce((x,r)=>x+Math.abs(r.diff),0);
+    const diffEur=gerechnet.reduce((x,r)=>x+(r.wert||0),0);
+    const bGes=Object.keys(B.b).reduce((x,id)=>x+(B.b[id]>0?B.b[id]:0),0);
+    const alter=zaehlAlter(B);
+    const traegt = a.berichte>0 && !a.offen.length;
+    const kachel=(t,w,u,tot)=>`<div class="zw${tot?" zw--tot":""}">
+      <span>${esc(t)}</span><b>${esc(w)}</b><small>${u}</small></div>`;
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Die Zahlen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>
+      <div class="zahlwand">
+        ${kachel("Umsatz Getränke", a.umsatzFenster?eur(a.umsatzFenster):"—",
+          a.berichte?"aus "+a.berichte+" Z-Bericht"+(a.berichte===1?"":"en"):"kein Z-Bericht",
+          !a.umsatzFenster)}
+        ${kachel("Verkauft", a.stkGesamt?num(a.stkGesamt):"—",
+          a.stkGesamt?num(a.stkGerechnet)+" davon gerechnet":"kein Z-Bericht", !a.stkGesamt)}
+        ${kachel("Aus dem Keller", num(entGes),
+          a.stkLaufend
+            ? "Flaschen · "+num(a.stkLaufend)+" in laufenden Vorgängen nicht gerechnet"
+            : "Flaschen entnommen", false)}
+        ${kachel("Differenz", traegt&&gerechnet.length?num(diffFl):"—",
+          traegt&&gerechnet.length
+            ? "Flaschen, alle Abweichungen zusammen"+(diffEur?" · rund "+esc(eur(diffEur)):"")
+            : (a.offen.length?"erst wenn alles zugeordnet ist":"kein Z-Bericht"),
+          !(traegt&&gerechnet.length))}
+        ${kachel("Bestand Keller", B.hat?num(bGes):"—",
+          B.hat?"Flaschen · Zählung "+esc(deTag(B.basis.tag)):"keine Kellerzählung", !B.hat)}
+        ${kachel("Zuletzt gezählt", alter==null?"—":alter===0?"heute":alter+" Tage",
+          alter==null?"noch nie":"her", alter==null)}
+      </div>`;
+    m.appendChild(s);
+  }
+
+  /* ── 7 · Zwei Spalten ────────────────────────────────────────────── */
+  {
+    const auf=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1)
+      .sort((x,y)=>(y.wert||0)-(x.wert||0) || Math.abs(y.diff)-Math.abs(x.diff));
+    const zwei=document.createElement("div"); zwei.className="zwei";
+
+    const s1=document.createElement("section");
+    s1.innerHTML=`<h3>Weicht ab</h3>
+      <div class="unter">Nur Zeilen, für die Verkauf UND Entnahme bekannt sind.
+        Sortiert nach Wert; wo kein Durchschnittserlös berechenbar ist, nach Flaschen.</div>`
+      +(auf.length
+        ? `<div class="tabhuelle"><table><thead><tr><th>Artikel</th>
+            <th class="r">Verk.</th><th class="r">Entn.</th><th class="r">Diff.</th>
+            <th class="r">Wert</th></tr></thead><tbody>
+            ${auf.slice(0,6).map(r=>`<tr>
+              <td>${esc(r.name)} <span class="mini">${esc(r.art)}</span>
+                <div class="mini deutung">${esc(DEUTUNG(r, a.offen.length))}</div>
+                ${r.laufend?`<div class="mini">${num(r.laufend)} Fl. stehen in einem
+                  Vorgang, der noch läuft — hier nicht als Entnahme gerechnet.</div>`:""}
+                ${r.vorbehalt?`<div class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</div>`:""}</td>
+              <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
+              <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":"−"}${num(Math.abs(r.diff))}</td>
+              <td class="r geld">${r.wert?"<b>"+esc(eur(r.wert))+"</b>"
+                :`<span class="dim" title="${r.euroTeilweise?"Mischgetränk — der Betrag lässt sich nicht auf die Bestandteile aufteilen":"kein gerechneter Verkauf, also kein Durchschnittserlös"}">—</span>`}</td>
+            </tr>`).join("")}
+            ${(auf.length>6||ohneUrteil.length)?`<tr class="tot"><td colspan="5" class="mini">
+              ${auf.length>6?num(auf.length-6)+" weitere Abweichungen. ":""}
+              ${ohneUrteil.length?num(ohneUrteil.length)
+                +(ohneUrteil.length===1?" Zeile ist":" Zeilen sind")
+                +" nicht beurteilbar: "+esc(gruendeSatz)+".":""}
+            </td></tr>`:""}
+          </tbody></table></div>`
+        : `<div class="karte leer">${!a.berichte
+            ? "Kein Z-Bericht im Zeitraum — es gibt nichts zu vergleichen."
+            : ohneUrteil.length
+            ? "Für keine Position ist der Verkauf bestimmbar ("+esc(gruendeSatz)+")."
+            : "Keine Abweichung über einer Flasche."}</div>`)
+      +`<div class="reihe" style="margin-top:12px">
+          <button class="b leise" data-ziel="diff">Zum vollständigen Abgleich</button></div>`;
+    zwei.appendChild(s1);
+
+    const s2=document.createElement("section");
+    s2.innerHTML=`<h3>Geht aus</h3>
+      <div class="unter">Reichweite unter ${EINST.reichweite} Tagen.</div>`
+      +(best.length
+        ? `<div class="tabhuelle"><table><thead><tr><th>Wein</th>
+            <th class="r">Best.</th><th class="r">Reicht</th><th class="r">Kisten</th>
+            </tr></thead><tbody>
+            ${best.slice(0,6).map(r=>`<tr>
+              <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}
+                ${r.unklar?`<div class="mini">${esc(unklarZeilenSatz(r.unklar))}</div>`:""}</td>
+              <td class="r">${num(r.bestand)}</td>
+              <td class="r">${r.bestand<=0?'<span class="pill p-bad">leer</span>'
+                :`<span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${
+                  r.reichweite===Infinity?"—":Math.floor(r.reichweite)+" T"}</span>`}</td>
+              <td class="r"><b>${esc(bestellSpanne(r))}</b> × ${r.kg}</td></tr>`).join("")}
+            ${best.length>6?`<tr class="tot"><td colspan="4" class="mini">
+              ${num(best.length-6)} weitere unter der Schwelle</td></tr>`:""}
+          </tbody></table></div>`
+        : `<div class="karte leer">${B.hat
+            ? "Nichts unter der Schwelle."
+            : "Keine Kellerzählung — die Reichweite ist nicht berechenbar."}</div>`)
+      +`<div class="reihe" style="margin-top:12px">
+          <button class="b leise" data-ziel="bestellen">Zum Bestellvorschlag</button></div>`;
+    zwei.appendChild(s2);
+    m.appendChild(zwei);
+  }
+
+  /* ── 8 · Verlauf ─────────────────────────────────────────────────
+     Vierzehn Tage nebeneinander. Erst hier wird ein Muster sichtbar,
+     das keine Einzelzahl zeigt: dass montags nie ein Bericht kommt,
+     oder dass die Abweichung seit Dienstag jeden Tag größer wird. */
+  {
+    const T=verlauf(tag,14);
+    const kurz=t=>t.slice(8,10);
+    const reihe=(lab,f)=>`<div class="kzeile"><div class="klab">${lab}</div>
+      ${T.map(x=>`<i class="${f(x)}" title="${esc(deTag(x.t))}"></i>`).join("")}</div>`;
+    const s=document.createElement("section");
+    s.innerHTML=`<h3>Die letzten 14 Tage</h3>
+      <div class="unter">Eine Spalte je Betriebstag. Schraffiert heißt: die Angabe fehlt —
+        nicht „null“.</div>
+      <div class="kalender">
+        ${reihe("Fassung",  x=>x.f)}
+        ${reihe("Z-Bericht",x=>x.z)}
+        ${reihe("Abgleich", x=>x.a)}
+        <div class="kzeile ktage"><div class="klab"></div>
+          ${T.map(x=>`<i>${kurz(x.t)}</i>`).join("")}</div>
+      </div>
+      <div class="legende">
+        <span><i class="ok"></i>stimmt</span><span><i class="warn"></i>Abweichung</span>
+        <span><i class="bad"></i>grobe Abweichung</span><span><i class="nix"></i>keine Angabe</span>
+      </div>`;
+    m.appendChild(s);
+  }
+
+  /* Ein Weg je Ziel, an einer Stelle — Kette, Aufgaben und Fußknöpfe
+     benutzen dasselbe `data-ziel`. Bis Runde 18 stand dieselbe
+     Sprungtabelle dreimal in dieser Funktion. */
+  m.querySelectorAll("[data-ziel]").forEach(b=>b.onclick=()=>{
     const z=b.dataset.ziel;
     if(z==="fassung"){
       EGFILTER={modus:fassung?"":"tag", wer:"", q:""};
@@ -2228,151 +3043,12 @@ function vHeute(m){
     }
     else if(z==="zbericht"){ vImport.zeig=(a.z&&a.z.tag)||tag; SEITE="import"; }
     else if(z==="diff"){ vAbgleich.tag=tag; SEITE="abgleich"; }
-    else if(z==="bestellen"){ SEITE="bestellen"; }
+    else SEITE=z;
     document.body.classList.remove("navoffen");
     zeichne(); window.scrollTo(0,0);
-    /* NACHTRICHTIGUNG (Jagd nach Runde 18 · B): `scrollTo(0,0)` ist für
-       einen Seitenwechsel richtig und für ein aufgeschlagenes Detail
-       falsch. Bei 390 px lag die Karte 921 px unter dem Falz — die
-       Kachel versprach „Positionen und Mengen ansehen" und zeigte eine
-       Liste. Ist ein Detail offen, gewinnt es. */
     const d=$("#egDetail .karte");
     if(d) d.scrollIntoView({behavior:"smooth", block:"start"});
   });
-
-  /* Was heute noch fehlt */
-  const fehlt=[];
-  if(!fassung) fehlt.push("Für "+deTag(tag)+" liegt keine Tagesfassung vor.");
-  if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
-  else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
-  /* Auch das sind KASSENNAMEN, nicht Kassenzeilen — `abgleich()` führt
-     denselben Namen über alle Tage des Fensters als eine Zeile (neunte
-     Jagd · C: bei sieben Berichten 44 Namen gegen 308 Kassenzeilen). */
-  /* „im Zeitraum" gehoert dazu: Die Zahl neben dem Menuepunkt „Zuordnung"
-     zaehlt ALLE geladenen Berichte, diese hier nur das Fenster. Beide
-     sind richtig, und ohne Zeitangabe sehen sie wie ein Widerspruch aus
-     (zwoelfte Jagd Runde 16 · C: 45 gegen 44). */
-  if(a.offen.length) fehlt.push(a.offen.length
-    +(a.offen.length===1?" Kassenname ist":" Kassennamen sind")
-    +" im Zeitraum keinem Artikel zugeordnet — der Verkauf fehlt im Abgleich.");
-  /* Das ist kein Befund, sondern eine offene Angabe. Deshalb steht die
-     Zahl hier und nicht bei den Abweichungen — und getrennt nach dem,
-     was zu TUN ist. Ein Satz, der alle ins Backoffice schickt, schickt
-     einen Teil vor eine leere Wand; bei Bericht 37 waren das erst 10 von
-     17, nach der ersten Berichtigung immer noch 11 von 23 (achte Jagd).
-
-     `nam()` zählt KASSENNAMEN, nicht Kassenzeilen: `merkeOhneGroesse()`
-     fasst denselben Namen über alle Tage des Fensters zu einer Zeile
-     zusammen. Bei SPANNE = 7 stand hier „48 Kassenpositionen", während
-     336 im Fenster lagen (achte Jagd · C). */
-  {
-    const t=teileOhneGroesse(a.ohneGroesse);
-    const nam=n=>n+(n===1?" zugeordneter Kassenname":" zugeordnete Kassennamen");
-    const einh=x=>num(x)+(x===1?" Einheit":" Einheiten");
-    const nix=" — sie zählen weder als Verkauf noch als Abweichung.";
-    if(t.sammelbar.length) fehlt.push("Größe fehlt: "+nam(t.sammelbar.length)
-      +" ("+einh(t.stkSammelbar)+") haben keine bestätigte Größe"+nix
-      +" Unter „Verkauf ↔ Fassung“ lassen sie sich gesammelt bestätigen.");
-    if(t.handisch.length) fehlt.push("Größe fehlt ohne Vorschlag: "+nam(t.handisch.length)
-      +" ("+einh(t.stkHandisch)+") haben keine bestätigte Größe und keinen Vorschlag"+nix
-      +" Die Gebindegröße muss von Hand eingetragen werden; bei Mischgetränken an der"
-      +" eigenen Kassenposition des Bestandteils.");
-    if(t.ausschank.length) fehlt.push("Menge fehlt im Kassennamen: "+nam(t.ausschank.length)
-      +" ("+einh(t.stkAusschank)+") sagen nicht, wie viel ausgeschenkt wurde"+nix
-      +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge oder eine Rezeptur.");
-  }
-  /* NACHTRICHTIGUNG (dritte Jagd · A): „Was noch fehlt" kannte keine
-     Zeile für ignorierte Kassennamen — dabei ist „Ignorieren" der
-     einzige Weg, einen Cocktail ohne Menge im Namen aus dem roten Balken
-     zu bekommen, und seine Flaschen kommen aus dem Keller. Die Zeile
-     steht bewusst hier und nicht bei den Abweichungen: Es ist eine
-     Entscheidung, kein Befund. */
-  if(a.ignoriert && a.ignoriert.length) fehlt.push(
-    a.ignoriert.length+(a.ignoriert.length===1?" Kassenname":" Kassennamen")
-    +" ("+num(a.stkIgnoriert)+" Einheiten) im Zeitraum "
-    +(a.ignoriert.length===1?"steht":"stehen")+" auf „Ignorieren“ und "
-    +(a.ignoriert.length===1?"zählt":"zählen")+" nicht als Verkauf — richtig für Speisen, "
-    +"Kaffee und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf, "
-    +"und seine Zeile unten sieht aus, als stimme sie.");
-  if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
-  else {
-    /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
-       Bestand, der nur deshalb unter null steht, weil die Lieferung des
-       Zähltags bewusst nicht mitgerechnet wird. Die Zählung ist dann in
-       Ordnung; es fehlt eine Angabe, keine Zählung. Deshalb zwei Sätze. */
-    if(minus.echt.length) fehlt.push(minus.echt.length+" Positionen stehen rechnerisch unter null — die Zählung vom "+deTag(B.basis.tag)+" ist überholt. Neu zählen.");
-    if(minus.erklaert.length) fehlt.push(minus.erklaert.length+" Position"+(minus.erklaert.length===1?" steht":"en stehen")
-      +" nur deshalb unter null, weil am Zähltag "+num(minus.erklaert.reduce((x,w)=>x+unklarMenge(B,w.id),0))
-      +" Flaschen geliefert wurden, die nicht mitgerechnet sind. Das ist kein Zählfehler — im Keller nachsehen.");
-  }
-  if(fehlt.length){
-    const s=document.createElement("section");
-    s.innerHTML=`<h3>Was noch fehlt</h3><div class="hinweis warn">${fehlt.map(esc).join("<br>")}</div>`;
-    m.appendChild(s);
-  }
-
-  /* Die größten Ausreißer */
-  const s2=document.createElement("section");
-  const top=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1).slice(0,10);
-  s2.innerHTML=`<h3>Größte Abweichungen · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h3>`+
-    /* Ohne Z-Bericht ist der Verkauf nicht 0, sondern unbekannt. Dieselbe
-       Warnung steht in „Verkauf ↔ Fassung"; hier fehlte sie, und der
-       Mittagsblick ist der Schirm, den die Leitung morgens zuerst sieht.
-       Sie hing bis v26 an `top.length` — seit die Zeilen ohne bestimmbaren
-       Verkauf aus `top` herausfallen, wäre sie genau dann verschwunden,
-       wenn sie gebraucht wird. */
-    (!a.berichte&&a.zeilen.length?`<div class="hinweis warn" style="margin-bottom:var(--space-4)">
-      Kein Z-Bericht im Zeitraum. Der Verkauf ist damit unbekannt — die Entnahme steht
-      unter „Verkauf ↔ Fassung“ ohne Urteil. Das ist noch kein Abgleich.</div>`:"")+
-    (a.berichte&&ohneUrteil?`<div class="hinweis" style="margin-bottom:var(--space-4)">
-      ${ohneUrteil} Position${ohneUrteil===1?"":"en"} stehen hier nicht: für sie ist der Verkauf
-      nicht bestimmbar (${esc(gruendeSatz)}). Ihre Entnahme ist
-      weder Abweichung noch Schwund — nachzulesen unter „Verkauf ↔ Fassung“.</div>`:"")+
-    (top.length? `<div class="tabhuelle"><table><thead><tr>
-      <th>Artikel</th><th class="r">Verkauf</th><th class="r">Entnahme</th><th class="r">Differenz</th><th>Deutung</th>
-      </tr></thead><tbody>${top.map(r=>`<tr>
-        <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
-        <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
-        <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="deutung">${DEUTUNG(r)}${
-          /* Auch hier gesagt: der Mittagsblick ist der Schirm, den die
-             Leitung morgens zuerst sieht, und eine Differenz aus halb
-             gerechnetem Verkauf darf dort nicht als ganze dastehen. */
-          r.vorbehalt?"<br><span class=\"dim\">"+esc(vorbehaltSatz(r.vorbehalt))+"</span>":""}</td>
-      </tr>`).join("")}</tbody></table></div>`
-    /* Drei verschiedene Lagen, die bis v26 alle „Keine Abweichung über
-       einer Flasche" sagten — auch dann, wenn gar nichts vergleichbar war. */
-    : `<div class="karte leer">${!a.zeilen.length
-        ?"Weder Verkauf noch Entnahme in diesem Zeitraum — es gibt noch nichts zu vergleichen."
-        :a.zeilen.some(r=>!r.unklar)
-        ?"Keine Abweichung über einer Flasche."
-        :"Für keine Position ist der Verkauf bestimmbar — es gibt noch nichts zu vergleichen."}</div>`);
-  /* Der Bestellvorschlag darunter hat „Alle ansehen" — gleiche Stelle,
-     also auch hier ein Weg in die volle Ansicht. Der Weg muss auch dann
-     dastehen, wenn KEINE Abweichung übrig ist, aber Zeilen ohne Urteil:
-     drüben stehen sie samt Grund und samt Sammelbestätigung. */
-  const wegDorthin = top.length || ohneUrteil;
-  if(wegDorthin)s2.insertAdjacentHTML("beforeend",
-    `<div class="reihe" style="margin-top:12px">
-       <button class="b leise" id="bAlleAbw">Zum vollständigen Abgleich</button></div>`);
-  m.appendChild(s2);
-  if(wegDorthin)$("#bAlleAbw").onclick=()=>{ SEITE="abgleich"; zeichne(); window.scrollTo(0,0); };
-
-  /* Bestellvorschlag kompakt */
-  if(best.length){
-    const s3=document.createElement("section");
-    s3.innerHTML=`<h3>Bestellvorschlag</h3><div class="tabhuelle"><table><thead><tr>
-      <th>Wein</th><th class="r">Bestand</th><th class="r">Pro Tag</th><th class="r">Reicht</th><th class="r">Kisten</th>
-      </tr></thead><tbody>${best.slice(0,8).map(r=>`<tr>
-        <td>${esc(r.w.winzer)} · ${esc(r.w.wein)}
-          ${r.unklar?`<div class="mini">${esc(unklarZeilenSatz(r.unklar))}</div>`:""}</td>
-        <td class="r">${num(r.bestand)}</td><td class="r">${num(r.proTag)}</td>
-        <td class="r"><span class="pill ${r.reichweite<7?"p-bad":"p-warn"}">${r.reichweite===Infinity?"—":Math.floor(r.reichweite)+" T"}</span></td>
-        <td class="r"><b>${esc(bestellSpanne(r))}</b> × ${r.kg}</td></tr>`).join("")}</tbody></table></div>
-      <div class="reihe" style="margin-top:12px"><button class="b" id="bMehr">Alle ansehen</button></div>`;
-    m.appendChild(s3);
-    $("#bMehr").onclick=()=>{ SEITE="bestellen"; zeichne(); };
-  }
 }
 
 /* ── Abgleich ───────────────────────────────────────────────────────── */
@@ -2589,7 +3265,13 @@ function csvAbgleich(tag,a){
            ["davon in dieser Rechnung gerechnet",num(a.stkGerechnet||0)].map(e).join(";"),
            ["davon auf Ignorieren",num(a.stkIgnoriert||0)].map(e).join(";"),
            ["davon ohne Zuordnung oder ohne Größe",
-             num(Math.max(0,(a.stkGesamt||0)-(a.stkGerechnet||0)-(a.stkIgnoriert||0)))].map(e).join(";"),"",
+             num(Math.max(0,(a.stkGesamt||0)-(a.stkGerechnet||0)-(a.stkIgnoriert||0)))].map(e).join(";"),
+           /* Der fünfte Weg, und der einzige auf der ENTNAHMESEITE
+              (Jagd nach Runde 19 · A). Ohne diese Zeile trägt die Datei
+              Differenzen, die nur deshalb negativ sind, weil im Keller
+              noch gefasst wird. */
+           ["Flaschen in noch nicht abgeschlossenen Vorgängen (nicht als Entnahme gerechnet)",
+             num(a.stkLaufend||0)].map(e).join(";"),"",
            ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
   /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
      Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
@@ -2599,6 +3281,7 @@ function csvAbgleich(tag,a){
     r.unklar?unklarSatz(r.unklar)
       :BEFUND(r).w                                  /* dasselbe Wort wie in der Tabelle */
        +(r.vorbehalt?" · "+vorbehaltSatz(r.vorbehalt):"")
+       +(r.laufend?" · "+num(r.laufend)+" Fl. in einem laufenden Vorgang, nicht gerechnet":"")
     ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
@@ -2749,6 +3432,15 @@ function druckDifferenzen(tag, a){
     +(ausgenommen?", "+num(ausgenommen)+" ausdrücklich ausgenommen":"")
     +(luecke?" — "+num(luecke)+" fehlen.":".")
     +" Die Gründe stehen darunter.");
+  /* Der einzige Vorbehalt, bei dem die ENTNAHME fehlt und nicht der
+     Verkauf. Er kehrt das Vorzeichen um: Die Differenz sieht aus, als
+     wäre zu viel verkauft worden, während in Wahrheit nur noch nichts
+     gebucht ist (Jagd nach Runde 19 · A). */
+  if(a.laufendImFenster) vorbehalte.push(
+    a.laufendImFenster+(a.laufendImFenster===1?" Vorgang im Zeitraum ist":" Vorgänge im Zeitraum sind")
+    +" noch nicht abgeschlossen. "+num(a.stkLaufend)+" Flaschen sind darin erfasst und "
+    +"in dieser Rechnung NICHT als Entnahme enthalten — betroffene Zeilen zeigen "
+    +"deshalb eher zu wenig geholt als zu viel.");
   /* Ein Bericht ohne eine einzige Position ist keine leere Verkaufsseite,
      sondern eine fehlende (dritte Jagd · B). */
   if(a.berichte && !a.stkGesamt) vorbehalte.push(
@@ -2815,7 +3507,7 @@ function druckDifferenzen(tag, a){
         <td class="r plus">${r.diff>0?"+":""}${num(r.diff)}</td>
         <td>${halbeRechnung && r.diff>0
               ?"mehr geholt als gerechneter Verkauf — es fehlt Verkauf in der Rechnung"
-              :DEUTUNG(r)}
+              :DEUTUNG(r, a.offen.length)}
           ${r.vorbehalt?`<br><span class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</span>`:""}</td>
       </tr>`).join("")}
       <tr class="zwt"><td>Summe</td><td class="r">${num(auf.reduce((s,r)=>s+r.verkauf,0))}</td>
@@ -3123,7 +3815,7 @@ function vBestellen(m){
 function vGetraenke(m){
   const V=verbrauch();
   let letzterIst=null;
-  VORGAENGE.forEach(v=>{ if(v.gzaehlung) letzterIst=v; });
+  gebucht().forEach(v=>{ if(v.gzaehlung) letzterIst=v; });
   m.innerHTML=`<section><h2>Getränke</h2>
     <div class="unter">Soll und letzter Ist-Stand in den Laden. Ein Kellerbestand wird für Getränke nicht geführt —
     was hier steht, ist die Bar, nicht das Lager.</div></section>`;
@@ -4142,13 +4834,56 @@ function zeichne(){
      Quellzeile über dem Inhalt — sie ist auch am Handy da, der Chip nicht. */
   $("#cQuelle").className="chip"+(!ql?"":ql[0]==="warn"?" warn":ql[0]==="bad"?" bad":" aus");
   $("#cQuelle").title=ql?ql[1]:"Die Zahlen kommen vom Server.";
-  const t=letzterTag();
-  $("#tStand").textContent=deTag(t);
-  $("#cStand").classList.toggle("aus", !VORGAENGE.some(v=>v.tag===t));
+  zeichneZeitwahl();
+  /* Runde 19 · Der Chip zeigte den jüngsten BETRIEBSTAG mit Daten und
+     stand dabei auf Grün. Eine seit morgens offene Seite sagte damit um
+     vier Uhr nachmittags immer noch „Do., 17.09." mit grünem Punkt,
+     obwohl die Zahlen darunter acht Stunden alt waren. Gefragt ist aber
+     nicht, welcher Tag gemeint ist — das steht in jeder Überschrift —,
+     sondern wie alt das ist, was man gerade ansieht. */
+  $("#tStand").textContent=standSatz();
+  $("#cStand").classList.toggle("aus", STAND_ZEIT && (Date.now()-STAND_ZEIT)>15*60000);
 }
 
+/* Wann die Daten zuletzt geholt wurden. */
+let STAND_ZEIT=0;
+function standSatz(){
+  if(!STAND_ZEIT) return "noch nicht geholt";
+  const min=Math.floor((Date.now()-STAND_ZEIT)/60000);
+  if(min<1) return "gerade geholt";
+  if(min<60) return "geholt vor "+min+" Min.";
+  const st=Math.floor(min/60);
+  return "geholt vor "+st+" Std.";
+}
+/* Die Anzeige altert von selbst, auch wenn niemand etwas anklickt —
+   sonst steht „gerade geholt" noch um Mitternacht da. */
+setInterval(()=>{ const e=$("#tStand"); if(!e) return;
+  e.textContent=standSatz();
+  $("#cStand").classList.toggle("aus", STAND_ZEIT && (Date.now()-STAND_ZEIT)>15*60000);
+}, 30000);
+
+/* ── Zeitraum ────────────────────────────────────────────────────────
+   Vier feste Fenster, dieselben, die das Auswahlfeld unter
+   „Verkauf ↔ Fassung" schon kannte. Sie stehen jetzt im Kopf, weil
+   `SPANNE` global wirkt: auf die Übersicht, auf den Abgleich, auf die
+   Zahl neben dem Menüpunkt und auf die Zählliste. Eine Einstellung, die
+   vier Seiten verändert, gehört dorthin, wo man sie auf allen vier
+   sieht. */
+function zeichneZeitwahl(){
+  const e=$("#zeitwahl"); if(!e) return;
+  e.innerHTML=SPANNEN.map(x=>
+    `<button type="button" class="${SPANNE===x.n?"on":""}" data-spanne="${x.n}"
+       aria-pressed="${SPANNE===x.n}">${x.t}</button>`).join("");
+  e.querySelectorAll("[data-spanne]").forEach(b=>b.onclick=()=>{
+    SPANNE=+b.dataset.spanne; merkeSpanne(); zeichne(); });
+}
+/* Der gewählte Zeitraum überlebt das Neuladen. Bis Runde 19 stand nach
+   jedem Neuladen wieder 7, egal was jemand eingestellt hatte. */
+function merkeSpanne(){ try{ schreib(K_SPANNE, SPANNE); }catch(e){} }
+
 $("#bNeu").onclick=async()=>{
-  await ladeDaten(); await Promise.all([ladeBerichte(), ladeZuordnung()]);
+  await ladeDaten(); await Promise.all([ladeBerichte(), ladeZuordnung(), ladeNotizen()]);
+  STAND_ZEIT=Date.now();
   zeichne(); toast("Aktualisiert"); };
 $("#bFass").onclick=()=>{ location.href="index.html"; };
 
@@ -4278,7 +5013,8 @@ window.addEventListener("storage", e=>{
   /* Berichte und Zuordnungen kommen vom Server. Schlägt das fehl (kein
      Netz, keine Sitzung), bleibt die Abschrift im Browser stehen — die
      Seite zeigt dann alte Zahlen, aber keine falschen. */
-  await Promise.all([ladeBerichte(), ladeZuordnung()]);
+  await Promise.all([ladeBerichte(), ladeZuordnung(), ladeNotizen()]);
+  STAND_ZEIT=Date.now();
   /* Ohne Sitzung und ohne lokale Daten hat diese Seite nichts zu zeigen —
      dann besser eine klare Tür als eine leere Tabelle. */
   if(!ICH && QUELLE==="Nicht angemeldet") return verlangeAnmeldung();
