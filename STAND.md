@@ -6,9 +6,9 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runden 17 bis 22 sind gemergt und live.** `sw.js` steht auf **v70**.
+- **Runden 17 bis 22 sind gemergt und live.** `sw.js` steht auf **v71**.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
-- `npm test`: **572 von 572 grün** (Stand 21.09.2026, Laufzeit ca. 4 s).
+- `npm test`: **581 von 581 grün** (Stand 21.09.2026, Laufzeit ca. 4 s).
 - Oberfläche von Hand (brauchen Playwright, **nicht** Teil von `npm test`,
   Regel 8): `node tests/ui-runde22.cjs` 21/21,
   `node tests/ui-leitung-echt.cjs` 44/44, `node tests/ui-runde21.cjs` 19/19,
@@ -130,8 +130,8 @@ Einrichtung im Dashboard, siehe unten.
 
 ## Runde 22 (21.09.2026) — die Vorabliste
 
-Runde im Log unter „Runde 22". `sw.js` steht auf **v70**.
-`npm test`: **572 von 572** grün. Browser: `node tests/ui-runde22.cjs`
+Runde im Log unter „Runde 22". `sw.js` steht auf **v71**.
+`npm test`: **581 von 581** grün. Browser: `node tests/ui-runde22.cjs`
 31 von 31, `node tests/ui-leitung-echt.cjs` 44 von 44,
 `node tests/ui-runde21.cjs` 19 von 19. **Keine Migration.**
 

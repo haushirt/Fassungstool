@@ -2936,8 +2936,18 @@ function offeneVorgaenge(){
 function meldungen(){
   const M=[];
   const mail=letzteNotiz("email");
-  if(mail) M.push("Mailempfang "+notizZeit(mail)+": "+mail.notiz
-    +" — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein.");
+  /* Der Warnsatz gehört an einen AUSFALL, nicht an jede Mailnotiz. Der
+     Mailweg schreibt unter derselben Quelle auch die Erfolgsmeldung —
+     und die trug den Satz mit, so dass die Übersicht jeden geglückten
+     Empfang zum Ausfall erklärt hätte (dritte Jagd Runde 22 · B). Am
+     ersten Morgen, an dem die Weiterleitung steht, wäre das ein Alarm,
+     der nie ausgeht. Erkannt wird der Erfolg an seinem eigenen Wort
+     („angekommen", `src/index.js`), nicht an einer Zahl. */
+  if(mail){
+    const geglueckt=/\bangekommen\b/.test(mail.notiz||"");
+    M.push("Mailempfang "+notizZeit(mail)+": "+mail.notiz
+      +(geglueckt ? "" : " — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein."));
+  }
   const rechte=NOTIZEN.filter(z=>z.quelle==="rechte");
   if(rechte.length) M.push(rechte.length
     +(rechte.length===1?" Vorgang wurde":" Vorgänge wurden")

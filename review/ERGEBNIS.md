@@ -63,7 +63,7 @@ Tomatensaft im Keller). Sechs Fragen, alle im Morgenbrief.
 
 ## Geprüft
 
-- `npm test`: **572 von 572** grün (vorher 560). Neu
+- `npm test`: **581 von 581** grün (vorher 560). Neu
   `tests/vorab-gleich.test.mjs` mit 11 Urteilen: beide Dateien Eintrag
   für Eintrag gleich, jede Artikel-Id im Stamm, kein Name doppelt, und
   fünf Gegenproben, dass ein nur ähnlicher Name nicht durchgeht.
@@ -98,10 +98,19 @@ Tomatensaft im Keller). Sechs Fragen, alle im Morgenbrief.
   dem Rezeptur-Bildschirm aus, und zurück führte kein Weg. Behoben, samt
   beider B-Funde: die Rücknahme bei Fehlschlag nimmt jetzt auch die
   bestätigte Gebindegröße zurück, und die Meldung danach sagt, was
-  wirklich geschehen ist. Alles in `review/JAGD.md`.
+  wirklich geschehen ist.
+- **Und eine dritte Jagd**: an der Reparatur **kein A, kein B**. Ein
+  B-Fund aus dem Gesamtzustand ist mitgenommen, weil er genau die erste
+  Aufgabe des Morgenbriefs trifft: die Übersicht erklärte **jeden
+  geglückten Mailempfang zum Ausfall** („solange das so bleibt, kommt
+  kein Z-Bericht mehr von selbst herein" hing an jeder Mailnotiz, auch
+  an der Erfolgsmeldung). Am ersten Morgen, an dem die Weiterleitung
+  steht, wäre das ein Alarm, der nie ausgeht. Behoben und mit
+  `tests/mailmeldung.test.mjs` (9 Urteile) festgehalten. Alles in
+  `review/JAGD.md`.
 
 ## Keine Migration
 
 Es kommt keine Spalte und keine Tabelle dazu. Die Liste steht im Code,
-die Zuordnungstabelle bleibt, wie sie ist. `sw.js` steht auf **v70**.
+die Zuordnungstabelle bleibt, wie sie ist. `sw.js` steht auf **v71**.
 `public/index.html` ist nicht angefasst.

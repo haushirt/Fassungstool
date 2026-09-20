@@ -1125,3 +1125,36 @@ Rückrollen stimmt für alle vier Ausgangszustände. Alle elf Leser von
 weitergereicht. Die neue Karte bei 390 px ohne Überlauf, und sie
 verschwindet, wenn nichts mehr wartet. Gestaltungsschicht wortgleich
 (11 344 Zeichen, beide Dateien identisch).
+
+### Dritte Jagd (auf die zweite Reparatur)
+
+**Zur Reparatur selbst: kein A, kein B.** Alle sieben Punkte halten der
+Nachrechnung stand. Nachgestellt im Browser gegen echten Worker und
+echte SQLite: die Rücknahme bei Fehlschlag bringt Zuordnung UND
+Gebindegröße zurück, ein abgelehnter Name führt über die Rezeptur
+weiter, und kein Weg schreibt einen Bestandteil als Artikel. Bericht 37
+geht in vier Zuständen an sich selbst auf (frisch, nach Sammelklick,
+nach Ablehnung, Ablehnung plus Rezept): 145 Stück, 602,50 €, und
+gerechnet + ignoriert + offen + ohne Größe = 145 in allen vieren.
+`npm test` fünfzehnmal gelaufen, dazu fünfmal mit verschobener Uhr über
+Wiener Mitternacht, UTC-Mitternacht und 02:00 CEST — kein Wackeln.
+
+Ein B-Fund aus dem Gesamtzustand, vom Thema der Runde unabhängig:
+
+| Stufe | Fund | Nachgestellt | Behoben |
+|---|---|---|---|
+| B | Jeder GEGLÜCKTE Mailempfang wurde auf der Übersicht zum Ausfall erklärt | `meldungen()` hängte an die jüngste Notiz der Quelle `email` unbedingt „— solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein". Der Mailweg schreibt unter derselben Quelle auch die Erfolgsmeldung. Gemessen: „Mailempfang 20.09. 22:18: Z-Bericht 2026-09-16: 48 Positionen, 15 offen — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein." | ✅ Der Worker setzt das Wort „angekommen", das Backoffice liest es. Der Warnsatz hängt nur noch am Ausfall. Neu `tests/mailmeldung.test.mjs`, 9 Urteile, beide Seiten festgehalten |
+
+Der Fund ist alt (der Satz stammt aus Runde 19, die Erfolgsnotiz vom
+27.08.) und war vom ersten Tag an falsch — er fällt nur jetzt auf, weil
+der Mailweg seit Runde 21 fertig ist und die Weiterleitung Casimirs
+erste Aufgabe ist. Am ersten Morgen, an dem sie steht, hätte die
+Übersicht täglich behauptet, der Empfang sei kaputt.
+
+Sechs C-Funde in den Backlog: der Grund eines Fehlschlags fällt im
+Zuordnung-Bildschirm weg (403 und „kein Netz" sind nicht mehr zu
+unterscheiden), die Import-Vorschau nennt eine Rezeptposition
+„bestätigt" mit leerem Artikel, Schirm und Worker zählen „offen"
+verschieden, sobald Rezepte im Spiel sind, `#bAuto` bricht bei einem
+Fehlschlag nicht ab, „Zuordnungen vom Server" zählt weiter alles, und
+die Unterlagen datieren einen Tag vor.

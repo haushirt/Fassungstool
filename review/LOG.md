@@ -4717,3 +4717,40 @@ es nicht — sie steht als C-Fund im Backlog.
 **Phase/Thema:** A / Kassennamen-Erkennung
 
 **STATUS:** FERTIG
+
+### Runde 22 · Dritter Nachtrag – software-engineer (nach der dritten Jagd)
+
+**Kritik am Vorgänger:** Die dritte Jagd fand an der Reparatur **nichts
+auf A oder B** — die sieben Punkte der zweiten Runde halten der
+Nachrechnung stand, `npm test` fünfzehnmal und fünfmal mit verschobener
+Uhr ohne Wackeln. ✅ Ein B-Fund aus dem Gesamtzustand übernommen, obwohl
+er nicht zum Thema gehört: `meldungen()` in `public/leitung.html` hängte
+den Satz „solange das so bleibt, kommt kein Z-Bericht mehr von selbst
+herein" an JEDE Mailnotiz — auch an die Erfolgsmeldung des Mailwegs.
+Der Satz ist aus Runde 19, die Erfolgsnotiz vom 27.08.; er war vom
+ersten Tag an falsch und fällt erst jetzt auf, weil die Weiterleitung
+Casimirs erste Aufgabe ist. Am ersten Morgen, an dem sie steht, hätte
+die Übersicht täglich behauptet, der Empfang sei kaputt. ↩️ Sechs
+C-Funde in den Backlog statt in diese Runde — keiner davon rechnet
+falsch, und die Runde ist lang genug.
+
+**Umgesetzt:**
+1. Der Worker setzt in der Erfolgsmeldung das Wort „angekommen", das
+   Backoffice liest es; der Warnsatz hängt nur noch am Ausfall.
+2. Neu `tests/mailmeldung.test.mjs` — 9 Urteile, die BEIDE Seiten
+   festhalten (der Worker schreibt das Wort nur bei Status 200, keine
+   Absage trägt es, das Backoffice erkennt den Erfolg daran).
+3. Gegenprobe: die Prüfung zurückgedreht → 3 von 9 rot, zurück → grün.
+
+**Geprüft:** `npm test` **581 von 581** (vorher 572),
+`node tests/ui-runde22.cjs` 31/31, `node tests/ui-leitung-echt.cjs`
+44/44, `node tests/ui-runde21.cjs` 19/19. `sw.js` auf v71.
+
+**Für die Nächsten:** Der Mailweg und die Übersicht hängen jetzt an
+einem WORT. Das ist schwächer als eine Spalte, aber es braucht keine
+Migration — und die Prüfung hält beide Seiten daran fest. Wer die
+Erfolgsmeldung umformuliert, muss das Wort mitnehmen.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**STATUS:** FERTIG

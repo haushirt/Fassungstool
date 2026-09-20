@@ -520,3 +520,30 @@ falsch, aber jetzt uneinheitlich.
 `__offen` ist seit der zweiten Jagd wieder wählbar, `__ignoriert` nicht.
 Wer eine Speise versehentlich ignoriert hat und merkt, dass es doch ein
 Mischgetränk ist, muss sie erst wieder zuordnen.
+
+### Aus der dritten Jagd nach Runde 22
+
+**Mittel — Schirm und Worker zählen „offen" verschieden, sobald Rezepte
+im Spiel sind.** Nach dem beworbenen Weg (alles zugeordnet, Rest per
+Rezeptur) sagt das Backoffice 0 offen, der Worker in derselben Minute
+15 — er kennt keine Rezepte, die liegen nur im Gerätespeicher. Hängt an
+derselben Migration wie der Rezept-Punkt oben.
+
+**Mittel — Die Import-Vorschau nennt eine Rezeptposition „bestätigt"
+mit leerem Artikel.** Dritte Stelle desselben fehlenden Zweigs für den
+Status `rezept`. Fällt auf, sobald die 15 Cocktail-Rezepte angelegt
+sind.
+
+**Niedrig — Im Zuordnung-Bildschirm fällt der Grund eines Fehlschlags
+weg.** Seit der zweiten Reparatur schaltet der Aufrufer die Meldung aus
+`sendeZuordnung` stumm und sagt selbst „Nicht gespeichert — es bleibt
+beim alten Stand". Wahr, aber 403 („keine Rechte") und „kein Netz" sind
+nicht mehr zu unterscheiden.
+
+**Niedrig — `#bAuto` bricht bei einem Fehlschlag nicht ab.** Bei 403
+gemessen: 32 Einzelanfragen, 33 Meldungen. Der Nachbarweg
+`bestaetigeAlleGebinde` bricht ab und begründet das ausdrücklich.
+
+**Niedrig — „Zuordnungen vom Server" zählt weiter alles**, was die
+Zeile zwei Bildschirme tiefer seit dieser Runde bewusst nicht mehr
+mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".

@@ -1324,8 +1324,14 @@ export default {
            Meldung, mit der niemand etwas anfangen kann. */
         const a = await fassungsliste(env, text, "email:" + von);
         const j = await a.json();
+        /* Das Wort „angekommen" ist die Marke, an der das Backoffice
+           Erfolg von Ausfall unterscheidet (`meldungen()` in
+           `public/leitung.html`). Es stand hier nicht, und die Übersicht
+           hängte an JEDE Mailnotiz den Satz „solange das so bleibt,
+           kommt kein Z-Bericht mehr von selbst herein" — auch an die
+           Erfolgsmeldung (dritte Jagd Runde 22 · B). */
         await notiz(env, "email", a.status === 200
-          ? `Z-Bericht ${j.tag}: ${j.positionen} Positionen, ${j.offen} offen`
+          ? `Z-Bericht ${j.tag} angekommen: ${j.positionen} Positionen, ${j.offen} offen`
             + (j.storno ? `, ${j.storno} storniert — keinem Artikel zuzuordnen` : "")
           : `Z-Bericht abgelehnt (${a.status}): ${j.fehler || "Grund unbekannt"}`
             + " — Betreff: " + (mail.subject || "ohne Betreff"));

@@ -22,13 +22,13 @@
 - **Zwei Vertipper gefunden** (stehen live, nichts geändert):
   „Cola Zero 0,35l" liegt auf `cola` statt `colaz`, „Now-Limo Orange
   0,35l" auf `lemon` statt `orange`.
-- `sw.js` auf **v70**. `public/index.html` nicht angefasst.
+- `sw.js` auf **v71**. `public/index.html` nicht angefasst.
   **Keine Migration.**
 
 **Zahlen:** Bericht 37 — 15 statt 44 offene Namen. Echter Bericht vom
 19.09. — 21 statt 43 von 57 (dort sind 13 Namen schon von Hand bestätigt).
 
-**Geprüft:** `npm test` 572/572 · `node tests/ui-runde22.cjs` 31/31 ·
+**Geprüft:** `npm test` 581/581 · `node tests/ui-runde22.cjs` 31/31 ·
 `node tests/ui-leitung-echt.cjs` 44/44 · `node tests/ui-runde21.cjs` 19/19.
 
 ## Blockaden
