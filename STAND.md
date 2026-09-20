@@ -1,6 +1,6 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 20.09.2026 (Runde 20 · zwei Zahlen je Position)
+**Letzte Aktualisierung:** 20.09.2026 (Runde 21 · Z-Bericht-Import gehärtet)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
@@ -96,7 +96,45 @@ eine.**
 Verbrauchsprognose ein") ist kein Fund — Hauskonsum wird an der Kasse
 gebucht und steht damit im Z-Bericht.
 
+## Runde 21 (20.09.2026) — der Weg des Z-Berichts in die Datenbank
+
+Runde im Log unter „Runde 21". `sw.js` steht auf **v67**.
+`npm test`: **560 von 560** grün. Browser: `node tests/ui-runde21.cjs`
+19 von 19, `node tests/ui-leitung-echt.cjs` 44 von 44.
+**Keine Migration** — alle Spalten stehen live.
+
+Der Auftrag lautete, den Z-Bericht-Import serverseitig zu bauen. **Das war
+seit Runde 5 gebaut** (POST und GET `/api/fassungsliste`, ein Leser im
+Worker, Upsert je Betriebstag, Laden vom Server); der Auftrag stützte sich
+auf ein Dokument, das es im Repo nicht gibt. Casimir hat auf Rückfrage
+entschieden, stattdessen die echten Lücken desselben Weges zu schliessen.
+
+1. **Der Import war nicht atomar.** Kopf, Räumen und Zeilen waren drei
+   Schreibvorgänge; scheiterte der dritte, war der alte Bericht gelöscht
+   und der neue nie angekommen — im Mailweg unbemerkt. Jetzt einer.
+   Ein Bericht ohne Positionen wird abgewiesen, statt den Tag leerzuräumen.
+2. **Ein Teilbericht ersetzte den vollen lautlos.** Schliessen Bar und
+   Restaurant getrennt ab, fehlte dem Abgleich danach eine ganze
+   Kostenstelle, mit einem grünen „eingelesen". Jetzt nennt eine
+   Journalzeile beide Z-Nummern und beide Positionszahlen, und bei
+   Verdacht bleibt das Backoffice stehen und sagt, was zu tun ist.
+   Zweimal dieselbe Datei erzeugt keine Zeile.
+3. **Zeitraum und Kostenstelle** stehen im Bericht und blieben leer. Jetzt
+   werden sie gelesen und gezeigt („15.09. 23:11 – 16.09. 23:26"). Daran
+   sieht man ohne Rechnen, ob ein Bericht die ganze Nacht abdeckt.
+4. **Der Start des Backoffice kostete bis zu 61 Anfragen** nacheinander,
+   gemessen 4,1 s leerer Schirm. Jetzt eine.
+
+**Die tägliche Automation (Gmail → Backoffice) ist im Code fertig** — der
+Mailempfang schreibt über dieselbe Funktion. Es fehlt allein die
+Einrichtung im Dashboard, siehe unten.
+
 ## Was als Nächstes ansteht
+
+- **Casimirs Aufgabe für die Automation:** die Weiterleitung von
+  gastronovi auf die Mailadresse des Workers einrichten und `ABSENDER`
+  prüfen. Dashboard — für Agenten nicht erreichbar (Regel 13).
+  Code ist fertig, es braucht keine Runde mehr dafür.
 - **Entscheidung von Casimir (steht ganz oben unter „Hoch"):** Was soll
   „Ignorieren" bedeuten? Heute nimmt es den Verkauf aus der Rechnung, und die
   betroffene Zeile sagt trotzdem „stimmt" in Grün. Gemessen: neun Flaschen
