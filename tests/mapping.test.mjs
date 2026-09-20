@@ -37,13 +37,20 @@ describe("Regel 5: Getränke werden nicht automatisch zugeordnet", () => {
   });
 
   test("im Worker gibt es keinen zweiten, lockereren Weg", () => {
-    /* `fassungsliste()` darf nur über `mappe()` gehen und sonst `null`
-       schreiben — sonst entsteht das Automapping an anderer Stelle neu. */
+    /* `fassungsliste()` darf nur über die bestätigte Zuordnung, die
+       geprüfte Vorabliste und `mappe()` gehen und sonst `null` schreiben
+       — sonst entsteht das Automapping an anderer Stelle neu.
+
+       Die Vorabliste ist seit Runde 22 die zweite Stufe. Sie ist keine
+       Lockerung: sie schlägt ganze Namen nach und vergleicht nichts
+       (`vorab()` in `src/gnmap.js`). Diese Zeile hält fest, dass es bei
+       genau diesen drei Stufen bleibt. */
     const w = lies("src", "index.js");
     assert.equal(/levenshtein|aehnlich|ähnlich|similar|fuzzy|bestMatch/i.test(w), false,
       "eine Ähnlichkeitssuche im Worker");
-    assert.match(w, /kennt\.has\(p\.name\) \? fest\[p\.name\] : mappe\(p\.name\)/,
-      "die Zuordnung läuft nicht mehr allein über mappe()");
+    assert.match(w,
+      /kennt\.has\(p\.name\) \? fest\[p\.name\] : v \? v\.id : mappe\(p\.name\)/,
+      "die Zuordnung läuft nicht mehr über Datenbank → Vorabliste → mappe()");
   });
 
   test("und auch in gnmap.js selbst nicht", () => {

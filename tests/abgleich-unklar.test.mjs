@@ -306,11 +306,16 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
       tage.push(d.toISOString().slice(0, 10));
     }
     /* Derselbe Kassenname an drei Tagen, verschiedene Stückzahlen, keine
-       Zuordnung — also „offen". */
+       Zuordnung — also „offen".
+
+       Hier stand bis Runde 21 „HP Omelett 1 Portion". Seit der
+       Vorabliste ist die Speise dauerhaft als „kommt nicht aus dem
+       Keller" hinterlegt und damit nicht mehr offen. Der Cocktail steht
+       weiter offen — er braucht ein Rezept (`review/MORGENBRIEF.md`). */
     const zber = {};
     [5, 3, 4].forEach((n, i) => {
       zber[tage[i]] = { tag: tage[i], nr: 90 + i, umsatz: 0,
-        positionen: [{ name: "HP Omelett 1 Portion", anzahl: n, umsatz: n * 4 }] };
+        positionen: [{ name: "Whiskey Sour 1 Glas", anzahl: n, umsatz: n * 4 }] };
     });
     f.setzte({}, {}, zber, [vorgang({ w001: 1 }, {})]);
     const a = f.abgleich(TAG, 3);

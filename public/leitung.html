@@ -2125,11 +2125,59 @@ function flaschen(p, artId){
   return {ok:true, fl:(+p.anzahl||0)*aus/geb.ml, aus, geb};
 }
 
+/* ── Vorabliste ────────────────────────────────────────────────────────
+   WORTGLEICH mit `VORAB` in `src/gnmap.js`; `tests/vorab-gleich.test.mjs`
+   hält beide Seiten Zeile für Zeile zusammen. Die Begründung zu jedem
+   Eintrag steht dort, damit sie nur an EINER Stelle gepflegt wird.
+
+   Ganzer Kassenname → Artikel-Id, `null` heisst „kommt nicht aus dem
+   Keller". Nachgeschlagen wird der Name ganz; verglichen wird nichts. */
+const VORAB={
+  "NW Heinrich, Naked Red 1/8":"w053",
+  "RS Dürnberg, Blanc de Noir 1/8":"w045",
+  "ZW Glatzer Rubin Carnuntum 1/8 l":"w026",
+  "Prosecco, Serena 0,1l":"serena",
+  "Prosecco, Serena 0,75l":"serena",
+  "Glas Seher Sparkling Rosé 0,1l":"w055",
+  "Coca Cola 0,35l":"cola",
+  "Cola Zero 0,35l":"colaz",
+  "Now-Limo Orange 0,35l":"orange",
+  "Now-Limo Lemon 0,35l":"lemon",
+  "Hefeweizen hell 0,5l":"hell",
+  "Weizen alkoholfrei 0,5":"hefe0",
+  "Stiegl alkoholfrei 0,3l":"st03",
+  "Stiegl alkoholfrei 0,5l":"st05",
+  "Mango gespritzt 0,25l 0,25l":"mango",
+  "Johannisbeer gespritzt 0,25l 0,25l":"johan",
+  "Champignons":null, "Käse":null, "Paprika":null, "Pinien":null,
+  "Rucola":null, "Schinken":null, "Schnittlauch":null, "Speck":null,
+  "Zwiebeln":null, "HP Omelett 1 Portion":null, "HP Rührei 1 Portion":null,
+  "Cappuccino 1 Tasse":null, "Cappuccino Hafer 1 Glas":null,
+  "Espresso":null, "Espresso doppio 1 Glas":null, "Espresso Macchiato":null,
+  "Latte Macchiato 1 Glas":null, "Verlängerter 1 Glas":null,
+  "Amaro Averna Siciliano 2 cl":null, "Lagavulin 16 Years 2 cl":null,
+  "Obstler Durzbauer 2 cl":null
+};
+
+/* Die Datenbank schlägt die Vorabliste. Weicht eine bestätigte Zuordnung
+   von der Liste ab, wird nichts von allein geändert — die Tabelle sagt
+   es nur. Genau so sind zwei Vertipper aufgefallen („Cola Zero" stand
+   auf Cola, „Now-Limo Orange" auf Lemon). */
+const vorabAbweichung = name =>
+  (MAP[name] && MAP[name]!=="__ignoriert" && Object.hasOwn(VORAB,name)
+   && VORAB[name] && MAP[name]!==VORAB[name]) ? VORAB[name] : null;
+
 function zuordnung(pos){
   if(REZ[pos.name] && REZ[pos.name].length) return {status:"rezept"};
   const z=MAP[pos.name];
   if(z==="__ignoriert") return {status:"ignoriert"};
   if(z) return {status:"fest", id:z};
+  /* Zweite Stufe, genau wie im Worker. `null` ist ein Wert, kein Fehlen
+     — deshalb `hasOwn` und nicht `VORAB[name]`. */
+  if(Object.hasOwn(VORAB,pos.name)){
+    const v=VORAB[pos.name];
+    return v===null ? {status:"ignoriert", vorab:true} : {status:"vorab", id:v};
+  }
   const a=autoWein(pos.name);
   if(a) return {status:"auto", id:a.id};
   return {status:"offen"};
@@ -3811,9 +3859,13 @@ function vImport(m){
         <th>Kassenname</th><th class="r">Anzahl</th><th class="r">Umsatz</th><th>Zuordnung</th><th class="r">Flaschen</th>
       </tr></thead><tbody>${z.positionen.map(p=>{
         const zu=zuordnung(p); const w=zu.id?byId(zu.id):null;
+        /* „vorab" ist so wenig bestätigt wie „automatisch" — beide
+           tragen deshalb dasselbe Kennzeichen und laden zum Bestätigen
+           ein. Nur „fest" heisst wirklich bestätigt. */
+        const vorschlag=zu.status==="auto"?"automatisch":zu.status==="vorab"?"vorgeschlagen":"";
         const nm=zu.status==="ignoriert"?'<span class="pill p-grau">ignoriert</span>'
           :zu.status==="offen"?'<span class="pill p-bad">offen</span>'
-          :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${zu.status==="auto"?"p-neu":"p-ok"}">${zu.status==="auto"?"automatisch":"bestätigt"}</span>`;
+          :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${vorschlag?"p-neu":"p-ok"}">${vorschlag||"bestätigt"}</span>`;
         return `<tr><td>${esc(p.name)}</td>
           <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
           <td>${nm}</td><td class="r">${(f=>!zu.id?"—":f.ok?num(f.fl)
@@ -4103,13 +4155,17 @@ function vZuordnung(m){
   m.innerHTML=`<section><h2>Zuordnung</h2>
     <div class="unter">Kassenname zu Artikel. Weine mit Rebsorten-Kürzel gehen automatisch durch.
     Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
-    „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.</div></section>`;
+    „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.
+    Was „vorgeschlagen“ heißt, ist einzeln nachgesehen, aber noch nicht bestätigt —
+    der Knopf unten nimmt alle Vorschläge auf einmal an.</div></section>`;
 
   /* Dieselbe Zählstelle, die auch die Zahl neben dem Menüpunkt liest
      (elfte Jagd Runde 16 · B) — vorher baute jede ihre eigene Liste. */
   const L=alleKassennamen().sort((a,b)=>{
     const za=zuordnung(a), zb=zuordnung(b);
-    const rang=x=>x.status==="offen"?0:x.status==="auto"?1:2;
+    /* „vorab" steht mit „auto" auf derselben Stufe: beides sind
+       Vorschläge, die auf einen Blick warten. */
+    const rang=x=>x.status==="offen"?0:(x.status==="auto"||x.status==="vorab"||x.vorab)?1:2;
     return rang(za)-rang(zb) || b.anzahl-a.anzahl;
   });
   if(!L.length){
@@ -4123,21 +4179,35 @@ function vZuordnung(m){
   const s=document.createElement("section");
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
     <th>Kassenname</th><th class="r">Menge gesamt</th><th>Zuordnung</th><th>Zustand</th></tr></thead><tbody>
-    ${L.map(p=>{ const z=zuordnung(p);
+    ${L.map(p=>{ const z=zuordnung(p); const ab=vorabAbweichung(p.name);
       return `<tr><td>${esc(p.name)}</td><td class="r">${num(p.anzahl)}</td>
         <td><select class="klein" data-name="${esc(p.name)}">${optionen}</select></td>
         <td>${z.status==="offen"?'<span class="pill p-bad">offen</span>'
+            :z.status==="vorab"?'<span class="pill p-neu">vorgeschlagen — bestätigen</span>'
             :z.status==="auto"?'<span class="pill p-neu">automatisch — bestätigen</span>'
-            :z.status==="ignoriert"?'<span class="pill p-grau">ignoriert</span>'
-            :'<span class="pill p-ok">festgelegt</span>'}</td></tr>`;
+            :z.status==="ignoriert"
+              ?(z.vorab?'<span class="pill p-neu">vorgeschlagen: ignorieren</span>'
+                       :'<span class="pill p-grau">ignoriert</span>')
+            :'<span class="pill p-ok">festgelegt</span>'}${
+            /* Die geprüfte Liste sagt etwas anderes als die bestätigte
+               Zuordnung. Geändert wird nichts — die Bestätigung gilt.
+               Hier steht nur, was auffällt, damit ein Vertipper nicht
+               für immer stehen bleibt. */
+            ab?`<div class="mini">geprüfte Liste sagt: ${esc((w=>w?w.winzer+" · "+w.wein:GN(ab))(byId(ab)))}</div>`:""
+          }</td></tr>`;
     }).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:16px">
-      <button class="b stark" id="bAuto">Alle automatischen Weinvorschläge übernehmen</button></div>`;
+      <button class="b stark" id="bAuto">Alle Vorschläge übernehmen</button></div>`;
   m.appendChild(s);
 
   s.querySelectorAll("select[data-name]").forEach(sel=>{
     const nm=sel.dataset.name, z=zuordnung({name:nm});
-    sel.value = MAP[nm] ? MAP[nm] : (z.status==="auto" ? z.id : "");
+    /* Das Feld zeigt, was gelten WÜRDE — sonst steht daneben
+       „vorgeschlagen" und im Feld „— offen —". */
+    sel.value = MAP[nm] ? MAP[nm]
+      : z.status==="vorab" ? z.id
+      : z.status==="auto" ? z.id
+      : (z.status==="ignoriert" && z.vorab) ? "__ignoriert" : "";
     sel.onchange=async()=>{
       const wert=sel.value, vorher=MAP[nm];
       if(wert) MAP[nm]=wert; else delete MAP[nm];
@@ -4151,15 +4221,24 @@ function vZuordnung(m){
       if(ok) toast("Zuordnung gespeichert");
     };
   });
+  /* Ein Knopf für beide Arten von Vorschlag: das Kassenmuster der Weine
+     und die geprüfte Vorabliste. Eine schon bestätigte Zuordnung wird
+     nie überschrieben — `MAP[p.name]` bricht ab, bevor irgendetwas
+     hinausgeht. „Kein Keller" geht als `__ignoriert` hinaus, denselben
+     Weg, den die Leitung von Hand nimmt. */
   $("#bAuto").onclick=async()=>{
     const neu=[];
-    L.forEach(p=>{ if(MAP[p.name]) return; const a=autoWein(p.name); if(a) neu.push([p.name,a.id]); });
+    L.forEach(p=>{
+      if(MAP[p.name]) return;
+      if(Object.hasOwn(VORAB,p.name)) return neu.push([p.name, VORAB[p.name] ?? "__ignoriert"]);
+      const a=autoWein(p.name); if(a) neu.push([p.name,a.id]);
+    });
     if(!neu.length) return toast("Kein Vorschlag offen");
     $("#bAuto").disabled=true;
     let n=0;
     for(const [nm,id] of neu){ MAP[nm]=id; if(await sendeZuordnung(nm,id)) n++; }
     schreib(K_MAP,MAP); $("#bAuto").disabled=false; zeichne();
-    toast(n===neu.length ? n+" Weine übernommen"
+    toast(n===neu.length ? n+" Zuordnungen übernommen"
       : n+" von "+neu.length+" übernommen — der Rest nur auf diesem Gerät");
   };
 }

@@ -15,6 +15,25 @@
    Ein falscher Treffer bucht still den falschen Bestand ab. Deshalb geht
    hier nur Wein durch. Jedes Getränk wird einmal von Hand bestätigt und
    ist danach für immer festgelegt.
+
+   ── Und seit Runde 22: die Vorabliste ────────────────────────────────
+
+   `mappe()` bleibt Wort für Wort, wie sie war — sie rät weiterhin nicht.
+   Daneben steht `VORAB`: eine Liste GANZER Kassennamen, Zeichen für
+   Zeichen, jeder einzeln nachgesehen und mit Grund. Das ist nichts
+   anderes als das, was die Leitung im Zuordnung-Bildschirm tut — nur
+   vorher erledigt. Was dort nicht steht, bleibt offen; ein Name, bei dem
+   auch nur ein Zweifel blieb, steht in `review/MORGENBRIEF.md` statt hier.
+
+   Der Unterschied zur abgeschalteten Ähnlichkeitssuche ist nicht der
+   Ton, sondern die Art: hier wird nichts verglichen und nichts gemessen.
+   Es gibt nur Nachschlagen oder nicht — `Object.hasOwn`, sonst nichts.
+   Deshalb kann ein Name, der morgen neu in der Kasse auftaucht, hier
+   unmöglich stillschweigend hineinrutschen.
+
+   Die Datenbank schlägt die Liste. Wer im Backoffice etwas bestätigt,
+   behält recht — auch wenn hier etwas anderes steht. Wo beides
+   auseinandergeht, sagt es der Zuordnung-Bildschirm.
    ═══════════════════════════════════════════════════════════════════════ */
 
 export const WEINE = [
@@ -116,4 +135,119 @@ export function mappe(name) {
     if (eng.length === 1) return eng[0].id;
   }
   return null;
+}
+
+/* ── Vorabliste ────────────────────────────────────────────────────────
+   Ganzer Kassenname → Artikel-Id, oder `null` für „kommt nicht aus dem
+   Keller". Kein Muster, keine Abkürzung, kein Teilstück: der Schlüssel
+   ist der Name, wie die Kasse ihn schreibt, mitsamt Größe und doppeltem
+   Größensuffix. Jede Zeile nennt den Grund, den ein Mensch in einer
+   Sekunde nachprüft.
+
+   Die Namen stammen aus den beiden echten Berichten, die im Haus
+   liegen: Z 40 vom 19.09.2026 (Backoffice) und Bericht 37
+   (`tests/fixtures`). 71 Namen zusammen. */
+
+/* Wein. Diese sechs Namen passen nicht in das Kassenmuster — entweder
+   fehlt das Komma vor dem Weinnamen, oder das Kürzel ist gar keine
+   Rebsorte („NW" Naturwein, „RS" Rosé). Der Artikel selbst steht in
+   jedem der sechs Namen ausgeschrieben. */
+const VORAB_WEIN = {
+  /* Heinrich · Naked Red — steht wörtlich im Namen. „NW" ist keine
+     Rebsorte, deshalb greift das Kassenmuster nicht. Im Backoffice
+     bereits auf denselben Artikel bestätigt. */
+  "NW Heinrich, Naked Red 1/8": "w053",
+  /* Dürnberg · Blanc de Noir — wörtlich im Namen. „RS" ist keine
+     Rebsorte. Ebenfalls schon auf denselben Artikel bestätigt. */
+  "RS Dürnberg, Blanc de Noir 1/8": "w045",
+  /* Glatzer · Rubin Carnuntum, Zweigelt — wörtlich im Namen. Hier fehlt
+     das Komma: `mappe()` sieht zwei Glatzer-Zweigelt (Rubin Carnuntum
+     und Dornenvogel), kann ohne Komma nicht trennen und lässt zu Recht
+     offen. Der Weinname steht trotzdem da. */
+  "ZW Glatzer Rubin Carnuntum 1/8 l": "w026",
+  /* Serena · Piu Frizzante — der einzige Serena im Haus. Glas. */
+  "Prosecco, Serena 0,1l": "serena",
+  /* Derselbe Wein als Flasche. */
+  "Prosecco, Serena 0,75l": "serena",
+  /* Seher · La Petite Frizzante Rosé — der einzige Schaumwein von Seher.
+     Der andere Seher im Haus (Wolfgang Seher, Wilde Reben) ist ein
+     Weißwein und kann „Sparkling Rosé" nicht sein. */
+  "Glas Seher Sparkling Rosé 0,1l": "w055"
+};
+
+/* Getränke. Jeder Eintrag: der Name der Kasse links, der Name des
+   Kellerartikels rechts — beide so nah beieinander, dass die Prüfung
+   ein Blick ist. */
+const VORAB_GETRAENK = {
+  /* „Cola" */
+  "Coca Cola 0,35l": "cola",
+  /* „Cola Zero" — wortgleich. ACHTUNG: im Backoffice steht auf diesem
+     Namen `cola` bestätigt; das sieht nach Vertippen aus, denn „Cola
+     Zero" liegt als eigener Artikel in Lade 5. Die Datenbank schlägt
+     die Liste, es ändert sich also nichts von allein —
+     `review/MORGENBRIEF.md` nennt es zum Nachsehen. */
+  "Cola Zero 0,35l": "colaz",
+  /* „Orange Lemonade" — die Now-Limo-Reihe liegt im Stamm als Berry,
+     Orange und Lemon Lemonade. ACHTUNG: im Backoffice steht auf diesem
+     Namen `lemon` bestätigt — siehe oben, dasselbe Muster. */
+  "Now-Limo Orange 0,35l": "orange",
+  /* „Lemon Lemonade" — dieselbe Reihe. Genau dieser Name ist der
+     Fehltreffer, an dem die Ähnlichkeitssuche gescheitert ist
+     (sie schlug Thomas Henry Bitter Lemon vor). */
+  "Now-Limo Lemon 0,35l": "lemon",
+  /* „Franziskaner Weissbier hell" — schon bestätigt. */
+  "Hefeweizen hell 0,5l": "hell",
+  /* „Franziskaner Weissbier alkoholfrei" — das einzige alkoholfreie
+     Weizen im Keller. (Der Name der Kasse hört ohne „l" auf.) */
+  "Weizen alkoholfrei 0,5": "hefe0",
+  /* „Stiegl 0,0 % · 0,33" — schon bestätigt. */
+  "Stiegl alkoholfrei 0,3l": "st03",
+  /* „Stiegl Freibier alkoholfrei" — schon bestätigt. */
+  "Stiegl alkoholfrei 0,5l": "st05",
+  /* „Mango" (Lade 1 · Säfte) — schon bestätigt. */
+  "Mango gespritzt 0,25l 0,25l": "mango",
+  /* „Schwarze Johannisbeere" (Lade 1 · Säfte) — dasselbe Muster wie
+     „Mango gespritzt", derselbe Saft, dieselbe Lade. */
+  "Johannisbeer gespritzt 0,25l 0,25l": "johan"
+};
+
+/* Kommt nicht aus dem Keller. Diese Namen stehen im Z-Bericht, zehren
+   aber nichts, was hier gezählt wird — sie gehören dauerhaft aus der
+   Zuordnungsliste heraus (Vorgabe Casimir, 20.09.2026).
+
+   Cocktails stehen bewusst NICHT hier: ein Whiskey Sour nimmt
+   Zitronensaft, ein Ipanema Ginger Ale, ein Virgin Hugo Holundersirup —
+   alle drei liegen im Keller und werden gezählt. Sie wegzuwerfen hiesse,
+   ihren Verbrauch später als Schwund wiederzufinden. Sie brauchen ein
+   Rezept und stehen in `review/MORGENBRIEF.md`. */
+const VORAB_KEIN_KELLER = [
+  /* Küche: Beilagen und Zutaten, durchweg mit 0 € gebucht. */
+  "Champignons", "Käse", "Paprika", "Pinien", "Rucola", "Schinken",
+  "Schnittlauch", "Speck", "Zwiebeln",
+  "HP Omelett 1 Portion", "HP Rührei 1 Portion",
+  /* Kaffee: Maschine und Kühlschrank, kein Kellerartikel. */
+  "Cappuccino 1 Tasse", "Cappuccino Hafer 1 Glas", "Espresso",
+  "Espresso doppio 1 Glas", "Espresso Macchiato",
+  "Latte Macchiato 1 Glas", "Verlängerter 1 Glas",
+  /* Spirituosen pur, 2 cl: die Bar führt sie, der Keller zählt sie
+     nicht — im Stamm gibt es zu keinem davon einen Artikel. */
+  "Amaro Averna Siciliano 2 cl", "Lagavulin 16 Years 2 cl",
+  "Obstler Durzbauer 2 cl"
+];
+
+export const VORAB = {
+  ...VORAB_WEIN,
+  ...VORAB_GETRAENK,
+  ...Object.fromEntries(VORAB_KEIN_KELLER.map(n => [n, null]))
+};
+
+/* Nachschlagen, sonst nichts. Kein Vergleich, kein Teilstück, keine
+   Ähnlichkeit — der Name trifft ganz oder gar nicht.
+
+   Rückgabe:
+     { id: "w026" }  → dieser Artikel
+     { id: null }    → kommt nicht aus dem Keller
+     null            → steht nicht auf der Liste, bleibt offen         */
+export function vorab(name) {
+  return Object.hasOwn(VORAB, String(name)) ? { id: VORAB[String(name)] } : null;
 }
