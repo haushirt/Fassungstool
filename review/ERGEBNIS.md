@@ -7,7 +7,7 @@ Phase gefüllt, nicht laufend.
 
 # Was mit diesem Merge live geht · Runde 18 (Nacht auf den 20.09.2026)
 
-**Stand davor: `c78d121` (`sw.js` v56, live). Stand danach: `sw.js` v57.**
+**Stand davor: `c78d121` (`sw.js` v56, live). Stand danach: `sw.js` v58.**
 
 Vier Punkte, alle im Backoffice. **`public/index.html` und `src/` sind
 unberührt** — im Keller ändert sich nichts.
@@ -90,8 +90,8 @@ Befehlstaste-P ohne Knopf bringt weiterhin die Seite selbst aufs Papier.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **34 Urteile grün, 0 rot, keine JS-Fehler** |
-| Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v57, keine neue Abhängigkeit |
+| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **40 Urteile grün, 0 rot, keine JS-Fehler** |
+| Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v58, keine neue Abhängigkeit |
 
 Fundstellen, Lösungswege und Prüfpläne Punkt für Punkt:
 **`review/RUNDE-18-BACKOFFICE.md`**.
@@ -108,8 +108,20 @@ geht:
 > schwieg und schrieb daneben „Vorrat aufgebaut oder Schwund".
 
 Das Blatt trägt jetzt einen eigenen Kasten mit jedem Vorbehalt, die Unterzeile
-sagt „unvollständige Rechnung", und solange die Rechnung halb ist, **fällt das
-Wort „Schwund" weg**. Dazu behoben: die Kachel führte am Handy nicht bis zum
+sagt „unvollständige Rechnung", und **das Wort „Schwund" steht dort überhaupt
+nicht mehr** — auch bei vollständiger Rechnung entscheidet das ein Mensch im
+Keller, kein Ausdruck.
+
+Eine zweite Jagd fand denselben Fehler durch eine zweite Tür: Zwei Wege nehmen
+den Verkauf **still** aus der Rechnung — ein Kassenname auf „Ignorieren" (der
+einzige Weg, einen Cocktail ohne Menge im Namen aus dem roten Balken zu
+bekommen) und eine Rezeptzutat mit 0 ml. Der Abgleich zählt deshalb jetzt die
+eine Zahl, die keinen Grund braucht:
+
+> Von 145 verkauften Einheiten im Zeitraum sind 9 in diese Rechnung eingegangen
+> — 136 nicht.
+
+Sie steht als erste Zeile im Kasten. Dazu behoben: die Kachel führte am Handy nicht bis zum
 Detail, ein Filter ließ ein fremdes Detail stehen, und die Wischgeste nahm
 Gesten, die dem Suchfeld und der rollenden Tabelle gehörten. In den Eingängen
 öffnet deshalb jetzt die ganze Zeile das Detail — „Ansehen" steht am Handy

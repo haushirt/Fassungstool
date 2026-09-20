@@ -373,3 +373,11 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | niedrig | **Zwei Menüpunkte tragen dieselbe Zahl über denselben Bestand.** „Eingänge" und „Speicher" zählen beide `VORGAENGE.length`. Löst sich von selbst, sobald einer der beiden verschwindet. | `public/leitung.html` (`zaehler`) |
 | niedrig | **Zehn neue Trefferflächen unter 44 px** im Abschnitt „Eingänge" („Ansehen" 73×36, „PDF" 48×36, „Alles als CSV" 101×36). Gleiche Bauart wie im „Speicher", also kein Rückschritt — aber zehn neue. Entschärft, seit die ganze Zeile das Detail öffnet; die Knöpfe selbst bleiben klein. | `public/leitung.html` (`vEingaenge`, `.b klein`) |
 | **erledigt** | Der Fuß jedes Vorgangsblatts sagte „Gezählte Bestände sind Ist-Stände, keine Entnahme" — auch auf einem Wareneingang ohne eine einzige Zählung. Behoben in Runde 18: der Satz steht nur noch, wo ein Zählblock im Blatt ist. | `public/leitung.html` (`druckVorgang`) |
+
+### Nachtrag · zweite Jagd nach Runde 18
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| niedrig | **Der Zeilenklick in den Eingängen hat keinen Tastaturweg.** `tr.klickbar` trägt weder `role="button"` noch `tabindex`; wer mit der Tastatur arbeitet, braucht weiter den Knopf „Ansehen" — und der steht bei 390 px 656 px rechts. Am MacBook (dem Gerät dieser Seite) ist der Knopf im Bild, also kein Verlust, aber auch keine Lösung. | `public/leitung.html` (`vEingaenge`, `tr.klickbar`) |
+| niedrig | **`.b.klein` ist 36 px hoch**, unter der 44-px-Schwelle. Steht in der GETEILTEN Gestaltungsschicht — eine Änderung muss wortgleich in beide Dateien und trifft jede Ansicht beider Seiten. Bestand schon vor Runde 18; vom Zeilenklick praktisch entschärft, nicht behoben. | `public/leitung.html` = `public/index.html` (geteilte Schicht, `--control-h-sm`) |
+| niedrig | **`tests/ui-runde18.cjs` prüft den Zweig „vollständige Rechnung" nicht.** Mit den Daten des Prüfstands ist `halbeRechnung` fast immer `true`. Der `false`-Zweig (kein Kasten, Unterzeile ohne Zusatz) läuft nur im Ignorier-Lauf mit. Ein eigener Aufbau mit lückenlosem Mapping wäre die Gegenprobe. | `tests/ui-runde18.cjs` |

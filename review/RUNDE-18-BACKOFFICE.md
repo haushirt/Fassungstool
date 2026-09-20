@@ -279,8 +279,8 @@ Prüfstand misst das Blatt, nicht den Drucker.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** (ca. 4 s) |
-| `node tests/ui-runde18.cjs` | **34 Urteile grün, 0 rot, keine JS-Fehler** |
-| Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v57**, keine neue Abhängigkeit in `package.json` |
+| `node tests/ui-runde18.cjs` | **40 Urteile grün, 0 rot, keine JS-Fehler** |
+| Regeln (`tests/projektregeln.test.mjs`) | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` **v58**, keine neue Abhängigkeit in `package.json` |
 
 `tests/ui-runde18.cjs` ist wie `ui-leitung.cjs` **nicht** Teil von `npm test`
 (Playwright ist keine Abhängigkeit des Projekts). Aufruf:
@@ -357,4 +357,68 @@ einzige Zählung. Er steht jetzt nur noch dort, wo ein Zählblock im Blatt ist.
 | Prüfung | Ergebnis |
 |---|---|
 | `npm test` | **444 von 444 grün** |
-| `node tests/ui-runde18.cjs` | **34 Urteile grün, 0 rot, keine JS-Fehler** |
+| `node tests/ui-runde18.cjs` | **40 Urteile grün, 0 rot, keine JS-Fehler** |
+
+---
+
+## Nachtrag 2 · die zweite Jagd
+
+Der Jäger hat die Behebungen gegengeprüft und **1 × A, 4 × B, 4 × C** gefunden.
+Alle A- und B-Funde sind behoben, zwei der C-Funde gleich mit.
+
+### A · Derselbe Fehler, durch eine zweite Tür
+
+Der Vorbehaltskasten aus Nachtrag 1 zählte nur die drei Lücken, die sich selbst
+als Liste melden: fehlende Berichte, offene Kassennamen, fehlende
+Gebindegrössen. **Zwei Wege nehmen den Verkauf still aus der Rechnung**, und
+beide sind Alltag:
+
+* **„Ignorieren"** ist ein vollwertiger Zustand — `vZuordnung` bewirbt ihn
+  ausdrücklich — und der einzige Weg, einen Cocktail ohne Menge im Kassennamen
+  aus dem roten Balken zu bekommen. In Bericht 37 sind rund zehn der 44 offenen
+  Namen genau das („Aperol Spritz 1 Glas", „Pisco Sour 1 Glas"). Ihre Flaschen
+  kommen trotzdem aus dem Keller.
+* **Eine Rezeptzutat mit 0 ml** rechnete sechs Gläser zu null Flaschen und
+  meldete „gerechnet". `Math.max(0, …)` im Formular liess die Null zu,
+  `min="10"` im Feld greift ohne Formularprüfung nicht.
+
+In beiden Lagen war der Kasten aus und das Blatt druckte wieder
+„Verkauft 0 · Geholt 3 · +3 · Vorrat aufgebaut oder Schwund".
+
+**Behoben an der Wurzel.** `abgleich()` zählt jetzt schlicht, wie viele der
+verkauften **Einheiten** es überhaupt in die Rechnung geschafft haben
+(`stkGesamt`, `stkGerechnet`, `stkIgnoriert`, `ignoriert[]` — rein additiv).
+Die erste Zeile des Kastens lautet:
+
+> Von 145 verkauften Einheiten im Zeitraum sind 9 in diese Rechnung eingegangen
+> — 136 nicht. Die Gründe stehen darunter.
+
+Diese eine Zahl ist gegen jeden künftigen stillen Weg dicht, weil sie keinen
+Grund braucht. Dazu: Eine Rezeptzutat ohne Menge gilt nicht mehr als gerechnet,
+das Formular nimmt die 0 nicht mehr an — und **das Wort „Schwund" steht in der
+Deutungsspalte dieses Blattes überhaupt nicht mehr.** Auch bei vollständiger
+Rechnung entscheidet das ein Mensch im Keller, kein Ausdruck.
+
+### B · vier Funde, alle behoben
+
+| Fund | Behebung |
+|---|---|
+| Bei OFFENER Leiste gab der Randwisch Safari die Zurück-Geste am linken Rand zurück — dort, wo der Daumen liegt. Die erste Behebung hatte einen Schritt zu weit zurückgenommen. | Behalten wird die Geste, wenn sie wirkt **oder** am Rand beginnt |
+| Das Detail aus „Nur auf diesem Gerät" wurde von jedem Tastendruck im Suchfeld der Serverliste gelöscht, während seine eigene Tabelle stehenblieb | Eigene Fläche `#egFremdDetail`, eigener Merker `EGFREMD` |
+| **`VERSION` in `sw.js` war seit dem ersten Commit nicht mehr erhöht worden**, obwohl `leitung.html` sich zweimal geändert hatte — offline wäre das Blatt ohne Vorbehaltskasten ausgeliefert worden | v58 |
+| Der Kopfkasten behauptete weiter „Ein Plus heisst: mehr geholt als verkauft" — drei Zeilen über dem Kasten, der ihn widerruft | „mehr geholt, als die Rechnung an Verkauf kennt" |
+
+### C · zwei sofort behoben, drei im Backlog
+
+Behoben: der 4-px-Streifen zwischen Inhaltsbeginn (16 px) und Randzone (20 px)
+gehört jetzt ausdrücklich der Randgeste — sonst bliebe dort ein Loch, durch das
+Safari zurückblättert; und der Zeilenklick öffnet nichts mehr, wenn Text
+markiert ist.
+
+### Stand nach der zweiten Behebung
+
+| Prüfung | Ergebnis |
+|---|---|
+| `npm test` | **444 von 444 grün** |
+| `node tests/ui-runde18.cjs` | **40 Urteile grün, 0 rot, keine JS-Fehler** |
+| `sw.js` | **v58** |

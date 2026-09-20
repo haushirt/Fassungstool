@@ -971,3 +971,35 @@ fällt ohne Netz still durch und lässt `NETZ.zustand` unangetastet.
 * Echtes Safari/iOS: ob `preventDefault()` die Zurück-Geste wirklich nimmt und
   ob `window.print()` nach 80 ms Verzug dort noch als Nutzergeste gilt.
 * Notch/Safe-Area und die eingeblendete Tastatur.
+
+## Zweite Jagd nach Runde 18 (Stand `9717c6f`)
+
+**1 × A, 4 × B, 4 × C.** Der A-Fund ist der A-Fund der ersten Jagd, durch eine
+zweite Tür: Der Vorbehaltskasten kannte nur die drei Lücken, die sich selbst
+melden — die zwei stummen zählte niemand.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgestellt / gerechnet | Nächste Rolle | Stand |
+|---|---|---|---|---|---|---|
+| A | 18 | **`halbeRechnung` war falsch, sobald Verkauf STILL verschwand.** Ein Kassenname auf „Ignorieren" und eine Rezeptzutat mit `0 ml` nehmen den Verkauf aus der Rechnung, ohne eine Spur in `a` zu hinterlassen. Der Kasten schwieg, und die Deutungsspalte druckte wieder „Vorrat aufgebaut oder **Schwund**". | `public/leitung.html` (`abgleich`, Zweige `ignoriert` und Rezept) gegen `druckDifferenzen` (`vorbehalte`) | Bericht 37, ein Z-Bericht, `spanne=1`, alles auf „Ignorieren" ausser Cola: `a.offen=0`, `a.ohneGroesse=0`, `a.berichte=a.spanne` → **kein Vorbehalt**, Blatt druckt „Leindl · Langenlois · Verkauft 0 · Geholt 3 · +3 · Vorrat aufgebaut oder Schwund". Der Verkauf dieser Weine ist nicht null — er ist ignoriert. Zweiter Weg: Rezeptur mit `0 ml` → `6 × 0 / 350 = 0` meldet „gerechnet". Kein erfundener Fall: „Ignorieren" ist der einzige Weg, einen Cocktail ohne Menge im Kassennamen aus dem roten Balken zu bekommen, und in Bericht 37 sind ~10 der 44 offenen Namen genau das. | software-engineer | **behoben in Runde 18** — `abgleich()` zählt `stkGesamt`/`stkGerechnet`/`stkIgnoriert` (additiv). Die erste Zeile des Kastens lautet „Von N verkauften Einheiten sind M in diese Rechnung eingegangen — K nicht" und ist gegen jeden künftigen stillen Weg dicht. Eine Rezeptzutat ohne Menge gilt nicht mehr als gerechnet, das Formular nimmt die 0 nicht mehr an. Das Wort „Schwund" steht in der Deutungsspalte überhaupt nicht mehr. Geprüft: drei Urteile |
+| B | 18 | **Bei OFFENER Leiste gab `randwisch()` Safari die Zurück-Geste am linken Rand zurück** — genau dort, wo der Daumen liegt, wenn die Schublade offen ist. Die Behebung der ersten Jagd hatte einen Schritt zu weit zurückgenommen. | `public/leitung.html` (`randwisch`, `if(hin>0 === offen())`) | 390 × 844, `navoffen` gesetzt, Wisch x=8 → x=160: `{verhindert:false}`. | software-engineer | **behoben in Runde 18** — behalten wird die Geste, wenn sie wirkt ODER am Rand beginnt. Geprüft: zwei Urteile (Mitte losgelassen, Rand abgefangen) |
+| B | 18 | **Das Detail aus „Nur auf diesem Gerät" wurde von jedem Tastendruck im Suchfeld der SERVERLISTE gelöscht** — während seine eigene Tabelle unverändert darunter stehenblieb. Ohne Wort, ohne Grund. | `public/leitung.html` (`vEingaenge`, Fremd-Abschnitt) | Ein Vorgang im `hh_archiv`, den der Server nicht kennt: „Ansehen" → Karte da; „Lena" ins Suchfeld → Karte weg, Fremdtabelle da. | software-engineer | **behoben in Runde 18** — eigene Fläche `#egFremdDetail`, eigener Merker `EGFREMD`, `malDetail(v, wohin)`. Geprüft: ein Urteil |
+| B | 18 | **`VERSION` in `sw.js` stand seit dem ersten Commit der Runde unverändert**, obwohl `leitung.html` sich danach zweimal geändert hatte. Offline hätte der Service Worker das Blatt OHNE Vorbehaltskasten ausgeliefert — den A-Fund der ersten Jagd. Regel aus `CLAUDE.md`, und die Unterlagen führten „v57" als geprüft. | `public/sw.js` | `git log -1 -- public/sw.js` → `dc4a068`; `leitung.html` danach `b5573ab`, `9717c6f`. | software-engineer | **behoben in Runde 18** — v58 |
+| B | 18 | **Der Kopfkasten behauptete weiter „Ein Plus heisst: mehr geholt als verkauft"** — derselbe falsche Satz, den die Behebung aus der Deutungsspalte genommen hatte, drei Zeilen über dem Kasten, der ihn widerruft. | `public/leitung.html` (`druckDifferenzen`, Kopf) | Im Ausdruck nachgelesen: drei Sätze, zwei Aussagen. | software-engineer | **behoben in Runde 18** — „mehr geholt, als die Rechnung an Verkauf kennt" |
+
+### C-Funde der zweiten Jagd
+Zwei sofort behoben: der 4-px-Streifen zwischen Inhaltsbeginn (16) und Randzone
+(20) gehört jetzt ausdrücklich der Randgeste (sonst blieb dort ein Loch, durch
+das Safari zurückblättert), und der Zeilenklick öffnet nichts mehr, wenn Text
+markiert ist. Zwei stehen im Backlog: `tr.klickbar` hat keinen Tastaturweg
+ausser dem Knopf, und `.b.klein` ist 36 px hoch — das steht in der GETEILTEN
+Gestaltungsschicht und muss in beide Dateien.
+
+### Was die zweite Jagd nachgerechnet und in Ordnung gefunden hat
+* Der Vorbehaltskasten zählt richtig: leeres Mapping + Bericht 37 →
+  `a.offen.length = 44`, 136 Stück; `teileOhneGroesse` → 4 / 9 Einheiten.
+  **136 + 9 = 145 = Gegenprobe des Berichts.** Der Bildschirm daneben sagt
+  dieselben Zahlen.
+* Der Kachel-Weg ist wirklich repariert (Karte bei `top = 215` statt 921).
+* `drucke()`: kein Horcher-Leck, kein jüngerer Druck wird abgeräumt.
+* Gestaltungsschicht zeichengleich; `tr.klickbar` und
+  `#druck .notiz.vorbehalt` stehen beide unterhalb der Trennmarke.

@@ -4243,7 +4243,7 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
   dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs` (neu, Playwright,
-nicht Teil von `npm test`): **34 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+nicht Teil von `npm test`): **40 Urteile grün, 0 rot, keine JS-Fehler** — darunter
 echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
 aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
 Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
@@ -4299,7 +4299,7 @@ Abschnitt „Runde 18".
 dazu der Zeilenklick in den Eingängen als zweiter Weg zum Detail.
 
 **Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
-**34 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
+**40 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
 genau die Funde der Jagd. Der Wischprüfstand setzt den Finger jetzt auf das
 Element, das an der Stelle wirklich liegt (`elementFromPoint`) statt auf den
 Rumpf; vorher hätte er den Fund gar nicht sehen können.
@@ -4309,5 +4309,50 @@ sind der nächste Punkt, der Vertrauen kostet — eine Zahl, die sich beim
 Weiterklicken ändert. Steht im Backlog.
 
 **Phase/Thema:** Backoffice / Nachtrichtigung nach der Jagd
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (zweite Nachtrichtigung, nach der zweiten Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Mein Vorbehaltskasten zählte die Gründe, nicht die
+  Lücke.** Er las die drei Listen, die sich selbst melden. Zwei Wege melden
+  sich nicht: „Ignorieren" und eine Rezeptzutat mit 0 ml. Beide sind Alltag,
+  und in beiden druckte das Blatt wieder „Vorrat aufgebaut oder Schwund".
+  Das ist derselbe A-Fund wie in der ersten Jagd — ich habe ihn oberflächlich
+  behoben, nicht an der Wurzel. Jetzt zählt `abgleich()` die Einheiten, die es
+  in die Rechnung geschafft haben; diese Zahl braucht keinen Grund und ist
+  gegen den nächsten stillen Weg dicht.
+* ✅ übernommen — **Das Wort „Schwund" gehört überhaupt nicht auf dieses
+  Blatt.** Ich hatte es an `halbeRechnung` gehängt. Falsch: Ob eine Flasche
+  fehlt oder im Vorrat steht, entscheidet ein Mensch im Keller, nicht ein
+  Ausdruck, der in eine Gruppe geht.
+* ✅ übernommen — **B: Ich habe einen Schritt zu weit zurückgenommen.** Nach
+  der ersten Jagd liess `randwisch()` bei OFFENER Leiste den Randwisch los —
+  genau dort liegt der Daumen, wenn die Schublade offen ist. Eine Behebung,
+  die eine neue Lücke aufmacht, ist keine.
+* ✅ übernommen — **B: `VERSION` in `sw.js` stand seit dem ersten Commit der
+  Runde still**, während `leitung.html` sich zweimal geändert hat. Offline
+  wäre genau das Blatt ohne Vorbehaltskasten ausgeliefert worden. Meine
+  eigenen Unterlagen führten „v57" als geprüfte Regel — geprüft hatte ich sie
+  einmal, am Anfang. **Eine Regel, die nur zu Beginn einer Runde gilt, ist
+  keine Regel.**
+* ✅ übernommen — **B: Der Kopfsatz widersprach drei Zeilen später dem Kasten.**
+  Ich hatte die Deutungsspalte berichtigt und den Satz darüber stehenlassen.
+
+**Umgesetzt:** Der A-Fund an der Wurzel (`stkGesamt`/`stkGerechnet` in
+`abgleich()`, additiv), alle vier B-Funde, zwei der vier C-Funde.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**40 Urteile grün, 0 rot** — sechs davon sind neu und stellen genau die zwei
+stillen Wege nach (alles auf „Ignorieren", und eine Rezeptur mit 0 ml).
+
+**Für die Nächsten:** Die Lehre dieser Nacht steht in `LEARNINGS.md`: Wer eine
+Lücke über ihre GRÜNDE zählt, zählt nur die Gründe, die er kennt. Zähle, was
+übrig bleibt.
+
+**Phase/Thema:** Backoffice / zweite Nachtrichtigung
 
 **STATUS:** FERTIG

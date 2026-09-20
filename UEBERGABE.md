@@ -18,7 +18,7 @@
   in der Rechnung stand (mit dem Mapping, wie es live steht, sind das in einem
   echten Z-Bericht 136 von 145 Stück). Es trägt jetzt einen Kasten, der sagt,
   was fehlt — und das Wort „Schwund" fällt weg, solange die Rechnung halb ist.
-- `npm test` 444/444 grün. `node tests/ui-runde18.cjs` 34 Urteile grün.
+- `npm test` 444/444 grün. `node tests/ui-runde18.cjs` 40 Urteile grün.
 
 ## Blockaden
 - **Keine.** Zwei Dinge kann kein Prüfstand beantworten, sie brauchen das Gerät:
