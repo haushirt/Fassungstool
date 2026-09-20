@@ -939,3 +939,135 @@ fällt ohne Netz still durch und lässt `NETZ.zustand` unangetastet.
   `tests/zbericht-37.test.mjs` weiterhin auf; `src/gnparse.js` und
   `src/gnmap.js` sind in dieser Runde nicht angefasst worden. `ml()` und
   `mlAusText()` sind unverändert wortgleich.
+
+---
+
+## Jagd nach Runde 18 (Stand `dc4a068`, Zweig `claude/backoffice-leitung-r18-clvh73`)
+
+**1 × A, 3 × B, 4 × C.** Alle A- und B-Funde sind in derselben Nacht behoben
+(`b5573ab`ff). Die C-Funde stehen in `review/BACKLOG.md`.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgestellt | Nächste Rolle | Stand |
+|---|---|---|---|---|---|---|
+| A | 18 | **`druckDifferenzen()` ließ alle drei Vorbehalte des Bildschirms weg und druckte „mehr geholt als verkauft — Vorrat aufgebaut oder Schwund" als Messwert.** Das Blatt geht in eine WhatsApp-Gruppe. | `public/leitung.html` (`druckDifferenzen`) gegen `:2315`, `:2321`, `csvAbgleich` | Bericht 37 mit leerem Mapping wie in der Live-D1: Bildschirm sagt „44 Kassennamen ohne Zuordnung — ihr Verkauf fehlt in dieser Rechnung" (136 von 145 Stück), CSV trägt denselben Abschnitt. Das Blatt trug keines von beidem und schrieb „Cola 0 verkauft / 6 geholt / +6 — Schwund", Summe „Verkauft 0 · Geholt 16". An diesem Tag gingen 145 Stück und 602,50 € über die Kasse. | software-engineer | **behoben in Runde 18** — ein Vorbehaltskasten nennt fehlende Berichte, nicht zugeordnete Kassennamen und Namen ohne bestätigte Größe; solange einer davon gilt, fällt das Wort „Schwund" aus der Deutung, die Unterzeile sagt „unvollständige Rechnung". Geprüft: `tests/ui-runde18.cjs`, zwei Urteile |
+| B | 18 | **Die Kachel „Tagesfassung" versprach „Positionen und Mengen ansehen" und legte das Detail am Handy 921 px unter den Falz.** Der Weg über den Knopf rollte hin, der über die Kachel nicht. | `public/leitung.html` (`[data-ziel]`-Horcher) gegen den `[data-eg]`-Horcher | 390 × 844: nach dem Klick `scrollY=0`, `#egDetail .karte` bei `top=921`. | software-engineer | **behoben in Runde 18** — ist ein Detail offen, gewinnt es über `scrollTo(0,0)`. Gemessen: `top=139` bei 844 px |
+| B | 18 | **Das offene Detail überlebte einen Filter, der seinen Vorgang ausschloss.** `finde()` suchte in `alle` statt in der gefilterten Liste. | `public/leitung.html` (`vEingaenge.malListe`) | „zzzz" ins Suchfeld: Liste sagt „Kein Vorgang passt zu dieser Suche", darunter stand unverändert die volle Karte der Tagesfassung. Dasselbe beim Modusfilter. | software-engineer | **behoben in Runde 18** — `finde()` sucht in `L`, und ohne Treffer wird `#egDetail` geräumt. Geprüft: ein Urteil |
+| B | 18 | **`randwisch()` nahm Gesten, die ihm nicht gehörten**: Randzone bis 32 px, der Inhalt beginnt bei 16 px. Über dem Suchfeld und über der waagrecht rollenden Vorgangstabelle sprang die Navigation auf; bei offener Leiste wurde jede waagrechte Geste geschluckt. | `public/leitung.html` (`randwisch`) | 390 px: Wisch ab x=20 über `#egQ` → `defaultPrevented`, Navigation auf. Über `#egListe .tabhuelle` (`scrollWidth 703` gegen `clientWidth 356`) → Tabelle rollt nicht, „Ansehen"/„PDF" bleiben unerreichbar. | software-engineer | **behoben in Runde 18** — Zone auf 20 px, ausdrückliches Nein für Eingabefelder und waagrecht rollende Hüllen, `preventDefault` nur noch in der Richtung, die etwas bewirkt. Zusätzlich öffnet die ganze Zeile das Detail. Geprüft: vier Urteile |
+
+### Ausdrücklich geprüft, kein Fund
+* **`vgSchluessel` kollidiert nicht.** Serverdaten tragen `roh.id`; lokal ist
+  `hh_archiv` nach `mode_tag` und `hh_keller_v12` nach Modus verschlüsselt.
+* **`nurImBrowser()` stürzt nicht ab** — gegen sechs Sorten Schrott im
+  `localStorage` geprüft, je 0 Ergebnisse, keine Ausnahme.
+* **`drucke()` ist sauber** — Cmd-P ohne Knopf druckt weiter die Seite, nach
+  `afterprint` ist alles geräumt, die 180-s-Frist kann keinen jüngeren Druck
+  abräumen.
+* **Gegenprobe Bericht 37 geht auf**: 48 Positionen, 145 Stück, 602,50 €.
+  Der Wareneingang rechnet richtig: 2×6 + 2×24 + 12 = 72 Flaschen.
+* **Regeln**: vier Dateien in `public/`, `VERSION` v56 → v57, Gestaltungsschicht
+  wortgleich, keine neue Abhängigkeit.
+
+### Ungeprüft geblieben
+* Echtes Safari/iOS: ob `preventDefault()` die Zurück-Geste wirklich nimmt und
+  ob `window.print()` nach 80 ms Verzug dort noch als Nutzergeste gilt.
+* Notch/Safe-Area und die eingeblendete Tastatur.
+
+## Zweite Jagd nach Runde 18 (Stand `9717c6f`)
+
+**1 × A, 4 × B, 4 × C.** Der A-Fund ist der A-Fund der ersten Jagd, durch eine
+zweite Tür: Der Vorbehaltskasten kannte nur die drei Lücken, die sich selbst
+melden — die zwei stummen zählte niemand.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgestellt / gerechnet | Nächste Rolle | Stand |
+|---|---|---|---|---|---|---|
+| A | 18 | **`halbeRechnung` war falsch, sobald Verkauf STILL verschwand.** Ein Kassenname auf „Ignorieren" und eine Rezeptzutat mit `0 ml` nehmen den Verkauf aus der Rechnung, ohne eine Spur in `a` zu hinterlassen. Der Kasten schwieg, und die Deutungsspalte druckte wieder „Vorrat aufgebaut oder **Schwund**". | `public/leitung.html` (`abgleich`, Zweige `ignoriert` und Rezept) gegen `druckDifferenzen` (`vorbehalte`) | Bericht 37, ein Z-Bericht, `spanne=1`, alles auf „Ignorieren" ausser Cola: `a.offen=0`, `a.ohneGroesse=0`, `a.berichte=a.spanne` → **kein Vorbehalt**, Blatt druckt „Leindl · Langenlois · Verkauft 0 · Geholt 3 · +3 · Vorrat aufgebaut oder Schwund". Der Verkauf dieser Weine ist nicht null — er ist ignoriert. Zweiter Weg: Rezeptur mit `0 ml` → `6 × 0 / 350 = 0` meldet „gerechnet". Kein erfundener Fall: „Ignorieren" ist der einzige Weg, einen Cocktail ohne Menge im Kassennamen aus dem roten Balken zu bekommen, und in Bericht 37 sind ~10 der 44 offenen Namen genau das. | software-engineer | **behoben in Runde 18** — `abgleich()` zählt `stkGesamt`/`stkGerechnet`/`stkIgnoriert` (additiv). Die erste Zeile des Kastens lautet „Von N verkauften Einheiten sind M in diese Rechnung eingegangen — K nicht" und ist gegen jeden künftigen stillen Weg dicht. Eine Rezeptzutat ohne Menge gilt nicht mehr als gerechnet, das Formular nimmt die 0 nicht mehr an. Das Wort „Schwund" steht in der Deutungsspalte überhaupt nicht mehr. Geprüft: drei Urteile |
+| B | 18 | **Bei OFFENER Leiste gab `randwisch()` Safari die Zurück-Geste am linken Rand zurück** — genau dort, wo der Daumen liegt, wenn die Schublade offen ist. Die Behebung der ersten Jagd hatte einen Schritt zu weit zurückgenommen. | `public/leitung.html` (`randwisch`, `if(hin>0 === offen())`) | 390 × 844, `navoffen` gesetzt, Wisch x=8 → x=160: `{verhindert:false}`. | software-engineer | **behoben in Runde 18** — behalten wird die Geste, wenn sie wirkt ODER am Rand beginnt. Geprüft: zwei Urteile (Mitte losgelassen, Rand abgefangen) |
+| B | 18 | **Das Detail aus „Nur auf diesem Gerät" wurde von jedem Tastendruck im Suchfeld der SERVERLISTE gelöscht** — während seine eigene Tabelle unverändert darunter stehenblieb. Ohne Wort, ohne Grund. | `public/leitung.html` (`vEingaenge`, Fremd-Abschnitt) | Ein Vorgang im `hh_archiv`, den der Server nicht kennt: „Ansehen" → Karte da; „Lena" ins Suchfeld → Karte weg, Fremdtabelle da. | software-engineer | **behoben in Runde 18** — eigene Fläche `#egFremdDetail`, eigener Merker `EGFREMD`, `malDetail(v, wohin)`. Geprüft: ein Urteil |
+| B | 18 | **`VERSION` in `sw.js` stand seit dem ersten Commit der Runde unverändert**, obwohl `leitung.html` sich danach zweimal geändert hatte. Offline hätte der Service Worker das Blatt OHNE Vorbehaltskasten ausgeliefert — den A-Fund der ersten Jagd. Regel aus `CLAUDE.md`, und die Unterlagen führten „v57" als geprüft. | `public/sw.js` | `git log -1 -- public/sw.js` → `dc4a068`; `leitung.html` danach `b5573ab`, `9717c6f`. | software-engineer | **behoben in Runde 18** — v58 |
+| B | 18 | **Der Kopfkasten behauptete weiter „Ein Plus heisst: mehr geholt als verkauft"** — derselbe falsche Satz, den die Behebung aus der Deutungsspalte genommen hatte, drei Zeilen über dem Kasten, der ihn widerruft. | `public/leitung.html` (`druckDifferenzen`, Kopf) | Im Ausdruck nachgelesen: drei Sätze, zwei Aussagen. | software-engineer | **behoben in Runde 18** — „mehr geholt, als die Rechnung an Verkauf kennt" |
+
+### C-Funde der zweiten Jagd
+Zwei sofort behoben: der 4-px-Streifen zwischen Inhaltsbeginn (16) und Randzone
+(20) gehört jetzt ausdrücklich der Randgeste (sonst blieb dort ein Loch, durch
+das Safari zurückblättert), und der Zeilenklick öffnet nichts mehr, wenn Text
+markiert ist. Zwei stehen im Backlog: `tr.klickbar` hat keinen Tastaturweg
+ausser dem Knopf, und `.b.klein` ist 36 px hoch — das steht in der GETEILTEN
+Gestaltungsschicht und muss in beide Dateien.
+
+### Was die zweite Jagd nachgerechnet und in Ordnung gefunden hat
+* Der Vorbehaltskasten zählt richtig: leeres Mapping + Bericht 37 →
+  `a.offen.length = 44`, 136 Stück; `teileOhneGroesse` → 4 / 9 Einheiten.
+  **136 + 9 = 145 = Gegenprobe des Berichts.** Der Bildschirm daneben sagt
+  dieselben Zahlen.
+* Der Kachel-Weg ist wirklich repariert (Karte bei `top = 215` statt 921).
+* `drucke()`: kein Horcher-Leck, kein jüngerer Druck wird abgeräumt.
+* Gestaltungsschicht zeichengleich; `tr.klickbar` und
+  `#druck .notiz.vorbehalt` stehen beide unterhalb der Trennmarke.
+
+## Dritte Jagd nach Runde 18 (Stand `1e8035b`)
+
+**1 × A, 4 × B, 3 × C.** Der A-Fund ist wieder derselbe — behoben wurde er beim
+zweiten Mal nur auf dem Papier.
+
+| Klasse | Runde | Fund | Datei:Zeile | Wie nachgerechnet | Stand |
+|---|---|---|---|---|---|
+| A | 18 | **Das Wort „Schwund" stand unverändert in der Deutungsspalte des MITTAGSBLICKS.** Die Behebung der zweiten Jagd hatte nur das Blatt erreicht. Und zwar für genau die Zeile, um die es ging: Ein Kassenname auf „Ignorieren" ruft `zaehlePos()` nie auf, der Artikel bekommt weder `unklar` noch `vorbehalt` und steht als volle, unkommentierte Abweichung da — samt roter Zahl in der Navigation. | `public/leitung.html` (`vHeute`, `td.deutung`) gegen `druckDifferenzen` | Bericht 37, Cocktails und Speisen auf „Ignorieren" (der beworbene Weg): Zeile `Leindl · Langenlois · Verkauft 0 · Geholt 3 · +3`, `unklar:null`, `vorbehalt:null` → die Deutungsspalte druckt wörtlich „mehr geholt als verkauft — Vorrat aufgebaut oder Schwund". **Zwei Deutungsspalten mit zwei Texten** — dasselbe Duplikatsmuster, das diese Datei schon dreimal eingeholt hat. | **behoben in Runde 18** — `const DEUTUNG` ist der eine Satz an der einen Stelle, Mittagsblick und Blatt rufen ihn, das Wort fällt überall weg. „Was noch fehlt" hat eine Zeile für ignorierte Kassennamen bekommen |
+| B | 18 | **`zaehlePos(x.id,false,"menge")` im neuen Rezeptzweig** — `zaehlePos` kennt genau einen Grundwert, `"ausschank"`, und wirft alles andere in „ohne bestätigte Größe". Die Zeile hätte zu einer bestätigten Größe behauptet, sie fehle; dieselbe Falschzuweisung hat die sechste Jagd in Runde 16 abgestellt. | `public/leitung.html` (`abgleich`, Rezeptzweig) gegen `zaehlePos` | Rezept `{id:"cola", ml:0}`, cola mit 350 ml bestätigt → `vorbehalt.cola = {ohne:1, gesamt:2, menge:0, gebinde:1}` → „1 ohne bestätigte Größe". | **behoben in Runde 18** |
+| B | 18 | **„Unvollständig" war dabei, der Normalzustand zu werden.** `draussen` zählte Speisen und Kaffee mit: Im bestmöglich gepflegten Zustand blieben von 145 Einheiten 99 „nicht in der Rechnung", davon 80 Rührei und Espresso. Jedes Blatt hätte ab jetzt „Diese Rechnung ist unvollständig" getragen — und ein Warnhinweis, der nie ausgeht, unterscheidet den Normalzustand nicht mehr vom Schaden. | `public/leitung.html` (`druckDifferenzen`) | Bericht 37 bestmöglich gepflegt: `stkGesamt 145`, `stkGerechnet 46`, `draussen 99`. | **behoben in Runde 18** — `ausgenommen` (Entscheidung, steht im Kasten ohne Alarm) und `luecke` (ungewollt, macht die Rechnung unvollständig) sind getrennt; der Kasten hat eine laute und eine leise Kopfzeile |
+| B | 18 | **Ein Z-Bericht mit null Positionen** ergab `stkGesamt 0`, `luecke 0` und damit keinen einzigen Vorbehalt — das Blatt druckte „+6" ohne jeden Hinweis. `ladeBerichte()` prüft nur `e.tag`, nicht die Positionen. | `public/leitung.html` (`druckDifferenzen`) | `positionen:[]`, spanne 1, Vorgang mit `wein:{w001:6}`. | **behoben in Runde 18** — eigener Vorbehalt: „Der Z-Bericht enthält keine einzige Position. Die Verkaufsseite ist damit nicht leer, sondern unbekannt." |
+| B | 18 | **Das Urteil, das den A-Fund der zweiten Jagd bewachen sollte, konnte nicht rot werden.** In „Weg 2" blieben zwei Kassennamen unzugeordnet — der Vorbehalt kam von dort, nicht vom 0-ml-Zweig. Nimmt man den ganzen Zweig aus `abgleich()` heraus, bleibt das Urteil grün. | `tests/ui-runde18.cjs` | Nachgestellt. | **behoben in Runde 18** — lückenloses Mapping, das Urteil liest `stkGesamt`/`stkGerechnet`/`luecke` direkt und führt die Gegenprobe (dieselbe Rezeptur MIT Menge) mit. Dazu ein Aufbau, bei dem wirklich nichts fehlt |
+
+### C-Funde der dritten Jagd — beide sofort behoben
+* `randwisch()` nahm am linken Rand auch die Geste nach LINKS und tat dann
+  nichts. Safaris Zurück-Geste am linken Rand ist ein Wisch nach RECHTS; nach
+  links gehört die Geste der Seite darunter.
+* Über einem Eingabefeld blieb die Zurück-Geste am Rand offen, weil
+  `eigenerBedarf` das Feld vor `amRand` prüfte — dieselbe Lücke, die für die
+  offene Leiste gerade geschlossen worden war. Am Rand gewinnt jetzt immer die
+  Randgeste.
+
+### Was die dritte Jagd nachgerechnet und in Ordnung gefunden hat
+* Kein Pfad schreibt in `verk`, ohne `stkGerechnet` zu erhöhen, und keiner
+  umgekehrt. `draussen` kann weder negativ noch NaN werden.
+* Derselbe Kassenname an mehreren Tagen wird als Einheiten summiert, nicht als
+  Namen; `ignoriert[]` fasst nach Namen zusammen wie `offen` und `ohneGroesse`.
+* Die Gründe im Vorbehaltskasten sind disjunkt und addieren sich genau zu der
+  Zahl darüber — der Kasten ist in sich widerspruchsfrei.
+* `merkeOhneGroesse(p, l.id, {fehlt:"ausschank"}, true)` — viertes Argument
+  richtig, `r.forEach(…)` für alle Zutaten richtig, keine Division durch null.
+* `malDetail(v, wohin)`: keine doppelten Kennungen mehr, `EGFREMD` und
+  `EGOFFEN` getrennt, die Filterfelder rufen `malListe()` statt `zeichne()`.
+* Gegenprobe Bericht 37 geht auf: 48 Positionen, 145 Stück, 602,50 €.
+
+### Ein Befund über den Prüfstand selbst
+Die Kassennamen des Prüfstands trugen keine Einheit („Cola 0,33"). `flaschen()`
+liest die Ausschankmenge über `mlAusText(p.name)` — ohne Einheit findet es
+nichts, und **die Verkaufsseite blieb im ganzen Prüfstand leer**. Jede
+Differenz bestand nur aus der Entnahme. Seit dieser Jagd tragen die Namen eine
+Einheit, und das Blatt zeigt endlich auch Zeilen mit echtem Verkauf.
+
+## Vierte Jagd nach Runde 18 (Stand `f41c7dc`)
+
+**1 × A, 3 × B, 6 × C.** Der A-Fund ist zum vierten Mal derselbe — eine
+Wahrheit, mehrere Leser, und die Behebung landet jedes Mal nur bei den Lesern,
+die in der Kritik standen. Diesmal sind es die beiden, die niemand genannt
+hatte: der Bildschirm „Verkauf ↔ Fassung" und die CSV-Ausfuhr.
+
+| Klasse | Runde | Fund | Wie nachgerechnet | Stand |
+|---|---|---|---|---|
+| A | 18 | **Bildschirm und CSV kennen „Ignorieren" nicht — die grüne Plakette „stimmt" steht über einer Rechnung, in der zwei Drittel des Verkaufs fehlen.** `stkGesamt/stkGerechnet/stkIgnoriert` waren an zwei von vier Lesern angeschlossen. | Ein Z-Bericht, 1 von 1 eingelesen. „Cola 0,33 l" ×3 zugeordnet, „Cola Sonderausschank 0,33 l" ×6 auf „Ignorieren". Keller gibt 3 Flaschen. **Wahr: 9 verkauft, 3 geholt → −6.** Gezeigt: `Cola · 3 · 3 · 0 · `**`stimmt`** in Grün, keine Hinweise; die CSV wortgleich. `abgleich()` weiss es die ganze Zeit: `stkGesamt 9 · stkGerechnet 3 · stkIgnoriert 6`. | **teilweise behoben in Runde 18** — Bildschirm, CSV, Kachel und Blatt benennen die ignorierten Namen jetzt alle. **Offen bleibt die Plakette der EINZELNEN Zeile**: Welcher Artikel hinter einem ignorierten Kassennamen steckt, ist nicht bestimmbar; ein pauschales Abwerten aller Zeilen träfe jeden Tag, an dem Speisen ignoriert sind. Steht als **hoch** im Backlog, mit zwei Wegen zur Entscheidung |
+| B | 18 | Die Kachel „Auffällige Differenzen" meldete im selben Fall „0 · Verkauf und Entnahme decken sich" in Grün — gegen den Kommentar drei Zeilen darüber, der wörtlich verlangt: „Eine grüne Null darf nur dastehen, wenn auch wirklich verglichen wurde." | Gemessener Kacheltext. | **behoben in Runde 18** — die Kachel nennt „N ignoriert (M Einheiten)" |
+| B | 18 | `randwisch()` gab Safari bei OFFENER Leiste die Zurück-Geste ab x = 21 px zurück — der B-Fund der zweiten Jagd, um fünf Pixel verschoben. Bei offener Leiste liegt das Blatt über 0–280 px; der Grund für die schmale Zone gilt dort gar nicht. | 390 × 844, Blatt `left 0 · right 280`, Wisch ab x = 25 → `verhindert:false`. | **behoben in Runde 18** — bei offener Leiste zählt die Breite des Blattes als Rand (`offsetWidth`, nicht die animierte Kante). Geprüft: zwei Urteile |
+| B | 18 | **Der Prüfstand bewachte drei der fünf Änderungen nicht.** Mutationsprobe: `zaehlePos(…,"ausschank")` zurückgedreht → 43 grün. Ignorier-Zeile entfernt → 43 grün. `!(amRand && hin>0)` zurück → 43 grün. `amRand`-Vorrang zurück → 43 grün. | Mutationsprobe auf einer Kopie. | **behoben in Runde 18** — acht neue Urteile, jedes an genau der Stelle, die es bewacht. 51 Urteile, 0 rot |
+
+### C-Funde der vierten Jagd
+Zwei sofort behoben (falscher Numerus in beiden neuen Texten, fehlender
+Zeitraum in der Zeile „Was noch fehlt"). Vier stehen im Backlog: eine Rezeptur
+schattet „Ignorieren" still ab; am Rand gewinnt die Randgeste auch über dem
+Suchfeld (bewusst); ein einzelner leerer Bericht in einem Fenster mit sieben
+fällt stumm durch; und für die VERSION-Regel gibt es keinen Wächter.
+
+### Beobachtung ohne Klasse
+Ein einzelner `npm test`-Lauf meldete einmal `443/1`; in über zwanzig weiteren
+Läufen nicht wiederholbar. Zwölf Prüfdateien hängen an `Date.now()`. Wer Zeit
+hat, wiederholt den Lauf um Mitternacht (Wien). Steht im Backlog.

@@ -585,6 +585,16 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
   .g4{grid-template-columns:repeat(2,1fr)}
   /* Waagrecht scrollen statt umbrechen, erste Spalte bleibt stehen. */
   .tabhuelle{max-height:none;overflow:auto;-webkit-overflow-scrolling:touch}
+  /* B3 (Runde 18) · AUSSER bei zwei Spalten. Die Mindestbreite von 560px
+     ist für die breiten Tabellen gedacht; eine Tabelle „Position |
+     Flaschen" schob damit am Handy genau die Zahl aus dem Bild — und das
+     ist der Grund, aus dem das Detail im Speicher „nur Positionen, keine
+     Anzahl" zeigte. Die Zahl stand immer da, nur 170px rechts daneben.
+     Zwei Spalten passen auf 390px; sie bekommen deshalb keine
+     Mindestbreite und keine klebende erste Spalte. */
+  .tabhuelle.schmal table{min-width:0}
+  .tabhuelle.schmal th:first-child,.tabhuelle.schmal td:first-child{
+    position:static;box-shadow:none}
   /* Nur Tabellen in einer Scrollhuelle duerfen breiter sein als der Schirm.
      Die Quelle-Tabelle in den Einstellungen steht in einer .karte ohne
      Scrollflaeche und schob sonst die ganze Seite auf 597px. */
@@ -603,6 +613,81 @@ textarea{width:100%;min-height:150px;padding:var(--space-3);
 }
 @media(max-width:560px){
   .g4,.g3{grid-template-columns:1fr}
+}
+
+/* ═══════════════ Randwisch ═══════════════
+   B4 (Runde 18) · Chrome und die Android-Browser blättern bei einem
+   waagrechten Überzug über den Rand hinaus zurück. `contain` nimmt
+   genau das weg und lässt Scrollen unberührt. Safari hört nicht darauf —
+   dort erledigt es der Horcher `randwisch()` im Skript. */
+html{overscroll-behavior-x:contain}
+
+/* ═══════════════ Kachel als Knopf ═══════════════
+   B2 (Runde 18) · Die vier Kacheln des Mittagsblicks waren reine
+   Anzeigen. „7 auffällige Differenzen" ist aber genau die Zeile, auf die
+   getippt wird — und es passierte nichts. Wer ein Ziel hat, ist jetzt
+   ein <button> und sagt am Fuss, wohin er führt. Wer keines hat (weil es
+   nichts zu zeigen gibt), bleibt ein <div> und sieht unverändert aus. */
+button.kpi{display:flex;flex-direction:column;width:100%;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;-webkit-appearance:none;appearance:none;
+  transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+button.kpi:hover{border-color:var(--fg-subtle);box-shadow:0 2px 10px rgba(28,34,32,.10)}
+button.kpi:active{box-shadow:none}
+/* `margin-top:auto` hält die Zeile am Fuss: Die vier Kacheln stehen
+   nebeneinander und sind verschieden hoch gefüllt — ohne das säße der
+   Weg bei jeder woanders. */
+.kpi .weiter{margin-top:auto;padding-top:14px;color:var(--fg-subtle);
+  text-transform:none;letter-spacing:0;font-size:var(--text-sm)}
+
+/* Eine Zeile, die sich öffnen lässt, sagt das auch. */
+tr.klickbar{cursor:pointer}
+tr.klickbar:hover td{background:var(--surface-2)}
+
+/* ═══════════════ Druckblatt ═══════════════
+   B5 (Runde 18) · Siehe `drucke()` im Skript: Das PDF macht der Browser,
+   diese Seite macht das Blatt. `#druck` ist am Schirm nie zu sehen.
+   Gedruckt wird NUR, wenn `body.drucken` gesetzt ist — ein Druck mit
+   Befehlstaste-P ohne Knopf bringt weiter die Seite selbst aufs Papier
+   und nicht ein leeres Blatt. */
+#druck{display:none}
+@media print{
+  @page{margin:16mm 14mm}
+  body.drucken{background:#fff}
+  body.drucken>*{display:none}
+  body.drucken>#druck{display:block;color:#000;
+    font:12pt/1.45 var(--font-body,Georgia,"Times New Roman",serif)}
+  #druck h1{font-size:19pt;line-height:1.15;margin:0 0 2mm;letter-spacing:-.01em}
+  #druck h2{font-size:12.5pt;margin:7mm 0 2mm;padding-bottom:1mm;
+    border-bottom:.8pt solid #000;break-after:avoid;page-break-after:avoid}
+  #druck p{margin:0 0 3mm}
+  #druck .druckkopf{border-bottom:1.2pt solid #000;padding-bottom:3mm;margin-bottom:5mm}
+  #druck .druckhaus{font-size:9pt;letter-spacing:.09em;text-transform:uppercase;color:#333}
+  #druck .druckunter{font-size:10.5pt;margin-top:1mm}
+  #druck .druckzeit{font-size:9pt;color:#555;margin-top:2mm}
+  #druck .notiz{border:.6pt solid #000;padding:2.5mm 3mm;margin:0 0 5mm}
+  /* Der Vorbehaltskasten muss beim Überfliegen auffallen — er ist der
+     Unterschied zwischen einer Messung und einer halben Rechnung. */
+  #druck .notiz.vorbehalt{border-width:1.4pt;margin-top:-3mm}
+  #druck .notiz.vorbehalt ul{margin:1.5mm 0 2mm;padding-left:6mm}
+  #druck .notiz.vorbehalt li{margin:.8mm 0}
+  #druck table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:3mm}
+  /* Kein Flächenton auf Papier: die Bildschirmregel färbt `th` und die
+     Summenzeile, und eine graue Fläche über die ganze Blattbreite kostet
+     Toner, ohne etwas zu sagen. */
+  #druck th,#druck td{border-bottom:.4pt solid #aaa;padding:1.5mm 2mm;
+    text-align:left;vertical-align:top;background:none;box-shadow:none}
+  #druck th{border-bottom:.8pt solid #000;font-weight:700;font-size:9.5pt;
+    text-transform:uppercase;letter-spacing:.05em}
+  #druck th.r,#druck td.r{text-align:right;font-variant-numeric:tabular-nums;
+    white-space:nowrap}
+  #druck tr{break-inside:avoid;page-break-inside:avoid}
+  #druck thead{display:table-header-group}
+  #druck .zwt td{font-weight:700;border-top:.8pt solid #000;border-bottom:none;
+    background:none;text-transform:none;letter-spacing:0}
+  #druck .plus{font-weight:700}
+  #druck .mini{font-size:9pt;color:#444}
+  #druck .fuss{margin-top:8mm;padding-top:2mm;border-top:.4pt solid #aaa;
+    font-size:9pt;color:#444}
 }
 
 </style>
@@ -1633,6 +1718,25 @@ const vorbehaltSatz = v => {
    die App hat ihn übernommen und als „mind." ausgegeben, und dort tat er
    weh. Der Satz steht berichtigt, damit ihn niemand ein zweites Mal
    abschreibt. */
+/* NACHTRICHTIGUNG (dritte Jagd · A): Diese Seite hatte ZWEI
+   Deutungsspalten mit zwei Texten — `vHeute` (`.deutung`) und das
+   Druckblatt. Behoben wurde nur das Blatt; der Mittagsblick, den der
+   Kommentar daneben selbst „der Schirm, den die Leitung morgens zuerst
+   sieht" nennt, druckte weiter „Vorrat aufgebaut oder Schwund".
+
+   Und zwar für genau die Zeile, um die es geht: Ein Kassenname auf
+   „Ignorieren" ruft `zaehlePos()` nie auf, der Artikel bekommt also
+   weder `unklar` noch `vorbehalt` und steht als volle, unkommentierte
+   Abweichung da.
+
+   Das Wort fällt deshalb ÜBERALL weg, nicht nur auf Papier. Ob eine
+   Flasche fehlt oder im Vorrat steht, entscheidet ein Mensch im Keller;
+   die Rechnung kann es nicht wissen, solange „Ignorieren" ein
+   vollwertiger Zustand ist. Ein Satz, eine Stelle. */
+const DEUTUNG = r => r.diff>0
+  ? "mehr geholt als verkauft — Vorrat aufgebaut oder im Keller nachsehen"
+  : "mehr verkauft als geholt — Vorrat wird abgebaut";
+
 const BEFUND = r => Math.abs(r.diff)<0.5
   ? (r.vorbehalt ? {w:"unvollständig", k:"p-grau"} : {w:"stimmt", k:"p-ok"})
   : Math.abs(r.diff)<2 ? {w:"kleine Abweichung", k:"p-warn"}
@@ -1644,6 +1748,23 @@ function abgleich(tag, spanne){
   const imFenster = t => t>=von && t<=bis;
 
   const verk={}, offen=[], ohneGroesse=[], berichte=[];
+  /* NACHTRICHTIGUNG (zweite Jagd nach Runde 18 · A): Bis hierher zählte
+     nur, was sich selbst meldet — fehlende Berichte, offene Namen,
+     fehlende Gebindegrössen. Zwei Wege nehmen den Verkauf aber STILL aus
+     der Rechnung, und beide sind Alltag:
+       · „Ignorieren" ist ein vollwertiger Zustand (`vZuordnung` bewirbt
+         ihn ausdrücklich) und der einzige Weg, einen Cocktail ohne Menge
+         im Kassennamen aus dem roten Balken zu bekommen. Seine Flaschen
+         kommen trotzdem aus dem Keller.
+       · Eine Rezeptzutat mit 0 ml rechnet 6 Gläser zu 0 Flaschen und
+         meldet „gerechnet".
+     In beiden Fällen stand auf dem Blatt für die Gruppe „Verkauft 0 ·
+     Geholt 3 · +3 · Vorrat aufgebaut oder Schwund". Deshalb wird jetzt
+     schlicht gezählt, wie viele der verkauften EINHEITEN es überhaupt in
+     die Rechnung geschafft haben — unabhängig vom Grund. Diese eine Zahl
+     ist gegen jeden künftigen stillen Weg dicht. */
+  let stkGesamt=0, stkGerechnet=0, stkIgnoriert=0;
+  const ignoriert=[];
   /* Artikel, deren VERKAUF in diesem Zeitraum nicht bestimmbar ist.
      Für sie gibt es keine Differenz und keine Deutung — die Entnahme
      steht da, weil sie bekannt ist, aber ohne Urteil.
@@ -1698,6 +1819,7 @@ function abgleich(tag, spanne){
   Object.keys(ZBER).filter(imFenster).sort().forEach(t=>{
     const z=ZBER[t]; berichte.push(z);
     z.positionen.forEach(p=>{
+      stkGesamt+=(+p.anzahl||0);
       const r=REZ[p.name];
       if(r && r.length){                       /* zerlegtes Mischgetränk */
         /* Auch hier gilt: ohne bestätigtes Gebinde keine Flaschenzahl.
@@ -1712,8 +1834,24 @@ function abgleich(tag, spanne){
           r.forEach(x=>zaehlePos(x.id,false,"gebinde"));
           return;
         }
+        /* Eine Zutat ohne Menge ist keine Menge. `Math.max(0, …)` im
+           Formular lässt die 0 zu, und 6 × 0 / 350 = 0 sähe wie ein
+           gerechneter Verkauf von null aus (zweite Jagd · A). */
+        if(r.some(x=>!(+x.ml>0))){
+          const l=r.find(x=>!(+x.ml>0));
+          merkeOhneGroesse(p, l.id, {fehlt:"ausschank"}, true);
+          /* NACHTRICHTIGUNG (dritte Jagd · B): Hier stand `"menge"`.
+             `zaehlePos` kennt genau einen Grundwert, `"ausschank"`, und
+             wirft alles andere in den Topf „ohne bestätigte Größe" —
+             die Zeile hätte zu einer bestätigten Größe behauptet, sie
+             fehle. Dieselbe Falschzuweisung hat die sechste Jagd in
+             Runde 16 abgestellt. */
+          r.forEach(x=>zaehlePos(x.id,false,"ausschank"));
+          return;
+        }
         r.forEach((x,i)=>{ verk[x.id]=(verk[x.id]||0)+(+p.anzahl||0)*x.ml/gebs[i].ml;
           zaehlePos(x.id,true); });
+        stkGerechnet+=(+p.anzahl||0);
         return;
       }
       const zu=zuordnung(p);
@@ -1739,10 +1877,17 @@ function abgleich(tag, spanne){
         else offen.push({name:p.name, anzahl:(+p.anzahl||0), umsatz:(+p.umsatz||0)});
         return;
       }
-      if(zu.status==="ignoriert") return;
+      if(zu.status==="ignoriert"){
+        stkIgnoriert+=(+p.anzahl||0);
+        const i=ignoriert.find(o=>o.name===p.name);
+        if(i) i.anzahl+=(+p.anzahl||0);
+        else ignoriert.push({name:p.name, anzahl:(+p.anzahl||0)});
+        return;
+      }
       const f=flaschen(p, zu.id);
       if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false,f.fehlt); return; }
       verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
+      stkGerechnet+=(+p.anzahl||0);
     });
   });
   const z=berichte.length?berichte[berichte.length-1]:null;
@@ -1791,7 +1936,10 @@ function abgleich(tag, spanne){
                  || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
   return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, von, bis, spanne,
-          berichte:berichte.length};
+          berichte:berichte.length,
+          /* Die eine Zahl, an der ablesbar ist, wie viel von der
+             Verkaufsseite überhaupt in der Rechnung steht. */
+          ignoriert, stkGesamt, stkGerechnet, stkIgnoriert};
 }
 
 /* `ohneGroesse` führt an drei verschiedene Orte, und wer sie in einen
@@ -1877,7 +2025,8 @@ const SEITEN=[
   {id:"bestellen", t:"Nachbestellen"},
   {id:"getraenke", t:"Getränke"},
   {id:"zaehlliste",t:"Zählliste"},
-  {id:"speicher",  t:"Speicher",          grp:"Nachschlagen"},
+  {id:"eingaenge", t:"Eingänge",         grp:"Nachschlagen"},
+  {id:"speicher",  t:"Speicher"},
   {id:"zuordnung", t:"Zuordnung"},
   {id:"rezepte",   t:"Rezepturen"},
   {id:"team",      t:"Mitarbeiter",       grp:"Verwaltung"},
@@ -1901,6 +2050,7 @@ function zaehler(id){
   if(id==="bestellen"){ return bestellliste().length||null; }
   if(id==="zaehlliste"){ return zaehlliste().length||null; }
   if(id==="speicher"){ return VORGAENGE.length||null; }
+  if(id==="eingaenge"){ return VORGAENGE.length||null; }
   if(id==="abgleich"){ const a=abgleich(t, SPANNE);
     /* Ohne Z-Bericht im Fenster ist jede „Differenz" die reine Entnahme.
        Eine rote Zahl in der Navigation behauptete dann einen Befund, den
@@ -2010,16 +2160,28 @@ function vHeute(m){
   /* Der große Slot ist für Ziffern gebaut. Ein grünes „eingegangen" darin
      wiegt schwerer als die rote 7 daneben — obwohl nur die 7 eine Handlung
      auslöst. Zustände bekommen deshalb die schmale Variante. */
-  const kachel=(t,w,u,kl,status)=>
-    `<div class="kpi ${kl||""}${status?" kpi--status":""}"><span>${t}</span>`+
-    `<b>${w}</b><small>${u||"&nbsp;"}</small></div>`;
+  /* B2 (Runde 18) · Jede Kachel, hinter der etwas liegt, ist ein Knopf
+     und sagt am Fuss, wohin sie führt. Das ist keine Verzierung: Alle
+     vier beantworten eine Frage mit einer Zahl („7"), und die nächste
+     Frage ist immer dieselbe — WELCHE sieben? Bis Runde 18 musste man
+     dafür das Menü links lesen und raten, welcher Punkt gemeint ist. */
+  const kachel=(t,w,u,kl,status,ziel,fuehrt)=>{
+    const innen=`<span>${t}</span><b>${w}</b><small>${u||"&nbsp;"}</small>`
+      +(ziel?`<span class="weiter">${esc(fuehrt)} &rsaquo;</span>`:"");
+    const klassen=`kpi ${kl||""}${status?" kpi--status":""}`;
+    return ziel
+      ? `<button type="button" class="${klassen}" data-ziel="${esc(ziel)}">${innen}</button>`
+      : `<div class="${klassen}">${innen}</div>`;
+  };
   k.innerHTML=
     kachel("Tagesfassung", fassung?"eingegangen":"fehlt",
       fassung?esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein":"noch keine Fassung für diesen Tag",
-      fassung?"ok":"warn", true)+
+      fassung?"ok":"warn", true,
+      "fassung", fassung?"Positionen und Mengen ansehen":"Frühere Tagesfassungen")+
     kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE+" Tagen":"fehlen",
       a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
-      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true)+
+      a.berichte>=SPANNE?"ok":a.berichte?"warn":"bad", true,
+      "zbericht", a.z?"Eingelesene Positionen ansehen":"Bericht einlesen")+
     /* Eine grüne Null heißt „geprüft, alles in Ordnung". Ohne Z-Bericht im
        Fenster ist aber nichts geprüft, und ohne Kellerzählung ist kein
        Bestand berechenbar (§4.3: ohne Zählung kein Bestand, nur Bewegung) —
@@ -2031,19 +2193,52 @@ function vHeute(m){
        geprüft — das steht dann da, statt „decken sich". */
     kachel("Auffällige Differenzen", a.berichte?grob.length:"—",
       a.berichte
-        ?(grob.length
+        ?((grob.length
           ?("über "+SPANNE+" Tage nicht ausgeglichen"+(ohneUrteil?" · "+ohneUrteil+" ohne Abgleich":""))
           :ohneUrteil
             ?(ohneUrteil+" Positionen ohne Abgleich — "+esc(gruendeSatz))
             :"Verkauf und Entnahme decken sich")
+          /* NACHTRICHTIGUNG (vierte Jagd · B): Eine grüne Null darf nur
+             dastehen, wenn wirklich verglichen wurde — das verlangt der
+             Kommentar zwei Absätze weiter oben, und für den vierten Weg
+             („Ignorieren") galt es noch nicht. */
+          +(a.ignoriert&&a.ignoriert.length
+            ?" · "+a.ignoriert.length+" ignoriert ("+num(a.stkIgnoriert)+" Einheiten)":""))
         :"kein Z-Bericht im Zeitraum — nicht vergleichbar",
-      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"")+
+      a.berichte?(grob.length>4?"bad":(grob.length||ohneUrteil)?"warn":"ok"):"", false,
+      "diff", a.berichte?"Welche Positionen, welche Differenz":"Zum Abgleich")+
     kachel("Nachbestellen", B.hat?best.length:"—",
       B.hat
         ?(best.length?("Reichweite unter "+EINST.reichweite+" Tagen"):"nichts unter der Schwelle")
         :"keine Kellerzählung — Bestand nicht berechenbar",
-      B.hat?(best.length?"warn":"ok"):"");
+      B.hat?(best.length?"warn":"ok"):"", false,
+      "bestellen", B.hat?"Welche Weine, wie viele Kisten":"Zum Bestellvorschlag");
   m.appendChild(k);
+
+  /* Wohin die vier Kacheln führen. Kein Ziel ist eine Sackgasse: Fehlt
+     die Tagesfassung, führt die Kachel auf die Liste der FRÜHEREN
+     Tagesfassungen — dort steht, wann zuletzt eine kam. Fehlt der
+     Z-Bericht, führt sie dorthin, wo er eingelesen wird. */
+  k.querySelectorAll("[data-ziel]").forEach(b=>b.onclick=()=>{
+    const z=b.dataset.ziel;
+    if(z==="fassung"){
+      EGFILTER={modus:fassung?"":"tag", wer:"", q:""};
+      EGOFFEN=fassung?vgSchluessel(fassung):null;
+      SEITE="eingaenge";
+    }
+    else if(z==="zbericht"){ vImport.zeig=(a.z&&a.z.tag)||tag; SEITE="import"; }
+    else if(z==="diff"){ vAbgleich.tag=tag; SEITE="abgleich"; }
+    else if(z==="bestellen"){ SEITE="bestellen"; }
+    document.body.classList.remove("navoffen");
+    zeichne(); window.scrollTo(0,0);
+    /* NACHTRICHTIGUNG (Jagd nach Runde 18 · B): `scrollTo(0,0)` ist für
+       einen Seitenwechsel richtig und für ein aufgeschlagenes Detail
+       falsch. Bei 390 px lag die Karte 921 px unter dem Falz — die
+       Kachel versprach „Positionen und Mengen ansehen" und zeigte eine
+       Liste. Ist ein Detail offen, gewinnt es. */
+    const d=$("#egDetail .karte");
+    if(d) d.scrollIntoView({behavior:"smooth", block:"start"});
+  });
 
   /* Was heute noch fehlt */
   const fehlt=[];
@@ -2086,6 +2281,19 @@ function vHeute(m){
       +" ("+einh(t.stkAusschank)+") sagen nicht, wie viel ausgeschenkt wurde"+nix
       +" Bestätigen hilft hier nicht; es braucht einen Kassennamen mit Menge oder eine Rezeptur.");
   }
+  /* NACHTRICHTIGUNG (dritte Jagd · A): „Was noch fehlt" kannte keine
+     Zeile für ignorierte Kassennamen — dabei ist „Ignorieren" der
+     einzige Weg, einen Cocktail ohne Menge im Namen aus dem roten Balken
+     zu bekommen, und seine Flaschen kommen aus dem Keller. Die Zeile
+     steht bewusst hier und nicht bei den Abweichungen: Es ist eine
+     Entscheidung, kein Befund. */
+  if(a.ignoriert && a.ignoriert.length) fehlt.push(
+    a.ignoriert.length+(a.ignoriert.length===1?" Kassenname":" Kassennamen")
+    +" ("+num(a.stkIgnoriert)+" Einheiten) im Zeitraum "
+    +(a.ignoriert.length===1?"steht":"stehen")+" auf „Ignorieren“ und "
+    +(a.ignoriert.length===1?"zählt":"zählen")+" nicht als Verkauf — richtig für Speisen, "
+    +"Kaffee und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf, "
+    +"und seine Zeile unten sieht aus, als stimme sie.");
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else {
     /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
@@ -2126,7 +2334,7 @@ function vHeute(m){
         <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="deutung">${r.diff>0?"mehr geholt als verkauft — Vorrat aufgebaut oder Schwund":"mehr verkauft als geholt — Vorrat wird abgebaut"}${
+        <td class="deutung">${DEUTUNG(r)}${
           /* Auch hier gesagt: der Mittagsblick ist der Schirm, den die
              Leitung morgens zuerst sieht, und eine Differenz aus halb
              gerechnetem Verkauf darf dort nicht als ganze dastehen. */
@@ -2187,11 +2395,16 @@ function vAbgleich(m){
     <select id="selSpanne">${[1,7,14,30].map(n=>`<option value="${n}" ${n===SPANNE?"selected":""}>${n===1?"nur dieser Tag":n+" Tage"}</option>`).join("")}</select>
     <span class="mini">${a.berichte} Z-Bericht${a.berichte===1?"":"e"} im Zeitraum</span>
     <span class="rechts"></span>
-    <button class="b klein" id="bCsv">Als CSV</button>`;
+    <button class="b klein" id="bCsv">Als CSV</button>
+    <button class="b klein" id="bPdf">Differenzen als PDF</button>`;
   m.appendChild(w);
   $("#selTag").onchange=e=>{ vAbgleich.tag=e.target.value; zeichne(); };
   $("#selSpanne").onchange=e=>{ SPANNE=+e.target.value; zeichne(); };
   $("#bCsv").onclick=()=>csvAbgleich(tag,a);
+  /* B5 · Das Blatt für die Gruppe. Es druckt auch dann, wenn nichts
+     abweicht — „es geht auf" ist eine Nachricht, die verschickt werden
+     darf, und ein Knopf, der manchmal nichts tut, wird nicht benutzt. */
+  $("#bPdf").onclick=()=>druckDifferenzen(tag,a);
 
   if(!a.berichte){
     const s=document.createElement("section");
@@ -2211,6 +2424,23 @@ function vAbgleich(m){
       ${a.offen.length===1?"sein":"ihr"} Verkauf fehlt in dieser Rechnung.
       <button class="b klein" id="bZu" style="margin-left:8px">Jetzt zuordnen</button></div>`;
     m.appendChild(s); $("#bZu").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
+  }
+  /* NACHTRICHTIGUNG (vierte Jagd · A): Der vierte Weg, auf dem Verkauf
+     aus der Rechnung fällt, stand auf diesem Schirm nirgends. Er ist
+     nicht rot: „Ignorieren" ist für Speisen, Kaffee und Fassbier genau
+     richtig und der Alltag. Er steht hier, weil unter denselben Namen
+     auch ein Getränk aus dem Keller liegen kann — und dann trägt seine
+     Zeile eine grüne Plakette über einer halben Rechnung. */
+  if(a.ignoriert && a.ignoriert.length){
+    const s=document.createElement("section");
+    s.innerHTML=`<div class="hinweis">${a.ignoriert.length} Kassenname${a.ignoriert.length===1?"":"n"}
+      (${num(a.stkIgnoriert)} Einheiten) ${a.ignoriert.length===1?"steht":"stehen"} auf „Ignorieren“
+      im Zeitraum ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))} und
+      ${a.ignoriert.length===1?"zählt":"zählen"} nicht als Verkauf — richtig für Speisen, Kaffee
+      und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf hier, und seine
+      Zeile sieht aus, als stimme sie.
+      <button class="b klein" id="bIgn" style="margin-left:8px">Nachsehen</button></div>`;
+    m.appendChild(s); $("#bIgn").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
   }
   /* Der dritte Zustand: zugeordnet, aber die Größe ist nicht bestätigt.
      Bewusst NICHT rot und bewusst nicht in der Differenz — hier fehlt eine
@@ -2349,7 +2579,17 @@ function csvAbgleich(tag,a){
            ["Betriebstag",tag].map(e).join(";"),
            ["Zeitraum der Zahlen",a.von+" bis "+a.bis].map(e).join(";"),
            ["Spanne",a.spanne+(a.spanne===1?" Tag":" Tage")].map(e).join(";"),
-           ["Z-Berichte im Zeitraum",a.berichte+" von "+a.spanne].map(e).join(";"),"",
+           ["Z-Berichte im Zeitraum",a.berichte+" von "+a.spanne].map(e).join(";"),
+           /* NACHTRICHTIGUNG (vierte Jagd · A): Diese Datei wird
+              weitergereicht. Sie kannte zwei der vier Wege, auf denen
+              Verkauf aus der Rechnung fällt, und trug deshalb Zeilen mit
+              dem Befund „stimmt" über einer halben Rechnung. Jetzt steht
+              die Bilanz im Kopf, in Einheiten, wie sie die Kasse zählt. */
+           ["Verkaufte Einheiten im Zeitraum",num(a.stkGesamt||0)].map(e).join(";"),
+           ["davon in dieser Rechnung gerechnet",num(a.stkGerechnet||0)].map(e).join(";"),
+           ["davon auf Ignorieren",num(a.stkIgnoriert||0)].map(e).join(";"),
+           ["davon ohne Zuordnung oder ohne Größe",
+             num(Math.max(0,(a.stkGesamt||0)-(a.stkGerechnet||0)-(a.stkIgnoriert||0)))].map(e).join(";"),"",
            ["Artikel","Art","Verkauf Fl.","Entnahme Fl.","Differenz","Befund"].map(e).join(";")];
   /* Unklare Zeilen lassen Verkauf und Differenz LEER. Eine 0 in der
      Ausfuhr ist eine Zahl, mit der jemand weiterrechnet — und „0 verkauft,
@@ -2362,6 +2602,10 @@ function csvAbgleich(tag,a){
     ].map(e).join(";")));
   if(a.offen.length){ L.push("",["Ohne Zuordnung"].map(e).join(";"),["Kassenname","Anzahl"].map(e).join(";"));
     a.offen.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
+  if(a.ignoriert && a.ignoriert.length){
+    L.push("",["Auf Ignorieren — zählt nicht als Verkauf"].map(e).join(";"),
+           ["Kassenname","Anzahl"].map(e).join(";"));
+    a.ignoriert.forEach(p=>L.push([p.name,p.anzahl].map(e).join(";"))); }
   /* Ohne diesen Block sähe die Ausfuhr vollständig aus, obwohl ein Teil
      des Verkaufs mangels bestätigter Größe gar nicht gerechnet wurde. */
   /* Drei Zustände wie auf dem Schirm, nicht zwei (neunte Jagd · C): Die
@@ -2386,6 +2630,220 @@ function hol(name, inhalt, typ){
   const b=new Blob([inhalt],{type:typ+";charset=utf-8"}), u=URL.createObjectURL(b);
   const a=document.createElement("a"); a.href=u; a.download=name; a.click();
   setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+
+/* ── Druckblatt statt PDF-Bibliothek ─────────────────────────────────
+   B5 (Runde 18) · Verlangt war ein PDF je Vorgang und eines für die
+   Differenzen, zum Sichern und zum Verschicken in die WhatsApp-Gruppe.
+
+   Diese Seite baut KEIN PDF. Sie baut ein Blatt und übergibt es dem
+   Browser; das PDF macht der Browser:
+     · MacBook · Safari/Chrome: Drucken ▸ links unten „PDF" ▸ „Als PDF sichern"
+     · iPad/iPhone: Teilen ▸ Drucken ▸ Vorschau mit zwei Fingern aufziehen ▸ Teilen
+   Der Grund ist Regel 8: eine PDF-Bibliothek wäre eine neue Abhängigkeit
+   und ein Bauschritt, und sie wöge mehr als alles andere in dieser Datei.
+   Der Weg über den Druckdialog kostet nichts, funktioniert offline und
+   hängt an keiner Version, die veraltet.
+
+   `#druck` steht sonst auf `display:none` und ist leer; nur zwischen
+   Klick und `afterprint` trägt es Inhalt. Aufgeräumt wird über
+   `afterprint` — und zur Sicherheit über eine lange Frist, falls ein
+   Browser das Ereignis nicht schickt. Die Frist ist bewusst LANG: räumt
+   sie, während der Druckdialog noch offen steht, kommt ein leeres Blatt
+   aus dem Drucker. */
+let DRUCKLAUF=0;
+function drucke(titel, inhaltHtml, unterzeile){
+  let d=$("#druck");
+  if(!d){ d=document.createElement("div"); d.id="druck"; document.body.appendChild(d); }
+  d.innerHTML=`<div class="druckkopf">
+      <div class="druckhaus">Haus Hirt · Bad Gastein · Fassungstool</div>
+      <h1>${esc(titel)}</h1>
+      ${unterzeile?`<div class="druckunter">${unterzeile}</div>`:""}
+      <div class="druckzeit">Ausgedruckt ${esc(new Date().toLocaleString("de-AT"))}</div>
+    </div>`+inhaltHtml;
+  document.body.classList.add("drucken");
+  const lauf=++DRUCKLAUF;
+  const auf=()=>{
+    /* Der Horcher geht IMMER ab, auch wenn dieser Lauf nichts mehr zu
+       räumen hat — sonst sammelt sich bei jedem Druck einer mehr an. */
+    window.removeEventListener("afterprint",auf);
+    if(lauf!==DRUCKLAUF) return;           /* ein neuerer Druck läuft schon */
+    document.body.classList.remove("drucken"); d.innerHTML="";
+  };
+  window.addEventListener("afterprint",auf);
+  setTimeout(auf, 180000);
+  /* Ein Atemzug, damit der Browser das neue Blatt gesetzt hat, bevor er
+     es abbildet — Safari druckte sonst den Stand von davor. */
+  setTimeout(()=>window.print(), 80);
+}
+
+/* Ein Vorgang als Blatt: Kopf, Notiz, jede Mengenliste mit Summe. */
+function druckVorgang(v){
+  const B=vgBloecke(v);
+  const tab=b=>{
+    const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
+                   .sort((x,y)=>(+b.o[y]||0)-(+b.o[x]||0));
+    return `<h2>${esc(b.t)}</h2><table><thead><tr>
+      <th>Position</th><th class="r">Flaschen</th></tr></thead><tbody>
+      ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r">${num(b.o[k])}</td></tr>`).join("")}
+      <tr class="zwt"><td>Summe · ${ks.length} Position${ks.length===1?"":"en"}</td>
+        <td class="r">${num(summe(b.o))}</td></tr></tbody></table>`;
+  };
+  drucke((MODUSNAME[v.mode]||v.mode)+" · "+deTag(v.tag),
+    (v.notiz?`<div class="notiz"><b>Notiz aus dem Keller:</b> ${esc(v.notiz)}</div>`:"")
+    + (B.length?B.map(tab).join("")
+       :`<p>Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</p>`)
+    + `<div class="fuss">Quelle der Zahlen: ${esc(QUELLE)}.${
+         /* Der Satz stand auf JEDEM Blatt, auch auf einer Lieferung ohne
+            eine einzige Zählung (Jagd nach Runde 18 · C). */
+         B.some(x=>x.art==="zaehlung")
+           ?" Gezählte Bestände sind Ist-Stände, keine Entnahme."
+           :""} Dieses Blatt ist ein Auszug — die Wahrheit steht im Fassungstool.</div>`,
+    esc(v.name||"ohne Namen")+(v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):"")
+      +" · "+(v.fertig?"abgeschlossen":"läuft noch"));
+}
+
+/* Das Blatt für die Gruppe: was Verkauf und Fassung NICHT zur Deckung
+   bringt. Bewusst ohne Preise und ohne Umsatz — es geht in eine
+   WhatsApp-Gruppe, in der nicht alle alles sehen müssen. */
+function druckDifferenzen(tag, a){
+  const auf=a.zeilen.filter(r=>!r.unklar && Math.abs(r.diff)>=1)
+                    .sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
+  const ohne=a.zeilen.filter(r=>r.unklar);
+  const plus=auf.filter(r=>r.diff>0), minus=auf.filter(r=>r.diff<0);
+
+  /* NACHTRICHTIGUNG (Jagd nach Runde 18 · A): Dieses Blatt trug die
+     Vorbehalte des Bildschirms nicht mit — und ist genau das Blatt, das
+     aus dem Haus geht. Der Bildschirm sagt über derselben Tabelle drei
+     Dinge, die das Papier verschwieg:
+       · wie viele Z-Berichte im Zeitraum FEHLEN (`vAbgleich`, `:2315`),
+       · wie viele Kassennamen keinem Artikel zugeordnet sind, deren
+         Verkauf also gar nicht in der Rechnung steht (`:2321`),
+       · wie viele zugeordnete Namen ohne bestätigte Größe dastehen.
+     Mit dem Mapping, wie es live steht, ist das kein Randfall: In
+     Bericht 37 sind 136 von 145 verkauften Stück nicht zugeordnet.
+     „Verkauft 0 · Geholt 6 · +6 · Schwund" ist dann keine Messung,
+     sondern eine Lücke mit einem Vorwurf daneben.
+     Deshalb: Die Vorbehalte stehen im Kopf, und solange einer von ihnen
+     gilt, fällt das Wort „Schwund" aus der Deutung. */
+  const tOG=teileOhneGroesse(a.ohneGroesse);
+  const stkOffen=a.offen.reduce((s,o)=>s+(+o.anzahl||0),0);
+  const vorbehalte=[];
+  /* NACHTRICHTIGUNG (zweite Jagd · A): Zuerst die eine Zahl, die jeden
+     Weg mitnimmt — auch die stillen. Danach erst die Gründe. */
+  /* NACHTRICHTIGUNG (dritte Jagd · B): `draussen` zählte auch Speisen
+     und Kaffee mit. Im bestmöglich gepflegten Zustand blieben von 145
+     Einheiten 99 „nicht in der Rechnung", davon 80 Rührei und Espresso —
+     das Blatt hätte AB JETZT IMMER „unvollständig" gesagt, und ein
+     Warnhinweis, der nie ausgeht, unterscheidet den Normalzustand nicht
+     mehr vom Schaden.
+     Deshalb zwei Zahlen: was ausdrücklich ausgenommen ist („Ignorieren"
+     — eine Entscheidung) und was ungewollt fehlt (eine Lücke). Nur die
+     Lücke macht die Rechnung unvollständig. Die Ausnahme steht trotzdem
+     im Kasten, weil dort auch ein Getränk stehen kann. */
+  const ausgenommen=+a.stkIgnoriert||0;
+  const luecke=Math.max(0, (a.stkGesamt||0)-(a.stkGerechnet||0)-ausgenommen);
+  if(luecke||ausgenommen) vorbehalte.push(
+    "Von "+num(a.stkGesamt)+" verkauften Einheiten im Zeitraum sind "
+    +num(a.stkGerechnet)+" in diese Rechnung eingegangen"
+    +(ausgenommen?", "+num(ausgenommen)+" ausdrücklich ausgenommen":"")
+    +(luecke?" — "+num(luecke)+" fehlen.":".")
+    +" Die Gründe stehen darunter.");
+  /* Ein Bericht ohne eine einzige Position ist keine leere Verkaufsseite,
+     sondern eine fehlende (dritte Jagd · B). */
+  if(a.berichte && !a.stkGesamt) vorbehalte.push(
+    "Der Z-Bericht im Zeitraum enthält keine einzige Position. Die Verkaufsseite "
+    +"ist damit nicht leer, sondern unbekannt.");
+  if(a.berichte<a.spanne) vorbehalte.push(
+    (a.spanne-a.berichte)+" von "+a.spanne+" Tagen sind nicht eingelesen — für sie fehlt "
+    +"der Verkauf ganz. Die Differenzen fallen entsprechend zu hoch aus.");
+  if(a.offen.length) vorbehalte.push(
+    a.offen.length+" Kassenname"+(a.offen.length===1?"":"n")+" ("+num(stkOffen)+" Stück) "
+    +(a.offen.length===1?"ist":"sind")+" keinem Artikel zugeordnet. "
+    +(a.offen.length===1?"Sein":"Ihr")+" Verkauf fehlt in dieser Rechnung.");
+  if(tOG.sammelbar.length+tOG.handisch.length) vorbehalte.push(
+    (tOG.sammelbar.length+tOG.handisch.length)+" zugeordnete Kassennamen ("
+    +num(tOG.stkSammelbar+tOG.stkHandisch)+" Einheiten) haben keine bestätigte Gebindegröße "
+    +"und zählen nicht als Verkauf.");
+  if(tOG.ausschank.length) vorbehalte.push(
+    tOG.ausschank.length+" zugeordnete Kassennamen ("+num(tOG.stkAusschank)
+    +" Einheiten) sagen nicht, wie viel ausgeschenkt wurde, und zählen nicht als Verkauf.");
+  if(a.ignoriert && a.ignoriert.length) vorbehalte.push(
+    a.ignoriert.length+(a.ignoriert.length===1?" Kassenname (":" Kassennamen (")
+    +num(a.stkIgnoriert)+(a.ignoriert.length===1?" Einheiten) steht auf ":" Einheiten) stehen auf ")
+    +"\u201eIgnorieren\u201c: Speisen, Kaffee, Fassbier — alles, was nicht aus dem Keller "
+    +"kommt. Steht dort ein Getränk, fehlt sein Verkauf in dieser Rechnung.");
+  /* Solange irgendein Verkauf fehlt, ist ein Plus kein Befund über den
+     Keller. `draussen` deckt auch die Wege ab, für die es keinen eigenen
+     Grund in der Liste gibt (zweite Jagd · A). */
+  /* Unvollständig ist die Rechnung, wenn etwas UNGEWOLLT fehlt — nicht,
+     wenn jemand Rührei ausgenommen hat (dritte Jagd · B). */
+  const halbeRechnung = luecke>0 || !a.berichte || a.berichte<a.spanne
+                        || (a.berichte>0 && !a.stkGesamt);
+
+  const kopf=`<div class="notiz">
+    ${a.berichte
+      ? (auf.length
+         ? `<b>${auf.length} Position${auf.length===1?"":"en"} gehen nicht auf.</b><br>
+            Verglichen wurde, was die Kasse gebucht hat, gegen das, was aus dem Keller
+            geholt wurde — über ${a.spanne} Tag${a.spanne===1?"":"e"}, ${a.berichte}
+            Z-Bericht${a.berichte===1?"":"e"}. Ein Plus heisst: mehr geholt, als die Rechnung
+            an Verkauf kennt. Ein Minus heisst: mehr verkauft als geholt.`
+         : `<b>Verkauf und Entnahme decken sich.</b><br>
+            Keine Position weicht über eine Flasche ab.`)
+      : `<b>In diesem Zeitraum liegt kein Z-Bericht vor.</b><br>
+         Ohne ihn ist der Verkauf unbekannt — verglichen ist damit nichts.`}
+    </div>`
+    + (vorbehalte.length?`<div class="notiz${halbeRechnung?" vorbehalt":""}">
+        <b>${halbeRechnung
+          ?"Diese Rechnung ist unvollständig — bitte vor dem Weiterleiten lesen:"
+          :"Was nicht in dieser Rechnung steht:"}</b>
+        <ul>${vorbehalte.map(s=>"<li>"+esc(s)+"</li>").join("")}</ul>
+        ${halbeRechnung
+          ?`Was fehlt, fehlt auf der VERKAUFSSEITE. Jede Zahl in der Spalte „Verkauft" ist
+            deshalb eine Untergrenze, und jedes Plus ist höchstens so groß, wie es dasteht —
+            meist kleiner. Ein Plus ist hier kein Nachweis von Schwund.`
+          :`Was ausdrücklich ausgenommen ist, gehört nicht in diese Rechnung — solange kein
+            Getränk darunter steht. Jedes Plus heisst: im Keller nachsehen.`}</div>`:"");
+
+  const zeilen = auf.length ? `<h2>Nicht ausgeglichen</h2><table><thead><tr>
+      <th>Artikel</th><th class="r">Verkauft</th><th class="r">Geholt</th>
+      <th class="r">Differenz</th><th>Was das heisst</th></tr></thead><tbody>
+      ${auf.map(r=>`<tr>
+        <td>${esc(r.name)}<br><span class="mini">${esc(r.art)}</span></td>
+        <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
+        <td class="r plus">${r.diff>0?"+":""}${num(r.diff)}</td>
+        <td>${halbeRechnung && r.diff>0
+              ?"mehr geholt als gerechneter Verkauf — es fehlt Verkauf in der Rechnung"
+              :DEUTUNG(r)}
+          ${r.vorbehalt?`<br><span class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</span>`:""}</td>
+      </tr>`).join("")}
+      <tr class="zwt"><td>Summe</td><td class="r">${num(auf.reduce((s,r)=>s+r.verkauf,0))}</td>
+        <td class="r">${num(auf.reduce((s,r)=>s+r.entnahme,0))}</td>
+        <td class="r">${(x=>(x>0?"+":"")+num(x))(auf.reduce((s,r)=>s+r.diff,0))}</td>
+        <td>${plus.length} über dem Verkauf · ${minus.length} darunter${
+          halbeRechnung?" · Verkaufsseite unvollständig, siehe oben":""}</td></tr>
+      </tbody></table>` : "";
+
+  const rest = ohne.length ? `<h2>Ohne Abgleich</h2>
+    <p class="mini">Für diese Positionen ist der Verkauf nicht bestimmbar. Ihre Entnahme ist
+      weder Abweichung noch Schwund — sie gehören nicht in die Rechnung oben.</p>
+    <table><thead><tr><th>Artikel</th><th class="r">Geholt</th><th>Warum kein Abgleich</th>
+      </tr></thead><tbody>${ohne.map(r=>`<tr>
+        <td>${esc(r.name)}</td><td class="r">${num(r.entnahme)}</td>
+        <td>${esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")}</td></tr>`).join("")}
+      </tbody></table>` : "";
+
+  drucke("Verkauf ↔ Fassung · was nicht aufgeht",
+    kopf + zeilen + rest
+    + `<div class="fuss">Gerechnet in Flaschen: Anzahl × Ausschank in Millilitern, geteilt durch
+       das Gebinde. Was am Abend verkauft wird, holt oft erst der nächste Tag nach — über einen
+       einzelnen Tag verschiebt das jede Zeile, über eine Woche gleicht es sich aus.
+       ${halbeRechnung?"Dieses Blatt zeigt eine unvollständige Rechnung — der Kasten oben sagt, was fehlt. ":""}
+       Quelle der Zahlen: ${esc(QUELLE)}.</div>`,
+    "Betriebstag "+esc(deTag(a.bis))+(a.spanne>1?" · Zeitraum "+esc(deTag(a.von))+" bis "+esc(deTag(a.bis)):"")
+      +" · "+a.berichte+" von "+a.spanne+" Tagen eingelesen"
+      +(halbeRechnung?" · <b>unvollständige Rechnung</b>":""));
 }
 
 /* ── Z-Bericht einlesen ─────────────────────────────────────────────── */
@@ -2500,6 +2958,13 @@ function vImport(m){
     : `<div class="karte leer">Auf dem Server liegt noch kein Z-Bericht.</div>`);
   m.appendChild(s2);
   s2.querySelectorAll("[data-auf]").forEach(b=>b.onclick=()=>zeigeVorschau(b.dataset.auf));
+
+  /* B2 · Die Kachel „Z-Berichte" im Mittagsblick hinterlässt hier den
+     Tag, den sie meint, und die Vorschau öffnet sich von selbst. Die
+     Notiz wird beim Lesen verbraucht, damit sie beim nächsten Besuch
+     dieser Seite nicht ein zweites Mal aufspringt. */
+  const zeig=vImport.zeig; vImport.zeig=null;
+  if(zeig && ZBER[zeig]) zeigeVorschau(zeig);
 }
 
 /* ── Kellerbestand ──────────────────────────────────────────────────── */
@@ -2886,7 +3351,239 @@ function vZaehlliste(m){
   };
 }
 
-/* ════════════ 7e · Speicher ════════════
+/* ════════════ 7e · Eingänge ════════════
+   B3 (Runde 18) · Alles, was aus dem Keller gemeldet wurde — je Vorgang
+   mit MENGEN, nicht nur mit Positionsnamen.
+
+   Warum neben „Speicher" und nicht statt dessen: „Speicher" ist die
+   Werkbank der Leitung (Suche, CSV, Rohdaten) und bleibt, wie sie ist.
+   „Eingänge" ist der Blick von aussen auf denselben Bestand — was ist
+   hereingekommen, wie viel, von wem. Drei Dinge, die der Speicher nicht
+   zeigte und die hier stehen:
+
+   · `eingang` (Wareneingang) und `zaehlung` (Kellerzählung) zählten nie
+     in die Spalten „Wein"/„Getränke" — ein Wareneingang über 24 Kisten
+     stand mit zwei Strichen da (hospitality-pro, Runde 5). Die Liste
+     nennt deshalb JEDE Menge des Vorgangs, nicht nur die Entnahme.
+   · `gzaehlung` (der gezählte Ist-Stand der Getränkelade) wurde in
+     `normVorgang` berechnet und nirgends gezeigt. Eine Kellerzählung,
+     die nur Getränke gezählt hat, sagte deshalb „Dieser Vorgang hat
+     keine Mengen bewegt" — bei 57 gezählten Flaschen.
+   · Die Notiz stand nur im Detail, nicht in der Liste; bei einer
+     Sonderentnahme ist sie oft der ganze Inhalt.
+
+   Zwei leere Zustände, nicht einer (ui-designer, Runde 3): „nichts da"
+   und „nichts passt" sind verschiedene Nachrichten. */
+let EGFILTER={modus:"", wer:"", q:""}, EGOFFEN=null, EGFREMD=null;
+
+/* Ein Vorgang hat auf dem Server eine `id`; lokal (Rückfall auf den
+   Gerätespeicher) hat er keine. Der Schlüssel muss beides überstehen,
+   weil er ein neu gezeichnetes Detail wiederfindet. */
+const vgSchluessel = v => (v && v.roh && v.roh.id)
+  || (v ? v.mode+"_"+v.tag+"_"+(v.ts||"")+"_"+(v.name||"") : "");
+
+/* Die Mengenblöcke eines Vorgangs, in der Reihenfolge, in der sie im
+   Keller entstehen. `art:"zaehlung"` behält die Nullen: eine gezählte 0
+   heisst „nichts mehr da" und ist eine Angabe, keine fehlende Zeile. */
+function vgBloecke(v){
+  const B=[], hat=o=>o&&Object.keys(o).length,
+        bewegt=o=>o&&Object.keys(o).some(k=>+o[k]);
+  if(bewegt(v.wein))     B.push({t:"Aus dem Weinkeller geholt",         o:v.wein,      art:"bewegung"});
+  if(bewegt(v.getr))     B.push({t:"Aus dem Getränkelager geholt",      o:v.getr,      art:"bewegung"});
+  if(bewegt(v.eingang))  B.push({t:"Wareneingang · geliefert",          o:v.eingang,   art:"bewegung"});
+  if(hat(v.zaehlung))    B.push({t:"Gezählter Bestand · Weinkeller",    o:v.zaehlung,  art:"zaehlung"});
+  if(hat(v.gzaehlung))   B.push({t:"Gezählter Bestand · Getränkelade",  o:v.gzaehlung, art:"zaehlung"});
+  return B;
+}
+/* Kurzfassung derselben Blöcke für die Liste — je Zeile eine Zahl mit
+   Einheit, statt zweier Spalten, die bei drei von fünf Vorgangsarten
+   leer bleiben. */
+function vgMengen(v){
+  return vgBloecke(v).map(b=>{
+    const s=num(summe(b.o));
+    if(b.t.startsWith("Aus dem Weinkeller"))    return s+" Fl. Wein";
+    if(b.t.startsWith("Aus dem Getränkelager")) return s+" Fl. Getränke";
+    if(b.t.startsWith("Wareneingang"))          return s+" Fl. geliefert";
+    if(b.t.endsWith("Weinkeller"))              return s+" Fl. gezählt (Wein)";
+    return s+" Fl. gezählt (Getränke)";
+  });
+}
+const vgName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein+" "+w.jg : GN(id); };
+
+/* Vorgänge, die NUR in diesem Browser liegen (qa-guardian, Runde 3):
+   Antwortet der Server mit einer leeren Liste, gewinnt der Server — die
+   alten Vorgänge dieses Geräts verschwanden damit vom Schirm, ohne dass
+   irgendwo stand, dass es sie noch gibt. Sie werden nicht eingemischt
+   (der Server bleibt die Wahrheit), aber sie werden benannt. */
+function nurImBrowser(){
+  const arch=lese(K_ARCHIV)||{}, akt=lese(K_STAND)||{}, roh=[];
+  Object.values(arch).forEach(v=>roh.push(v));
+  Object.values(akt).forEach(v=>{ if(v&&v.mode) roh.push(v); });
+  const da=new Set(VORGAENGE.map(v=>v.mode+"_"+v.tag));
+  return roh.map(normVorgang).filter(Boolean)
+            .filter(v=>!da.has(v.mode+"_"+v.tag))
+            .sort(nachZeit).reverse();
+}
+
+function vEingaenge(m){
+  const alle=VORGAENGE.slice().reverse();
+  const leute=Array.from(new Set(alle.map(v=>v.name).filter(Boolean))).sort();
+  const fremd=QUELLE==="Server" ? nurImBrowser() : [];
+
+  m.innerHTML=`<section><h2>Eingänge</h2>
+    <div class="unter">Jede Fassung, jede Zählung, jede Lieferung — mit den Mengen dahinter.
+    Ein Klick auf „Ansehen“ öffnet die Positionen samt Anzahl; „PDF“ macht daraus ein
+    Blatt zum Sichern oder Verschicken.</div></section>`;
+
+  const w=document.createElement("section"); w.className="reihe";
+  w.innerHTML=`<input type="text" id="egQ" placeholder="Name, Notiz oder Datum" value="${esc(EGFILTER.q)}" style="width:250px">
+    <select id="egM"><option value="">Alle Vorgänge</option>
+      ${Object.keys(MODUSNAME).map(k=>`<option value="${k}"${EGFILTER.modus===k?" selected":""}>${MODUSNAME[k]}</option>`).join("")}</select>
+    <select id="egW"><option value="">Alle Personen</option>
+      ${leute.map(n=>`<option value="${esc(n)}"${EGFILTER.wer===n?" selected":""}>${esc(n)}</option>`).join("")}</select>
+    <span class="rechts"></span><button class="b klein" id="egCsv">Alles als CSV</button>`;
+  m.appendChild(w);
+  $("#egQ").oninput=e=>{EGFILTER.q=e.target.value; malListe();};
+  $("#egM").onchange=e=>{EGFILTER.modus=e.target.value; malListe();};
+  $("#egW").onchange=e=>{EGFILTER.wer=e.target.value; malListe();};
+  $("#egCsv").onclick=()=>csvSpeicher(gefiltert());
+
+  const liste=document.createElement("section"); liste.id="egListe"; m.appendChild(liste);
+  const detail=document.createElement("section"); detail.id="egDetail"; m.appendChild(detail);
+  malListe();
+
+  if(fremd.length){
+    const s=document.createElement("section");
+    s.innerHTML=`<h3 style="margin-top:32px">Nur auf diesem Gerät</h3>
+      <div class="hinweis">Der Server kennt diese ${fremd.length} Vorgänge nicht.
+        Sie liegen im Speicher dieses Browsers und sind an keinem anderen Gerät zu sehen.
+        Sie zählen in keine Rechnung dieser Seite hinein — sie stehen hier, damit sie
+        nicht unbemerkt verschwinden.</div>
+      <div class="tabhuelle" style="margin-top:12px"><table><thead><tr>
+        <th>Betriebstag</th><th>Vorgang</th><th>Wer</th><th>Mengen</th><th></th>
+        </tr></thead><tbody>${fremd.map((v,i)=>`<tr>
+          <td>${esc(deTag(v.tag))}</td><td>${esc(MODUSNAME[v.mode]||v.mode)}</td>
+          <td>${esc(v.name||"—")}</td>
+          <td>${vgMengen(v).map(esc).join(" · ")||'<span class="dim">keine</span>'}</td>
+          <td class="r"><button class="b klein" data-fremd="${i}">Ansehen</button></td>
+        </tr>`).join("")}</tbody></table></div>`;
+    m.appendChild(s);
+    /* NACHTRICHTIGUNG (zweite Jagd · B): Dieses Detail gehört zur Tabelle
+       darüber, nicht zur Serverliste. Es lag trotzdem in `#egDetail` —
+       und jeder Tastendruck im Suchfeld der SERVERLISTE löschte es, ohne
+       ein Wort, während seine eigene Tabelle unverändert stehenblieb.
+       Es bekommt deshalb eine eigene Fläche. */
+    const fd=document.createElement("div"); fd.id="egFremdDetail"; s.appendChild(fd);
+    const fSchl=v=>vgSchluessel(v);
+    s.querySelectorAll("[data-fremd]").forEach(b=>b.onclick=()=>{
+      const v=fremd[+b.dataset.fremd];
+      EGFREMD=fSchl(v); malDetail(v, fd);
+      fd.scrollIntoView({behavior:"smooth", block:"start"}); });
+    /* Ein Filter der Serverliste zeichnet die ganze Ansicht neu. Ohne
+       eigenen Merker wäre dieses Detail danach weg — dieselbe Ursache,
+       nur eine Ebene tiefer (zweite Jagd · B). Die Tabelle hier steht
+       unverändert, also steht ihr Detail auch unverändert. */
+    const wieder=EGFREMD?fremd.find(v=>fSchl(v)===EGFREMD):null;
+    if(wieder) malDetail(wieder, fd); else EGFREMD=null;
+  }
+
+  function gefiltert(){
+    const q=EGFILTER.q.trim().toLowerCase();
+    return alle.filter(v=>
+      (!EGFILTER.modus || v.mode===EGFILTER.modus) &&
+      (!EGFILTER.wer   || v.name===EGFILTER.wer) &&
+      (!q || (v.name+" "+v.notiz+" "+v.tag+" "+deTag(v.tag)).toLowerCase().includes(q)));
+  }
+  function malListe(){
+    const L=gefiltert(), gefiltertWird=!!(EGFILTER.q.trim()||EGFILTER.modus||EGFILTER.wer);
+    /* Zwei leere Zustände, zwei Sätze: „es gibt nichts" schickt niemanden
+       auf die Suche nach dem eigenen Filter, „nichts passt" schon. */
+    const leerSatz = !alle.length
+      ? "Es ist noch kein Vorgang eingegangen. Sobald im Keller eine Fassung abgeschlossen wird, steht sie hier."
+      : "Kein Vorgang passt zu dieser Suche. Filter zurücksetzen, dann stehen wieder alle "+alle.length+" da.";
+    $("#egListe").innerHTML=`<div class="tabhuelle"><table><thead><tr>
+      <th>Betriebstag</th><th>Vorgang</th><th>Wer</th><th>Mengen</th>
+      <th>Zustand</th><th>Notiz</th><th></th></tr></thead><tbody>
+      ${L.length?L.map(v=>`<tr class="klickbar" data-egzeile="${esc(vgSchluessel(v))}">
+        <td>${esc(deTag(v.tag))}</td><td>${esc(MODUSNAME[v.mode]||v.mode)}</td>
+        <td>${esc(v.name||"—")}</td>
+        <td>${vgMengen(v).map(esc).join("<br>")||'<span class="dim">keine Menge</span>'}</td>
+        <td>${v.fertig?'<span class="pill p-ok">fertig</span>':'<span class="pill p-warn">läuft</span>'}
+            ${v.zaehlung||v.gzaehlung?' <span class="pill p-neu">Zählung</span>':""}</td>
+        <td class="deutung">${esc(v.notiz||"")}</td>
+        <td class="r" style="white-space:nowrap">
+          <button class="b klein" data-eg="${esc(vgSchluessel(v))}">Ansehen</button>
+          <button class="b klein leise" data-egpdf="${esc(vgSchluessel(v))}">PDF</button></td></tr>`).join("")
+        :`<tr><td colspan="7" class="leer">${esc(leerSatz)}</td></tr>`}
+      </tbody></table></div>`
+      + (L.length&&gefiltertWird?`<div class="mini" style="margin-top:8px">${L.length} von ${alle.length} Vorgängen</div>`:"");
+    /* NACHTRICHTIGUNG (Jagd nach Runde 18 · B): `finde` suchte in `alle`
+       statt in der gefilterten Liste. Ein Filter ohne Treffer meldete
+       „Kein Vorgang passt zu dieser Suche" — und darunter stand
+       unverändert die volle Karte des vorigen Vorgangs. Was nicht in der
+       Liste steht, hat unter der Liste nichts zu suchen. */
+    const finde=s=>L.find(v=>vgSchluessel(v)===s);
+    const aufschlagen=s=>{ const v=finde(s); if(!v) return;
+      EGOFFEN=s; malDetail(v);
+      $("#egDetail").scrollIntoView({behavior:"smooth", block:"start"}); };
+    $("#egListe").querySelectorAll("[data-eg]").forEach(b=>b.onclick=()=>aufschlagen(b.dataset.eg));
+    /* Bei 390px steht die Tabelle in einer Rollfläche, und „Ansehen"
+       liegt rechts ausserhalb. Die ganze Zeile öffnet deshalb dasselbe —
+       der Knopf bleibt für die Maus und für die Tastatur (Jagd nach
+       Runde 18 · B). */
+    $("#egListe").querySelectorAll("[data-egzeile]").forEach(tr=>tr.onclick=e=>{
+      if(e.target.closest("button")) return;
+      /* Wer eine Notiz markiert hat, wollte sie markieren, nicht öffnen
+         (zweite Jagd · C). */
+      const w=window.getSelection && window.getSelection();
+      if(w && !w.isCollapsed && String(w).length>1) return;
+      aufschlagen(tr.dataset.egzeile); });
+    $("#egListe").querySelectorAll("[data-egpdf]").forEach(b=>b.onclick=()=>{
+      const v=finde(b.dataset.egpdf); if(v) druckVorgang(v);});
+    const offen=EGOFFEN?finde(EGOFFEN):null;
+    if(offen) malDetail(offen);
+    else if($("#egDetail")) $("#egDetail").innerHTML="";
+  }
+  function malDetail(v, wohin){
+    const ziel = wohin || $("#egDetail");
+    if(!ziel) return;
+    if(!v){ ziel.innerHTML=""; return; }
+    const B=vgBloecke(v);
+    const tab=b=>{
+      const ks=Object.keys(b.o).filter(k=>b.art==="zaehlung" || +b.o[k])
+                     .sort((x,y)=>(+b.o[y]||0)-(+b.o[x]||0));
+      return `<h3 style="margin-top:24px">${esc(b.t)}
+        <span class="mini">${ks.length} Position${ks.length===1?"":"en"} · ${num(summe(b.o))} Flaschen</span></h3>
+        <div class="tabhuelle schmal"><table><thead><tr>
+        <th>Position</th><th class="r">Flaschen</th></tr></thead><tbody>
+        ${ks.map(k=>`<tr><td>${esc(vgName(k))}</td><td class="r"><b>${num(b.o[k])}</b></td></tr>`).join("")}
+        <tr class="zwt"><td>Summe</td><td class="r">${num(summe(b.o))}</td></tr></tbody></table></div>`;
+    };
+    ziel.innerHTML=`<div class="karte" style="margin-top:24px">
+      <div class="reihe">
+        <div><h3 style="margin:0">${esc(MODUSNAME[v.mode]||v.mode)} · ${esc(deTag(v.tag))}</h3>
+          <div class="mini">${esc(v.name||"ohne Namen")}${v.ts?" · abgelegt "+esc(new Date(v.ts).toLocaleString("de-AT")):""}
+            · ${v.fertig?"abgeschlossen":"läuft noch"}</div></div>
+        <span class="rechts"></span>
+        <button class="b" data-pdf>Als PDF</button>
+        <button class="b klein" data-json>Rohdaten</button>
+        <button class="b klein" data-zu>Schließen</button></div>
+      ${v.notiz?`<div class="hinweis" style="margin-top:14px"><b>Notiz:</b> ${esc(v.notiz)}</div>`:""}
+      ${B.length?B.map(tab).join("")
+        :`<div class="leer" style="margin-top:20px">Dieser Vorgang hat keine Mengen bewegt und nichts gezählt.</div>`}
+    </div>`;
+    /* Die Knöpfe hängen an der Karte, die gerade gebaut wurde — nicht an
+       einer Kennung, die es zweimal geben kann. */
+    ziel.querySelector("[data-zu]").onclick=()=>{
+      if(wohin) EGFREMD=null; else EGOFFEN=null;
+      ziel.innerHTML=""; };
+    ziel.querySelector("[data-pdf]").onclick=()=>druckVorgang(v);
+    ziel.querySelector("[data-json]").onclick=()=>hol(`vorgang_${v.mode}_${v.tag}.json`,
+      JSON.stringify(v.roh,null,2), "application/json");
+  }
+}
+
+/* ════════════ 7f · Speicher ════════════
    Jede Fassung, die je durchgelaufen ist — vollständig, nicht als
    Zusammenfassung. Wer wissen will, warum vor drei Wochen zwölf Flaschen
    gebucht wurden, braucht die Zeilen, nicht die Summe. */
@@ -2948,7 +3645,7 @@ function vSpeicher(m){
     const nm=id=>{const w=byId(id); return w?w.winzer+" · "+w.wein+" "+w.jg:GN(id);};
     const tab=(titel,o,einheit)=>{
       const ks=Object.keys(o||{}).filter(k=>+o[k]); if(!ks.length) return "";
-      return `<h3 style="margin-top:24px">${titel}</h3><div class="tabhuelle"><table><thead><tr>
+      return `<h3 style="margin-top:24px">${titel}</h3><div class="tabhuelle schmal"><table><thead><tr>
         <th>Position</th><th class="r">${einheit}</th></tr></thead><tbody>
         ${ks.sort((a,b)=>o[b]-o[a]).map(k=>`<tr><td>${esc(nm(k))}</td><td class="r"><b>${num(o[k])}</b></td></tr>`).join("")}
         <tr class="zwt"><td>Summe</td><td class="r">${num(summe(o))}</td></tr></tbody></table></div>`;
@@ -2989,7 +3686,7 @@ function csvSpeicher(L){
   hol("speicher.csv","\uFEFF"+R.join("\r\n"),"text/csv");
 }
 
-/* ════════════ 7f · Rezepturen ════════════
+/* ════════════ 7g · Rezepturen ════════════
    Ein Gin Tonic verbraucht ein Tonic, ein Aperol Spritz Prosecco und Soda.
    Ohne diese Zerlegung steht der Mixer für immer als Überhang da: geholt,
    nie verkauft. Es sind ein paar Rezepte, keine Kartei. */
@@ -3054,6 +3751,9 @@ function vRezepte(m){
     const nm=$("#rzName").value;
     if(!nm) return toast("Erst eine Kassenposition wählen");
     if(!zut.length) return toast("Ohne Zutat ist es keine Rezeptur");
+    /* `min="10"` im Feld greift ohne Formularprüfung nicht (zweite Jagd · A). */
+    if(zut.some(x=>!(+x.ml>0)))
+      return toast("Jede Zutat braucht eine Menge in Millilitern — 0 rechnet keinen Verkauf.");
     REZ[nm]=zut.map(t=>({id:t.id, ml:t.ml})); schreib(K_REZ,REZ);
     zeichne(); toast("Rezeptur gespeichert");
   };
@@ -3061,7 +3761,7 @@ function vRezepte(m){
     delete REZ[b.dataset.rw]; schreib(K_REZ,REZ); zeichne(); toast("Gelöscht");});
 }
 
-/* ════════════ 7g · Mitarbeiter ════════════
+/* ════════════ 7h · Mitarbeiter ════════════
    Codes und Rollen gehören der Leitung, nicht dem Quelltext. Solange
    alles im Browser läuft, ist ein Code eine Unterschrift und keine
    Sperre — das steht hier auch so, damit niemand mehr hineinliest. */
@@ -3409,7 +4109,8 @@ function vTeam(m){
 
 /* ════════════ 8 · Aufbau ════════════ */
 const ANSICHT={heute:vHeute, abgleich:vAbgleich, import:vImport, bestand:vBestand,
-  bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste, speicher:vSpeicher,
+  bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste,
+  eingaenge:vEingaenge, speicher:vSpeicher,
   zuordnung:vZuordnung, rezepte:vRezepte, team:vTeam, einst:vEinst};
 
 /* Die Erklärtexte sind gut geschrieben, stehen aber dauerhaft über jeder
@@ -3462,6 +4163,109 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape")document.body.classList.remove("navoffen");
 });
+
+/* ═══ B4 (Runde 18) · Wischen von links öffnet die Navigation ═══
+   Am iPad las Safari denselben Wisch als „zurück" und sprang aus dem
+   Backoffice heraus — meist ins Fassungstool, die Seite davor. Die Geste
+   gehört aber dieser Seite: Unter 900px liegt die Navigation als Blatt
+   links, genau dort, wo der Daumen ansetzt.
+
+   Wie die Zurück-Geste genommen wird: Safari entscheidet früh, ob ein
+   Randwisch ihm gehört. `preventDefault()` auf der ERSTEN waagrechten
+   Bewegung nimmt sie ihm — deshalb muss der Horcher `passive:false`
+   sein. Er greift nur in zwei Lagen, sonst nie:
+     · Der Finger setzt in den linken 32px auf und die Navigation ist zu.
+     · Die Navigation ist offen (dann schliesst ein Wisch nach links sie).
+   Senkrechte Bewegungen fallen vorher heraus, damit Scrollen unberührt
+   bleibt. `touch-action:manipulation` (Gestaltungsschicht) bleibt, wie
+   es ist; `none` würde den Zwei-Finger-Zoom mitnehmen. */
+(function randwisch(){
+  /* NACHTRICHTIGUNG (Jagd nach Runde 18 · B): Die Randzone war 32px
+     breit, der Inhalt beginnt aber bei 16px. Ein Wisch über dem Suchfeld
+     oder über einer waagrecht rollenden Tabelle gehörte damit der
+     Navigation statt dem Bedienteil darunter — und in den Eingängen
+     stehen „Ansehen"/„PDF" bei 390px erst nach dem Rollen. Drei
+     Berichtigungen: schmalere Zone, ein ausdrückliches Nein für alles,
+     was die Geste selbst braucht, und `preventDefault` nur noch dort,
+     wo auch wirklich etwas geschieht. */
+  const RAND=20, SCHWELLE=48, TOTZONE=10;
+  let x0=null, y0=0, aktiv=false, hin=0, amRand=false;
+  const offen=()=>document.body.classList.contains("navoffen");
+  /* Was die waagrechte Geste selbst braucht, behält sie. Dort bleibt es
+     beim Verhalten des Browsers — auch beim Zurückblättern. */
+  /* NACHTRICHTIGUNG (zweite Jagd · C): Der Inhalt beginnt bei 16px, die
+     Randzone endet bei 20px — in diesem 4px-Streifen gewinnt die
+     Randgeste, sonst gäbe es ein Loch, durch das Safari zurückblättert.
+     Ein Eingabefeld behält die Geste auch dort: dort wird gezogen, um
+     Text zu wählen, und das ist keine Navigation. */
+  const eigenerBedarf=(el,amRand)=>{
+    if(!el || !el.closest) return false;
+    /* Am Rand gewinnt IMMER die Randgeste, auch über einem Eingabefeld:
+       Sonst bliebe genau dort das Loch offen, das gerade geschlossen
+       wurde (dritte Jagd · C). Vier Pixel Ziehweg weniger sind der
+       kleinere Verlust als eine Seite, die sich verabschiedet. */
+    if(amRand) return false;
+    if(el.closest("input,textarea,select,[contenteditable]")) return true;
+    const h=el.closest(".tabhuelle");
+    return !!(h && h.scrollWidth > h.clientWidth+4);
+  };
+
+  addEventListener("touchstart", e=>{
+    x0=null; aktiv=false; hin=0; amRand=false;
+    if(e.touches.length!==1) return;
+    const t=e.touches[0];
+    amRand = t.clientX<=RAND;
+    if(!(amRand || offen())) return;
+    if(eigenerBedarf(t.target, amRand)) return;
+    x0=t.clientX; y0=t.clientY;
+  }, {passive:true});
+
+  addEventListener("touchmove", e=>{
+    if(x0===null || e.touches.length!==1) return;
+    const t=e.touches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+    if(!aktiv){
+      if(Math.abs(dx)<TOTZONE && Math.abs(dy)<TOTZONE) return;
+      /* Senkrecht: das ist Scrollen, und es bleibt Scrollen. */
+      if(Math.abs(dy)>=Math.abs(dx)){ x0=null; return; }
+      hin=dx>0?1:-1;
+      /* Zwei Gründe, die Geste zu behalten: Sie bewirkt etwas
+         (aufziehen, wenn zu ist; zuziehen, wenn offen ist) — ODER sie
+         beginnt am linken Rand, wo Safari sonst zurückblättert.
+         NACHTRICHTIGUNG (zweite Jagd · B): Die erste Fassung dieser
+         Zeile liess bei OFFENER Leiste den Randwisch nach rechts los.
+         Genau dort liegt der Daumen, wenn die Schublade offen ist, und
+         „zurück" heisst hier: aus dem Backoffice heraus. */
+      /* Safaris Zurück-Geste am linken Rand ist ein Wisch nach RECHTS.
+         Nach links am Rand bewirkt nichts und ist nichts zu schützen —
+         das gehört der Seite darunter (dritte Jagd · C). */
+      /* NACHTRICHTIGUNG (vierte Jagd · B): Bei OFFENER Leiste liegt das
+         Navigationsblatt über den ersten 280px — dort gibt es nichts
+         darunter, das die Geste braucht, und der Grund für die schmale
+         Zone (der Inhalt beginnt bei 16px) gilt gar nicht. Ab x = 21
+         blätterte Safari wieder zurück. Bei offener Leiste zählt deshalb
+         die Breite des Blattes als Rand. */
+      /* `offsetWidth`, nicht die gerade gemessene Kante: Das Blatt
+         fährt ein, und mitten in der Bewegung stünde seine rechte Kante
+         noch bei 3 px. */
+      const blatt=document.querySelector("nav.seite");
+      const schutz = amRand ||
+        (offen() && blatt && blatt.offsetWidth && x0<=blatt.offsetWidth);
+      const wirkt = (hin>0 && !offen()) || (hin<0 && offen());
+      if(!wirkt && !(schutz && hin>0)){ x0=null; return; }
+      aktiv=true;
+    }
+    /* Ab hier gehört die Bewegung dieser Seite. */
+    if(e.cancelable) e.preventDefault();
+    if(hin>0 && dx>=SCHWELLE){
+      document.body.classList.add("navoffen"); x0=null; }
+    else if(hin<0 && dx<=-SCHWELLE){
+      document.body.classList.remove("navoffen"); x0=null; }
+  }, {passive:false});
+
+  const ende=()=>{ x0=null; aktiv=false; };
+  addEventListener("touchend", ende, {passive:true});
+  addEventListener("touchcancel", ende, {passive:true});
+})();
 
 /* Zweite Ansicht im selben Browser: neue Stände kommen von selbst an */
 window.addEventListener("storage", e=>{

@@ -5,6 +5,160 @@ Phase gefüllt, nicht laufend.
 
 ---
 
+# Was mit diesem Merge live geht · Runde 18 (Nacht auf den 20.09.2026)
+
+**Stand davor: `47d65cb` (Runde 17, `sw.js` v57, live). Stand danach: `sw.js` v61.**
+
+Dieser Merge bringt Runde 18 (Backoffice). Runde 17 (Fassungsseite) ist
+bereits live; sie ist unberührt geblieben.
+
+Vier Punkte, alle im Backoffice. **`public/index.html` und `src/` sind
+unberührt** — im Keller ändert sich nichts.
+
+**Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
+`wrangler.jsonc`, `package.json` unberührt, kein Schreibzugriff auf die
+Live-D1. `RUNDEN` unverändert — bestehende Anmeldungen bleiben gültig.
+Keine neue Abhängigkeit (Regel 8): Das PDF macht der Druckdialog des
+Browsers, nicht eine Bibliothek.
+
+## B2 · Die Kacheln des Mittagsblicks führen weiter
+
+Die vier Kacheln waren reine Anzeigen. Jede beantwortet eine Frage mit einer
+Zahl, und die nächste Frage ist immer „welche?" — dafür gab es keinen Weg.
+Jetzt ist jede ein Knopf und sagt am Fuss, wohin sie führt:
+
+| Kachel | führt nach |
+|---|---|
+| Tagesfassung | „Eingänge", mit dem Vorgang bereits aufgeschlagen — fehlt er, auf die früheren Tagesfassungen |
+| Z-Berichte | „Z-Bericht", mit der eingelesenen Vorschau geöffnet — fehlt er, dorthin, wo er eingelesen wird |
+| Auffällige Differenzen | „Verkauf ↔ Fassung", auf denselben Betriebstag |
+| Nachbestellen | „Nachbestellen" |
+
+Keine Kachel ist eine Sackgasse.
+
+## B3 · Neue Ansicht „Eingänge"
+
+Unter „Nachschlagen", neben dem Speicher: alle Fassungen, Zählungen und
+Lieferungen — **mit den Mengen dahinter**.
+
+Drei Dinge, die vorher fehlten:
+
+* **Wareneingang und Kellerzählung standen mit zwei Strichen da.** Eine
+  Lieferung über 72 Flaschen und eine Zählung über 46 meldeten „—", weil
+  die beiden Spalten nur die Entnahme zählten. Die Liste nennt jetzt jede
+  Menge des Vorgangs.
+* **Eine Kellerzählung, die nur die Getränkelade gezählt hat, meldete
+  „keine Mengen bewegt"** — bei 19 gezählten Flaschen. Der gezählte
+  Ist-Stand der Lade wurde berechnet und nirgends gezeigt. Jetzt steht er da.
+* **Die Notiz stand nur im Detail.** Bei einer Sonderentnahme ist sie oft
+  der ganze Inhalt; sie steht jetzt in der Liste.
+
+Dazu die eigentliche Ursache des gemeldeten Befunds „Ansehen zeigt nur
+Positionen, keine Anzahl": Die Anzahl stand immer in der Tabelle — am
+Handy aber 170 px rechts neben dem Bild, weil unter 900 px jede Tabelle auf
+560 px Mindestbreite gesetzt war, auch eine mit zwei Spalten. Zweispaltige
+Tabellen haben diese Mindestbreite nicht mehr.
+
+Ausserdem: Vorgänge, die **nur im Speicher dieses Browsers** liegen und die
+der Server nicht kennt, standen seit dem Livegang nirgends mehr. Sie stehen
+jetzt in einem eigenen Abschnitt, mit dem ausdrücklichen Satz, dass sie in
+keine Rechnung dieser Seite eingehen. Zurückschicken lassen sie sich von
+hier aus nicht — das Backoffice schreibt nichts an Vorgängen.
+
+## B4 · Wischen von links öffnet die Seitenleiste
+
+Am iPad las Safari den Wisch vom linken Rand als „zurück" und sprang aus dem
+Backoffice heraus. Die Geste gehört aber dieser Seite: Unter 900 px liegt die
+Navigation genau dort. Ein Wisch vom Rand öffnet sie jetzt, ein Wisch nach
+links schliesst sie wieder. Senkrechtes Scrollen bleibt unberührt, der
+Zwei-Finger-Zoom auch.
+
+## B5 · Blätter zum Ausdrucken — je Vorgang und für die Gruppe
+
+Zwei neue Knöpfe:
+
+* **„PDF" / „Als PDF"** in den Eingängen: ein Blatt je Vorgang, mit Kopf,
+  Notiz, jeder Position, jeder Menge und jeder Summe.
+* **„Differenzen als PDF"** unter „Verkauf ↔ Fassung": das Blatt für den
+  Fall, dass Verkauf und Fassung nicht aufgehen — ohne Preise und ohne
+  Umsatz, gedacht zum Verschicken in die Gruppe. Es druckt auch dann, wenn
+  alles aufgeht; „es deckt sich" ist eine Nachricht, die verschickt werden darf.
+
+Das PDF macht der Browser: am MacBook „Drucken ▸ PDF ▸ Als PDF sichern",
+am iPad „Teilen ▸ Drucken ▸ Vorschau aufziehen ▸ Teilen". Ein Druck mit
+Befehlstaste-P ohne Knopf bringt weiterhin die Seite selbst aufs Papier.
+
+## Geprüft
+
+| Prüfung | Ergebnis |
+|---|---|
+| `npm test` | **444 von 444 grün** |
+| `node tests/ui-runde18.cjs` (neu, Playwright, nicht Teil von `npm test`) | **51 Urteile grün, 0 rot, keine JS-Fehler** |
+| Regeln | vier Dateien in `public/`, Gestaltungsschicht wortgleich, `VERSION` v60, keine neue Abhängigkeit |
+
+Fundstellen, Lösungswege und Prüfpläne Punkt für Punkt:
+**`review/RUNDE-18-BACKOFFICE.md`**.
+
+## Die Jagd hat noch einmal zugeschlagen — und wurde beantwortet
+
+Der Jäger fand **1 × A und 3 × B**; alle vier sind vor diesem Merge behoben
+(`review/JAGD.md`). Der schwerste betrifft genau das Blatt, das aus dem Haus
+geht:
+
+> Das Differenzblatt übernahm die Vorbehalte des Bildschirms nicht. Mit dem
+> Mapping, wie es live steht, sind in einem echten Z-Bericht **136 von 145
+> verkauften Stück gar nicht zugeordnet** — der Bildschirm sagt das, das Blatt
+> schwieg und schrieb daneben „Vorrat aufgebaut oder Schwund".
+
+Das Blatt trägt jetzt einen eigenen Kasten mit jedem Vorbehalt, die Unterzeile
+sagt „unvollständige Rechnung", und **das Wort „Schwund" steht dort überhaupt
+nicht mehr** — auch bei vollständiger Rechnung entscheidet das ein Mensch im
+Keller, kein Ausdruck.
+
+Eine zweite Jagd fand denselben Fehler durch eine zweite Tür: Zwei Wege nehmen
+den Verkauf **still** aus der Rechnung — ein Kassenname auf „Ignorieren" (der
+einzige Weg, einen Cocktail ohne Menge im Namen aus dem roten Balken zu
+bekommen) und eine Rezeptzutat mit 0 ml. Der Abgleich zählt deshalb jetzt die
+eine Zahl, die keinen Grund braucht:
+
+> Von 145 verkauften Einheiten im Zeitraum sind 9 in diese Rechnung eingegangen
+> — 136 nicht.
+
+Sie steht als erste Zeile im Kasten. Dazu behoben: die Kachel führte am Handy nicht bis zum
+Detail, ein Filter ließ ein fremdes Detail stehen, und die Wischgeste nahm
+Gesten, die dem Suchfeld und der rollenden Tabelle gehörten. In den Eingängen
+öffnet deshalb jetzt die ganze Zeile das Detail — „Ansehen" steht am Handy
+rechts ausserhalb.
+
+Eine dritte und eine vierte Jagd fanden denselben Fund noch zweimal — und
+diesmal war die Form deutlich: **Vier Stellen deuten dieselbe Differenz**
+(Druckblatt, Mittagsblick, Bildschirm „Verkauf ↔ Fassung", CSV), und behoben
+wurde immer nur die, die gerade genannt war. Jetzt gibt es einen Deutungssatz
+an einer Stelle, und alle vier Leser hängen an denselben Zahlen.
+
+## Eine Entscheidung steht aus — kein Fehler, aber wichtig
+
+Eine Zeile, deren Verkauf über **„Ignorieren"** aus der Rechnung fällt, trägt
+weiter die grüne Plakette „stimmt". Gemessen: „Cola 0,33 l" ×3 zugeordnet,
+„Cola Sonderausschank 0,33 l" ×6 ignoriert, 3 Flaschen aus dem Keller — wahr
+sind **9 verkauft, 3 geholt, −6**; gezeigt wird `3 · 3 · 0 · stimmt`.
+
+Das ist kein Fehler dieser Runde: „Ignorieren" hat den Verkauf seit jeher
+stumm gestellt. Diese Runde macht es an vier Stellen sichtbar. Was die
+EINZELNE Zeile daraufhin sagen soll, hängt daran, was „Ignorieren" bedeuten
+soll — zwei Wege stehen ausgearbeitet in `review/BACKLOG.md` ganz oben unter
+„Hoch". In Bericht 37 betrifft das 19 Einheiten Cocktails aus dem Keller.
+
+## Am Gerät nachzusehen
+
+* **Blättert Safari am iPad nach dem Wisch wirklich nicht mehr zurück?**
+  Der Prüfstand bestätigt, dass die Geste abgefangen wird; ob Safari sich
+  daran hält, zeigt erst das Gerät.
+* **Einmal wirklich drucken und als PDF sichern.** Der Prüfstand misst das
+  Blatt, nicht den Drucker.
+
+---
+
 # Was mit diesem Merge live geht · Runde 17 (19.09.2026)
 
 **Stand davor: `sw.js` v56 (live). Stand danach: `sw.js` v57.**

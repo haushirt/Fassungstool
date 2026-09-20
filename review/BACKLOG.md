@@ -341,3 +341,57 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | niedrig | **Client- und Serverschlüssel für Namen sind nicht derselbe.** Browser `nm.toLowerCase()`, Worker NFKC + unsichtbare Zeichen + Leerraum. „Asad  Karakiri" heilt `kennungHeilen()` deshalb nicht — ein Umweg über den 409, kein Schaden. | `public/leitung.html`, `src/index.js` |
 | niedrig | **`codeSumme()` legt bei fehlendem `crypto.subtle` `"roh:"+code` in den `localStorage`.** Nur auf unsicherer Herkunft erreichbar, live also nicht — trotzdem der einzige Pfad, auf dem ein Klartextcode auf Platte käme. | `public/index.html` |
 | niedrig | Der Quelltextkommentar zum Namenswächter zählt **ZWNJ (U+200C) und ZWJ (U+200D) nicht auf**, der Zeichenbereich entfernt sie aber. Code und Kommentar auseinander. | `src/index.js` |
+
+## Runde 18 (Nacht auf den 20.09.2026) · Backoffice
+
+### Erledigt in Runde 18
+
+| Rolle | Runde | Punkt | Wo |
+|---|---|---|---|
+| hospitality-pro | 5 | Wareneingang und Kellerzählung standen mit „—“ da; die Notiz fehlte in der Liste | erledigt in der neuen Ansicht **Eingänge** (`public/leitung.html:3209`). Im **Speicher** unverändert — siehe „Niedrig“ unten |
+| ui-designer | 3 | „Nichts gefunden.“ auch dann, wenn es gar nichts gibt | erledigt in **Eingänge** (zwei getrennte Sätze). Im Speicher unverändert — siehe „Niedrig“ unten |
+| Casimir | 18 | „Ansehen“ zeigt nur Positionen, keine Anzahl | Ursache war nicht die fehlende Spalte, sondern `.tabhuelle table{min-width:560px}` (`:601`): zweispaltige Tabellen schoben die Zahl am Handy aus dem Bild. Behoben über `.tabhuelle.schmal` (`:595`) |
+
+### Neu
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| **mittel** | **Der Weg ZURÜCK für Vorgänge, die nur im Browser liegen, fehlt weiter.** „Eingänge“ zeigt sie jetzt an und sagt ausdrücklich, dass sie in keine Rechnung eingehen (`public/leitung.html:3238`) — aber sie lassen sich von hier aus nicht an den Server schicken. Das Backoffice schreibt nichts an Vorgängen (Architektur), also gehört der Weg in die App: ein Anlauf „nicht gesendete Vorgänge erneut senden“ in `public/index.html`. Schärfung von qa-guardian R3. | `public/leitung.html:3199` (`nurImBrowser`), `public/index.html` (Ausgang) |
+| niedrig | **`vSpeicher` trägt die alten Mängel weiter**: zwei Striche für Wareneingang und Zählung, keine Notiz in der Liste, ein leerer Satz für zwei Lagen, `gzaehlung` ungezeigt. Bewusst nicht angefasst (R7) — zwei Ansichten in einer Nacht umzubauen wäre nicht prüfbar gewesen. Die Bausteine liegen bereit (`vgBloecke`, `vgMengen`, `.tabhuelle.schmal`); es sind wenige Zeilen. Oder: den Speicher ganz streichen, sobald „Eingänge“ sich bewährt hat. | `public/leitung.html:3328` (`vSpeicher`) |
+| niedrig | **Kein Sammelblatt über mehrere Vorgänge.** `druckVorgang()` druckt einen Vorgang; für „die ganze Woche auf ein Blatt“ gibt es nichts. `drucke()` ist allgemein genug, es wäre eine Schleife. | `public/leitung.html:2550` (`druckVorgang`) |
+| niedrig | **Zwei Wege zum selben Ort im Mittagsblick.** Seit B2 führen sowohl die Kachel „Auffällige Differenzen“ als auch der Knopf „Zum vollständigen Abgleich“ unter der Tabelle in den Abgleich; dasselbe bei „Nachbestellen“/„Alle ansehen“. Kein Schaden, aber einer der beiden ist überflüssig. | `public/leitung.html:2144`, `#bAlleAbw`, `#bMehr` |
+
+### Nicht geprüft, weil es kein Prüfstand kann
+
+| Punkt | Was am Gerät nachzusehen ist |
+|---|---|
+| B4 · Zurück-Geste | Chromium bestätigt, dass `preventDefault()` gerufen wird. Ob Safari am iPad daraufhin wirklich nicht mehr zurückblättert, zeigt erst das iPad. |
+| B5 · Druckbild | Der Prüfstand misst das Blatt im Druckmedium, nicht den Drucker. Einmal wirklich als PDF sichern. |
+
+### Nachtrag · Jagd nach Runde 18 · die vier C-Funde
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| niedrig | **Drei Schwellen für dieselbe Frage.** Bildschirm `BEFUND` ab 0,5 („kleine Abweichung"), Druckblatt ab 1,0 („Nicht ausgeglichen"), Mittagsblick-Kachel ab 2,0 („Auffällige Differenzen"). Bei Bericht 37 zeigt die Kachel **4** und das Blatt zwei Klicks später **5**. Eine Zahl, die sich beim Weiterklicken ändert, kostet Vertrauen. Vorschlag: eine Schwelle, an einer Stelle benannt. | `public/leitung.html` (`BEFUND`, `druckDifferenzen`, `vHeute` · `grob`) |
+| niedrig | **Zwei Menüpunkte tragen dieselbe Zahl über denselben Bestand.** „Eingänge" und „Speicher" zählen beide `VORGAENGE.length`. Löst sich von selbst, sobald einer der beiden verschwindet. | `public/leitung.html` (`zaehler`) |
+| niedrig | **Zehn neue Trefferflächen unter 44 px** im Abschnitt „Eingänge" („Ansehen" 73×36, „PDF" 48×36, „Alles als CSV" 101×36). Gleiche Bauart wie im „Speicher", also kein Rückschritt — aber zehn neue. Entschärft, seit die ganze Zeile das Detail öffnet; die Knöpfe selbst bleiben klein. | `public/leitung.html` (`vEingaenge`, `.b klein`) |
+| **erledigt** | Der Fuß jedes Vorgangsblatts sagte „Gezählte Bestände sind Ist-Stände, keine Entnahme" — auch auf einem Wareneingang ohne eine einzige Zählung. Behoben in Runde 18: der Satz steht nur noch, wo ein Zählblock im Blatt ist. | `public/leitung.html` (`druckVorgang`) |
+
+### Nachtrag · zweite Jagd nach Runde 18
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| niedrig | **Der Zeilenklick in den Eingängen hat keinen Tastaturweg.** `tr.klickbar` trägt weder `role="button"` noch `tabindex`; wer mit der Tastatur arbeitet, braucht weiter den Knopf „Ansehen" — und der steht bei 390 px 656 px rechts. Am MacBook (dem Gerät dieser Seite) ist der Knopf im Bild, also kein Verlust, aber auch keine Lösung. | `public/leitung.html` (`vEingaenge`, `tr.klickbar`) |
+| niedrig | **`.b.klein` ist 36 px hoch**, unter der 44-px-Schwelle. Steht in der GETEILTEN Gestaltungsschicht — eine Änderung muss wortgleich in beide Dateien und trifft jede Ansicht beider Seiten. Bestand schon vor Runde 18; vom Zeilenklick praktisch entschärft, nicht behoben. | `public/leitung.html` = `public/index.html` (geteilte Schicht, `--control-h-sm`) |
+| niedrig | **`tests/ui-runde18.cjs` prüft den Zweig „vollständige Rechnung" nicht.** Mit den Daten des Prüfstands ist `halbeRechnung` fast immer `true`. Der `false`-Zweig (kein Kasten, Unterzeile ohne Zusatz) läuft nur im Ignorier-Lauf mit. Ein eigener Aufbau mit lückenlosem Mapping wäre die Gegenprobe. | `tests/ui-runde18.cjs` |
+
+### Nachtrag · dritte und vierte Jagd nach Runde 18
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| **hoch** | **Eine Zeile, deren Verkauf über „Ignorieren" aus der Rechnung fällt, trägt weiter die grüne Plakette „stimmt".** Gemessen: „Cola 0,33 l" ×3 zugeordnet, „Cola Sonderausschank 0,33 l" ×6 ignoriert, 3 Flaschen aus dem Keller → wahr sind **9 verkauft, 3 geholt, −6**; gezeigt wird `3 · 3 · 0 · stimmt` in Grün. Seit Runde 18 sagen Bildschirm, CSV, Kachel und Blatt alle, dass ignorierte Namen da sind — die EINZELNE Zeile aber nicht. **Warum es offen bleibt:** Welcher Artikel hinter einem ignorierten Kassennamen steckt, ist nicht bestimmbar (genau deshalb ist er ignoriert), und ein pauschales Abwerten aller Zeilen träfe jeden Tag, an dem Speisen ignoriert sind — dann leuchtet die Warnung immer und sagt nichts mehr. **Zwei Wege, beide brauchen Casimirs Entscheidung:** (a) „Ignorieren" wird zweigeteilt — „kommt nicht aus dem Keller" (Speisen, Kaffee) gegen „kommt aus dem Keller, zählt aber nicht" (Sonderausschank); nur der zweite wertet Zeilen ab. (b) Jeder ignorierte Name bekommt wahlweise einen Artikel, damit sein Verkauf gerechnet werden kann, ohne dass er im roten Balken steht. In Bericht 37 betrifft das **19 Einheiten Cocktails aus dem Keller** (Aperol Spritz 6, Pisco Sour 5, Monkey Sour 2, Virgin Hugo 2 …). | `public/leitung.html` (`BEFUND`, `zuordnung`, `vZuordnung`) |
+| mittel | **Eine Rezeptur schattet „Ignorieren" still ab.** `abgleich()` prüft `REZ[p.name]` vor `zuordnung()`; die Zuordnungsseite zeigt weiter `__ignoriert` als gewählten Wert und die Plakette „festgelegt", gerechnet wird die Rezeptur. Wer die Rezeptur löscht, schaltet ohne Wort wieder auf „Ignorieren". | `public/leitung.html` (`abgleich`, Rezeptzweig; `vZuordnung`) |
+| niedrig | **Ein einzelner leerer Z-Bericht fällt stumm durch.** Der Vorbehalt „Bericht ohne eine einzige Position" greift nur, wenn im ganzen Fenster keine Position steht. Liegen sieben Berichte im Fenster und einer ist leer, merkt es niemand. Der Zähler ist eine Summe über das Fenster, kein Test je Bericht. | `public/leitung.html` (`druckDifferenzen`) |
+| niedrig | **Kein Wächter für die VERSION-Regel.** `tests/projektregeln.test.mjs` prüft nur die Form `v<Zahl>`, nicht, dass sie mit einer Änderung in `public/` mitzieht. Der B-Fund der zweiten Jagd kann sich wortgleich wiederholen. Eine Prüfung über `git log` wäre möglich. | `tests/projektregeln.test.mjs` |
+| niedrig | **Am Rand gewinnt die Randgeste auch über dem Suchfeld.** Im Streifen 16–20 px des Feldes öffnet ein Ziehen zur Textauswahl die Leiste. Bewusst so entschieden — vier Pixel Ziehweg gegen eine Seite, die sich verabschiedet —, der Verlust ist trotzdem messbar. | `public/leitung.html` (`randwisch`, `eigenerBedarf`) |
+| niedrig | **Ein `npm test`-Lauf meldete einmal 443/1**, in über zwanzig weiteren Läufen nicht wiederholbar. Zwölf Prüfdateien hängen an `Date.now()`/`new Date()`. Den Lauf einmal um Mitternacht (Wien) wiederholen. | `tests/` |

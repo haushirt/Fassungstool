@@ -4268,4 +4268,231 @@ geblieben), und der Papierkorb fehlte auf der Gattungsfrage Wein/Getränke, weil
 **Backlog:** neu unter „Hoch" — Z1 mit Ursache und Fundstelle (hoch). Vier Punkte
 nach „Erledigt" verschoben.
 
+---
+
+---
+
+### Runde 18 – software-engineer (Backoffice, Nacht auf den 20.09.2026)
+
+**Kritik am Vorgänger:**
+* ↩️ geändert — **hospitality-pro R5** („Speicher: Wareneingang und Kellerzählung
+  stehen mit ‚—‘ da") nannte die richtige Stelle, aber die falsche Ursache:
+  `flWein`/`flGetr` zählen `eingang` und `zaehlung` tatsächlich nicht
+  (`public/leitung.html:963`) — die zweite, schwerere Lücke steht dort nicht:
+  **`gzaehlung` wird berechnet (`:919`, `:933`) und nirgends gezeigt.** Eine
+  Kellerzählung, die nur die Getränkelade gezählt hat, meldete „Dieser Vorgang
+  hat keine Mengen bewegt" — bei 19 Flaschen. Behoben in der neuen Ansicht, im
+  Speicher unverändert gelassen.
+* ↩️ geändert — Casimirs Befund „‚Ansehen‘ zeigt nur Positionen, keine Anzahl"
+  stimmt im Ergebnis, nicht in der Ursache. Die Anzahl stand immer in der
+  Tabelle. Sie stand am Handy **170 px rechts neben dem Bild**, weil
+  `.tabhuelle table{min-width:560px}` (`:601`) unter 900 px für JEDE Tabelle
+  gilt — auch für eine mit zwei Spalten. Ohne diese Zeile wäre die neue Ansicht
+  am iPhone genauso stumm gewesen wie die alte.
+* ❌ abgelehnt — **qa-guardian R3** verlangt den Weg ZURÜCK für Vorgänge, die
+  nur im Browser liegen. „Eingänge" zeigt sie jetzt an (`:3238`), schickt sie
+  aber nicht zum Server: Diese Seite schreibt nichts an Vorgängen, das ist
+  Architektur. Gehört in die App, bleibt im Backlog (mittel).
+
+**Umgesetzt:**
+* Die vier Kacheln des Mittagsblicks sind Knöpfe und führen an die Stelle, die
+  ihre Zahl erklärt — keine davon in eine Sackgasse.
+* Neue Ansicht „Eingänge" mit allen fünf Mengenblöcken je Vorgang, Notiz in der
+  Liste, zwei leeren Zuständen und einem Abschnitt für das, was nur im Browser liegt.
+* Wisch vom linken Rand öffnet die Navigation und nimmt Safari die Zurück-Geste;
+  dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs` (neu, Playwright,
+nicht Teil von `npm test`): **51 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
+aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
+Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
+`preventDefault()` wirklich nicht zurückblättert. Am Gerät nachsehen.
+
+**Für die Nächsten:**
+* `vSpeicher` ist absichtlich unangetastet geblieben (R7). Wer ihn anfasst,
+  findet die fertigen Bausteine dafür in `vgBloecke`/`vgMengen`.
+* `drucke()` ist allgemein: jede Ansicht kann ein Blatt bauen, ohne etwas Neues.
+* `tests/unklar-wandert.test.mjs:32` hängt an der Abschnittsmarke „7f · Speicher".
+  Wer die Abschnittsbuchstaben verschiebt, muss diese Zeile mitnehmen.
+
+**Phase/Thema:** Backoffice / Wege, Mengen, Gesten, Papier
+
+**Backlog:** drei neue Punkte (niedrig/niedrig/mittel), siehe `review/BACKLOG.md`,
+Abschnitt „Runde 18".
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (Nachtrichtigung nach der Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Das Differenzblatt nannte „Schwund", wo der Verkauf
+  schlicht nicht in der Rechnung war.** Der Jäger hat es mit Bericht 37 und
+  leerem Mapping nachgestellt: 136 von 145 verkauften Stück nicht zugeordnet,
+  Bildschirm sagt es, Blatt schweigt — und daneben steht das Wort Schwund. Der
+  Kommentar in `:1704` sagte wörtlich: „Das Backoffice druckt hier kein Wort
+  dazu, also blieb der Fehler folgenlos." Mit B5 endete diese Bedingung, und
+  ich habe sie nicht mitgelesen. Behoben: Vorbehaltskasten, „unvollständige
+  Rechnung" in der Unterzeile, und das Wort fällt weg, solange die Rechnung
+  halb ist.
+* ✅ übernommen — **B: `scrollTo(0,0)` statt `scrollIntoView`.** Die Kachel
+  verspricht „Positionen und Mengen ansehen" und legte die Karte bei 390 px
+  921 px unter den Falz. Ich hatte den Weg über den Knopf geprüft und den über
+  die Kachel nicht — zwei Wege ans selbe Ziel, einer gemessen.
+* ✅ übernommen — **B: `finde()` suchte in `alle` statt in `L`.** Ein Filter
+  ohne Treffer sagte „Kein Vorgang passt" und ließ die volle Karte darunter
+  stehen. Meine eigene Nachtrichtigung davor hatte nur die halbe Hälfte des
+  Problems getroffen (den fremden Schlüssel), nicht die eigentliche.
+* ✅ übernommen — **B: Die Randzone war 32 px breit, der Inhalt beginnt bei
+  16 px.** Ich hatte diesen Zielkonflikt gesehen und bewusst „konsequent
+  abfangen" gewählt. Falsch: In den Eingängen stehen „Ansehen"/„PDF" bei
+  390 px erst nach dem waagrechten Rollen — die Geste, die ich genommen habe,
+  war der einzige Weg dorthin. Jetzt 20 px, ausdrückliches Nein für
+  Eingabefelder und rollende Hüllen, und die ganze Zeile öffnet das Detail.
+* ↩️ geändert — **C: der Satz über gezählte Bestände** stand auf jedem Blatt,
+  auch auf einer Lieferung. Sofort behoben statt Backlog, es war eine Zeile.
+  Die drei übrigen C-Funde stehen im Backlog.
+
+**Umgesetzt:** Der A-Fund und alle drei B-Funde, jeder mit eigener Prüfung;
+dazu der Zeilenklick in den Eingängen als zweiter Weg zum Detail.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**51 Urteile grün, 0 rot, keine JS-Fehler** — acht davon sind neu und prüfen
+genau die Funde der Jagd. Der Wischprüfstand setzt den Finger jetzt auf das
+Element, das an der Stelle wirklich liegt (`elementFromPoint`) statt auf den
+Rumpf; vorher hätte er den Fund gar nicht sehen können.
+
+**Für die Nächsten:** Die drei Schwellen für dieselbe Frage (0,5 / 1,0 / 2,0)
+sind der nächste Punkt, der Vertrauen kostet — eine Zahl, die sich beim
+Weiterklicken ändert. Steht im Backlog.
+
+**Phase/Thema:** Backoffice / Nachtrichtigung nach der Jagd
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (zweite Nachtrichtigung, nach der zweiten Jagd)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Mein Vorbehaltskasten zählte die Gründe, nicht die
+  Lücke.** Er las die drei Listen, die sich selbst melden. Zwei Wege melden
+  sich nicht: „Ignorieren" und eine Rezeptzutat mit 0 ml. Beide sind Alltag,
+  und in beiden druckte das Blatt wieder „Vorrat aufgebaut oder Schwund".
+  Das ist derselbe A-Fund wie in der ersten Jagd — ich habe ihn oberflächlich
+  behoben, nicht an der Wurzel. Jetzt zählt `abgleich()` die Einheiten, die es
+  in die Rechnung geschafft haben; diese Zahl braucht keinen Grund und ist
+  gegen den nächsten stillen Weg dicht.
+* ✅ übernommen — **Das Wort „Schwund" gehört überhaupt nicht auf dieses
+  Blatt.** Ich hatte es an `halbeRechnung` gehängt. Falsch: Ob eine Flasche
+  fehlt oder im Vorrat steht, entscheidet ein Mensch im Keller, nicht ein
+  Ausdruck, der in eine Gruppe geht.
+* ✅ übernommen — **B: Ich habe einen Schritt zu weit zurückgenommen.** Nach
+  der ersten Jagd liess `randwisch()` bei OFFENER Leiste den Randwisch los —
+  genau dort liegt der Daumen, wenn die Schublade offen ist. Eine Behebung,
+  die eine neue Lücke aufmacht, ist keine.
+* ✅ übernommen — **B: `VERSION` in `sw.js` stand seit dem ersten Commit der
+  Runde still**, während `leitung.html` sich zweimal geändert hat. Offline
+  wäre genau das Blatt ohne Vorbehaltskasten ausgeliefert worden. Meine
+  eigenen Unterlagen führten „v57" als geprüfte Regel — geprüft hatte ich sie
+  einmal, am Anfang. **Eine Regel, die nur zu Beginn einer Runde gilt, ist
+  keine Regel.**
+* ✅ übernommen — **B: Der Kopfsatz widersprach drei Zeilen später dem Kasten.**
+  Ich hatte die Deutungsspalte berichtigt und den Satz darüber stehenlassen.
+
+**Umgesetzt:** Der A-Fund an der Wurzel (`stkGesamt`/`stkGerechnet` in
+`abgleich()`, additiv), alle vier B-Funde, zwei der vier C-Funde.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**51 Urteile grün, 0 rot** — sechs davon sind neu und stellen genau die zwei
+stillen Wege nach (alles auf „Ignorieren", und eine Rezeptur mit 0 ml).
+
+**Für die Nächsten:** Die Lehre dieser Nacht steht in `LEARNINGS.md`: Wer eine
+Lücke über ihre GRÜNDE zählt, zählt nur die Gründe, die er kennt. Zähle, was
+übrig bleibt.
+
+**Phase/Thema:** Backoffice / zweite Nachtrichtigung
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (dritte Nachtrichtigung)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Ich habe zweimal dieselbe Hälfte behoben.** Der Fund
+  lautete beide Male „Bildschirm und Blatt sagen Verschiedenes"; ich habe
+  beide Male nur das Blatt angefasst. Die Ursache war die ganze Zeit
+  sichtbar: **zwei Deutungsspalten mit zwei Texten.** Jetzt ein Satz, eine
+  Stelle (`DEUTUNG`). Eine vierte Stelle kann nicht mehr abweichen.
+* ✅ übernommen — **B: `zaehlePos(…,"menge")`.** Ich habe einen Grundwert
+  erfunden, den die Funktion nicht kennt. Vier Zeilen weiter schreibt
+  `merkeOhneGroesse` korrekt `fehlt:"ausschank"` — zwei Buchhaltungen, die
+  sich innerhalb derselben vier Zeilen widersprechen.
+* ✅ übernommen — **B: Mein Warnhinweis war dabei, immer zu leuchten.** Ich
+  habe gezählt, was nicht in der Rechnung steht, und Rührei mitgezählt. Eine
+  Warnung, die nie ausgeht, ist keine Warnung. Entscheidung und Lücke sind
+  jetzt getrennt.
+* ✅ übernommen — **B: Mein Wächter konnte nicht rot werden.** Das Urteil zum
+  0-ml-Zweig hing an einem Vorbehalt, der aus einer ganz anderen Ecke kam.
+  Ein Prüfstand, der grün bleibt, wenn man den geprüften Zweig entfernt,
+  prüft sich selbst.
+* ✅ übernommen — **Der Prüfstand hatte die Verkaufsseite nie gesehen.** Die
+  Kassennamen trugen keine Einheit, `mlAusText()` fand nichts, `verk` blieb
+  leer. Alle bisherigen Urteile über Differenzen liefen über reine Entnahme.
+
+**Umgesetzt:** Ein Deutungssatz für die ganze Seite, `zaehlePos` berichtigt,
+Entscheidung von Lücke getrennt, Bericht ohne Positionen abgefangen, der
+Prüfstand zu einem Wächter gemacht.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**51 Urteile grün, 0 rot.** `sw.js` v59.
+
+**Für die Nächsten:** Die Lehre dieser Nacht: **Wenn derselbe Fund dreimal
+kommt, ist die Behebung falsch, nicht der Fund.** Zweimal habe ich eine
+Textstelle berichtigt; erst beim dritten Mal die beiden Textstellen zu einer
+gemacht.
+
+**Phase/Thema:** Backoffice / dritte Nachtrichtigung
+
+**STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (vierte Nachtrichtigung, Abschluss)
+
+**Kritik am Vorgänger (das bin ich selbst):**
+* ✅ übernommen — **A: Vier Leser, und ich habe immer nur den behoben, der
+  gerade genannt war.** Druckblatt (Nachtrag 1), Mittagsblick (Nachtrag 3) —
+  Bildschirm und CSV hat niemand genannt, also blieben sie stehen. Gemessen:
+  neun Flaschen verkauft, drei geholt, und auf dem Schirm steht eine grüne
+  Plakette „stimmt". Jetzt sind alle vier angeschlossen.
+* ✅ übernommen — **B: Die Kachel meldete im selben Fall eine grüne Null.**
+  Der Kommentar drei Zeilen darüber verlangt wörtlich das Gegenteil.
+* ✅ übernommen — **B: Der Randwisch, zum dritten Mal.** Bei offener Leiste
+  blätterte Safari ab x = 21 wieder zurück. Ich hatte die Zone auf 20 px
+  gesetzt, weil der Inhalt bei 16 px beginnt — bei offener Leiste liegt dort
+  aber das Blatt, und der Grund gilt gar nicht.
+* ✅ übernommen — **B: Mein Prüfstand bewachte vier meiner eigenen Änderungen
+  nicht.** Die Jagd hat sie zurückgedreht, und alle 43 Urteile blieben grün.
+  Acht neue stehen jetzt an genau diesen Stellen.
+* ❌ abgelehnt (mit Begründung) — die **Plakette der einzelnen Zeile**. Welcher
+  Artikel hinter einem ignorierten Kassennamen steckt, ist nicht bestimmbar;
+  ein pauschales Abwerten träfe jeden Tag mit Speisen. Zwei Wege stehen
+  ausgearbeitet im Backlog (hoch). Das ist eine Entscheidung, keine Runde.
+
+**Umgesetzt:** Alle vier Leser der Differenz an dieselben Zahlen angeschlossen,
+die drei B-Funde behoben, zwei C-Funde mit, der Prüfstand zum Wächter gemacht.
+
+**Geprüft:** `npm test` **444/444**. `node tests/ui-runde18.cjs`:
+**51 Urteile grün, 0 rot.** `sw.js` v60.
+
+**Für die Nächsten:** Die Form, die vier Jagden gebraucht haben, um sichtbar zu
+werden: **Eine Wahrheit mit mehreren Lesern heilt man nicht bei einem Leser.**
+Wer eine Auskunft ändert, zählt zuerst, wie viele Stellen sie geben.
+
+**Phase/Thema:** Backoffice / Abschluss Runde 18
+
 **STATUS:** FERTIG
