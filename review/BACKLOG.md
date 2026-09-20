@@ -418,3 +418,20 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | niedrig | **Kein Wächter für die VERSION-Regel.** `tests/projektregeln.test.mjs` prüft nur die Form `v<Zahl>`, nicht, dass sie mit einer Änderung in `public/` mitzieht. Der B-Fund der zweiten Jagd kann sich wortgleich wiederholen. Eine Prüfung über `git log` wäre möglich. | `tests/projektregeln.test.mjs` |
 | niedrig | **Am Rand gewinnt die Randgeste auch über dem Suchfeld.** Im Streifen 16–20 px des Feldes öffnet ein Ziehen zur Textauswahl die Leiste. Bewusst so entschieden — vier Pixel Ziehweg gegen eine Seite, die sich verabschiedet —, der Verlust ist trotzdem messbar. | `public/leitung.html` (`randwisch`, `eigenerBedarf`) |
 | niedrig | **Ein `npm test`-Lauf meldete einmal 443/1**, in über zwanzig weiteren Läufen nicht wiederholbar. Zwölf Prüfdateien hängen an `Date.now()`/`new Date()`. Den Lauf einmal um Mitternacht (Wien) wiederholen. | `tests/` |
+
+
+## Runde 20 (20.09.2026) · die zwei Zahlen und das Vorgangsfenster
+
+### Zurückgezogen
+
+| Punkt | Warum |
+|---|---|
+| **A15 · „Sonderentnahmen gehen in die Verbrauchsprognose ein"** | Kein Fund. Hauskonsum wird an der Kasse gebucht und steht damit im Z-Bericht (Casimir: „Doch tauchen sie auf, weil das im Kassensystem verbucht wird."). Bruch, Küche, Personal und Verkostung sind Verbrauch; A = B ist richtig. Vermerk in `review/ANALYSE-BACK-FRONT.md`. |
+
+### Neu
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| **mittel** | **Läuft der Hauskonsum in den ARTIKELzeilen des Z-Berichts mit?** `tests/fixtures/zbericht-37-extended.csv` führt 22 Warengruppen „… - Inner Haus" (Beverage 87 Einheiten, Wein Weiß offen 10). Das sind Gruppensummen; der Abgleich rechnet gegen Artikelzeilen. Sind die Hausmengen dort NICHT enthalten, gehen Sonderentnahmen im Abgleich nicht auf und erscheinen als Schwund. Das ist nachzusehen, nicht zu raten — an einem echten Bericht, Gruppensumme gegen Summe der zugehörigen Artikelzeilen. | `src/gnparse.js`, `tests/fixtures/zbericht-37-extended.csv` |
+| niedrig | **`vSpeicher` zeigt weiter die alte, fünfteilige Form** — je Topf eine Tabelle, je Tabelle eine eigene Sortierung. Genau das, was in „Eingänge" behoben wurde. `vgTafelHtml` liegt bereit und nimmt denselben Vorgang; es wären wenige Zeilen. Solange beide Ansichten nebeneinander stehen, zeigt dieselbe Sache zwei verschiedene Bilder. | `public/leitung.html` (`vSpeicher`) |
+| **erledigt** | ~~Kein Wächter gegen die nächste ungleiche Kopie des Laufwegs.~~ Noch in Runde 20 gebaut: `tests/keller-gegen-backoffice.test.mjs` lässt beide `wegCmp` über alle 57 Weine laufen und vergleicht die Reihenfolge — samt Weinliste und Regalplan aus beiden Dateien. Gegenprobe gefahren: mit dem alten `ZORD` fällt sie. | `tests/keller-gegen-backoffice.test.mjs` |

@@ -759,10 +759,19 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
     }
     assert.fail(name + ": keine schliessende Klammer");
   };
+  /* `verbrauchteMengen` seit Runde 20: Der Vortagsabgleich rechnet gegen
+     die Kasse und nimmt dafür, was OBEN gefehlt hat — nicht, was aus dem
+     Keller getragen wurde. Die Funktion braucht das Soll der
+     Getränkelade; hier steht dafür eine kleine, ausgeschriebene Fassung,
+     weil dieser Prüfstand die Rechenlogik prüft und nicht die
+     Ladengeometrie. Dass beide Dateien DASSELBE Soll haben, prüft
+     `tests/soll-gleich.test.mjs` an den echten Daten. */
   const rechne = new Function(
-    schnitt("gefassteMengen") + "\n" + schnitt("verkaufteFlaschen") +
+    "const GSOLL={cola:7,colaz:7};\n" +
+    schnitt("gefassteMengen") + "\n" + schnitt("verbrauchteMengen") +
+    "\n" + schnitt("verkaufteFlaschen") +
     "\n" + schnitt("abgleichZeilen") +
-    "\nreturn {gefassteMengen, verkaufteFlaschen, abgleichZeilen};")();
+    "\nreturn {gefassteMengen, verbrauchteMengen, verkaufteFlaschen, abgleichZeilen};")();
 
   const vorgang = {
     mode: "tag", tag: "2026-09-19",

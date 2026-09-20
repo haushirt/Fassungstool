@@ -55,8 +55,14 @@ function umgebung() {
    GEBUCHTEN Vorgängen — so wie das Journal, das seine Zeilen erst beim
    Abschluss bekommt. Ein Prüfstand, der das weglässt, prüft einen
    Zustand, den es nach dem Abschluss nie gibt. */
+/* `verbraucht` seit Runde 20: `abgleich()` rechnet gegen die Kasse und
+   nimmt dafür, was OBEN gefehlt hat — nicht, was aus dem Keller ging.
+   Ohne abweichende Holmenge sind beide gleich, und genau so baut
+   `normVorgang` den Vorgang. Ein Prüfstand, der nur eine Zahl setzt,
+   prüft einen Zustand, den es nach dem Abschluss nie gibt. */
 const vorgang = (wein, getr) => ({ mode: "tag", tag: TAG, fertig: true,
-  wein: wein || {}, getr: getr || {} });
+  wein: wein || {}, getr: getr || {},
+  verbraucht: Object.assign({}, wein || {}, getr || {}) });
 /* Ein Z-Bericht in der Form, die `vomServer()` ablegt. */
 const bericht = positionen => ({ [TAG]: { tag: TAG, nr: 99, positionen, umsatz: 0 } });
 

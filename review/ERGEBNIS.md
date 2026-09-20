@@ -5,6 +5,122 @@ Phase gefüllt, nicht laufend.
 
 ---
 
+# Was mit diesem Merge live geht · Runde 20 (20.09.2026)
+
+**Stand davor: `0c4916c` (Runde 19, `sw.js` v64, live). Stand danach: `sw.js` v66.**
+
+**Kein Schemaeingriff, keine Migration.** `migrations/`, `schema.sql`,
+`wrangler.jsonc`, `package.json`, `src/index.js` unberührt, kein
+Schreibzugriff auf die Live-D1. `RUNDEN` unverändert — bestehende
+Anmeldungen bleiben gültig. Geändert sind nur `public/index.html`,
+`public/leitung.html` und `public/sw.js`.
+
+Anlass war eine Beobachtung beim Öffnen eines Vorgangs: *„warum sind
+gezählt und aus dem Keller geholt anders sortiert und nicht die gleiche
+Anzahl."* Beides stimmte — und es waren zwei verschiedene Ursachen.
+
+---
+
+## 1 · Es gibt zwei Zahlen je Position, das Tool behielt nur eine
+
+* **„oben gefehlt"** = Soll − Ist an Bar, Restaurant, Backup und Lade.
+  Das ist der **Verbrauch**; dagegen wird der Z-Bericht gerechnet.
+* **„aus dem Keller geholt"** = was wirklich herausgetragen wurde.
+  Diese Zahl geht **vom Bestand** ab.
+
+Sie gehen auseinander, sobald im Lager weniger lag als oben gefehlt hat —
+dann klappt in der App das Feld für die berichtigte Menge auf
+(`holtN`/`gholtN`). Bisher ersetzte diese Eingabe die Zahl überall: oben
+fehlten sechs, getragen wurden vier, und **gerechnet wurden vier** — auch
+gegen die Kasse, die sechs verkauft hat.
+
+Das widersprach der eigenen Festlegung in
+`review/OFFENE-ENTSCHEIDUNGEN.md:122-127` und folgte stattdessen der
+Glossarzeile `UEBERGABE-TECHNISCH.md:687`, die beide Begriffe gleichsetzt.
+Die Glossarzeile ist jetzt aufgetrennt.
+
+**Es ändert heute keine einzige Zahl.** In allen sechs Live-Vorgängen sind
+`holtN`, `gholtN`, `zusatz` und `gzusatz` leer, beide Zahlen also
+identisch. Beide werden im Backoffice aus denselben Rohfeldern gerechnet —
+**kein neues Feld im Vorgang, keine Änderung an der Offline-Reihe, kein
+Gerät im Feld, das ein neues Format kennen müsste**, und rückwirkend
+gültig für jeden schon gespeicherten Vorgang.
+
+Derselbe Schnitt gilt jetzt auch im Keller: der Vortagsabgleich beim
+Abschluss rechnet gegen den Verbrauch, das Protokoll zeigt beide Spalten.
+Vorher zeigten Journal, Backoffice und Protokoll bei einer Abweichung drei
+verschiedene Zahlen.
+
+## 2 · Das Vorgangsfenster
+
+Statt fünf Tabellen, jede nach Menge sortiert: ein Kopf und **eine**
+Tabelle je Abschnitt.
+
+* **Kopf:** Vorgangsart und Tag, wer gefasst hat, die Uhrzeit **vom Gerät**
+  (bisher wurde die Ankunft beim Server gezeigt — bei einem Gerät ohne
+  Netz liegen dazwischen Stunden), der Zustand, und bei einer Freigabe
+  ohne Bestätigung der Name und was offen war.
+* **Eine Zeile je Artikel**, zwei Zahlenspalten. Die Spaltenköpfe sagen,
+  **wofür** die Zahl da ist: „→ Z-Bericht" und „→ Bestand".
+* **Eine Sortierung**: der Laufweg durch den Keller — dieselbe, in der die
+  App zählen und holen lässt.
+* **Weicht eine Zeile ab**, ist sie hervorgehoben und nennt den Grund
+  („im Lager lagen nur 1").
+* **Zusätzlich Entnommenes** steht an seiner Zeile statt eingemischt.
+* **Sonderentnahme:** beide Spalten mit derselben Zahl, darüber der Grund
+  im Klartext (Bruch, Küche, Personal, Verkostung) — den las das
+  Backoffice bisher gar nicht.
+* **Kellerzählung und Wareneingang** behalten ihre einspaltige Form; in
+  der zweiten Spalte steht nichts, keine 0.
+
+Das Druckblatt je Vorgang kommt aus derselben Quelle — eine Rechnung, zwei
+Ausgaben.
+
+## 3 · Ein Soll für beide Dateien
+
+App und Backoffice rechneten das Soll der Getränke aus zwei verschiedenen
+Ladenaufteilungen: die App nimmt das alte Regal heraus und ersetzt es
+durch Lade 2, im Backoffice fehlte das. Gemessen: `gasteiner` App 15 /
+Backoffice 18, `gastill` App 4 / Backoffice 1, die übrigen 35 gleich.
+Jetzt rechnen beide dieselbe Aufteilung, und `tests/soll-gleich.test.mjs`
+vergleicht sie Position für Position.
+
+---
+
+## Zurückgezogen
+
+**A15 („Sonderentnahmen gehen in die Verbrauchsprognose ein")** ist kein
+Fund. Hauskonsum wird an der Kasse gebucht und steht damit im Z-Bericht;
+`tests/fixtures/zbericht-37-extended.csv` führt 22 Warengruppen
+„… - Inner Haus". Bruch, Küche, Personal und Verkostung sind Verbrauch,
+das heutige Verhalten ist richtig. Offen bleibt eine andere Frage, jetzt
+im Backlog: ob diese Mengen in den ARTIKELzeilen mitlaufen, gegen die der
+Abgleich rechnet.
+
+## Nachweis
+
+* `npm test`: **538 von 538** grün (vorher 511; 27 neue Prüfungen in
+  `tests/zwei-zahlen`, `tests/vorgangsfenster`, `tests/soll-gleich`,
+  `tests/keller-gegen-backoffice`).
+* **Gegenprobe gefahren.** Die Rechnung zurückgebaut → 6 von 17 in
+  `zwei-zahlen` und 2 in `vorgangsfenster` fallen. Das gemeinsame Soll
+  zurückgebaut → 2 in `soll-gleich` fallen. Den Laufweg zurückgebaut →
+  `keller-gegen-backoffice` fällt.
+* **Am echten Vorgang** `tag_2026-09-20`: Wein 24/24, Getränke 38/38 —
+  beide Spalten gleich, weil dort nichts abweicht. Derselbe Vorgang mit
+  einem künstlichen `holtN`: die Spalten gehen auseinander und die Zeile
+  nennt den Grund.
+* **Keller gegen Backoffice**: derselbe Vorgang durch beide Rechnungen,
+  mit und ohne Abweichung — dieselben Zeilen. Vorher nur ohne.
+* Oberfläche von Hand (nicht Teil von `npm test`, Regel 8):
+  `ui-mass` (LAUF=runde-20) alle Urteile grün in sechs Breiten,
+  `ui-runde18` 54/54, `ui-runde17` 38/38, `ui-leitung-echt` 44/44,
+  `ui-fremdgeraet` 10/10, `ui-zweiter-vorgang` 15/15, Gestaltungsschicht
+  in beiden Dateien wortgleich.
+* Bilder: `review/mockup/bilder/fenster-1440.png` und `-393.png`.
+
+---
+
 # Was mit diesem Merge live geht · Runde 19 (20.09.2026)
 
 **Stand davor: `f252b88` (Runde 18, `sw.js` v61, live). Stand danach: `sw.js` v64.**

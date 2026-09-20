@@ -182,7 +182,8 @@ describe("abgleich(): unbestätigte Größen sind keine Abweichung", () => {
                 "Amaro Averna Siciliano 2 cl": "noblier",
                 "Sanbitter Spritz 1 Glas": "sanbitter" };
   /* Eine Tagesfassung, die vier Achtel-Weine nachgeholt hat. */
-  const VORG = [{ mode: "tag", tag: BERICHT.tag, fertig: true, wein: { w001: 1 }, getr: {} }];
+  const VORG = [{ mode: "tag", tag: BERICHT.tag, fertig: true, wein: { w001: 1 }, getr: {},
+      verbraucht: { w001: 1 } }];
 
   test("ohne Bestätigung stehen sie in `ohneGroesse` und NICHT in `verk`", () => {
     const { f } = umgebung();
@@ -296,7 +297,8 @@ describe("Sammelbestätigung: ein Knopf für alle Vorschläge", () => {
 
   test("danach rechnen die Positionen mit", async () => {
     const { f } = umgebung();
-    f.setzte({}, {}, zber(), [{ mode: "tag", tag: BERICHT.tag, fertig: true, wein: { w001: 1 }, getr: {} }]);
+    f.setzte({}, {}, zber(), [{ mode: "tag", tag: BERICHT.tag, fertig: true, wein: { w001: 1 }, getr: {},
+      verbraucht: { w001: 1 } }]);
     await f.bestaetigeAlleGebinde(LISTE);
     const a = f.abgleich(BERICHT.tag, 1);
     nah(a.verk.w001, 4 * 125 / 750, "vier Achtel aus der 0,75-l-Flasche");
