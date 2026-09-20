@@ -6,14 +6,19 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runden 17 bis 22 sind gemergt und live.** `sw.js` steht auf **v71**.
+- **Runde 22 liegt zum Merge bereit** (PR #16). Bis einschliesslich
+  Runde 21 ist alles auf `main` und **live** — live gegengelesen: der
+  Sammelabruf steht im Backoffice, die App im Keller ist unverändert.
+- Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
+- `sw.js` steht mit Runde 22 auf **v71**.
 - `npm test`: **581 von 581 grün** (Stand 21.09.2026, Laufzeit ca. 4 s).
-- Oberfläche von Hand (brauchen Playwright, **nicht** Teil von `npm test`,
-  Regel 8): `node tests/ui-runde22.cjs` 21/21,
-  `node tests/ui-leitung-echt.cjs` 44/44, `node tests/ui-runde21.cjs` 19/19,
-  `node tests/ui-runde18.cjs` 51/51, `node tests/ui-runde17.cjs` 38/38.
-- Die PR-Beschreibung der jeweils letzten Runde steht in `review/ERGEBNIS.md`,
+- Oberfläche von Hand, **nicht** Teil von `npm test` (Regel 8), braucht
+  Playwright: `node tests/ui-runde22.cjs` 31/31 ·
+  `node tests/ui-runde21.cjs` 19/19 · `node tests/ui-leitung-echt.cjs` 44/44 ·
+  `node tests/ui-runde18.cjs` 51/51 · `node tests/ui-runde17.cjs` 38/38.
+- Die PR-Beschreibung der jeweils letzten Runde steht in
+  `review/ERGEBNIS.md`, die Übergaben aller Runden in `review/LOG.md`,
   die Fragen an Casimir in `review/MORGENBRIEF.md`.
 - **Offen ist keine Migration.**
 
