@@ -1,7 +1,7 @@
 # Morgenbrief · 21.09.2026
 
-Runde 22 ist fertig und gemergt — mit dem Merge geht sie live. Sie
-betrifft nur eines: welche Kassennamen das Tool von selbst erkennt.
+Runde 22 ist gemergt und damit **live**. Sie betrifft nur eines: welche
+Kassennamen das Tool von selbst erkennt.
 
 ---
 
