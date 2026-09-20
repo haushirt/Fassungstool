@@ -918,13 +918,30 @@ function normVorgang(v){
       zu(o.wein,id,n);
     });
     Object.keys(v.zusatz||{}).forEach(id=>zu(o.wein,id,v.zusatz[id]));
-    /* Getränke: getr[id] ist der Ist-Stand in der Lade, Fehlmenge = Soll − Ist */
-    GIDS.forEach(id=>{
-      const ist=(v.getr && v.getr[id]!=null) ? +v.getr[id] : GSOLL[id];
-      const fehlt=Math.max(0, GSOLL[id]-ist);
-      const n=(v.gholtN && v.gholtN[id]!=null) ? +v.gholtN[id] : fehlt;
-      zu(o.getr,id,n);
-    });
+    /* Getränke: `v.getr` ist der GEZÄHLTE Ist-Stand in der Lade — eine
+       Angabe, keine Bewegung. Was aus dem Getränkelager geholt wurde,
+       steht in `gent` und wird weiter unten EINMAL addiert.
+
+       NACHTRICHTIGUNG (Analyse Runde 19 · A): Hier stand bis v61 eine
+       zweite Herleitung derselben Menge — `Soll − Ist`, wahlweise
+       überschrieben von `gholtN`. Genau daraus baut aber schon die App
+       ihr `gent` (`geholteGetraenke`, public/index.html:4751, mit
+       demselben `gholtN`-Vorrang), und vierzig Zeilen weiter unten
+       läuft `gent` in denselben Topf. JEDE geholte Flasche zählte damit
+       doppelt.
+       Gemessen (echter Worker, echte D1): Lade Soll 7, Ist 3, 4 geholt
+       und abgehakt → Journal `entnahme 4 lager`, dieser Schirm `getr 8`,
+       „Verkauf ↔ Fassung" verkauft 4 · entnahme 8 · Differenz +4 ·
+       „prüfen". Für jedes Getränk, an jedem Tag, eine erfundene
+       Abweichung in exakter Höhe der geholten Menge — bis hinaus auf das
+       gedruckte Blatt.
+       Die Gegenrichtung war ebenso falsch: ohne Haken „geholt" bleibt
+       `gent` leer, die Herleitung hier zählte trotzdem, der Worker gar
+       nicht. Deshalb keine zweite Herleitung mehr, sondern dieselbe
+       Quelle wie im Journal (`src/index.js`, `zu("entnahme", …, d.gent)`).
+       `tests/getraenke-doppelt.test.mjs` bestückt einen Vorgang mit
+       `getr` UND `gent` — genau diese Kombination fehlte in jeder
+       Prüfdatei und hat den Fehler 445 grüne Prüfungen lang verdeckt. */
     if(v.getr && Object.keys(v.getr).length) o.gzaehlung=Object.assign({},v.getr);
   }
 
@@ -1017,6 +1034,10 @@ function nachZeit(a,b){
 
 /* ════════════ 3 · Quelle ════════════ */
 let QUELLE="—", VORGAENGE=[], STAND=null;
+/* Die Notizzeilen des Ereignisjournals (Mailempfang, Wochenbrief,
+   Rechtevermerke). Leer, solange niemand angemeldet ist oder die Rolle
+   nicht Leitung ist — das ist kein Fehler, nur keine Auskunft. */
+let NOTIZEN=[];
 
 /* Wie viele Ziffern ein Code hat. Genau eine Stelle nennt die Zahl — im
    Worker (`PIN_LAENGE` in src/index.js) und in der App (`PIN_LAENGE` in
@@ -1285,6 +1306,35 @@ async function ladeBerichte(){
   }catch(e){ return false; }
 }
 
+/* ── Was das Journal zu melden hat ───────────────────────────────────
+   Der Mailempfang legt jeden abgewiesenen Absender und jeden Bericht
+   ohne lesbaren Anhang hier ab, der Wochenbrief ebenso, und seit
+   Runde 19 auch jeden Vorgang, den jemand ohne die passende Rolle
+   geschrieben hat. Bis es diesen Aufruf gab, war all das unsichtbar:
+   Im Mittagsblick stand „Z-Bericht noch nicht eingelesen" — derselbe
+   Satz für „kommt noch" und für „wurde an der Tür abgewiesen".
+   Nur Leitung; alles andere antwortet 403 und lässt die Liste leer. */
+async function ladeNotizen(){
+  try{
+    const r=await fetch("/api/journal?limit=60",{headers:{Accept:"application/json"}});
+    if(!r.ok){ NOTIZEN=[]; return false; }
+    const j=await r.json();
+    NOTIZEN=(j.zeilen||[]).filter(z=>z && z.notiz);
+    return true;
+  }catch(e){ return false; }
+}
+/* Die jüngste Notiz je Quelle — mehr braucht der Mittagsblick nicht,
+   und eine Liste mit zwanzig gleichlautenden Zeilen liest niemand. */
+function letzteNotiz(quelle){
+  return NOTIZEN.find(z=>z.quelle===quelle) || null;
+}
+function notizZeit(z){
+  if(!z || !z.ts) return "";
+  const d=new Date(+z.ts);
+  return d.toLocaleDateString("de-AT",{day:"2-digit",month:"2-digit"})
+    +" "+d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"});
+}
+
 async function ladeZuordnung(){
   try{
     const r=await fetch("/api/mapping",{headers:{Accept:"application/json"}});
@@ -1467,6 +1517,27 @@ function quellBanner(m){
 /* ════════════ 4 · Bestand fortschreiben ════════════
    Bestand = jüngste Zählung + alles danach Eingegangene − alles danach Entnommene.
    Ohne Zählung gibt es keinen Bestand, nur Bewegung — das wird auch so gesagt. */
+/* ── Was gebucht ist, und was erst läuft ──────────────────────────────
+   NACHTRICHTIGUNG (Analyse Runde 19 · A): Der Worker leitet Journalzeilen
+   ERST beim Abschluss ab (`src/index.js`, `ereignisseAbleiten` läuft nur
+   bei `fertig`). Die App schickt aber alle 45 Sekunden ihren
+   Zwischenstand hinaus (`public/index.html`, `zwischenstand`), der Server
+   legt ihn mit `status='offen'` ab, und `/api/vorgaenge` gibt ihn
+   ungefiltert wieder heraus.
+
+   `bestand()`, `verbrauch()`, `abgleich()` und die Getränkeansicht haben
+   `fertig` an keiner Stelle geprüft und damit gerechnet, was noch gar
+   nicht gebucht ist. Gemessen: Kellerzählung 12 Flaschen abgeschlossen,
+   darauf eine LAUFENDE Tagesfassung mit 5 entnommenen — Worker 12,
+   dieser Schirm 7. Solange im Keller gefasst wird (Stunden), zeigte die
+   Leitung die Entnahme schon als Tatsache; blieb ein Gerät hängen (Akku
+   leer), dauerhaft.
+
+   Die Rechnungen sehen ab hier dasselbe wie das Journal. Wer den
+   laufenden Vorgang SEHEN will, ist richtig in „Eingänge" und im
+   Mittagsblick — beide lesen weiter `VORGAENGE` und sagen „läuft". */
+const gebucht = () => VORGAENGE.filter(v=>v.fertig);
+
 function bestand(){
   /* Je Artikel die JÜNGSTE Zählung, nicht eine Zählung für alle.
 
@@ -1480,13 +1551,14 @@ function bestand(){
      die Leitung sah den falschen der beiden Wege. */
   const zuletzt={};                 /* Artikel → der Vorgang, dessen Zählung gilt */
   let basis=null;
-  VORGAENGE.forEach(v=>{
+  const GEB=gebucht();
+  GEB.forEach(v=>{
     if(!v.zaehlung) return;
     basis=v;                        /* die jüngste Zählung trägt die Zeile im Banner */
     Object.keys(v.zaehlung).forEach(id=>{ if(v.zaehlung[id]!=null) zuletzt[id]=v; });
   });
   const b={}, seit={ein:{}, raus:{}}, unklar={};
-  VORGAENGE.forEach(v=>{
+  GEB.forEach(v=>{
     if(v.zaehlung) Object.keys(v.zaehlung).forEach(id=>{
       if(v.zaehlung[id]!=null && zuletzt[id]===v) b[id]=v.zaehlung[id];
     });
@@ -1565,7 +1637,7 @@ function tagMinus(iso,n){
 function verbrauch(){
   const g=tagMinus(wienTag(),EINST.tage);
   const w={}, gt={}; const tage=new Set();
-  VORGAENGE.forEach(v=>{
+  gebucht().forEach(v=>{
     if((v.tag||"") < g) return;
     if(v.mode==="ware"||v.mode==="keller") return;
     tage.add(v.tag);
@@ -1733,7 +1805,26 @@ const vorbehaltSatz = v => {
    Flasche fehlt oder im Vorrat steht, entscheidet ein Mensch im Keller;
    die Rechnung kann es nicht wissen, solange „Ignorieren" ein
    vollwertiger Zustand ist. Ein Satz, eine Stelle. */
-const DEUTUNG = r => r.diff>0
+/* NACHTRICHTIGUNG (Analyse Runde 19 · A): Eine Zeile mit Verkauf GENAU
+   NULL, während im Fenster noch Kassennamen ohne Zuordnung stehen, bekam
+   denselben Satz wie eine echte Abweichung — „mehr geholt als verkauft —
+   Vorrat aufgebaut oder im Keller nachsehen". Gemessen an der Live-Lage
+   (44 von 48 Namen offen) stand dieser Satz zehnmal untereinander, und
+   kein einziges Mal war er eine Auskunft: Der Verkauf steckte in den
+   offenen Namen.
+
+   Entscheidung Nr. 9 bleibt unangetastet — die ZAHL bleibt stehen, die
+   Zeile zählt weiter in die rote Kachel, und eine offene Speise schaltet
+   keinem Wein den Befund ab. Was fällt, ist allein die BEHAUPTUNG einer
+   Ursache dort, wo die Rechnung keine kennt. Eine Null, die auch eine
+   Lücke sein kann, darf nicht als Messung gedeutet werden.
+
+   Sobald alles zugeordnet ist, ist eine Null wieder eine Messung und der
+   alte Satz steht wieder da. */
+const DEUTUNG = (r, offen) => (r.diff>0 && !(r.verkauf>0) && offen>0)
+  ? "0 verkauft laut Kasse — aber "+offen+(offen===1?" Kassenname ist":" Kassennamen sind")
+    +" noch nicht zugeordnet; der Verkauf kann dort stecken"
+  : r.diff>0
   ? "mehr geholt als verkauft — Vorrat aufgebaut oder im Keller nachsehen"
   : "mehr verkauft als geholt — Vorrat wird abgebaut";
 
@@ -1894,7 +1985,7 @@ function abgleich(tag, spanne){
 
   /* Alles, was im Fenster aus dem Keller ging */
   const ent={};
-  VORGAENGE.filter(v=>imFenster(v.tag)).forEach(v=>{
+  gebucht().filter(v=>imFenster(v.tag)).forEach(v=>{
     Object.keys(v.wein).forEach(id=>ent[id]=(ent[id]||0)+v.wein[id]);
     Object.keys(v.getr).forEach(id=>ent[id]=(ent[id]||0)+v.getr[id]);
   });
@@ -2173,10 +2264,18 @@ function vHeute(m){
       ? `<button type="button" class="${klassen}" data-ziel="${esc(ziel)}">${innen}</button>`
       : `<div class="${klassen}">${innen}</div>`;
   };
+  /* Drei Lagen, nicht zwei (Analyse Runde 19 · A): Seit die Rechnungen
+     nur noch Gebuchtes sehen (`gebucht()`), ist „eingegangen" für eine
+     LAUFENDE Fassung die falsche Auskunft — ihre Flaschen stehen in
+     keiner Zahl dieses Schirms. Die Kachel sagt das jetzt, und sie nennt
+     die Menge trotzdem: sie ist erfasst, nur noch nicht gebucht. */
   k.innerHTML=
-    kachel("Tagesfassung", fassung?"eingegangen":"fehlt",
-      fassung?esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein":"noch keine Fassung für diesen Tag",
-      fassung?"ok":"warn", true,
+    kachel("Tagesfassung",
+      !fassung?"fehlt":fassung.fertig?"eingegangen":"läuft noch",
+      !fassung?"noch keine Fassung für diesen Tag"
+        :esc(fassung.name||"ohne Namen")+" · "+fassung.flWein+" Fl. Wein"
+          +(fassung.fertig?"":" · noch in keiner Zahl unten"),
+      !fassung?"warn":fassung.fertig?"ok":"warn", true,
       "fassung", fassung?"Positionen und Mengen ansehen":"Frühere Tagesfassungen")+
     kachel("Z-Berichte", a.berichte?a.berichte+" von "+SPANNE+" Tagen":"fehlen",
       a.z?(a.z.positionen.length+" Positionen · "+eur(a.z.umsatz)+" zuletzt"):"noch nicht importiert",
@@ -2243,6 +2342,20 @@ function vHeute(m){
   /* Was heute noch fehlt */
   const fehlt=[];
   if(!fassung) fehlt.push("Für "+deTag(tag)+" liegt keine Tagesfassung vor.");
+  /* Ein Vorgang, der nie abgeschlossen wurde, ist kein Schwund und keine
+     Abweichung — er ist eine Lücke. Seit Runde 19 rechnet ihn keine Zahl
+     mit; damit muss er wenigstens beim Namen genannt werden, sonst fehlt
+     er lautlos (Analyse Runde 19 · A). */
+  {
+    const offen=VORGAENGE.filter(v=>!v.fertig);
+    if(offen.length){
+      const aelteste=offen.map(v=>v.tag).filter(Boolean).sort()[0];
+      fehlt.push(offen.length+(offen.length===1?" Vorgang läuft":" Vorgänge laufen")
+        +" noch und "+(offen.length===1?"geht":"gehen")+" in keine Zahl ein"
+        +(aelteste?" (ältester vom "+deTag(aelteste)+")":"")
+        +" — unter „Eingänge“ nachsehen und im Keller abschließen lassen.");
+    }
+  }
   if(!ZBER[tag]) fehlt.push("Der Z-Bericht zu diesem Tag ist noch nicht eingelesen.");
   else if(a.berichte<SPANNE) fehlt.push("Im Zeitraum fehlen "+(SPANNE-a.berichte)+" Z-Berichte — die Differenzen sind darum zu hoch.");
   /* Auch das sind KASSENNAMEN, nicht Kassenzeilen — `abgleich()` führt
@@ -2294,6 +2407,20 @@ function vHeute(m){
     +(a.ignoriert.length===1?"zählt":"zählen")+" nicht als Verkauf — richtig für Speisen, "
     +"Kaffee und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf, "
     +"und seine Zeile unten sieht aus, als stimme sie.");
+  /* Was an der Tür passiert ist (Analyse Runde 19 · A). Ohne diese zwei
+     Zeilen sah ein abgewiesener Mail-Bericht genauso aus wie einer, der
+     noch kommt — und ein Vorgang, den jemand ohne die passende Rolle
+     geschrieben hat, war überhaupt nicht zu sehen. */
+  {
+    const mail=letzteNotiz("email");
+    if(mail) fehlt.push("Mailempfang "+notizZeit(mail)+": "+mail.notiz
+      +" — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein.");
+    const rechte=NOTIZEN.filter(z=>z.quelle==="rechte");
+    if(rechte.length) fehlt.push(rechte.length
+      +(rechte.length===1?" Vorgang wurde":" Vorgänge wurden")
+      +" ohne die passende Rolle geschrieben (zuletzt "+notizZeit(rechte[0])+": "
+      +rechte[0].notiz+"). Angenommen, nicht gesperrt — unter „Mitarbeiter“ nachsehen.");
+  }
   if(!B.hat) fehlt.push("Es gibt noch keine Kellerzählung. Ohne sie ist kein Bestand berechenbar, nur Bewegung.");
   else {
     /* „Die Zählung ist überholt, neu zählen" ist der falsche Satz für einen
@@ -2334,7 +2461,7 @@ function vHeute(m){
         <td>${esc(r.name)} <span class="mini">${r.art}</span></td>
         <td class="r">${num(r.verkauf)}</td><td class="r">${num(r.entnahme)}</td>
         <td class="r ${r.diff>0?"diff-plus":"diff-minus"}">${r.diff>0?"+":""}${num(r.diff)}</td>
-        <td class="deutung">${DEUTUNG(r)}${
+        <td class="deutung">${DEUTUNG(r, a.offen.length)}${
           /* Auch hier gesagt: der Mittagsblick ist der Schirm, den die
              Leitung morgens zuerst sieht, und eine Differenz aus halb
              gerechnetem Verkauf darf dort nicht als ganze dastehen. */
@@ -2815,7 +2942,7 @@ function druckDifferenzen(tag, a){
         <td class="r plus">${r.diff>0?"+":""}${num(r.diff)}</td>
         <td>${halbeRechnung && r.diff>0
               ?"mehr geholt als gerechneter Verkauf — es fehlt Verkauf in der Rechnung"
-              :DEUTUNG(r)}
+              :DEUTUNG(r, a.offen.length)}
           ${r.vorbehalt?`<br><span class="mini">${esc(vorbehaltSatz(r.vorbehalt))}</span>`:""}</td>
       </tr>`).join("")}
       <tr class="zwt"><td>Summe</td><td class="r">${num(auf.reduce((s,r)=>s+r.verkauf,0))}</td>
@@ -3123,7 +3250,7 @@ function vBestellen(m){
 function vGetraenke(m){
   const V=verbrauch();
   let letzterIst=null;
-  VORGAENGE.forEach(v=>{ if(v.gzaehlung) letzterIst=v; });
+  gebucht().forEach(v=>{ if(v.gzaehlung) letzterIst=v; });
   m.innerHTML=`<section><h2>Getränke</h2>
     <div class="unter">Soll und letzter Ist-Stand in den Laden. Ein Kellerbestand wird für Getränke nicht geführt —
     was hier steht, ist die Bar, nicht das Lager.</div></section>`;
@@ -4148,7 +4275,7 @@ function zeichne(){
 }
 
 $("#bNeu").onclick=async()=>{
-  await ladeDaten(); await Promise.all([ladeBerichte(), ladeZuordnung()]);
+  await ladeDaten(); await Promise.all([ladeBerichte(), ladeZuordnung(), ladeNotizen()]);
   zeichne(); toast("Aktualisiert"); };
 $("#bFass").onclick=()=>{ location.href="index.html"; };
 
@@ -4278,7 +4405,7 @@ window.addEventListener("storage", e=>{
   /* Berichte und Zuordnungen kommen vom Server. Schlägt das fehl (kein
      Netz, keine Sitzung), bleibt die Abschrift im Browser stehen — die
      Seite zeigt dann alte Zahlen, aber keine falschen. */
-  await Promise.all([ladeBerichte(), ladeZuordnung()]);
+  await Promise.all([ladeBerichte(), ladeZuordnung(), ladeNotizen()]);
   /* Ohne Sitzung und ohne lokale Daten hat diese Seite nichts zu zeigen —
      dann besser eine klare Tür als eine leere Tabelle. */
   if(!ICH && QUELLE==="Nicht angemeldet") return verlangeAnmeldung();

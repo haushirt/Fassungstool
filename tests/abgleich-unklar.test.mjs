@@ -51,7 +51,12 @@ function umgebung() {
 }
 
 /* Ein Vorgang in der Form, die `normVorgang` liefert. */
-const vorgang = (wein, getr) => ({ mode: "tag", tag: TAG, wein: wein || {}, getr: getr || {} });
+/* `fertig: true` seit Runde 19: `abgleich()` rechnet nur noch mit
+   GEBUCHTEN Vorgängen — so wie das Journal, das seine Zeilen erst beim
+   Abschluss bekommt. Ein Prüfstand, der das weglässt, prüft einen
+   Zustand, den es nach dem Abschluss nie gibt. */
+const vorgang = (wein, getr) => ({ mode: "tag", tag: TAG, fertig: true,
+  wein: wein || {}, getr: getr || {} });
 /* Ein Z-Bericht in der Form, die `vomServer()` ablegt. */
 const bericht = positionen => ({ [TAG]: { tag: TAG, nr: 99, positionen, umsatz: 0 } });
 
