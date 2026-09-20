@@ -127,6 +127,25 @@ Gesten, die dem Suchfeld und der rollenden Tabelle gehörten. In den Eingängen
 öffnet deshalb jetzt die ganze Zeile das Detail — „Ansehen" steht am Handy
 rechts ausserhalb.
 
+Eine dritte und eine vierte Jagd fanden denselben Fund noch zweimal — und
+diesmal war die Form deutlich: **Vier Stellen deuten dieselbe Differenz**
+(Druckblatt, Mittagsblick, Bildschirm „Verkauf ↔ Fassung", CSV), und behoben
+wurde immer nur die, die gerade genannt war. Jetzt gibt es einen Deutungssatz
+an einer Stelle, und alle vier Leser hängen an denselben Zahlen.
+
+## Eine Entscheidung steht aus — kein Fehler, aber wichtig
+
+Eine Zeile, deren Verkauf über **„Ignorieren"** aus der Rechnung fällt, trägt
+weiter die grüne Plakette „stimmt". Gemessen: „Cola 0,33 l" ×3 zugeordnet,
+„Cola Sonderausschank 0,33 l" ×6 ignoriert, 3 Flaschen aus dem Keller — wahr
+sind **9 verkauft, 3 geholt, −6**; gezeigt wird `3 · 3 · 0 · stimmt`.
+
+Das ist kein Fehler dieser Runde: „Ignorieren" hat den Verkauf seit jeher
+stumm gestellt. Diese Runde macht es an vier Stellen sichtbar. Was die
+EINZELNE Zeile daraufhin sagen soll, hängt daran, was „Ignorieren" bedeuten
+soll — zwei Wege stehen ausgearbeitet in `review/BACKLOG.md` ganz oben unter
+„Hoch". In Bericht 37 betrifft das 19 Einheiten Cocktails aus dem Keller.
+
 ## Am Gerät nachzusehen
 
 * **Blättert Safari am iPad nach dem Wisch wirklich nicht mehr zurück?**
