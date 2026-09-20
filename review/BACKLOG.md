@@ -338,3 +338,29 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | niedrig | **Client- und Serverschlüssel für Namen sind nicht derselbe.** Browser `nm.toLowerCase()`, Worker NFKC + unsichtbare Zeichen + Leerraum. „Asad  Karakiri" heilt `kennungHeilen()` deshalb nicht — ein Umweg über den 409, kein Schaden. | `public/leitung.html`, `src/index.js` |
 | niedrig | **`codeSumme()` legt bei fehlendem `crypto.subtle` `"roh:"+code` in den `localStorage`.** Nur auf unsicherer Herkunft erreichbar, live also nicht — trotzdem der einzige Pfad, auf dem ein Klartextcode auf Platte käme. | `public/index.html` |
 | niedrig | Der Quelltextkommentar zum Namenswächter zählt **ZWNJ (U+200C) und ZWJ (U+200D) nicht auf**, der Zeichenbereich entfernt sie aber. Code und Kommentar auseinander. | `src/index.js` |
+
+## Runde 18 (Nacht auf den 20.09.2026) · Backoffice
+
+### Erledigt in Runde 18
+
+| Rolle | Runde | Punkt | Wo |
+|---|---|---|---|
+| hospitality-pro | 5 | Wareneingang und Kellerzählung standen mit „—“ da; die Notiz fehlte in der Liste | erledigt in der neuen Ansicht **Eingänge** (`public/leitung.html:3209`). Im **Speicher** unverändert — siehe „Niedrig“ unten |
+| ui-designer | 3 | „Nichts gefunden.“ auch dann, wenn es gar nichts gibt | erledigt in **Eingänge** (zwei getrennte Sätze). Im Speicher unverändert — siehe „Niedrig“ unten |
+| Casimir | 18 | „Ansehen“ zeigt nur Positionen, keine Anzahl | Ursache war nicht die fehlende Spalte, sondern `.tabhuelle table{min-width:560px}` (`:601`): zweispaltige Tabellen schoben die Zahl am Handy aus dem Bild. Behoben über `.tabhuelle.schmal` (`:595`) |
+
+### Neu
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| **mittel** | **Der Weg ZURÜCK für Vorgänge, die nur im Browser liegen, fehlt weiter.** „Eingänge“ zeigt sie jetzt an und sagt ausdrücklich, dass sie in keine Rechnung eingehen (`public/leitung.html:3238`) — aber sie lassen sich von hier aus nicht an den Server schicken. Das Backoffice schreibt nichts an Vorgängen (Architektur), also gehört der Weg in die App: ein Anlauf „nicht gesendete Vorgänge erneut senden“ in `public/index.html`. Schärfung von qa-guardian R3. | `public/leitung.html:3199` (`nurImBrowser`), `public/index.html` (Ausgang) |
+| niedrig | **`vSpeicher` trägt die alten Mängel weiter**: zwei Striche für Wareneingang und Zählung, keine Notiz in der Liste, ein leerer Satz für zwei Lagen, `gzaehlung` ungezeigt. Bewusst nicht angefasst (R7) — zwei Ansichten in einer Nacht umzubauen wäre nicht prüfbar gewesen. Die Bausteine liegen bereit (`vgBloecke`, `vgMengen`, `.tabhuelle.schmal`); es sind wenige Zeilen. Oder: den Speicher ganz streichen, sobald „Eingänge“ sich bewährt hat. | `public/leitung.html:3328` (`vSpeicher`) |
+| niedrig | **Kein Sammelblatt über mehrere Vorgänge.** `druckVorgang()` druckt einen Vorgang; für „die ganze Woche auf ein Blatt“ gibt es nichts. `drucke()` ist allgemein genug, es wäre eine Schleife. | `public/leitung.html:2550` (`druckVorgang`) |
+| niedrig | **Zwei Wege zum selben Ort im Mittagsblick.** Seit B2 führen sowohl die Kachel „Auffällige Differenzen“ als auch der Knopf „Zum vollständigen Abgleich“ unter der Tabelle in den Abgleich; dasselbe bei „Nachbestellen“/„Alle ansehen“. Kein Schaden, aber einer der beiden ist überflüssig. | `public/leitung.html:2144`, `#bAlleAbw`, `#bMehr` |
+
+### Nicht geprüft, weil es kein Prüfstand kann
+
+| Punkt | Was am Gerät nachzusehen ist |
+|---|---|
+| B4 · Zurück-Geste | Chromium bestätigt, dass `preventDefault()` gerufen wird. Ob Safari am iPad daraufhin wirklich nicht mehr zurückblättert, zeigt erst das iPad. |
+| B5 · Druckbild | Der Prüfstand misst das Blatt im Druckmedium, nicht den Drucker. Einmal wirklich als PDF sichern. |

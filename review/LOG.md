@@ -4209,3 +4209,56 @@ berichtigt, vier Reibungspunkte im Morgenbrief, acht Punkte im Backlog.
 **Phase/Thema:** Runde 16 / letzte Runde vor dem Livegang
 
 **STATUS:** FERTIG
+
+---
+
+### Runde 18 – software-engineer (Backoffice, Nacht auf den 20.09.2026)
+
+**Kritik am Vorgänger:**
+* ↩️ geändert — **hospitality-pro R5** („Speicher: Wareneingang und Kellerzählung
+  stehen mit ‚—‘ da") nannte die richtige Stelle, aber die falsche Ursache:
+  `flWein`/`flGetr` zählen `eingang` und `zaehlung` tatsächlich nicht
+  (`public/leitung.html:963`) — die zweite, schwerere Lücke steht dort nicht:
+  **`gzaehlung` wird berechnet (`:919`, `:933`) und nirgends gezeigt.** Eine
+  Kellerzählung, die nur die Getränkelade gezählt hat, meldete „Dieser Vorgang
+  hat keine Mengen bewegt" — bei 19 Flaschen. Behoben in der neuen Ansicht, im
+  Speicher unverändert gelassen.
+* ↩️ geändert — Casimirs Befund „‚Ansehen‘ zeigt nur Positionen, keine Anzahl"
+  stimmt im Ergebnis, nicht in der Ursache. Die Anzahl stand immer in der
+  Tabelle. Sie stand am Handy **170 px rechts neben dem Bild**, weil
+  `.tabhuelle table{min-width:560px}` (`:601`) unter 900 px für JEDE Tabelle
+  gilt — auch für eine mit zwei Spalten. Ohne diese Zeile wäre die neue Ansicht
+  am iPhone genauso stumm gewesen wie die alte.
+* ❌ abgelehnt — **qa-guardian R3** verlangt den Weg ZURÜCK für Vorgänge, die
+  nur im Browser liegen. „Eingänge" zeigt sie jetzt an (`:3238`), schickt sie
+  aber nicht zum Server: Diese Seite schreibt nichts an Vorgängen, das ist
+  Architektur. Gehört in die App, bleibt im Backlog (mittel).
+
+**Umgesetzt:**
+* Die vier Kacheln des Mittagsblicks sind Knöpfe und führen an die Stelle, die
+  ihre Zahl erklärt — keine davon in eine Sackgasse.
+* Neue Ansicht „Eingänge" mit allen fünf Mengenblöcken je Vorgang, Notiz in der
+  Liste, zwei leeren Zuständen und einem Abschnitt für das, was nur im Browser liegt.
+* Wisch vom linken Rand öffnet die Navigation und nimmt Safari die Zurück-Geste;
+  dazu Druckblätter je Vorgang und für „was nicht aufgeht" — ohne Fremdbaustein.
+
+**Geprüft:** `npm test` **442/442**. `node tests/ui-runde18.cjs` (neu, Playwright,
+nicht Teil von `npm test`): **25 Urteile grün, 0 rot, keine JS-Fehler** — darunter
+echte Touch-Ereignisse bei 390 px und die Messung, dass keine Mengenzelle mehr
+aus dem Bild ragt. Bilder in `review/screens/runde-18/`.
+Nicht geprüft, weil es kein Prüfstand kann: ob Safari am iPad nach
+`preventDefault()` wirklich nicht zurückblättert. Am Gerät nachsehen.
+
+**Für die Nächsten:**
+* `vSpeicher` ist absichtlich unangetastet geblieben (R7). Wer ihn anfasst,
+  findet die fertigen Bausteine dafür in `vgBloecke`/`vgMengen`.
+* `drucke()` ist allgemein: jede Ansicht kann ein Blatt bauen, ohne etwas Neues.
+* `tests/unklar-wandert.test.mjs:32` hängt an der Abschnittsmarke „7f · Speicher".
+  Wer die Abschnittsbuchstaben verschiebt, muss diese Zeile mitnehmen.
+
+**Phase/Thema:** Backoffice / Wege, Mengen, Gesten, Papier
+
+**Backlog:** drei neue Punkte (niedrig/niedrig/mittel), siehe `review/BACKLOG.md`,
+Abschnitt „Runde 18".
+
+**STATUS:** FERTIG

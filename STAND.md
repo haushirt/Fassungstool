@@ -1,25 +1,37 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 19.09.2026
+**Letzte Aktualisierung:** 20.09.2026
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 16 ist gemergt** (PR #5, `d19cfcb` auf `main`). `sw.js` steht auf **v56**.
+- **Runde 18 (Backoffice) ist fertig** auf `claude/backoffice-leitung-r18-clvh73`.
+  `sw.js` steht auf **v57**. Runde 16 ist auf `main` (PR #5).
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
-- `npm test`: **440 von 440 grün** (Stand 19.09.2026, Laufzeit ca. 4 s).
-- Was mit Runde 16 live ging, steht in `review/ERGEBNIS.md`;
-  was Casimir am Gerät tun muss, in `review/MORGENBRIEF.md`.
+- `npm test`: **443 von 443 grün** (Stand 20.09.2026, Laufzeit ca. 4 s).
+- Oberfläche: `node tests/ui-runde18.cjs` — 25 Urteile grün. Braucht Playwright
+  und ist **nicht** Teil von `npm test` (Regel 8).
+- Was Runde 18 gebracht hat, steht Punkt für Punkt in
+  `review/RUNDE-18-BACKOFFICE.md` (mit Datei:Zeile und Prüfplan).
 - Die Live-Datenbank ist **nur lesbar**. Migrationen spielt Casimir selbst ein.
 
+## Was Runde 18 verändert hat (nur `public/leitung.html`)
+- Die vier Kacheln des Mittagsblicks sind **Knöpfe** und führen weiter.
+- Neue Ansicht **„Eingänge"** unter Nachschlagen: jeder Vorgang mit allen
+  Mengen, Notiz in der Liste, Detail auch am Handy lesbar.
+- **Wisch von links** öffnet die Navigation, statt im Browser zurückzuspringen.
+- **Druckblätter** je Vorgang und für „was nicht aufgeht" — das PDF macht der
+  Druckdialog, keine neue Abhängigkeit.
+
 ## Was als Nächstes ansteht
+- **Am iPad nachsehen:** blättert Safari nach dem Wisch wirklich nicht mehr
+  zurück? Das kann kein Prüfstand beantworten.
 - Die offenen Punkte unter **„Hoch"** in `review/BACKLOG.md` – vor allem:
   - **Sonderentnahme Getränke** hat keinen Weg zum Grund; der Abschluss endet
     dauerhaft in der Code-Freigabe. (`public/index.html:3114`, `:3658`, `:5104`)
   - **Gasteiner 0,25 l steht auf Soll 8** statt 7, aus einem Gestaltungsgrund.
-    Passen wirklich 8 in die Spalte? Wenn nein, bucht jedes Nachfüllen dauerhaft
-    eine Flasche zu viel. **Antwort von Casimir nötig.**
+    Passen wirklich 8 in die Spalte? **Antwort von Casimir nötig.**
   - **Betriebstag gegen Abgleich um einen Tag versetzt**, und zwar dauerhaft.
     Zwei Lösungswege stehen im Backlog, beide brauchen eine Entscheidung.
   - `/api/code` räumt die Anmeldesperre nach einem Treffer nicht auf.
@@ -30,7 +42,9 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   `docs/live-schema.sql`.
 - Getränke-Automapping bleibt aus – die Ähnlichkeitssuche trifft falsch.
 - Genau vier Dateien in `public/`. Die Gestaltungsschicht steht wortgleich in
-  `index.html` und `leitung.html` – Änderungen immer in beiden.
+  `index.html` und `leitung.html` – Änderungen immer in beiden. Alles ab
+  `leitung.html:245` ist dagegen nur die Leitung und darf allein stehen.
 - Nach jeder Änderung in `public/`: `VERSION` in `sw.js` erhöhen.
-- Gearbeitet wird immer auf einem `claude/…`-Zweig, nie direkt auf `main`
-  (Regel 1 in `CLAUDE.md`, berichtigt am 19.09.2026 – vorher stand dort `v2-review`).
+- `tests/unklar-wandert.test.mjs:32` hängt an der Abschnittsmarke
+  „7f · Speicher" in `leitung.html`. Buchstaben verschieben heißt: Zeile mitnehmen.
+- Gearbeitet wird immer auf einem `claude/…`-Zweig, nie direkt auf `main`.
