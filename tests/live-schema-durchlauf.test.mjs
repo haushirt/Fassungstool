@@ -334,8 +334,13 @@ describe("Der Worker an der echten Tabellenstruktur", { skip: SCHEMA_DA ? false 
       .find(z => z.rohbez === "Raschhofer Pils 0,5l").artikel, "g042");
 
     const gelesen = await (await worker.fetch(anfrage("/api/mapping", { keks }), env)).json();
+    /* `ausschank_ml` seit Runde 21 (Migration 002). Die Prüf-Datenbank
+       wird aus `docs/live-schema.sql` gebaut, und dort steht die Spalte —
+       also meldet der Schalter hier „kann". Dass er OHNE die Spalte das
+       Gegenteil sagt, prüft `tests/migration-002.test.mjs`. */
+    assert.equal(gelesen.kann.ausschank, true);
     assert.deepEqual(gelesen.mapping, [{ kassenname: "Raschhofer Pils 0,5l",
-      artikel: "g042", ignoriert: 0, gebinde_ml: 500 }]);
+      artikel: "g042", ignoriert: 0, gebinde_ml: 500, ausschank_ml: null }]);
   });
 
   test("ignoriert wird zu status='ignoriert' und nicht zu einer 1", async () => {

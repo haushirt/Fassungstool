@@ -793,13 +793,48 @@ async function fassungslistenLesen(env, url) {
    im Gerätespeicher der Leitung (`hh_rezepte_v1` in `leitung.html`);
    kein Client schickt sie an diesen Endpunkt. Statt sie stillschweigend
    fallen zu lassen, sagt der Worker klar, was fehlt — die Migration dazu
-   liegt fertig unter `migrations/001_mapping_rezept.sql`. */
+   liegt fertig unter `migrations/001_mapping_rezept.sql`.
+
+   `ausschank_ml` (Migration 002) wird genauso behandelt: ohne die Spalte
+   ein lesbarer 422, nie ein 500. */
+
+/* Liegt die Spalte `mapping.ausschank_ml` schon in dieser Datenbank?
+   Der Schalter für Migration 002 — ohne sie bleibt das Feld unsichtbar
+   und alles rechnet wie bisher (Projektregel: neue Module hinter einem
+   Feature-Flag).
+
+   WeakMap statt Modulvariable, und das mit Absicht: das Prüfgerüst lädt
+   den Worker EINMAL je Prozess (`tests/hilfe/worker.mjs`), baut aber je
+   Prüfung eine eigene Datenbank. Eine Modulvariable verschleppte den
+   Schalter zwischen den Prüfungen und färbte „ohne Migration" grün,
+   obwohl es nicht stimmt.
+
+   Ja bleibt ja; Nein läuft nach einer Minute ab. Sonst behielte ein
+   warmes Isolat sein `false` bis zum Recycling — und Casimir stünde nach
+   dem Einspielen vor einer Seite, die die Spalte noch nicht kennt. */
+const KANN = new WeakMap();
+async function kannAusschank(env) {
+  const alt = KANN.get(env.DB);
+  if (alt && (alt.ausschank || Date.now() - alt.ts < 60000)) return alt.ausschank;
+  let da = false;
+  try {
+    const { results } = await env.DB.prepare(`PRAGMA table_info(mapping)`).all();
+    da = (results || []).some(r => r.name === "ausschank_ml");
+  } catch { da = false; }
+  KANN.set(env.DB, { ausschank: da, ts: Date.now() });
+  return da;
+}
+
 async function mappingSchreiben(env, p, body) {
-  const { kassenname, artikel, ignoriert, gebinde_ml, rezept } = body || {};
+  const { kassenname, artikel, ignoriert, gebinde_ml, rezept, ausschank_ml } = body || {};
   if (!kassenname) return json({ fehler: "kassenname fehlt" }, 422);
   if (rezept !== undefined && rezept !== null) return json({
     fehler: "Rezepturen kann die Datenbank noch nicht aufnehmen "
           + "(Migration 001_mapping_rezept steht aus)" }, 422);
+  const kannAus = ausschank_ml === undefined ? false : await kannAusschank(env);
+  if (ausschank_ml !== undefined && !kannAus) return json({
+    fehler: "Die Ausschankmenge kann die Datenbank noch nicht aufnehmen "
+          + "(Migration 002_mapping_ausschank steht aus)" }, 422);
 
   await env.DB.prepare(
     `INSERT INTO mapping (fremd, status, artikel, gebinde_ml, wer, angelegt)
@@ -809,6 +844,18 @@ async function mappingSchreiben(env, p, body) {
        wer=excluded.wer, angelegt=excluded.angelegt`
   ).bind(kassenname, ignoriert ? "ignoriert" : "zugeordnet", artikel || null,
          +gebinde_ml || null, p.name, Date.now()).run();
+
+  /* Die Ausschankmenge steht mit Absicht NICHT in der SET-Liste oben.
+     Die Anweisung schreibt die Zeile als Ganzes; wer `artikel` weglässt,
+     löscht ihn. Diesen Fallstrick erbt die neue Spalte nicht — sie wird
+     nur angefasst, wenn der Körper sie ausdrücklich nennt:
+       · Feld fehlt  → der Wert bleibt, wie er ist (der Normalfall: jede
+                       Artikel- oder Gebindeänderung lässt ihn unberührt)
+       · Feld null   → der Wert wird gelöscht
+       · Feld Zahl   → der Wert wird gesetzt                            */
+  if (kannAus)
+    await env.DB.prepare(`UPDATE mapping SET ausschank_ml = ?2 WHERE fremd = ?1`)
+      .bind(kassenname, ausschank_ml === null ? null : (+ausschank_ml || null)).run();
 
   /* Die schon eingelesenen Zeilen ziehen nach — sonst gilt die Zuordnung
      erst ab dem nächsten Bericht. Auch beim Zurücknehmen: Wer eine
@@ -1096,11 +1143,25 @@ export default {
           /* Nach aussen bleibt es `kassenname`/`ignoriert`, wie die
              Oberfläche es kennt — die Spaltennamen der Datenbank hören
              am Rand des Workers auf. */
-          const { results } = await env.DB.prepare(
-            `SELECT fremd, artikel, status, gebinde_ml FROM mapping ORDER BY fremd`).all();
-          return json({ mapping: results.map(r => ({
+          const kannAus = await kannAusschank(env);
+          /* Zwei ausgeschriebene Abfragen statt einer zusammengesetzten:
+             `tests/schema.test.mjs` liest jede SQL-Zeichenkette und hält
+             ihre Spalten gegen das Live-Schema. Eine Abfrage, die sich
+             erst zur Laufzeit zusammensetzt, kann sie nicht prüfen. */
+          const { results } = await (kannAus
+            ? env.DB.prepare(`SELECT fremd, artikel, status, gebinde_ml, ausschank_ml
+                                FROM mapping ORDER BY fremd`).all()
+            : env.DB.prepare(`SELECT fremd, artikel, status, gebinde_ml
+                                FROM mapping ORDER BY fremd`).all());
+          /* `kann` ist ein NEUES Feld, kein geändertes: ein Tab, der seit
+             gestern offen steht, sieht es nicht und läuft wie bisher.
+             Ohne die Spalte fehlt `ausschank_ml` ganz — ein `null` wäre
+             die Behauptung „nachgesehen, nichts eingetragen", und das
+             stimmt dann nicht. */
+          return json({ kann: { ausschank: kannAus }, mapping: results.map(r => ({
             kassenname: r.fremd, artikel: r.artikel,
-            ignoriert: r.status === "ignoriert" ? 1 : 0, gebinde_ml: r.gebinde_ml })) });
+            ignoriert: r.status === "ignoriert" ? 1 : 0, gebinde_ml: r.gebinde_ml,
+            ...(kannAus ? { ausschank_ml: r.ausschank_ml ?? null } : {}) })) });
         }
         if (m === "POST") {
           if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);

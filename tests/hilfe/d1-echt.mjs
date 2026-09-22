@@ -43,10 +43,51 @@ function wert(v) {
   return v;
 }
 
+/* Der reine SQL-Inhalt einer Migrationsdatei, ohne Kommentarzeilen.
+   Damit steht die Datei selbst unter Prüfung: wer sie ändert, ändert das,
+   was hier läuft. */
+export function migrationSql(datei) {
+  return lies("migrations", datei)
+    .split("\n").filter(z => !/^\s*--/.test(z)).join("\n").trim();
+}
+
+/* Die Datenbank, wie sie VOR einer Migration aussah.
+
+   `docs/live-schema.sql` beschreibt die laufende Datenbank NACH allen
+   eingespielten Migrationen. Um zu prüfen, dass ein neues Modul ohne
+   seine Migration unsichtbar bleibt (Projektregel), braucht es den Stand
+   davor. Statt ein zweites Schema von Hand zu pflegen — das altert und
+   lügt — wird hier aus der Migrationsdatei gelesen, welche Spalte sie
+   anlegt, und genau die aus dem Schema genommen.
+
+   Kann heute nur `ALTER TABLE … ADD COLUMN`; alles andere ist ein Fehler
+   statt einer stillen Nichtbeachtung. */
+export function d1Vor(datei, start = {}) {
+  const m = /ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)/i.exec(migrationSql(datei));
+  if (!m) throw new Error(datei + ": kein ADD COLUMN gefunden");
+  const [, tabelle, spalte] = m;
+  let schema = lies("docs", "live-schema.sql");
+  const vorher = schema;
+  /* Nur innerhalb DIESER Tabelle schneiden — ein gleichnamiger Spaltenname
+     anderswo bleibt unberührt. */
+  schema = schema.replace(
+    new RegExp("(CREATE\\s+TABLE\\s+" + tabelle + "\\s*\\([\\s\\S]*?\\);)", "i"),
+    blockSchnitt => blockSchnitt.replace(
+      new RegExp(",\\s*\\n?\\s*" + spalte + "\\b[^,\\n]*", "i"), ""));
+  if (schema === vorher)
+    throw new Error(`${tabelle}.${spalte} steht nicht in docs/live-schema.sql — `
+      + "Migration eingespielt und Schema nachgezogen?");
+  return bau(schema, start);
+}
+
 export function d1Echt(start = {}) {
+  return bau(lies("docs", "live-schema.sql"), start);
+}
+
+function bau(schema, start) {
   if (!SCHEMA_DA) throw new Error("docs/live-schema.sql fehlt");
   const db = new DatabaseSync(":memory:");
-  db.exec(lies("docs", "live-schema.sql"));
+  db.exec(schema);
 
   /* Vorbelegung: `{ person: [{…}, …] }`. Die Spalten werden aus dem
      Objekt gelesen, nicht geraten — wer eine Spalte erfindet, die es

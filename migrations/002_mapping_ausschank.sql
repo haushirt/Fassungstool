@@ -1,0 +1,29 @@
+-- 002 · Ausschankmenge je Kassenname
+--
+-- Anlass: `mapping` kennt die Gebindegrösse (`gebinde_ml`), aber nicht die
+-- Ausschankmenge. Die steht heute allein im Kassennamen und wird bei jedem
+-- Lesen neu geparst (`mlAusText` in public/leitung.html, `ml()` in
+-- src/gnparse.js). Drei Fälle kann der Name nicht:
+--
+--   · „Radler 0,5l"             — der Name sagt 500, verbraucht werden 250
+--                                 (Radler ist zur Hälfte Pils). DER
+--                                 GEFÄHRLICHSTE: die Zahl ist nicht leer,
+--                                 sondern falsch und sieht richtig aus.
+--   · „Weisser Spritzer"        — keine Menge im Namen; verbraucht werden
+--                                 ca. 200 ml aus der 1-l-Flasche.
+--   · „Weizen alkoholfrei 0,5"  — die Einheit fehlt, nichts lesbar.
+--
+-- Ohne diese Spalte gibt es keinen Ort, an dem ein Mensch die Zahl
+-- berichtigen kann. Die geparste Zahl bleibt Vorschlag: der Wert von Hand
+-- schlägt sie, `fassungszeile.ausschankMl` wird nicht angefasst.
+--
+-- Additiv nach den Projektregeln: eine neue Spalte, kein DROP, kein Umbau.
+-- Nullable. Ohne eingespielte Migration bleibt das Feld in der Oberfläche
+-- unsichtbar und alles rechnet wie bisher — der Schalter dafür ist
+-- `kannAusschank()` in src/index.js. Ein Schreibversuch ohne die Spalte
+-- wird mit einem lesbaren 422 abgewiesen, nie mit 500.
+--
+-- Zeile für Zeile zum Einfügen in die D1-Konsole steht in
+-- review/ERGEBNIS.md, mit der jeweils erwarteten Ausgabe.
+
+ALTER TABLE mapping ADD COLUMN ausschank_ml INTEGER;

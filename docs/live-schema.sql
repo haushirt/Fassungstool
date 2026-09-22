@@ -99,13 +99,17 @@ CREATE TABLE fassungszeile (
   PRIMARY KEY (liste, rohbez)
 );
 
+-- `ausschank_ml` kommt aus migrations/002_mapping_ausschank.sql und ist
+-- VOR dem Merge von Runde 21 einzuspielen. Der Worker fragt zur Laufzeit
+-- nach (`kannAusschank`) und kommt ohne die Spalte aus.
 CREATE TABLE mapping (
   fremd      TEXT PRIMARY KEY,
   status     TEXT NOT NULL CHECK (status IN ('zugeordnet','ignoriert')),
   artikel    TEXT,
   gebinde_ml INTEGER,
   wer        TEXT NOT NULL,
-  angelegt   INTEGER NOT NULL
+  angelegt   INTEGER NOT NULL,
+  ausschank_ml INTEGER
 );
 
 CREATE TABLE stamm (
