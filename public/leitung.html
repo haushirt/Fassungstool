@@ -1009,6 +1009,7 @@ const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
 /* Eigene Schlüssel der Leitung */
 const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
 const K_GEB="hh_gebinde_v1";        /* Abschrift von mapping.gebinde_ml */
+const K_AUS="hh_ausschank_v1";      /* Abschrift von mapping.ausschank_ml */
 const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
 const K_SPANNE="hh_spanne_v1";      /* gewählter Zeitraum, überlebt das Neuladen */
 
@@ -1021,6 +1022,20 @@ let MAP   = lese(K_MAP) || {};      /* Kassenname → Artikel-Id oder "__ignorie
    und ist der einzige Wert, den ein Mensch je bestätigt hat — geraten wird
    hier nichts (siehe `gebindeGroesse`). */
 let GEB_BEST = lese(K_GEB) || {};
+/* Kassenname → Ausschankmenge in ml, VON HAND gesetzt (Runde 21).
+   Sie schlägt die aus dem Namen gelesene Zahl. Gebraucht wird sie für die
+   drei Fälle, die der Kassenname nicht hergibt — und der dritte ist der
+   Grund, warum es sie überhaupt gibt:
+     · „Weisser Spritzer"       keine Menge im Namen
+     · „Weizen alkoholfrei 0,5" die Einheit fehlt, nichts lesbar
+     · „Radler 0,5l"            der Name sagt 500, verbraucht werden 250
+   Beim letzten fehlt die Zahl nicht, sie ist FALSCH und sieht richtig aus. */
+let AUS_BEST = lese(K_AUS) || {};
+/* Liegt `mapping.ausschank_ml` schon in der Datenbank? Sagt allein der
+   Server (`kann.ausschank`), und zwar bei jedem Laden neu. Bewusst NICHT
+   im localStorage: der Vorrat ist die Abschrift der WERTE, nicht die des
+   Schalters. Ohne Netz ist er aus, und die Seite ist genau die von heute. */
+let KANN_AUS = false;
 let ZBER  = lese(K_ZBER) || {};     /* Betriebstag → geparster Z-Bericht */
 let REZ   = lese(K_REZ) || {};      /* Kassenname → [{id, ml}] für Mischgetränke */
 const ROLLNAME={service:"Service", wirtschaft:"Wirtschaft", leitung:"Leitung"};
@@ -1721,15 +1736,20 @@ async function ladeZuordnung(){
   try{
     const r=await fetch("/api/mapping",{headers:{Accept:"application/json"}});
     if(!r.ok) return false;
-    const j=await r.json(), neu={}, gb={};
+    const j=await r.json(), neu={}, gb={}, au={};
+    /* Fehlt `kann`, ist es eine ältere Antwort — dann gibt es die Spalte
+       nicht, und die Seite bleibt die von vorher. */
+    KANN_AUS = !!(j.kann && j.kann.ausschank);
     (j.mapping||[]).forEach(m=>{
       if(m.ignoriert) neu[m.kassenname]="__ignoriert";
       else if(m.artikel) neu[m.kassenname]=m.artikel;
       /* Die bestätigte Gebindegröße liefert der Server seit je mit; bis v24
          hat diese Seite sie weggeworfen und statt dessen geraten. */
       if(+m.gebinde_ml>0) gb[m.kassenname]=+m.gebinde_ml;
+      if(+m.ausschank_ml>0) au[m.kassenname]=+m.ausschank_ml;
     });
-    MAP=neu; GEB_BEST=gb; schreib(K_MAP,MAP); schreib(K_GEB,GEB_BEST); return true;
+    MAP=neu; GEB_BEST=gb; AUS_BEST=au;
+    schreib(K_MAP,MAP); schreib(K_GEB,GEB_BEST); schreib(K_AUS,AUS_BEST); return true;
   }catch(e){ return false; }
 }
 
@@ -1740,13 +1760,22 @@ async function ladeZuordnung(){
    (`ON CONFLICT … SET artikel=excluded.artikel, gebinde_ml=excluded.…`,
    src/index.js). Wer nur ein Feld schickt, löscht die anderen. Artikel und
    Gebindegröße gehen deshalb immer gemeinsam hinaus; `gebindeMl` ist
-   optional und heisst „unverändert lassen". */
-async function sendeZuordnung(name, wert, gebindeMl){
+   optional und heisst „unverändert lassen".
+
+   Die Ausschankmenge (Runde 21) macht das NICHT mit: der Worker fasst sie
+   nur an, wenn der Körper sie nennt. Deshalb hier drei Zustände —
+   `undefined` lässt den Schlüssel weg (JSON.stringify wirft ihn hinaus),
+   `null` löscht, eine Zahl setzt. Ohne eingespielte Migration wird das
+   Feld gar nicht erst mitgeschickt; sonst gäbe der Worker einen 422
+   zurück und die ganze Zuordnung käme nicht an. */
+async function sendeZuordnung(name, wert, gebindeMl, ausschankMl){
   const ml = gebindeMl!==undefined ? gebindeMl : (+GEB_BEST[name]||null);
   const koerper={ kassenname:name,
     artikel: wert && wert!=="__ignoriert" ? wert : null,
     ignoriert: wert==="__ignoriert" ? 1 : 0,
     gebinde_ml: ml || null };
+  if(KANN_AUS && ausschankMl!==undefined)
+    koerper.ausschank_ml = ausschankMl===null ? null : (+ausschankMl || null);
   try{
     const r=await fetch("/api/mapping",{method:"POST",
       headers:{"content-type":"application/json"}, body:JSON.stringify(koerper)});
@@ -1775,6 +1804,38 @@ async function bestaetigeGebinde(name, artId, ml){
   zeichne();
   toast(ok ? "Gebinde bestätigt: "+ml+" ml"
            : "Nur auf diesem Gerät gemerkt — der Server hat es nicht angenommen");
+}
+
+/* Die Ausschankmenge von Hand setzen — wie viel bei EINEM Verkauf ins
+   Glas geht. Gegenstück zu `bestaetigeGebinde`, mit zwei Unterschieden:
+
+   1. Es gibt keinen Vorschlag zu bestätigen. Was der Kassenname hergibt,
+      steht ohnehin schon da; getippt wird hier genau das, was er NICHT
+      hergibt. Deshalb auch kein Sammelknopf: es gäbe nichts zu sammeln.
+   2. Der Artikel geht mit hinaus, weil der Worker die Zeile als Ganzes
+      schreibt (siehe `sendeZuordnung`). Ohne Artikel stünde am Ende eine
+      Menge an einer Position, die niemandem zugeordnet ist.
+
+   `ml = 0` oder leer löscht den Wert wieder; dann gilt wieder der Name. */
+async function setzeAusschank(name, artId, ml){
+  ml = +ml || 0;
+  if(!name || !artId) return;
+  if(!KANN_AUS)
+    return toast("Noch nicht möglich — die Datenbankänderung ist nicht eingespielt");
+  /* Derselbe Riegel wie beim Gebinde: bei einer Rezeptur ist `artId` ein
+     BESTANDTEIL, und `MAP[name]=artId` hiesse „Aperol Spritz ist
+     Prosecco". Der Worker schreibt das rückwirkend in jede gespeicherte
+     Berichtszeile, und es gibt keinen Papierkorb. */
+  if(REZ[name] && REZ[name].length)
+    return toast("Mischgetränk — die Menge steht in der Rezeptur, nicht hier");
+  if(ml) AUS_BEST[name]=ml; else delete AUS_BEST[name];
+  if(MAP[name]!==artId){ MAP[name]=artId; schreib(K_MAP,MAP); }
+  schreib(K_AUS,AUS_BEST);
+  const ok=await sendeZuordnung(name, artId, undefined, ml || null);
+  zeichne();
+  toast(!ok ? "Nur auf diesem Gerät gemerkt — der Server hat es nicht angenommen"
+     : ml  ? "Ins Glas: "+ml+" ml"
+           : "Menge entfernt — es gilt wieder der Kassenname");
 }
 
 /* Dieselbe Bestätigung für eine ganze Liste. Der Anlass steht in der
@@ -2082,16 +2143,38 @@ function autoWein(name){
   return null;
 }
 
+/* Wie viel geht bei EINEM Verkauf dieser Position ins Glas?
+
+   Zwei Quellen, und die Reihenfolge ist der Kern von Runde 21:
+     1. was ein Mensch eingetragen hat (`AUS_BEST`, aus mapping.ausschank_ml)
+     2. was im Kassennamen steht (`mlAusText`)
+   Hand schlägt Name. Das ist nicht Bequemlichkeit: Bei „Radler 0,5l"
+   liefert der Name 500, verbraucht werden 250 Pils — die Zahl ist nicht
+   leer, sondern falsch und sieht richtig aus. Ohne diesen Vorrang rechnet
+   das Tool still das Doppelte.
+
+   `woher` wandert bis in die Anzeige durch: neben einer Zahl „aus dem
+   Namen" an einer Position, die von Hand gehörte, sieht man den Fehler. */
+function ausschankMenge(name){
+  const hand = +AUS_BEST[name] || 0;
+  if(hand) return {ml:hand, woher:"hand"};
+  const ausName = mlAusText(name);
+  return ausName ? {ml:ausName, woher:"name"} : {ml:0, woher:"keine"};
+}
+
 /* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml.
    Fehlt eine der beiden Zahlen, wird KEINE erfunden — die Position bleibt
    aus der Rechnung heraus und wird als „Größe fehlt" ausgewiesen.
    Rückgabe: {ok:true, fl} oder {ok:false, fehlt:"ausschank"|"gebinde"}. */
 function flaschen(p, artId){
-  const aus = mlAusText(p.name);          /* Ausschank je verkaufter Einheit */
+  const a = ausschankMenge(p.name);       /* Ausschank je verkaufter Einheit */
+  const aus = a.ml;
   const geb = gebindeGroesse(artId, p.name);
-  if(!aus)                    return {ok:false, fehlt:"ausschank", aus:null, geb};
-  if(geb.quelle!=="bestaetigt") return {ok:false, fehlt:"gebinde", aus, geb};
-  return {ok:true, fl:(+p.anzahl||0)*aus/geb.ml, aus, geb};
+  if(!aus)                    return {ok:false, fehlt:"ausschank", aus:null,
+                                      woher:a.woher, geb};
+  if(geb.quelle!=="bestaetigt") return {ok:false, fehlt:"gebinde", aus,
+                                      woher:a.woher, geb};
+  return {ok:true, fl:(+p.anzahl||0)*aus/geb.ml, aus, woher:a.woher, geb};
 }
 
 function zuordnung(pos){

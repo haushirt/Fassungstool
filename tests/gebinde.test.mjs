@@ -53,10 +53,17 @@ function umgebung(antwortet = () => new Response("{}", { status: 200 })) {
     globalThis.zeichne = () => { globalThis.__neugezeichnet = (globalThis.__neugezeichnet||0)+1; };
     globalThis.__f = { flaschen, gebindeGroesse, abgleich, artName, GEBINDE_STANDARD,
       ladeZuordnung, sendeZuordnung, bestaetigeAlleGebinde, bestaetigeGebinde,
+      ausschankMenge, setzeAusschank,
       zeichne:()=>{},
-      stand:()=>({map:MAP, geb:GEB_BEST}),
-      setzte:(map,geb,zber,vorg,rez)=>{ MAP=map||{}; GEB_BEST=geb||{};
-        ZBER=zber||{}; VORGAENGE=vorg||[]; REZ=rez||{}; } };`,
+      stand:()=>({map:MAP, geb:GEB_BEST, aus:AUS_BEST, kann:KANN_AUS}),
+      /* AUS_BEST und KANN_AUS seit Runde 21, als LETZTE Parameter mit
+         Vorgabewert: die bestehenden Aufrufe bleiben unberuehrt, und ein
+         leeres AUS_BEST heisst "wie vor Runde 21".
+         (Keine Schraegstriche-Anfuehrung hier: der ganze Block steht in
+         einem Template-Literal, ein Gegenstrich-Zeichen beendet es.) */
+      setzte:(map,geb,zber,vorg,rez,aus,kann)=>{ MAP=map||{}; GEB_BEST=geb||{};
+        ZBER=zber||{}; VORGAENGE=vorg||[]; REZ=rez||{};
+        AUS_BEST=aus||{}; KANN_AUS=kann!==undefined?!!kann:true; } };`,
     s, { filename: "leitung.html#gebinde" });
   return { f: s.__f, gesendet, s };
 }
