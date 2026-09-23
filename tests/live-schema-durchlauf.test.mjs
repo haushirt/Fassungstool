@@ -273,7 +273,11 @@ describe("Der Worker an der echten Tabellenstruktur", { skip: SCHEMA_DA ? false 
     assert.equal(l.z, "Z 47");
     assert.equal(l.wer, "hand:Asad");
     assert.ok(l.importiert > 0);
-    assert.equal(l.kostenstelle, null, "liefert der Leser heute nicht");
+    /* Seit Runde 21 liest der Leser die Kostenstelle — dieser nachgebaute
+       Bericht nennt aber keine, also bleibt die Spalte zu Recht leer.
+       (Bis Runde 21 stand hier „liefert der Leser heute nicht"; das galt
+       damals für jeden Bericht und gilt jetzt nur noch für diesen.) */
+    assert.equal(l.kostenstelle, null, "ohne Kostenstellenzeile bleibt die Spalte leer");
 
     const z = env.DB.zeilen("fassungszeile");
     assert.equal(z.length, 4);

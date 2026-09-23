@@ -200,10 +200,20 @@ describe("abgleich(): unbestätigte Größen sind keine Abweichung", () => {
        für assert.deepEqual nicht dasselbe wie ein hiesiges. */
     const namen = Array.from(a.ohneGroesse, o => o.name).sort();
     /* Die automatisch erkannten Weine (`autoWein`) gehören genauso dazu —
-       „automatisch zugeordnet" heisst nicht „Größe bekannt". */
+       „automatisch zugeordnet" heisst nicht „Größe bekannt".
+
+       Seit Runde 22 gilt dasselbe für die Vorabliste: zwölf Namen mehr,
+       die vorher unter „nicht zugeordnet" liefen und jetzt unter
+       „zugeordnet, Größe fehlt" stehen. Das ist der Fortschritt — die
+       Größe bestätigt weiterhin nur ein Mensch, der die Flasche kennt. */
     assert.deepEqual(namen, ["Amaro Averna Siciliano 2 cl", "BF Gesellmann Gols 1/8 l",
-      "CH Gesellmann 1/8 l", "GV Leindl Langenlois 1/8 l",
-      "MU Muster, Gelber Muskateller Styria 0,75 l", "Sanbitter Spritz 1 Glas"]);
+      "CH Gesellmann 1/8 l", "Cola Zero 0,35l", "GV Leindl Langenlois 1/8 l",
+      "Hefeweizen hell 0,5l", "MU Muster, Gelber Muskateller Styria 0,75 l",
+      "Mango gespritzt 0,25l 0,25l", "NW Heinrich, Naked Red 1/8",
+      "Now-Limo Orange 0,35l", "Prosecco, Serena 0,1l", "Prosecco, Serena 0,75l",
+      "RS Dürnberg, Blanc de Noir 1/8", "Sanbitter Spritz 1 Glas",
+      "Stiegl alkoholfrei 0,3l", "Stiegl alkoholfrei 0,5l",
+      "ZW Glatzer Rubin Carnuntum 1/8 l"]);
     assert.equal(a.verk.w001, undefined, "kein erfundener Verkauf");
     assert.equal(a.verk.noblier, undefined);
     assert.equal(Object.keys(a.verk).length, 0);

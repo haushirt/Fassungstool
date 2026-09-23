@@ -1161,7 +1161,10 @@ function gebArtikelBestaetigt(){
   const t={};
   Object.keys(GEB_BEST).forEach(nm=>{
     const id=MAP[nm], ml=+GEB_BEST[nm]||0;
-    if(!id || id==="__ignoriert" || !ml) return;
+    /* `__ignoriert` und `__offen` sind Zustände, keine Artikel. Ohne den
+       zweiten entstand unter dem Schlüssel „__offen" ein Eintrag
+       (zweite Jagd Runde 22 · C). */
+    if(!id || id==="__ignoriert" || id==="__offen" || !ml) return;
     if(t[id]===undefined) t[id]=ml;
     else if(t[id]!==ml) t[id]=null;        /* Widerspruch → lieber keine Zahl */
   });
@@ -1676,28 +1679,59 @@ async function ladeDaten(){
    Abschrift, damit die Seite ohne Netz nicht leer dasteht. */
 const vomServer = e => ({
   tag: e.tag, nr: e.z || "", block: "Positionen", sektionen: [],
+  /* Seit Runde 21 füllt der Worker auch diese drei. Ältere Berichte, die
+     vor Runde 21 eingelesen wurden, haben sie nicht — dann bleibt es bei
+     `null`, und die Anzeige lässt den Zeitraum einfach weg. */
+  kostenstelle: e.kostenstelle || "",
+  von: e.von_ts!=null ? +e.von_ts : null,
+  bis: e.bis_ts!=null ? +e.bis_ts : null,
   positionen: (e.positionen||[]).map(p=>({
     name: p.rohbez, anzahl: +p.anzahl||0, umsatz: +p.betrag||0,
     ml: p.ausschankMl!=null ? +p.ausschankMl : null, zeilen: 1 })),
   umsatz: (e.positionen||[]).reduce((a,p)=>a+(+p.betrag||0),0)
 });
 
+/* Uhrzeit eines Zeitstempels, in der Zeit, die im Haus an der Wand hängt.
+   Der Worker legt echte Zeitstempel ab; ohne Zone stünde hier UTC. */
+const uhr = ms => new Intl.DateTimeFormat("de-AT",{timeZone:"Europe/Vienna",
+  hour:"2-digit", minute:"2-digit", hour12:false}).format(new Date(ms));
+/* „15.09. 23:11 – 16.09. 23:26" — leer, wenn der Bericht es nicht hergibt. */
+function zeitraum(z){
+  if(!z || z.von==null || z.bis==null) return "";
+  const t = ms => new Intl.DateTimeFormat("de-AT",{timeZone:"Europe/Vienna",
+    day:"2-digit", month:"2-digit"}).format(new Date(ms));
+  return t(z.von)+" "+uhr(z.von)+" – "+t(z.bis)+" "+uhr(z.bis);
+}
+
 async function ladeBerichte(){
   try{
-    const r=await fetch("/api/fassungsliste",{headers:{Accept:"application/json"}});
+    /* Ein Abruf statt einundsechzig (Runde 21). Bis dahin holte diese
+       Seite die Übersicht und danach je Bericht eine EIGENE Anfrage,
+       nacheinander — gemessen 4,1 s leerer Schirm bei jedem Öffnen und
+       jedem „Aktualisieren".
+
+       Der Rückfall hängt an der FORM der Antwort, nicht am Status: ein
+       Worker, der `zeilen` noch nicht kennt, antwortet nicht mit einem
+       Fehler, sondern mit der alten Übersicht — dort ist `positionen`
+       eine Zahl statt einer Liste. */
+    const r=await fetch("/api/fassungsliste?zeilen=1&limit=60",
+      {headers:{Accept:"application/json"}});
     if(!r.ok) return false;
     const j=await r.json();
-    /* Mehr als die letzten zwei Monate braucht keine Ansicht, und jede
-       Liste kostet eine Anfrage. */
     const liste=(j.berichte||[]).slice(0,60);
+    const mitZeilen = liste.length && liste.every(b=>Array.isArray(b.positionen));
     const neu={};
-    for(const b of liste){
-      if(!b.tag) continue;
-      const a=await fetch("/api/fassungsliste?tag="+encodeURIComponent(b.tag),
-        {headers:{Accept:"application/json"}});
-      if(!a.ok) continue;
-      const e=await a.json();
-      if(e && e.tag) neu[e.tag]=vomServer(e);
+    if(mitZeilen){
+      for(const e of liste) if(e && e.tag) neu[e.tag]=vomServer(e);
+    } else {
+      for(const b of liste){
+        if(!b.tag) continue;
+        const a=await fetch("/api/fassungsliste?tag="+encodeURIComponent(b.tag),
+          {headers:{Accept:"application/json"}});
+        if(!a.ok) continue;
+        const e=await a.json();
+        if(e && e.tag) neu[e.tag]=vomServer(e);
+      }
     }
     ZBER=neu; schreib(K_ZBER,ZBER); return true;
   }catch(e){ return false; }
@@ -1743,6 +1777,13 @@ async function ladeZuordnung(){
     (j.mapping||[]).forEach(m=>{
       if(m.ignoriert) neu[m.kassenname]="__ignoriert";
       else if(m.artikel) neu[m.kassenname]=m.artikel;
+      /* Zugeordnet, aber ohne Artikel: das ist KEINE leere Zeile, das ist
+         eine Entscheidung — „ich habe hingesehen, und es ist nichts davon".
+         Bis Runde 22 wurde sie hier weggeworfen; danach griff die
+         Vorabliste wieder, und der abgelehnte Vorschlag stand am nächsten
+         Morgen erneut da (erste Jagd Runde 22 · A). Die Datenbank hat ihn
+         die ganze Zeit gehabt, nur diese Seite hat ihn nicht gelesen. */
+      else neu[m.kassenname]="__offen";
       /* Die bestätigte Gebindegröße liefert der Server seit je mit; bis v24
          hat diese Seite sie weggeworfen und statt dessen geraten. */
       if(+m.gebinde_ml>0) gb[m.kassenname]=+m.gebinde_ml;
@@ -1762,13 +1803,17 @@ async function ladeZuordnung(){
    Gebindegröße gehen deshalb immer gemeinsam hinaus; `gebindeMl` ist
    optional und heisst „unverändert lassen".
 
-   Die Ausschankmenge (Runde 21) macht das NICHT mit: der Worker fasst sie
-   nur an, wenn der Körper sie nennt. Deshalb hier drei Zustände —
-   `undefined` lässt den Schlüssel weg (JSON.stringify wirft ihn hinaus),
-   `null` löscht, eine Zahl setzt. Ohne eingespielte Migration wird das
-   Feld gar nicht erst mitgeschickt; sonst gäbe der Worker einen 422
-   zurück und die ganze Zuordnung käme nicht an. */
-async function sendeZuordnung(name, wert, gebindeMl, ausschankMl){
+   Die Ausschankmenge macht das NICHT mit: der Worker fasst sie nur an,
+   wenn der Körper sie nennt. Deshalb drei Zustände — `undefined` lässt
+   den Schlüssel weg (JSON.stringify wirft ihn hinaus), `null` löscht,
+   eine Zahl setzt. Ohne eingespielte Migration wird das Feld gar nicht
+   erst mitgeschickt; sonst gäbe der Worker einen 422 zurück und die
+   ganze Zuordnung käme nicht an.
+
+   `stumm` (Runde 22) und `ausschankMl` sind in dieser Reihenfolge
+   zusammengekommen: `stumm` bleibt der vierte Parameter, weil die
+   Vorabliste ihn so ruft (`:4363`); die Ausschankmenge steht dahinter. */
+async function sendeZuordnung(name, wert, gebindeMl, stumm, ausschankMl){
   const ml = gebindeMl!==undefined ? gebindeMl : (+GEB_BEST[name]||null);
   const koerper={ kassenname:name,
     artikel: wert && wert!=="__ignoriert" ? wert : null,
@@ -1780,8 +1825,14 @@ async function sendeZuordnung(name, wert, gebindeMl, ausschankMl){
     const r=await fetch("/api/mapping",{method:"POST",
       headers:{"content-type":"application/json"}, body:JSON.stringify(koerper)});
     if(r.ok) return true;
-    toast(r.status===403 ? "Nur die Leitung darf zuordnen" : "Nicht gespeichert");
-  }catch(e){ toast("Keine Verbindung — die Zuordnung ist nur auf diesem Gerät"); }
+    if(!stumm) toast(r.status===403 ? "Nur die Leitung darf zuordnen" : "Nicht gespeichert");
+  }catch(e){
+    /* „nur auf diesem Gerät" stimmt nur dort, wo der Aufrufer den Wert
+       behält. Im Zuordnung-Bildschirm wird er seit der zweiten Jagd der
+       Runde 22 zurückgenommen — dort sagt der Aufrufer selbst, was
+       wirklich geschehen ist, und schaltet diese Zeile stumm (· B). */
+    if(!stumm) toast("Keine Verbindung — die Zuordnung ist nur auf diesem Gerät");
+  }
   return false;
 }
 
@@ -1831,7 +1882,7 @@ async function setzeAusschank(name, artId, ml){
   if(ml) AUS_BEST[name]=ml; else delete AUS_BEST[name];
   if(MAP[name]!==artId){ MAP[name]=artId; schreib(K_MAP,MAP); }
   schreib(K_AUS,AUS_BEST);
-  const ok=await sendeZuordnung(name, artId, undefined, ml || null);
+  const ok=await sendeZuordnung(name, artId, undefined, false, ml || null);
   zeichne();
   toast(!ok ? "Nur auf diesem Gerät gemerkt — der Server hat es nicht angenommen"
      : ml  ? "Ins Glas: "+ml+" ml"
@@ -2177,11 +2228,62 @@ function flaschen(p, artId){
   return {ok:true, fl:(+p.anzahl||0)*aus/geb.ml, aus, woher:a.woher, geb};
 }
 
+/* ── Vorabliste ────────────────────────────────────────────────────────
+   WORTGLEICH mit `VORAB` in `src/gnmap.js`; `tests/vorab-gleich.test.mjs`
+   hält beide Seiten Zeile für Zeile zusammen. Die Begründung zu jedem
+   Eintrag steht dort, damit sie nur an EINER Stelle gepflegt wird.
+
+   Ganzer Kassenname → Artikel-Id, `null` heisst „kommt nicht aus dem
+   Keller". Nachgeschlagen wird der Name ganz; verglichen wird nichts. */
+const VORAB={
+  "NW Heinrich, Naked Red 1/8":"w053",
+  "RS Dürnberg, Blanc de Noir 1/8":"w045",
+  "ZW Glatzer Rubin Carnuntum 1/8 l":"w026",
+  "Prosecco, Serena 0,1l":"serena",
+  "Prosecco, Serena 0,75l":"serena",
+  "Glas Seher Sparkling Rosé 0,1l":"w055",
+  "Coca Cola 0,35l":"cola",
+  "Cola Zero 0,35l":"colaz",
+  "Now-Limo Orange 0,35l":"orange",
+  "Now-Limo Lemon 0,35l":"lemon",
+  "Hefeweizen hell 0,5l":"hell",
+  "Weizen alkoholfrei 0,5":"hefe0",
+  "Stiegl alkoholfrei 0,3l":"st03",
+  "Stiegl alkoholfrei 0,5l":"st05",
+  "Mango gespritzt 0,25l 0,25l":"mango",
+  "Champignons":null, "Käse":null, "Paprika":null, "Pinien":null,
+  "Rucola":null, "Schinken":null, "Schnittlauch":null, "Speck":null,
+  "Zwiebeln":null, "HP Omelett 1 Portion":null, "HP Rührei 1 Portion":null,
+  "Cappuccino 1 Tasse":null, "Cappuccino Hafer 1 Glas":null,
+  "Espresso":null, "Espresso doppio 1 Glas":null, "Espresso Macchiato":null,
+  "Latte Macchiato 1 Glas":null, "Verlängerter 1 Glas":null,
+  "Amaro Averna Siciliano 2 cl":null, "Lagavulin 16 Years 2 cl":null,
+  "Obstler Durzbauer 2 cl":null
+};
+
+/* Die Datenbank schlägt die Vorabliste. Weicht eine bestätigte Zuordnung
+   von der Liste ab, wird nichts von allein geändert — die Tabelle sagt
+   es nur. Genau so sind zwei Vertipper aufgefallen („Cola Zero" stand
+   auf Cola, „Now-Limo Orange" auf Lemon). */
+const vorabAbweichung = name =>
+  (MAP[name] && MAP[name]!=="__ignoriert" && MAP[name]!=="__offen"
+   && Object.hasOwn(VORAB,name)
+   && VORAB[name] && MAP[name]!==VORAB[name]) ? VORAB[name] : null;
+
 function zuordnung(pos){
   if(REZ[pos.name] && REZ[pos.name].length) return {status:"rezept"};
   const z=MAP[pos.name];
   if(z==="__ignoriert") return {status:"ignoriert"};
+  /* Abgelehnt. Steht VOR der Vorabliste, sonst wäre die Ablehnung
+     wirkungslos — genau der Fehler, den die erste Jagd gefunden hat. */
+  if(z==="__offen") return {status:"offen", abgelehnt:true};
   if(z) return {status:"fest", id:z};
+  /* Zweite Stufe, genau wie im Worker. `null` ist ein Wert, kein Fehlen
+     — deshalb `hasOwn` und nicht `VORAB[name]`. */
+  if(Object.hasOwn(VORAB,pos.name)){
+    const v=VORAB[pos.name];
+    return v===null ? {status:"ignoriert", vorab:true} : {status:"vorab", id:v};
+  }
   const a=autoWein(pos.name);
   if(a) return {status:"auto", id:a.id};
   return {status:"offen"};
@@ -2921,8 +3023,18 @@ function offeneVorgaenge(){
 function meldungen(){
   const M=[];
   const mail=letzteNotiz("email");
-  if(mail) M.push("Mailempfang "+notizZeit(mail)+": "+mail.notiz
-    +" — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein.");
+  /* Der Warnsatz gehört an einen AUSFALL, nicht an jede Mailnotiz. Der
+     Mailweg schreibt unter derselben Quelle auch die Erfolgsmeldung —
+     und die trug den Satz mit, so dass die Übersicht jeden geglückten
+     Empfang zum Ausfall erklärt hätte (dritte Jagd Runde 22 · B). Am
+     ersten Morgen, an dem die Weiterleitung steht, wäre das ein Alarm,
+     der nie ausgeht. Erkannt wird der Erfolg an seinem eigenen Wort
+     („angekommen", `src/index.js`), nicht an einer Zahl. */
+  if(mail){
+    const geglueckt=/\bangekommen\b/.test(mail.notiz||"");
+    M.push("Mailempfang "+notizZeit(mail)+": "+mail.notiz
+      +(geglueckt ? "" : " — solange das so bleibt, kommt kein Z-Bericht mehr von selbst herein."));
+  }
   const rechte=NOTIZEN.filter(z=>z.quelle==="rechte");
   if(rechte.length) M.push(rechte.length
     +(rechte.length===1?" Vorgang wurde":" Vorgänge wurden")
@@ -3813,6 +3925,28 @@ function vImport(m){
   zone.ondrop=e=>{ e.preventDefault(); zone.classList.remove("ueber");
     if(e.dataTransfer.files[0]) datei(e.dataTransfer.files[0]); };
 
+  /* Der Hinweis, wenn ein Bericht einen anderen ersetzt hat und dabei
+     etwas nicht stimmte (Runde 21). Er steht, statt zu verschwinden:
+     Bar und Restaurant getrennt abgeschlossen heisst, dass dem Abgleich
+     eine ganze Kostenstelle fehlt — vorher passierte das lautlos, mit
+     einem grünen „eingelesen". */
+  if(vImport.warnung){
+    const w=vImport.warnung, ws=document.createElement("section");
+    const p=n=>n===1?"1 Position":n+" Positionen";
+    ws.innerHTML=`<div class="hinweis bad">
+      <b>Der Bericht für ${esc(deTag(w.tag))} hat einen anderen ersetzt.</b><br>
+      Vorher ${esc(w.z||"ein Bericht")} mit ${p(w.vorher)}, jetzt ${p(w.nachher)}.
+      ${w.gespalten ? "Der neue Bericht hat einen zweiten Block in Positionsgröße — gelesen wird nur einer. " : ""}
+      Das sieht nach einem Teilbericht aus: Bar und Restaurant getrennt
+      abgeschlossen. Dann fehlt dem Abgleich eine ganze Kostenstelle.
+      <br><br>Was zu tun ist: den vollständigen Tagesabschluss noch einmal
+      ziehen und hier einlesen — er ersetzt diesen.
+      <br><button class="b klein" id="bWegW" style="margin-top:10px">Verstanden</button>
+    </div>`;
+    m.appendChild(ws);
+    ws.querySelector("#bWegW").onclick=()=>{ vImport.warnung=null; zeichne(); };
+  }
+
   const vor=document.createElement("section"); vor.id="vor"; m.appendChild(vor);
 
   /* Die Vorschau zeigt, was der SERVER gelesen hat — nicht, was diese
@@ -3832,7 +3966,7 @@ function vImport(m){
        das frühere Inline-Styling würde die neue Regel überschreiben. */
     vor.innerHTML=`<h3>Eingelesen</h3>
       <div class="gitter g4" style="margin-bottom:16px">
-        <div class="kpi kpi--status"><span>Betriebstag</span><b>${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc(z.nr||"")}</small></div>
+        <div class="kpi kpi--status"><span>Betriebstag</span><b>${z.tag?esc(deTag(z.tag)):"nicht erkannt"}</b><small>${esc([z.nr||"", zeitraum(z)].filter(Boolean).join(" · "))}</small></div>
         <div class="kpi"><span>Positionen</span><b>${z.positionen.length}</b><small>${eur(z.umsatz)}</small></div>
         <div class="kpi"><span>Zugeordnet</span><b>${auto}</b><small>${ign} ignoriert</small></div>
         <div class="kpi ${offen?"warn":"ok"}"><span>Offen</span><b>${offen}</b><small>brauchen eine Zuordnung</small></div>
@@ -3841,9 +3975,13 @@ function vImport(m){
         <th>Kassenname</th><th class="r">Anzahl</th><th class="r">Umsatz</th><th>Zuordnung</th><th class="r">Flaschen</th>
       </tr></thead><tbody>${z.positionen.map(p=>{
         const zu=zuordnung(p); const w=zu.id?byId(zu.id):null;
+        /* „vorab" ist so wenig bestätigt wie „automatisch" — beide
+           tragen deshalb dasselbe Kennzeichen und laden zum Bestätigen
+           ein. Nur „fest" heisst wirklich bestätigt. */
+        const vorschlag=zu.status==="auto"?"automatisch":zu.status==="vorab"?"vorgeschlagen":"";
         const nm=zu.status==="ignoriert"?'<span class="pill p-grau">ignoriert</span>'
           :zu.status==="offen"?'<span class="pill p-bad">offen</span>'
-          :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${zu.status==="auto"?"p-neu":"p-ok"}">${zu.status==="auto"?"automatisch":"bestätigt"}</span>`;
+          :`${esc(w?w.winzer+" · "+w.wein:GN(zu.id))} <span class="pill ${vorschlag?"p-neu":"p-ok"}">${vorschlag||"bestätigt"}</span>`;
         return `<tr><td>${esc(p.name)}</td>
           <td class="r">${num(p.anzahl)}</td><td class="r">${p.umsatz?eur(p.umsatz):"—"}</td>
           <td>${nm}</td><td class="r">${(f=>!zu.id?"—":f.ok?num(f.fl)
@@ -3875,11 +4013,20 @@ function vImport(m){
       }
       await ladeBerichte();
       $("#stat").textContent="";
-      toast("Z-Bericht für "+deTag(j.tag)+" eingelesen"
-        + (j.storno ? " · "+j.storno+" storniert, ohne Artikel" : ""));
-      zeigeVorschau(j.tag);
+      const e=j.ersetzt||null;
+      const faul=!!(e && (e.teilbericht || e.gespalten));
+      toast(e && e.unveraendert
+        ? "Derselbe Bericht wie zuvor — es hat sich nichts geändert"
+        : "Z-Bericht für "+deTag(j.tag)+" gespeichert, auf allen Geräten sichtbar"
+          + (j.storno ? " · "+j.storno+" storniert, ohne Artikel" : ""));
       vAbgleich.tag=j.tag;
-      SEITE=(function(){const a=abgleich(j.tag); return a.offen.length?"zuordnung":"abgleich";})();
+      /* Steht ein Verdacht im Raum, bleibt die Seite hier stehen: der
+         Hinweis soll gelesen werden, bevor jemand mit den Zahlen
+         weiterarbeitet. Ein Toast wäre nach vier Sekunden weg. Sonst
+         läuft es wie bisher weiter zur Zuordnung oder zum Abgleich. */
+      vImport.warnung = faul ? { ...e, tag:j.tag } : null;
+      vImport.zeig = j.tag;
+      if(!faul) SEITE=(function(){const a=abgleich(j.tag); return a.offen.length?"zuordnung":"abgleich";})();
       zeichne();
     }catch(e){
       $("#stat").textContent="";
@@ -3891,9 +4038,10 @@ function vImport(m){
   const s2=document.createElement("section");
   s2.innerHTML=`<h3>Auf dem Server</h3>` + (alt.length
     ? `<div class="tabhuelle"><table><thead><tr>
-        <th>Betriebstag</th><th>Bericht</th><th class="r">Positionen</th><th class="r">Umsatz</th><th></th>
+        <th>Betriebstag</th><th>Bericht</th><th>Zeitraum</th><th class="r">Positionen</th><th class="r">Umsatz</th><th></th>
         </tr></thead><tbody>${alt.map(t=>`<tr>
           <td>${esc(deTag(t))}</td><td class="dim">${esc(ZBER[t].nr||"—")}</td>
+          <td class="dim">${esc(zeitraum(ZBER[t])||"—")}</td>
           <td class="r">${ZBER[t].positionen.length}</td><td class="r">${eur(ZBER[t].umsatz)}</td>
           <td class="r"><button class="b klein" data-auf="${t}">Ansehen</button></td></tr>`).join("")}
         </tbody></table></div>
@@ -4123,19 +4271,34 @@ function vZuordnung(m){
   m.innerHTML=`<section><h2>Zuordnung</h2>
     <div class="unter">Kassenname zu Artikel. Weine mit Rebsorten-Kürzel gehen automatisch durch.
     Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
-    „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.</div></section>`;
+    „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.
+    Was „vorgeschlagen“ heißt, ist einzeln nachgesehen, aber noch nicht bestätigt —
+    der Knopf unten nimmt alle Vorschläge auf einmal an.</div></section>`;
 
   /* Dieselbe Zählstelle, die auch die Zahl neben dem Menüpunkt liest
      (elfte Jagd Runde 16 · B) — vorher baute jede ihre eigene Liste. */
   const L=alleKassennamen().sort((a,b)=>{
     const za=zuordnung(a), zb=zuordnung(b);
-    const rang=x=>x.status==="offen"?0:x.status==="auto"?1:2;
+    /* „vorab" steht mit „auto" auf derselben Stufe: beides sind
+       Vorschläge, die auf einen Blick warten. */
+    const rang=x=>x.status==="offen"?0:(x.status==="auto"||x.status==="vorab"||x.vorab)?1:2;
     return rang(za)-rang(zb) || b.anzahl-a.anzahl;
   });
   if(!L.length){
     m.insertAdjacentHTML("beforeend",`<section><div class="karte leer">Noch kein Z-Bericht eingelesen.</div></section>`);
     return;
   }
+  /* Die Zahl neben dem Menüpunkt zählt nur, was OFFEN ist — ein
+     unbestätigter Vorschlag steht dort nicht und rechnet trotzdem schon
+     mit (zweite Jagd Runde 22 · B). Deshalb steht sie hier, wo der Knopf
+     danebensteht, der sie auf einmal erledigt. */
+  const wartend=L.filter(p=>{ const z=zuordnung(p);
+    return z.status==="vorab" || z.status==="auto" || z.vorab; }).length;
+  if(wartend) m.insertAdjacentHTML("beforeend",
+    `<section><div class="karte" style="border-left:4px solid var(--warn-fg)">`
+    + `<b>${wartend} ${wartend===1?"Vorschlag wartet":"Vorschläge warten"} auf einen Klick.</b> `
+    + `Sie rechnen schon mit — bestätigt sind sie erst mit dem Knopf unten.</div></section>`);
+
   const optionen=`<option value="">— offen —</option><option value="__ignoriert">Ignorieren</option>`+
     `<optgroup label="Wein">${WINES.map(w=>`<option value="${w.id}">${esc(w.winzer)} · ${esc(w.wein)} ${esc(w.jg)}</option>`).join("")}</optgroup>`+
     `<optgroup label="Getränke">${GIDS.map(id=>`<option value="${id}">${esc(GN(id))}</option>`).join("")}</optgroup>`;
@@ -4143,44 +4306,114 @@ function vZuordnung(m){
   const s=document.createElement("section");
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
     <th>Kassenname</th><th class="r">Menge gesamt</th><th>Zuordnung</th><th>Zustand</th></tr></thead><tbody>
-    ${L.map(p=>{ const z=zuordnung(p);
+    ${L.map(p=>{ const z=zuordnung(p); const ab=vorabAbweichung(p.name);
       return `<tr><td>${esc(p.name)}</td><td class="r">${num(p.anzahl)}</td>
         <td><select class="klein" data-name="${esc(p.name)}">${optionen}</select></td>
-        <td>${z.status==="offen"?'<span class="pill p-bad">offen</span>'
+        <td>${z.status==="offen"
+              /* „abgelehnt" ist offen MIT Vorgeschichte: jemand hat
+                 hingesehen. Ohne diesen Unterschied stünde die Zeile
+                 morgen wieder da wie am ersten Tag, und die Arbeit wäre
+                 unsichtbar (zweite Jagd Runde 22 · C). */
+              ?(z.abgelehnt?'<span class="pill p-grau">abgelehnt — offen</span>'
+                           :'<span class="pill p-bad">offen</span>')
+            :z.status==="vorab"?'<span class="pill p-neu">vorgeschlagen — bestätigen</span>'
             :z.status==="auto"?'<span class="pill p-neu">automatisch — bestätigen</span>'
-            :z.status==="ignoriert"?'<span class="pill p-grau">ignoriert</span>'
-            :'<span class="pill p-ok">festgelegt</span>'}</td></tr>`;
+            :z.status==="ignoriert"
+              ?(z.vorab?'<span class="pill p-neu">vorgeschlagen: ignorieren</span>'
+                       :'<span class="pill p-grau">ignoriert</span>')
+            :'<span class="pill p-ok">festgelegt</span>'}${
+            /* Die geprüfte Liste sagt etwas anderes als die bestätigte
+               Zuordnung. Geändert wird nichts — die Bestätigung gilt.
+               Hier steht nur, was auffällt, damit ein Vertipper nicht
+               für immer stehen bleibt. */
+            /* Nicht in `.mini`: diese Zeile meldet einen möglichen
+               Vertipper mit Geldfolge und war in der kleinsten Schrift
+               des Schirms kaum zu sehen (sechste Jagd Runde 22 · C). */
+            ab?`<div style="margin-top:4px;color:var(--warn-fg);font-size:13px">`
+               +`geprüfte Liste sagt: <b>${esc((w=>w?w.winzer+" · "+w.wein:GN(ab))(byId(ab)))}</b></div>`:""
+          }</td></tr>`;
     }).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:16px">
-      <button class="b stark" id="bAuto">Alle automatischen Weinvorschläge übernehmen</button></div>`;
+      <button class="b stark" id="bAuto">Alle Vorschläge übernehmen</button></div>`;
   m.appendChild(s);
 
   s.querySelectorAll("select[data-name]").forEach(sel=>{
     const nm=sel.dataset.name, z=zuordnung({name:nm});
-    sel.value = MAP[nm] ? MAP[nm] : (z.status==="auto" ? z.id : "");
+    /* Das Feld zeigt, was gelten WÜRDE — sonst steht daneben
+       „vorgeschlagen" und im Feld „— offen —". `__offen` ist eine
+       Ablehnung und gehört ins leere Feld, nicht als Wert hinein. */
+    sel.value = (MAP[nm] && MAP[nm]!=="__offen") ? MAP[nm]
+      : z.status==="vorab" ? z.id
+      : z.status==="auto" ? z.id
+      : (z.status==="ignoriert" && z.vorab) ? "__ignoriert" : "";
     sel.onchange=async()=>{
-      const wert=sel.value, vorher=MAP[nm];
-      if(wert) MAP[nm]=wert; else delete MAP[nm];
+      const wert=sel.value, vorher=MAP[nm], gebVorher=GEB_BEST[nm];
+      /* „— offen —" ist eine Entscheidung und wird als solche gemerkt:
+         `__offen` statt `delete`. Sonst griffe beim nächsten Zeichnen
+         wieder die Vorabliste, und der abgelehnte Vorschlag stünde erneut
+         da (erste Jagd Runde 22 · A). Der Server bekommt dasselbe wie
+         bisher — eine Zeile ohne Artikel; nur gelesen wird sie jetzt. */
+      MAP[nm] = wert || "__offen";
       schreib(K_MAP,MAP);
       /* Die bestätigte Gebindegröße gehörte zum bisherigen Artikel. Nach
          einem Wechsel ist sie nicht mehr bestätigt — sonst rechnet die
          neue Zuordnung mit der Flasche der alten. */
       if(GEB_BEST[nm]!=null && wert!==vorher){ delete GEB_BEST[nm]; schreib(K_GEB,GEB_BEST); }
-      const ok=await sendeZuordnung(nm, wert);
+      const ok=await sendeZuordnung(nm, wert, undefined, true);
+      /* Kam sie nicht durch (kein Recht, kein Netz), gilt sie auch hier
+         nicht. Sonst behauptet der Schirm „festgelegt", während in der
+         Datenbank nichts steht (dritte Jagd Runde 22 · B).
+
+         BEIDES zurück, nicht nur die Zuordnung: die Gebindegröße ist
+         oben schon gelöscht. Blieb sie es, stand die alte Zuordnung
+         wieder da, aber ohne ihre Flasche — die Position fiel aus dem
+         Abgleich, und die Datenbank hielt die Größe unverändert weiter
+         (zweite Jagd Runde 22 · B). */
+      if(!ok){
+        if(vorher===undefined) delete MAP[nm]; else MAP[nm]=vorher;
+        if(gebVorher!=null) GEB_BEST[nm]=gebVorher;
+        schreib(K_MAP,MAP); schreib(K_GEB,GEB_BEST);
+      }
       zeichne();
-      if(ok) toast("Zuordnung gespeichert");
+      toast(!ok ? "Nicht gespeichert — es bleibt beim alten Stand"
+                : wert ? "Zuordnung gespeichert" : "Als offen vermerkt");
     };
   });
+  /* Ein Knopf für beide Arten von Vorschlag: das Kassenmuster der Weine
+     und die geprüfte Vorabliste. „Kein Keller" geht als `__ignoriert`
+     hinaus, denselben Weg, den die Leitung von Hand nimmt.
+
+     Zwei Dinge fasst er NIE an:
+
+     1. Eine schon getroffene Entscheidung — `MAP[p.name]` bricht ab. Das
+        gilt auch für eine Ablehnung (`__offen`), die ist eine.
+     2. Eine Kassenposition mit Rezeptur. Für die ist eine Artikel-Id ein
+        BESTANDTEIL, kein Artikel; `MAP[name]=id` hiesse „Aperol Spritz
+        IST Prosecco", und `__ignoriert` hiesse, dass ihre Bestandteile
+        aus der Rechnung fallen. Der Nachbarknopf `#bGebAlle` hat diesen
+        Riegel seit Runde 16, dieser hatte ihn nicht (erste Jagd Runde 22
+        · A): auf dem Gerät, das das Rezept angelegt hat, blieb es
+        unsichtbar — auf jedem anderen stand die Position danach
+        dauerhaft auf „ignoriert". Rezepte liegen bis heute nur im
+        Gerätespeicher (`hh_rezepte_v1`), der Server kennt sie nicht. */
   $("#bAuto").onclick=async()=>{
     const neu=[];
-    L.forEach(p=>{ if(MAP[p.name]) return; const a=autoWein(p.name); if(a) neu.push([p.name,a.id]); });
+    L.forEach(p=>{
+      if(MAP[p.name]) return;
+      if(REZ[p.name] && REZ[p.name].length) return;
+      if(Object.hasOwn(VORAB,p.name)) return neu.push([p.name, VORAB[p.name] ?? "__ignoriert"]);
+      const a=autoWein(p.name); if(a) neu.push([p.name,a.id]);
+    });
     if(!neu.length) return toast("Kein Vorschlag offen");
     $("#bAuto").disabled=true;
+    /* Erst hinaus, dann merken. Andersherum steht auf dem Schirm
+       „festgelegt", während in der Datenbank nichts angekommen ist —
+       bei 33 Namen auf einmal (dritte Jagd Runde 22 · B). */
     let n=0;
-    for(const [nm,id] of neu){ MAP[nm]=id; if(await sendeZuordnung(nm,id)) n++; }
+    for(const [nm,id] of neu) if(await sendeZuordnung(nm,id)){ MAP[nm]=id; n++; }
     schreib(K_MAP,MAP); $("#bAuto").disabled=false; zeichne();
-    toast(n===neu.length ? n+" Weine übernommen"
-      : n+" von "+neu.length+" übernommen — der Rest nur auf diesem Gerät");
+    toast(n===neu.length ? n+" Zuordnungen übernommen"
+      : n+" von "+neu.length+" übernommen — der Rest ist NICHT gespeichert");
   };
 }
 
@@ -4220,7 +4453,12 @@ function vEinst(m){
       <tr><td>Aktive Quelle</td><td class="r"><b>${esc(QUELLE)}</b></td></tr>
       <tr><td>Vorgänge</td><td class="r">${VORGAENGE.length}</td></tr>
       <tr><td>Z-Berichte</td><td class="r">${Object.keys(ZBER).length}</td></tr>
-      <tr><td>Feste Zuordnungen</td><td class="r">${Object.keys(MAP).length}</td></tr>
+      <tr><td>Feste Zuordnungen</td><td class="r">${
+        /* „fest" heisst: ein Artikel steht da. Ignoriert und abgelehnt
+           sind Entscheidungen, aber keine Zuordnungen — sie zählten bis
+           zur zweiten Jagd der Runde 22 mit (· C). */
+        Object.values(MAP).filter(v=>v && v!=="__ignoriert" && v!=="__offen").length
+      }</td></tr>
       <tr><td>Weine · Getränke im Stamm</td><td class="r">${WINES.length} · ${GIDS.length}</td></tr>
     </tbody></table></div>`;
   m.appendChild(s2);
@@ -4793,8 +5031,15 @@ function vRezepte(m){
 
   /* Dritte Stelle, die dieselbe Menge zusammenzählte — jetzt dieselbe
      Zählstelle wie Navigation und Zuordnungsseite (elfte Jagd Runde 16). */
+  /* `__offen` heisst „hingesehen, und es ist keiner dieser Artikel" —
+     das ist die halbe Antwort auf „dann ist es ein Mischgetränk", nicht
+     das Gegenteil davon. Bis zur zweiten Jagd der Runde 22 sperrte eine
+     Ablehnung die Position hier aus, und zurück führte kein Weg: der
+     Select kennt keinen Zustand „nie angefasst", und ein DELETE auf
+     `mapping` gibt es nicht. Betroffen war ausgerechnet „Mango
+     gespritzt", für das der Morgenbrief selbst ein Rezept vorschlägt. */
   const kandidaten=alleKassennamen()
-    .filter(p=>!MAP[p.name] && !REZ[p.name])
+    .filter(p=>(!MAP[p.name] || MAP[p.name]==="__offen") && !REZ[p.name])
     .sort((a,b)=>b.anzahl-a.anzahl);
 
   const s=document.createElement("section");

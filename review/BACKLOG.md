@@ -17,7 +17,7 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | jaeger | 19 | **B · Die Getränkezählung der Kellerzählung erreicht das Journal nie.** `src/index.js:459` liest im Modus `keller` nur `d.zdone` (Wein); `d.getr` fällt weg. `leitung.html:942` behält es als `gzaehlung` und `:3395` druckt es als „Gezählter Bestand · Getränkelade". Die Leitung sieht eine Zählung, die in `/api/bestand` und im Journal nicht existiert. | `src/index.js:459`, `public/leitung.html:942`, `:3395` |
 | jaeger | 19 | **C→B · `verbrauch()` zählt Sonderentnahmen mit.** `leitung.html:1565-1579` nimmt nur `ware` und `keller` aus, nicht `nach`. Bruch, Verkostung und Personalgetränke gehen damit in „pro Tag", auf dem „Nachbestellen" und „Reicht N Tage" rechnen. | `public/leitung.html:1565` |
 | ui-designer | 19 | **Der heutige Tag kommt auf der Übersicht nicht vor.** `letzterTag()` (`leitung.html:2120`) gibt bewusst gestern zurück; jede Kachel, „Was noch fehlt" und die Abweichungstabelle enden dort. Eine Sonderentnahme von heute früh steht auf der Startseite nirgends. Die Seite heißt „Mittagsblick" und zeigt nie den laufenden Tag. | `public/leitung.html:2120`, `:2135` |
-| ui-designer | 19 | **Das Backoffice holt beim Start 61 Anfragen nacheinander** (Liste + 60 Einzelberichte, `leitung.html:1267`) und zeichnet erst danach. **Gemessen:** 60 Berichte bei 60 ms Antwortzeit = 4,1 s leerer Schirm, bei jedem Öffnen und jedem „Aktualisieren". Ein Sammelabruf am `/api/fassungsliste` würde es tun. | `public/leitung.html:1267`, `src/index.js:657` |
+| ui-designer | 19 | ~~**Das Backoffice holt beim Start 61 Anfragen nacheinander**~~ **ERLEDIGT Runde 21** — `GET /api/fassungsliste?zeilen=1` liefert alles in einem Abruf, im Browser nachgemessen (`tests/ui-runde21.cjs`: sechs Betriebstage, eine Anfrage, 1,0 s). Ursprünglicher Fund: (Liste + 60 Einzelberichte, `leitung.html:1267`) und zeichnet erst danach. **Gemessen:** 60 Berichte bei 60 ms Antwortzeit = 4,1 s leerer Schirm, bei jedem Öffnen und jedem „Aktualisieren". Ein Sammelabruf am `/api/fassungsliste` würde es tun. | `public/leitung.html:1267`, `src/index.js:657` |
 | ui-designer | 19 | **Kein Drilldown von der Zahl zum Beleg.** Keine Abgleichzeile führt zum Vorgang oder zur Z-Bericht-Position, obwohl `abgleich()` beide Seiten im selben Lauf zusammenrechnet und die Herkunft kennt. Vom Öffnen bis zu „X Flaschen fehlen, am 17.09., Beleg hier": mindestens 6 Klicks und zwei Suchen von Hand. | `public/leitung.html:1745`, `:2557` |
 | ui-designer | 19 | **Kein Euro im Backoffice.** `p.umsatz` je Position und `z.umsatz` je Tag liegen geladen vor und werden an zwei Randstellen gezeigt (`:2182`, `:2953`). Keine Differenz ist bewertet, keine offene Zuordnung nach Umsatz priorisierbar — „4 Flaschen Cola" und „4 Flaschen Moric Reserve" sind dieselbe Zeile. | `public/leitung.html:1259`, `:1876` |
 | ui-designer | 19 | **Die Abdeckungszahl steht nur auf dem Papier.** `stkGesamt/stkGerechnet/stkIgnoriert` (`:1942`) sagt, wie viel der Verkaufsseite überhaupt in der Rechnung steckt — ausgegeben wird sie ausschließlich im Druckblatt (`:2746`). Sie gehört über alle Differenzen. | `public/leitung.html:1942`, `:2746` |
@@ -49,7 +49,7 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | Moderation | 6 | **`kistenGr()` im Backoffice liest ein Feld, das es nie gab.** `p.kg` statt `p.kistengr` (die App legt `kistengr` ab); der Worker liest seit Runde 5 beide. Dieselbe Lieferung steht im Journal mit 40 und auf dem Schirm mit 12 Flaschen. In Runde 7 in Arbeit. | `public/leitung.html:678`, `public/index.html:2910`, `src/index.js` |
 | controller | 6 | **Zwei Vorgänge desselben Modus am selben Tag löschen einander.** `start()` legt `blank(m)` mit demselben `tag` an, also denselben Schlüssel `<modus>_<tag>`; `ereignisseAbleiten` nimmt den ersten per Gegenbuchung aus dem Bestand. Zwei Lieferungen an einem Tag sind normal; live existiert bereits `ware_2026-09-16`. In Runde 7 in Arbeit. | `public/index.html:2230`, `src/index.js:262` |
 | controller | 6 | **`bestand()` schlüsselt nicht auf `ort`.** Sobald ein zweiter Zählort entsteht (Entscheidung Nr. 14, Getränkelager), wird die jüngere Zählung zum Anker für beide Orte. Der Index `(artikel, ort, ts)` ist live schon breit genug — das Schema kann es, der Code nicht. | `src/index.js:373`, `public/leitung.html` (`bestand`) |
-| software-engineer | 5 | **Der Z-Import ist nicht atomar.** Kopf, `DELETE` und Zeilen sind drei Schreibvorgänge. Mit eingespeistem Fehler im Zeilen-`batch` bleibt der Kopf mit frischem `importiert` und NULL Positionen stehen — die Leitung sieht einen eingelesenen Tag ohne Inhalt. Gehört wie `vorgangSchreiben` in EIN `batch`. | `src/index.js:397–422` |
+| software-engineer | 5 | ~~**Der Z-Import ist nicht atomar.**~~ **ERLEDIGT Runde 21** — Kopf, `DELETE` und Zeilen stehen in EINEM `batch`; ein Fehler mitten im Schreiben lässt den alten Bericht vollständig stehen (`tests/zimport-haerte.test.mjs`). Ein Bericht ganz ohne Positionen wird jetzt mit 422 abgewiesen, statt den Tag leerzuräumen. Ursprünglicher Fund: Kopf, `DELETE` und Zeilen sind drei Schreibvorgänge. Mit eingespeistem Fehler im Zeilen-`batch` bleibt der Kopf mit frischem `importiert` und NULL Positionen stehen — die Leitung sieht einen eingelesenen Tag ohne Inhalt. Gehört wie `vorgangSchreiben` in EIN `batch`. | `src/index.js:397–422` |
 | software-engineer | 5 | **Ein Teilbericht desselben Tages ersetzt den vollen lautlos.** Zweimal derselbe Betriebstag ist richtig (ein Bericht je Tag), aber ein Bericht mit 2 Positionen überschreibt einen mit 48 ohne Rückfrage und mit HTTP 200. Mindestens melden, wenn der neue deutlich weniger Positionen hat. | `src/index.js:394` |
 | Orchestrierung | 1 | `npm run deploy` (`wrangler deploy`) steht weiter in `package.json`. Regel 2 verbietet den Befehl, und laut Projektanleitung §6 kann genau er die nur im Dashboard gepflegten Einstellungen (D1-Bindung, ASSETS, ABSENDER, Crons) entfernen. Dieselbe Gefahrenklasse wie das entfernte `npm run schema`, vom qa-guardian übersehen. Deploy läuft ohnehin automatisch über Workers Builds. | `package.json:7` |
 | Setup | – | Der Verwaltungs-Editor ist über den Menüknopf „Verwaltung" weiter erreichbar, obwohl Projektanleitung §8 A ihn als aus `index.html` entfernt beschreibt. Doku und Code widersprechen sich. Der Klartext-Code ist seit Runde 1 weg, der Editor selbst nicht. | `public/index.html:1836` (`bAdmin`), `:1899` (`askPin`) |
@@ -129,7 +129,7 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | ui-designer | 3 | **`.b.klein` ist 28 px hoch** (`--control-h-sm` bei `data-dichte="maus"`), im Backoffice elfmal im Einsatz — „Als CSV", „Jetzt zuordnen", „Warum so gerechnet?". Die Kopfleiste ist in Runde 3 auf 36/44 px gebracht, die kleinen Knöpfe nicht: das hieße, `--control-h-sm` anzufassen, und das Token steht in der GETEILTEN Schicht (Falle 1) — es würde auch jeden kleinen Knopf im Keller verändern. Braucht eine Entscheidung, keinen stillen Griff. Gemessen im Browser. | `public/leitung.html:412` (`.b.klein`), geteilter Block `:110` (`--control-h-sm`) |
 | ui-designer | 3 | **Die Leitung liest den Gerätespeicher nicht mehr, sobald der Server antwortet.** `ladeDaten()` steigt bei `r.ok` aus, auch wenn die Liste leer ist — richtig so, aber es heißt: ein MacBook, auf dem noch ein Archiv der Fassungsseite liegt, zeigt es ab sofort nicht mehr an. Vor Runde 3 war das der Normalfall (der Server warf immer einen Fehler). Wer alte Stände braucht, muss sie über „Vorgänge aus Datei laden" hereinholen — das steht nirgends. | `public/leitung.html:697` (`ladeDaten`), `:1576` (`vEinst`, Dateiknopf) |
 
-| hospitality-pro | 3 | **Ein zweiter Z-Bericht für denselben Tag ersetzt den ersten still.** Im Betrieb sind das zwei verschiedene Fälle: ein zweiter Abschluss nach Nachbuchung oder Storno (dann ist Ersetzen richtig) und ein getrennter Abschluss von Bar und Restaurant (dann geht eine ganze Kostenstelle verloren). Ohne Schemaänderung lösbar: Die Notiz im Journal soll beim Ersetzen alte und neue Z-Nummer und beide Positionszahlen nennen — fällt die Zahl der Positionen deutlich, war es ein Teilbericht. Antwort zu Entscheidung Nr. 11. | `src/index.js` (`fassungsliste`), `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11 |
+| hospitality-pro | 3 | ~~**Ein zweiter Z-Bericht für denselben Tag ersetzt den ersten still.**~~ **ERLEDIGT Runde 21** — genau wie vom Betrieb vorgeschlagen: die Journalnotiz nennt alte und neue Z-Nummer und beide Positionszahlen; bei deutlichem Rückgang (unter zwei Drittel), abweichender Kostenstelle oder zwei Positionsblöcken sagt sie es ausdrücklich. Im Backoffice steht dann ein Hinweis, und die Seite läuft nicht weiter. Ursprünglicher Fund: Im Betrieb sind das zwei verschiedene Fälle: ein zweiter Abschluss nach Nachbuchung oder Storno (dann ist Ersetzen richtig) und ein getrennter Abschluss von Bar und Restaurant (dann geht eine ganze Kostenstelle verloren). Ohne Schemaänderung lösbar: Die Notiz im Journal soll beim Ersetzen alte und neue Z-Nummer und beide Positionszahlen nennen — fällt die Zahl der Positionen deutlich, war es ein Teilbericht. Antwort zu Entscheidung Nr. 11. | `src/index.js` (`fassungsliste`), `review/OFFENE-ENTSCHEIDUNGEN.md` Nr. 11 |
 | hospitality-pro | 3 | Der Knopf in der Quellzeile heißt jetzt je nach Lage anders („Erneut versuchen“ / „Nochmal nachsehen“ / „Aktualisieren“). In der Kopfleiste steht daneben weiter „Aktualisieren“ — zwei Knöpfe, ein Ergebnis. Das ist kein Fehler, aber beim nächsten Anfassen der Kopfleiste zusammendenken. | `public/leitung.html:782` (`quellBanner`), `:1945` (Kopfleiste) |
 | qa-guardian | 3 | **Der Z-Import ist nicht atomar.** `fassungsliste()` setzt drei Schreibvorgänge hintereinander ab: Kopf einfügen (`.run()`), alte Zeilen löschen (`.run()`), neue Zeilen als `batch`. Scheitert der `batch` — eine zu lange Bezeichnung, ein Typ, den D1 ablehnt —, dann steht der Kopf mit frischem `importiert` da und **keine einzige Position**. Genau das Auseinanderlaufen, das `vorgangSchreiben` in Runde 3 durch ein gemeinsames `batch` schon abgestellt hat; hier steht es noch. Im Mailweg fällt es niemandem auf, weil alles im `waitUntil` läuft. | `src/index.js:397`–`:422` |
 | qa-guardian | 3 | **Nach dem Livegang ist der Gerätespeicher der Leitung nirgends mehr erreichbar.** Gemessen (`tests/ui-leitung.cjs`, neue Lage „leerarchiv"): Server antwortet `200` mit leerer Liste → `QUELLE="Server"`, **3 Vorgänge im `hh_archiv`, 0 gezeigt**. Auch die Seite „Speicher" hilft nicht, sie liest nur `VORGAENGE`. Der einzige Weg zurück ist „Datei laden" mit einer JSON-Ausfuhr, die es vielleicht gar nicht gibt. Nichts ist verloren, aber es ist unsichtbar — und die Quellzeile „Leer" erwähnt den eigenen Browserspeicher nicht. Schärfung des Punktes des ui-designers aus derselben Runde. | `public/leitung.html:698`–`:718`, `:1667` (`vSpeicher`) |
@@ -435,3 +435,115 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 | **mittel** | **Läuft der Hauskonsum in den ARTIKELzeilen des Z-Berichts mit?** `tests/fixtures/zbericht-37-extended.csv` führt 22 Warengruppen „… - Inner Haus" (Beverage 87 Einheiten, Wein Weiß offen 10). Das sind Gruppensummen; der Abgleich rechnet gegen Artikelzeilen. Sind die Hausmengen dort NICHT enthalten, gehen Sonderentnahmen im Abgleich nicht auf und erscheinen als Schwund. Das ist nachzusehen, nicht zu raten — an einem echten Bericht, Gruppensumme gegen Summe der zugehörigen Artikelzeilen. | `src/gnparse.js`, `tests/fixtures/zbericht-37-extended.csv` |
 | niedrig | **`vSpeicher` zeigt weiter die alte, fünfteilige Form** — je Topf eine Tabelle, je Tabelle eine eigene Sortierung. Genau das, was in „Eingänge" behoben wurde. `vgTafelHtml` liegt bereit und nimmt denselben Vorgang; es wären wenige Zeilen. Solange beide Ansichten nebeneinander stehen, zeigt dieselbe Sache zwei verschiedene Bilder. | `public/leitung.html` (`vSpeicher`) |
 | **erledigt** | ~~Kein Wächter gegen die nächste ungleiche Kopie des Laufwegs.~~ Noch in Runde 20 gebaut: `tests/keller-gegen-backoffice.test.mjs` lässt beide `wegCmp` über alle 57 Weine laufen und vergleicht die Reihenfolge — samt Weinliste und Regalplan aus beiden Dateien. Gegenprobe gefahren: mit dem alten `ZORD` fällt sie. | `tests/keller-gegen-backoffice.test.mjs` |
+
+---
+
+## Runde 22 · neu (21.09.2026)
+
+### Hoch — Rezepte gehören in die Datenbank
+Fünfzehn Cocktailnamen aus den echten Berichten (Aperol Spritz, Whiskey
+Sour, Ipanema, Virgin Hugo, Vermouth & Tonic …) können weder zugeordnet
+noch ignoriert werden. Sie zehren Zitronensaft, Limettensaft, Ginger Ale,
+Holundersirup, Tonic und Sanbitter aus dem Keller — alles gezählte
+Artikel. Auf „Ignorieren" gesetzt verschwindet ihr Verbrauch aus der
+Rechnung und kommt in der nächsten Kellerzählung als Schwund zurück.
+
+Der Bildschirm kann Rezepte schon („Mischgetränk"), aber sie liegen nur
+im Gerätespeicher der Leitung (`hh_rezepte_v1`); `POST /api/mapping`
+weist ein Rezept ausdrücklich ab, weil die Spalte live fehlt.
+`migrations/001_mapping_rezept.sql` liegt fertig. Solange sie nicht
+eingespielt ist, hängt eine Stunde Rezeptarbeit an einem Gerät — genau
+der Fehler, den Runde 19 bei den Zuordnungen abgestellt hat.
+
+### Mittel — Die Gasteiner-Artikel klären
+Im Stamm stehen drei: „Gasteiner 1 l", „Gasteiner 0,25 l", „Gasteiner
+still". Die Kasse verkauft „Gasteiner sparkling 0,75l" (bestätigt auf
+„Gasteiner 1 l") und „Gasteiner Quellwasser 1l" (offen). Entweder fehlt
+ein Artikel, oder die Namen im Stamm sagen nicht, was sie meinen. Bis das
+geklärt ist, kann „Gasteiner Quellwasser" nicht zugeordnet werden, ohne
+zu raten.
+
+### Niedrig — Kassenname ohne Komma: den Weinnamen trotzdem lesen
+`mappe()` trennt zwei Weine desselben Winzers am Komma
+(`KÜRZEL Winzer, Wein Grösse`). Fehlt das Komma, gibt sie auf — richtig
+so, aber vermeidbar: bei „ZW Glatzer Rubin Carnuntum 1/8 l" steht der
+Weinname da, nur ohne Trennzeichen. Heute über die Vorabliste gelöst,
+Name für Name. Eine allgemeine Lösung müsste den Winzer erst abtrennen
+und dann den Rest gegen die Weinnamen desselben Winzers prüfen — machbar
+ohne Ähnlichkeitssuche, aber es ist ein Eingriff in `mappe()` und damit in
+die Regel-5-Fläche. Nur mit Freigabe.
+
+### Aus der Jagd nach Runde 22
+
+**Mittel — Die Datenbank kann „kein Keller" nicht von „noch offen"
+unterscheiden.** `fassungszeile.artikel` ist in beiden Fällen `NULL`.
+Das Backoffice hat den Unterschied (`{status:"ignoriert", vorab:true}`),
+die Zeile trägt ihn nicht. Heute liest niemand die Spalte so; die erste
+Abfrage `WHERE artikel IS NULL` zählt Käse und Aperol Spritz gleich.
+Eine saubere Lösung braucht eine Spalte und damit eine Migration.
+
+**Mittel — Ausschank aus dem Kassennamen gegen Gebindegröße.**
+„Stiegl alkoholfrei 0,3l" (300 ml) liegt auf einem Artikel namens
+„Stiegl 0,0 % · 0,33", „Coca Cola 0,35l" (350 ml) auf `cola`.
+Bestätigt jemand 330 ml als Gebinde, zählt eine verkaufte Flasche 0,909
+statt 1. Heute unerreichbar, weil es für die Getränke keinen
+Gebindevorschlag gibt — aber es wartet.
+
+**Niedrig — „Weizen alkoholfrei 0,5" erzeugt nie eine Zahl.**
+`ml()` liest die Größe nur mit „l" am Ende; dieser Kassenname hört ohne
+auf. Der Eintrag ist richtig, er verschiebt den Namen aber nur von
+„offen" nach „zugeordnet, Menge fehlt".
+
+**Niedrig — Nichts prüft, dass `zuordnung()` die Datenbank vor die
+Vorabliste stellt.** `tests/vorab-gleich.test.mjs` hält den Worker per
+Textsuche fest; im Backoffice könnte jemand die Reihenfolge umdrehen,
+und alle Prüfungen blieben grün.
+
+**Niedrig — `vorabAbweichung` schweigt im umgekehrten Fall.** Steht ein
+Artikel bestätigt, während die geprüfte Liste „kein Keller" sagt, gibt
+es keinen Hinweis.
+
+**Niedrig — Spirituosen sind hart ausgeschlossen.** Die drei 2-cl-Namen
+stehen auf „für immer kein Keller", begründet damit, dass es im Stamm
+keinen Artikel dazu gibt. Kommen Spirituosen dazu, bleiben die Namen
+ausgeschlossen und ihr Verbrauch fällt lautlos heraus. Nichts warnt.
+
+### Aus der zweiten Jagd nach Runde 22
+
+**Niedrig — `bestaetigeGebinde()` merkt weiter vor dem Senden.** Der
+Zuordnung-Bildschirm nimmt seit der zweiten Jagd bei einem Fehlschlag
+alles zurück; dieser Weg tut es nicht und behält Artikel und Größe auf
+dem Gerät („Nur auf diesem Gerät gemerkt"). Das ist alt und nicht
+falsch, aber jetzt uneinheitlich.
+
+**Niedrig — Ein ignorierter Name kommt nicht in den Rezeptur-Schirm.**
+`__offen` ist seit der zweiten Jagd wieder wählbar, `__ignoriert` nicht.
+Wer eine Speise versehentlich ignoriert hat und merkt, dass es doch ein
+Mischgetränk ist, muss sie erst wieder zuordnen.
+
+### Aus der dritten Jagd nach Runde 22
+
+**Mittel — Schirm und Worker zählen „offen" verschieden, sobald Rezepte
+im Spiel sind.** Nach dem beworbenen Weg (alles zugeordnet, Rest per
+Rezeptur) sagt das Backoffice 0 offen, der Worker in derselben Minute
+15 — er kennt keine Rezepte, die liegen nur im Gerätespeicher. Hängt an
+derselben Migration wie der Rezept-Punkt oben.
+
+**Mittel — Die Import-Vorschau nennt eine Rezeptposition „bestätigt"
+mit leerem Artikel.** Dritte Stelle desselben fehlenden Zweigs für den
+Status `rezept`. Fällt auf, sobald die 15 Cocktail-Rezepte angelegt
+sind.
+
+**Niedrig — Im Zuordnung-Bildschirm fällt der Grund eines Fehlschlags
+weg.** Seit der zweiten Reparatur schaltet der Aufrufer die Meldung aus
+`sendeZuordnung` stumm und sagt selbst „Nicht gespeichert — es bleibt
+beim alten Stand". Wahr, aber 403 („keine Rechte") und „kein Netz" sind
+nicht mehr zu unterscheiden.
+
+**Niedrig — `#bAuto` bricht bei einem Fehlschlag nicht ab.** Bei 403
+gemessen: 32 Einzelanfragen, 33 Meldungen. Der Nachbarweg
+`bestaetigeAlleGebinde` bricht ab und begründet das ausdrücklich.
+
+**Niedrig — „Zuordnungen vom Server" zählt weiter alles**, was die
+Zeile zwei Bildschirme tiefer seit dieser Runde bewusst nicht mehr
+mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".

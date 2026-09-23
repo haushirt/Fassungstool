@@ -28,6 +28,7 @@
 
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { mappe, vorab } from "../src/gnmap.js";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseZ, kern, ml } from "../src/gnparse.js";
@@ -37,6 +38,11 @@ const DATEI = "zbericht-37-extended.csv";
 const TEXT = readFileSync(join(pfad("tests", "fixtures"), DATEI), "utf8");
 const z = parseZ(TEXT);
 const pos = n => z.positionen.find(p => p.name === n);
+/* Ein Zeitstempel, gelesen wie die Uhr im Haus ihn zeigt. */
+const wien = ms => new Intl.DateTimeFormat("de-AT", {
+  timeZone: "Europe/Vienna", day: "2-digit", month: "2-digit", year: "numeric",
+  hour: "2-digit", minute: "2-digit", hour12: false
+}).format(new Date(ms));
 const stueck = z.positionen.reduce((a, p) => a + p.anzahl, 0);
 const rund = n => Math.round(n * 100) / 100;
 
@@ -257,14 +263,22 @@ describe("Z 37 – was der Bericht NICHT hergibt", () => {
     assert.deepEqual(doppelt.sort(), ["Aperol Spritz 1 Glas", "CH Gesellmann 1/8 l"]);
   });
 
-  test("der Zeitraum steht im Bericht, `parseZ` gibt ihn nicht heraus", () => {
-    /* `fassungsliste.von_ts` und `bis_ts` bleiben deshalb leer
-       (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 11). Der Rohtext steht in
-       `fassungsliste.roh`, verloren ist nichts. */
-    assert.equal(z.von, undefined);
-    assert.equal(z.bis, undefined);
+  test("der Zeitraum steht im Bericht — und wird seit Runde 21 gelesen", () => {
+    /* Bis Runde 21 gab `parseZ` ihn nicht heraus, und `fassungsliste.von_ts`
+       und `bis_ts` blieben leer (review/OFFENE-ENTSCHEIDUNGEN.md Nr. 11).
+       Diese Prüfung stand hier, um die Lücke festzuhalten; jetzt hält sie
+       fest, dass sie zu ist.
+
+       Geprüft wird in Wiener Zeit, nicht als blanke Zahl: der Bericht
+       nennt Ortszeit, der Worker läuft in UTC, und genau dazwischen
+       entsteht der Stundenfehler, den man einer Zahl nicht ansieht. */
     assert.match(TEXT, /"Von"\t"15\.09\.2026 23:11"/);
     assert.match(TEXT, /"Bis"\t"16\.09\.2026 23:26"/);
+    assert.equal(wien(z.von), "15.09.2026, 23:11");
+    assert.equal(wien(z.bis), "16.09.2026, 23:26");
+    assert.equal(z.kostenstelle, "Haus Hirt");
+    /* Der Betriebstag kommt weiterhin aus „Bis" und ist unverändert. */
+    assert.equal(z.tag, "2026-09-16");
   });
 });
 
@@ -335,12 +349,34 @@ describe("Z 37 – bis in die Datenbank", { skip: SCHEMA_DA ? false :
     assert.equal(env.DB.zeilen("fassungszeile").length, 48);
   });
 
-  test("Regel 5: kein Getränk wird automatisch zugeordnet", async () => {
+  test("Regel 5: nichts wird geraten", async () => {
+    /* Bis Runde 21 stand hier eine Prüfung auf die FORM der Artikel-Id
+       (`w026`): Getränke-Ids sehen anders aus, ein Getränk in der Spalte
+       fiel also auf. Seit der Vorabliste gehen Getränke-Ids zu Recht
+       durch — nur eben nicht über Ähnlichkeit, sondern über einen
+       einzeln nachgesehenen, ganzen Namen.
+
+       Deshalb prüft diese Zeile jetzt die HERKUNFT statt die Form: jede
+       geschriebene Zuordnung muss entweder aus dem Kassenmuster der
+       Weine (`mappe`) oder aus der Vorabliste (`vorab`) stammen. Etwas
+       Drittes gibt es nicht — und eine Ähnlichkeitssuche wäre genau das. */
+    const { worker, env, keks } = await haus();
+    await senden(worker, env, keks);
+    for (const x of env.DB.zeilen("fassungszeile").filter(x => x.artikel)) {
+      const v = vorab(x.rohbez);
+      assert.equal(x.artikel === mappe(x.rohbez) || (v && x.artikel === v.id), true,
+        x.rohbez + " → " + x.artikel + " kommt aus keiner der beiden Quellen");
+    }
+  });
+
+  test("und die Vorabliste trifft in Bericht 37, was sie treffen soll", async () => {
+    /* Zwei Stichproben aus dem echten Bericht: ein Wein, dem das Komma
+       fehlt, und eine Speise. Beide standen vorher offen. */
     const { worker, env, keks } = await haus();
     await senden(worker, env, keks);
     const zl = env.DB.zeilen("fassungszeile");
-    const zugeordnet = zl.filter(x => x.artikel);
-    assert.ok(zugeordnet.every(x => /^[a-z]\d{3}$/.test(x.artikel)),
-      "zugeordnet wird nur über ein Kürzel im Namen, nie über Ähnlichkeit");
+    const finde = n => zl.find(x => x.rohbez === n);
+    assert.equal(finde("ZW Glatzer Rubin Carnuntum 1/8 l").artikel, "w026");
+    assert.equal(finde("Käse").artikel, null, "Speisen bleiben ohne Artikel");
   });
 });
