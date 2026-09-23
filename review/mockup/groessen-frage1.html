@@ -939,30 +939,40 @@ tr.weicht td{background:var(--warn-bg)}
 .mockkopf{font:var(--text-xs)/1.4 var(--font-ui);letter-spacing:.08em;
   text-transform:uppercase;color:var(--fg-subtle);margin:0 0 10px}
 .blk{padding-bottom:20px;background:var(--bg)}
-input.zahl-e{width:92px;padding:6px 8px;text-align:right;
+/* Drei Spalten, damit die Tabelle auch bei 393 px ohne Querscrollen passt:
+   „woher" steht unter dem Artikelnamen statt in einer vierten Spalte. */
+/* Am MacBook laegen sonst 900 px zwischen dem Artikelnamen und seinen
+   Zahlen — man verliert beim Hinuebersehen die Zeile. Diese Tabelle wird
+   gelesen und ausgefuellt, nicht durchsucht. */
+.tabhuelle.liste{max-width:720px}
+.tabhuelle.liste table{min-width:0;width:100%}
+.tabhuelle.liste th.r,.tabhuelle.liste td.nw{width:1%}
+input.zahl-e{width:86px;padding:6px 8px;text-align:right;
   font:var(--text-sm)/1 var(--font-ui);
   border:1px solid var(--border);border-radius:var(--radius-sm);
   background:var(--surface);color:var(--fg)}
+.quelle{font-size:var(--text-xs);color:var(--fg-secondary);margin-top:2px}
+.quelle.regel{color:#2d6a4f;font-weight:var(--weight-medium)}
+.quelle.fehlt{color:#8a5a00;font-weight:var(--weight-medium)}
 td.nw{white-space:nowrap}
-.quelle{font-size:var(--text-xs);color:var(--fg-subtle)}
-.quelle.regel{color:var(--ok-fg,#2d6a4f);font-weight:var(--weight-medium)}
-.quelle.leer{color:var(--fg-subtle);font-style:italic}
-tr.fehlt td{background:var(--warn-bg)}
 .frage1{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
 .f1{display:block;padding:14px 16px;border-radius:var(--radius-lg);
   border:1px solid var(--border);background:var(--surface);
-  text-decoration:none;color:inherit;border-left-width:4px}
-.f1.ok{border-left-color:var(--ok-fg,#2d6a4f)}
-.f1.warn{border-left-color:var(--warn-fg,#8a6d1f)}
+  text-decoration:none;color:inherit;border-left-width:4px;min-height:44px}
+.f1.ok{border-left-color:#2d6a4f}
+.f1.warn{border-left-color:#8a5a00}
 .f1.bad{border-left-color:var(--danger)}
 .f1k{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;
-  color:var(--fg-subtle);margin-bottom:4px}
-.f1w b{font-size:var(--text-lg)}
+  color:var(--fg-secondary);margin-bottom:4px}
+.f1w b{font-size:var(--text-lg);display:block}
+/* Eigene Zeile, nicht hinter dem fetten Wort: bei 393 px brach
+   „seit Mitternacht 43 verkauft" sonst mitten im Satz um. */
+.f1w .mini{display:block;margin-top:2px}
 @media(max-width:700px){
   .mockseite{padding:16px}
   .frage1{grid-template-columns:1fr}
-  input.zahl-e{width:74px}
-  .tabhuelle table{min-width:520px}
+  input.zahl-e{width:76px}
+  .tabhuelle.liste th,.tabhuelle.liste td{padding-left:10px;padding-right:10px}
 }
 
 </style></head><body><div class="mockseite">
@@ -971,35 +981,13 @@ tr.fehlt td{background:var(--warn-bg)}
  <div class="unter" style="margin-bottom:12px">Einmal hinterlegt, gilt für alle Geräte.
  Gerechnet wird nur, was hier steht — ein leeres Feld heißt „nicht hinterlegt",
  und die Position bleibt aus dem Abgleich heraus.</div>
- <div class="tabhuelle"><table><thead><tr>
-   <th>Artikel</th><th class="r">Gebinde</th><th class="r">ins Glas</th><th>woher</th>
- </tr></thead><tbody><tr class="zwt"><td colspan="4">Wein <span class="mini">57 Artikel</span></td></tr><tr><td>Werner Achs · Goldberg 2024</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td><td><span class="quelle regel">Regel</span></td></tr><tr><td>Nittnaus · Kalk & Schiefer 2019</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td><td><span class="quelle regel">Regel</span></td></tr><tr><td>Bründlmayer · Spiegel 2022</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td><td><span class="quelle regel">Regel</span></td></tr><tr><td>Serena · Piu Frizzante</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="100"></td><td><span class="quelle regel">Regel · Sekt</span></td></tr><tr><td>De Saint Gall · Champagne 1er Cru</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="100"></td><td><span class="quelle regel">Regel · Sekt</span></td></tr><tr class="zwt"><td colspan="4">Getränke <span class="mini">37 Artikel</span></td></tr><tr><td>Gasteiner 1 l</td><td class="r nw"><input class="zahl-e" type="number" value="1000"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus dem Artikelnamen</span></td></tr><tr><td>Gasteiner 0,25 l</td><td class="r nw"><input class="zahl-e" type="number" value="250"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus dem Artikelnamen</span></td></tr><tr><td>Cola Zero</td><td class="r nw"><input class="zahl-e" type="number" value="350"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus „Cola Zero 0,35l"</span></td></tr><tr><td>Orange Lemonade</td><td class="r nw"><input class="zahl-e" type="number" value="350"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus „Now-Limo Orange 0,35l"</span></td></tr><tr class="fehlt"><td>Almdudler</td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle leer">fehlt</span></td></tr><tr class="fehlt"><td>Spritzerwein</td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle leer">fehlt</span></td></tr><tr class="fehlt"><td>Stiegl 0,0 % · 0,33</td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle leer">fehlt</span></td></tr><tr class="zwt"><td colspan="4">Vom Fass <span class="mini">1 Artikel</span></td></tr><tr><td>Raschhofer Pils vom Fass</td><td class="r nw"><input class="zahl-e" type="number" value="50000"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle regel">Regel · ein Fass 50 l</span></td></tr></tbody></table></div>
+ <div class="tabhuelle liste"><table><thead><tr>
+   <th>Artikel</th><th class="r">Gebinde</th><th class="r">ins Glas</th>
+ </tr></thead><tbody><tr class="zwt"><td colspan="3">Wein <span class="mini">57 Artikel · alle hinterlegt</span></td></tr><tr><td>Werner Achs · Goldberg 2024<div class="quelle regel">Regel · Weinflasche</div></td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td></tr><tr><td>Nittnaus · Kalk & Schiefer 2019<div class="quelle regel">Regel · Weinflasche</div></td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td></tr><tr><td>Bründlmayer · Spiegel 2022<div class="quelle regel">Regel · Weinflasche</div></td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td></tr><tr><td>Serena · Piu Frizzante<div class="quelle regel">Regel · Sekt, Glas 100 ml</div></td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="100"></td></tr><tr><td>De Saint Gall · Champagne 1er Cru<div class="quelle regel">Regel · Sekt, Glas 100 ml</div></td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="100"></td></tr><tr class="zwt"><td colspan="3">Getränke <span class="mini">37 Artikel · 33 ohne Größe</span></td></tr><tr><td>Gasteiner 1 l<div class="quelle">aus dem Artikelnamen</div></td><td class="r nw"><input class="zahl-e" type="number" value="1000"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr><td>Gasteiner 0,25 l<div class="quelle">aus dem Artikelnamen</div></td><td class="r nw"><input class="zahl-e" type="number" value="250"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr><td>Cola Zero<div class="quelle">aus „Cola Zero 0,35l"</div></td><td class="r nw"><input class="zahl-e" type="number" value="350"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr><td>Orange Lemonade<div class="quelle">aus „Now-Limo Orange 0,35l"</div></td><td class="r nw"><input class="zahl-e" type="number" value="350"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr><td>Almdudler<div class="quelle fehlt">fehlt — rechnet nicht mit</div></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr><td>Spritzerwein<div class="quelle fehlt">fehlt — rechnet nicht mit</div></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr><td>Stiegl 0,0 % · 0,33<div class="quelle fehlt">fehlt — rechnet nicht mit</div></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr><tr class="zwt"><td colspan="3">Vom Fass <span class="mini">1 Artikel</span></td></tr><tr><td>Raschhofer Pils vom Fass<div class="quelle regel">Regel · ein Fass 50 l</div></td><td class="r nw"><input class="zahl-e" type="number" value="50000"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td></tr></tbody></table></div>
  <div class="reihe" style="margin-top:14px">
-   <button class="b stark">Alle Vorgaben übernehmen</button>
-   <span class="mini" style="margin-left:12px">53 Weine · 4 Sekt · 1 Fass · 4 Getränke aus dem Namen</span>
- </div>
+   <button class="b stark">Alle Vorgaben übernehmen</button></div>
+ <div class="mini" style="margin-top:8px">Danach rechnen 62 von 95 Artikeln.
+ Die übrigen 33 brauchen eine Zahl von Hand.</div>
 </section></div>
-<div id="frage1" class="blk"><div class="mockkopf">Übersicht · die neue erste Zeile (zwei Lagen)</div><section>
- <div class="frage1">
-   <a class="f1 heute ok" href="#">
-     <div class="f1k">Heute · Di., 23.09.</div>
-     <div class="f1w"><b>Gefasst</b> <span class="mini">Asad · 06:41</span></div>
-   </a>
-   <a class="f1 gestern warn" href="#">
-     <div class="f1k">Gestern · Mo., 22.09.</div>
-     <div class="f1w"><b>2 Abweichungen</b> <span class="mini">sonst stimmt es</span></div>
-   </a>
- </div>
- <div class="frage1" style="margin-top:14px">
-   <a class="f1 heute bad" href="#">
-     <div class="f1k">Heute · Di., 23.09.</div>
-     <div class="f1w"><b>Noch nicht gefasst</b> <span class="mini">seit Mitternacht 43 verkauft</span></div>
-   </a>
-   <a class="f1 gestern ok" href="#">
-     <div class="f1k">Gestern · Mo., 22.09.</div>
-     <div class="f1w"><b>Stimmt</b> <span class="mini">alle Zeilen gerechnet</span></div>
-   </a>
- </div>
- <div class="mini" style="margin-top:10px">Darunter dann wie bisher: Urteil, Abdeckung, Kette, Aufgaben, Zahlen, Verlauf.</div>
-</section></div>
+<div id="frage1" class="blk"><div class="mockkopf">Übersicht · die neue erste Zeile (zwei Lagen)</div><section><div class="frage1"><a class="f1 ok" href="#"><div class="f1k">Heute · Di., 23.09.</div><div class="f1w"><b>Gefasst</b><span class="mini">Asad · 06:41</span></div></a><a class="f1 warn" href="#"><div class="f1k">Gestern · Mo., 22.09.</div><div class="f1w"><b>2 Abweichungen</b><span class="mini">sonst stimmt es</span></div></a></div><div class="frage1" style="margin-top:14px"><a class="f1 bad" href="#"><div class="f1k">Heute · Di., 23.09.</div><div class="f1w"><b>Noch nicht gefasst</b><span class="mini">seit Mitternacht 43 verkauft</span></div></a><a class="f1 ok" href="#"><div class="f1k">Gestern · Mo., 22.09.</div><div class="f1w"><b>Stimmt</b><span class="mini">alle Zeilen gerechnet</span></div></a></div><div class="mini" style="margin-top:10px">Darunter dann wie bisher: Urteil, Abdeckung, Kette, Aufgaben, Zahlen, Verlauf.</div></section></div>
 </div></body></html>
