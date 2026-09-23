@@ -178,6 +178,11 @@ async function ich(request, env) {
 }
 const darf = (p, ...rollen) => !!p && rollen.includes(p.rolle);
 
+/* Eine gespeicherte JSON-Zeichenkette, die auch beschädigt sein darf.
+   `JSON.parse` würde werfen, und eine einzige kaputte Zeile in `stamm`
+   liesse dann den ganzen Abruf mit 500 scheitern. */
+const lesbar = t => { try { return JSON.parse(t); } catch { return null; } };
+
 /* ── Anmeldung ───────────────────────────────────────────────────────── */
 async function anmelden(request, env) {
   const ip = request.headers.get("cf-connecting-ip") || "?";
@@ -1018,6 +1023,42 @@ async function mappingSchreiben(env, p, body) {
   return json({ ok: true });
 }
 
+/* ── Stammwerte ────────────────────────────────────────────────────────
+   Die Tabelle `stamm` (Schlüssel → JSON) steht seit je live und war bis
+   heute leer: `GET /api/stamm` las sie, ein Schreibweg fehlte ganz.
+
+   Was jetzt darin liegt, ist der Schlüssel `groessen`:
+     { "<artikelId>": { g: <Gebinde in ml>, a: <Glasmenge in ml> } }
+   Damit steht die Flaschengrösse EINMAL beim Artikel statt bei jedem
+   Kassennamen — Casimir dazu: „pro Artikel im Hintergrund einmal
+   anzulegen. Es hat keinen Mehrwert das immer irgendwo stehen zu haben."
+
+   Eine Zeile für die ganze Liste, nicht eine je Artikel: Die Liste wird
+   als Ganzes angesehen und bestätigt, `wer` und `geaendert` gelten dann
+   für diesen Stand. Nur die Leitung pflegt sie, an einem Gerät — zwei
+   gleichzeitige Bearbeiter sind kein Fall, der hier vorkommt. Käme er je
+   vor, überschreibt der zweite den ersten; dann gehört eine Zeile je
+   Artikel her, nicht ein Zusammenführen von Hand. */
+async function stammSchreiben(env, p, body) {
+  const { schluessel, wert } = body || {};
+  if (!schluessel) return json({ fehler: "schluessel fehlt" }, 422);
+  if (wert === undefined || wert === null)
+    return json({ fehler: "wert fehlt" }, 422);
+  let text;
+  try { text = JSON.stringify(wert); } catch { text = null; }
+  /* Ein Wert, der sich nicht schreiben lässt, ist ein lesbarer 422 wert —
+     ein 500 hielte die Warteschlange im Gerät an (der Fund aus Runde 19). */
+  if (typeof text !== "string") return json({ fehler: "wert ist nicht lesbar" }, 422);
+
+  await env.DB.prepare(
+    `INSERT INTO stamm (schluessel, wert, geaendert, wer)
+     VALUES (?1,?2,?3,?4)
+     ON CONFLICT(schluessel) DO UPDATE SET wert=excluded.wert,
+       geaendert=excluded.geaendert, wer=excluded.wer`
+  ).bind(schluessel, text, Date.now(), p.name).run();
+  return json({ ok: true });
+}
+
 /* ── Personen ──────────────────────────────────────────────────────────
 
    Zwei Personen mit demselben Code darf es nicht geben. `anmelden()`
@@ -1261,8 +1302,15 @@ export default {
 
       if (pfad === "/api/stamm") {
         /* Die Spalte heisst live `wert`, nicht `daten`. */
-        const { results } = await env.DB.prepare(`SELECT schluessel, wert FROM stamm`).all();
-        return json(Object.fromEntries(results.map(r => [r.schluessel, JSON.parse(r.wert)])));
+        if (m === "GET") {
+          const { results } = await env.DB.prepare(`SELECT schluessel, wert FROM stamm`).all();
+          return json(Object.fromEntries(results.map(r => [r.schluessel, lesbar(r.wert)])));
+        }
+        if (m === "POST") {
+          if (!darf(p, "leitung")) return json({ fehler: "nur Leitung" }, 403);
+          const b = await koerper(request);
+          return b ? await stammSchreiben(env, p, b) : keinJson();
+        }
       }
       if (pfad === "/api/bestand") return await bestand(env);
       if (pfad === "/api/vorgaenge") return await vorgaengeLesen(env, url);

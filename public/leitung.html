@@ -1010,6 +1010,7 @@ const K_STAND="hh_keller_v12", K_ARCHIV="hh_archiv", K_CFG="hh_cfg_v9";
 const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
 const K_GEB="hh_gebinde_v1";        /* Abschrift von mapping.gebinde_ml */
 const K_AUS="hh_ausschank_v1";      /* Abschrift von mapping.ausschank_ml */
+const K_GRO="hh_groessen_v1";       /* Abschrift von stamm.groessen */
 const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
 const K_SPANNE="hh_spanne_v1";      /* gewählter Zeitraum, überlebt das Neuladen */
 
@@ -1152,7 +1153,60 @@ function mlAusText(t){
    Ein Standard „Spirituose 700" wäre hier geraten; er fehlt mit Absicht. */
 const GEBINDE_STANDARD = { wein: 750 };
 
-const artName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein : GN(id); };
+/* ── Nur-Verkauf-Artikel ──────────────────────────────────────────────
+   Etwas, das die Kasse verkauft und der Keller nie in die Hand nimmt.
+   Ein Fass Pils hängt am Zapfhahn; es wird nicht gezählt, nicht gefasst,
+   nicht nachbestellt — es wird nur leer.
+
+   Bewusst NICHT in `GETR`/`GSOLL`: dort hinge sofort eine Ladenzeile, eine
+   Zählzeile und ein Sollwert daran, und das Fass stünde in Zählliste und
+   Getränkeansicht mit „Soll 0 · Ist —".
+
+   Die Grösse steht hier NICHT — sie kommt aus `GROESSEN` wie bei jedem
+   anderen Artikel auch. Eine Zahl, ein Ort.
+   WORTGLEICH mit `NUR_VERKAUF` in public/index.html. */
+const NUR_VERKAUF=[{id:"fasspils", name:"Raschhofer Pils vom Fass",
+                    einheit:"Fass", mehrzahl:"Fässer"}];
+const NV={}; NUR_VERKAUF.forEach(a=>NV[a.id]=a);
+const istNurVerkauf = id => !!NV[id];
+
+/* ── Was die Regel sagt, bevor jemand etwas einträgt ──────────────────
+   Casimir, 22.09.2026: „Fühl vor aus. Alle Weinflasche 0,75L, ein Glas
+   Wein 125ml, Sekt/Champ. 100ml. Ein Fass Bier 50L."
+
+   Das ist Wissen aus dem Haus, keine Rateei — und darin liegt der
+   Unterschied zu dem, was in Runde 6 abgeschafft wurde. Dort galt
+   „alles Übrige: eine Einheit = eine Flasche", und aus „Amaro Averna
+   Siciliano 2 cl" × 3 wurden 3 FLASCHEN statt 0,086. Eine Regel, die
+   eine Klasse benennt, kann das nicht: Wer keine Klasse hat — Amaro,
+   Spirituosen, 35 der 37 Getränke —, bekommt weiter nichts und rechnet
+   weiter nicht mit.
+
+   Und auch die Regel rechnet nicht von selbst: Sie füllt die Liste in
+   den Einstellungen vor, gerechnet wird erst, was dort einmal bestätigt
+   wurde (`GROESSEN`). Genau dieser eine Blick ist die Stelle, an der
+   eine Magnum oder eine 0,375er auffällt. */
+function vorgabe(id){
+  if(NV[id]) return {g:50000, a:null, satz:"Regel · ein Fass 50 l"};
+  const w=byId(id);
+  if(w) return w.f==="BUBBLES"
+    ? {g:750, a:100, satz:"Regel · Flasche 0,75 l, Glas Sekt 100 ml"}
+    : {g:750, a:125, satz:"Regel · Flasche 0,75 l, Glas Wein 125 ml"};
+  /* Getränke haben keine Warenart in den Stammdaten — in Lade 6 liegen
+     0,33er und 0,5er nebeneinander. Was sich sagen lässt, steht im
+     Artikelnamen („Gasteiner 1 l"), und das sind zwei von 37. */
+  const imNamen = mlAusText(GN(id));
+  if(imNamen) return {g:imNamen, a:null, satz:"aus dem Artikelnamen"};
+  return {g:null, a:null, satz:""};
+}
+
+/* Was die Leitung bestätigt hat, je Artikel: {id: {g, a}}.
+   Kommt aus der Tabelle `stamm` (Schlüssel `groessen`), liegt als
+   Abschrift im Gerät und wird in den Einstellungen gepflegt. */
+let GROESSEN = lese(K_GRO) || {};
+
+const artName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein
+  : (NV[id] ? NV[id].name : GN(id)); };
 
 /* Bestätigte Größen je Artikel, abgeleitet aus GEB_BEST über MAP.
    Klein genug, um bei jedem Aufruf neu gerechnet zu werden (< 100 Namen);
@@ -1177,6 +1231,17 @@ function gebindeGroesse(artId, kassenname){
   if(direkt>0) return {ml:direkt, quelle:"bestaetigt", woher:"bestätigt für diese Kassenposition"};
   const ueberArtikel = gebArtikelBestaetigt()[artId];
   if(ueberArtikel) return {ml:ueberArtikel, quelle:"bestaetigt", woher:"bestätigt für diesen Artikel"};
+  /* 2b · was in den Einstellungen für diesen Artikel hinterlegt ist.
+     Steht VOR den Vorschlägen und gilt als bestätigt: die Liste dort ist
+     angesehen und als Ganzes übernommen worden.
+     Nebenwirkung, die hier erwünscht ist: Widersprechen sich zwei
+     Kassennamen desselben Artikels, gibt Stufe 2 `null` zurück und fiel
+     bis hierher still bis auf den 750-Vorschlag durch (Jagd Runde 16).
+     Jetzt gewinnt die hinterlegte Zahl. Dass der Widerspruch auch
+     GEMELDET gehört, bleibt offen — siehe Backlog. */
+  const hinterlegt = +((GROESSEN[artId]||{}).g)||0;
+  if(hinterlegt>0) return {ml:hinterlegt, quelle:"bestaetigt",
+                           woher:"für diesen Artikel hinterlegt"};
   const imNamen = mlAusText(artName(artId));
   if(imNamen) return {ml:imNamen, quelle:"vorschlag", woher:"Größe steht im Artikelnamen"};
   if(byId(artId)) return {ml:GEBINDE_STANDARD.wein, quelle:"vorschlag", woher:"Standard Weinflasche"};
@@ -1794,6 +1859,36 @@ async function ladeZuordnung(){
   }catch(e){ return false; }
 }
 
+/* Die hinterlegten Artikelgrössen vom Server holen. Sie liegen in der
+   Tabelle `stamm` unter dem Schlüssel `groessen` und gelten damit für
+   ALLE Geräte — anders als `EINST` und `REZ`, die bis heute im
+   Gerätespeicher stecken und auf zwei MacBooks verschieden rechnen. */
+async function ladeGroessen(){
+  try{
+    const r=await fetch("/api/stamm",{headers:{Accept:"application/json"}});
+    if(!r.ok) return false;
+    const j=await r.json();
+    GROESSEN = (j && j.groessen) || {};
+    schreib(K_GRO, GROESSEN); return true;
+  }catch(e){ return false; }
+}
+
+/* Und zurück. Die ganze Liste in einem Zug: sie wird als Ganzes
+   angesehen und bestätigt, nicht Artikel für Artikel. */
+async function sendeGroessen(neu){
+  try{
+    const r=await fetch("/api/stamm",{method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({schluessel:"groessen", wert:neu})});
+    if(r.ok){ GROESSEN=neu; schreib(K_GRO,GROESSEN); return true; }
+    toast(r.status===403 ? "Nur die Leitung darf Größen festlegen" : "Nicht gespeichert");
+  }catch(e){ toast("Keine Verbindung — die Größen sind nur auf diesem Gerät"); }
+  /* Auch ohne Server im Gerät merken: Die Seite rechnet damit weiter, und
+     der nächste geglückte Abruf holt den Serverstand zurück. */
+  GROESSEN=neu; schreib(K_GRO,GROESSEN);
+  return false;
+}
+
 /* Eine Zuordnung geht sofort hinaus. Der Worker zieht die schon
    eingelesenen Zeilen nach, die Zuordnung gilt also auch rückwirkend.
 
@@ -2206,11 +2301,19 @@ function autoWein(name){
 
    `woher` wandert bis in die Anzeige durch: neben einer Zahl „aus dem
    Namen" an einer Position, die von Hand gehörte, sieht man den Fehler. */
-function ausschankMenge(name){
+function ausschankMenge(name, artId){
   const hand = +AUS_BEST[name] || 0;
   if(hand) return {ml:hand, woher:"hand"};
   const ausName = mlAusText(name);
-  return ausName ? {ml:ausName, woher:"name"} : {ml:0, woher:"keine"};
+  if(ausName) return {ml:ausName, woher:"name"};
+  /* Zuletzt die Glasmenge des Artikels („Glas Sekt 100 ml").
+     Die Reihenfolge ist hier der ganze Punkt: Der KASSENNAME muss die
+     Artikelregel schlagen. „Prosecco, Serena 0,75l" ist eine ganze
+     Flasche — griffe die Sekt-Regel davor, stünden 0,13 Flaschen statt
+     einer. Die Artikelregel gilt nur dort, wo der Name schweigt. */
+  const regel = +((GROESSEN[artId]||{}).a)||0;
+  if(regel) return {ml:regel, woher:"regel"};
+  return {ml:0, woher:"keine"};
 }
 
 /* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml.
@@ -2218,7 +2321,7 @@ function ausschankMenge(name){
    aus der Rechnung heraus und wird als „Größe fehlt" ausgewiesen.
    Rückgabe: {ok:true, fl} oder {ok:false, fehlt:"ausschank"|"gebinde"}. */
 function flaschen(p, artId){
-  const a = ausschankMenge(p.name);       /* Ausschank je verkaufter Einheit */
+  const a = ausschankMenge(p.name, artId); /* Ausschank je verkaufter Einheit */
   const aus = a.ml;
   const geb = gebindeGroesse(artId, p.name);
   if(!aus)                    return {ok:false, fehlt:"ausschank", aus:null,
@@ -5531,7 +5634,7 @@ function zeichneZeitwahl(){
 function merkeSpanne(){ try{ schreib(K_SPANNE, SPANNE); }catch(e){} }
 
 $("#bNeu").onclick=async()=>{
-  await ladeDaten(); await Promise.all([ladeBerichte(), ladeZuordnung(), ladeNotizen()]);
+  await ladeDaten(); await Promise.all([ladeBerichte(), ladeZuordnung(), ladeGroessen(), ladeNotizen()]);
   STAND_ZEIT=Date.now();
   zeichne(); toast("Aktualisiert"); };
 $("#bFass").onclick=()=>{ location.href="index.html"; };
@@ -5662,7 +5765,7 @@ window.addEventListener("storage", e=>{
   /* Berichte und Zuordnungen kommen vom Server. Schlägt das fehl (kein
      Netz, keine Sitzung), bleibt die Abschrift im Browser stehen — die
      Seite zeigt dann alte Zahlen, aber keine falschen. */
-  await Promise.all([ladeBerichte(), ladeZuordnung(), ladeNotizen()]);
+  await Promise.all([ladeBerichte(), ladeZuordnung(), ladeGroessen(), ladeNotizen()]);
   STAND_ZEIT=Date.now();
   /* Ohne Sitzung und ohne lokale Daten hat diese Seite nichts zu zeigen —
      dann besser eine klare Tür als eine leere Tabelle. */
