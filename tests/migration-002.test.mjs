@@ -174,3 +174,69 @@ describe("Drei Zustände: fehlt · null · Zahl", { skip: SCHEMA_DA ? false :
     assert.equal(env.DB.zeilen("mapping")[0].ausschank_ml, null);
   });
 });
+
+/* ═════ Der Schreibweg für die Artikelgrössen (Runde 23) ═══════════════
+   `stamm` steht seit je live und war leer: `GET /api/stamm` las sie, ein
+   Schreibweg fehlte ganz. Keine Migration nötig — die Tabelle ist da. */
+describe("POST /api/stamm", { skip: SCHEMA_DA ? false :
+  "docs/live-schema.sql fehlt" }, () => {
+
+  const GRO = { w001: { g: 750, a: 125 }, fasspils: { g: 50000 } };
+  const schreibStamm = (env, keks, body) => worker.fetch(
+    anfrage("/api/stamm", { method: "POST", keks, body }), env);
+
+  test("die Leitung schreibt, und es kommt zurück", async () => {
+    const { env, keks } = await haus(d1Echt());
+    const a = await schreibStamm(env, keks, { schluessel: "groessen", wert: GRO });
+    assert.equal(a.status, 200, JSON.stringify(await a.clone().json()));
+    const j = await (await worker.fetch(anfrage("/api/stamm", { keks }), env)).json();
+    assert.deepEqual(j.groessen, GRO);
+    const [z] = env.DB.zeilen("stamm");
+    assert.equal(z.schluessel, "groessen");
+    assert.equal(z.wer, "Casimir", "wer es war, steht dabei");
+    assert.ok(z.geaendert > 0);
+  });
+
+  test("ein zweites Mal überschreibt, es bleibt EINE Zeile", async () => {
+    const { env, keks } = await haus(d1Echt());
+    await schreibStamm(env, keks, { schluessel: "groessen", wert: GRO });
+    await schreibStamm(env, keks, { schluessel: "groessen", wert: { w001: { g: 1500 } } });
+    assert.equal(env.DB.zeilen("stamm").length, 1);
+    const j = await (await worker.fetch(anfrage("/api/stamm", { keks }), env)).json();
+    assert.deepEqual(j.groessen, { w001: { g: 1500 } });
+  });
+
+  test("der Service darf nicht", async () => {
+    const DB = d1Echt();
+    const env = { DB, TOKEN_SECRET: "pruefgeheimnis", ANLAGE_OFFEN: "1" };
+    await worker.fetch(anfrage("/api/anlage", { method: "POST",
+      body: { name: "Asad", rolle: "service", code: "8261" } }), env);
+    const an = await worker.fetch(anfrage("/api/anmelden",
+      { method: "POST", body: { code: "8261" } }), env);
+    const a = await worker.fetch(anfrage("/api/stamm", { method: "POST",
+      keks: keksAus(an), body: { schluessel: "groessen", wert: GRO } }), env);
+    assert.equal(a.status, 403);
+    assert.deepEqual(env.DB.zeilen("stamm"), []);
+  });
+
+  test("ohne Schlüssel oder Wert: 422, nicht 500", async () => {
+    const { env, keks } = await haus(d1Echt());
+    assert.equal((await schreibStamm(env, keks, { wert: GRO })).status, 422);
+    assert.equal((await schreibStamm(env, keks, { schluessel: "groessen" })).status, 422);
+    assert.deepEqual(env.DB.zeilen("stamm"), []);
+  });
+
+  test("eine beschädigte Zeile lässt den ganzen Abruf nicht scheitern", async () => {
+    /* Vorher warf `JSON.parse` und der GET gab 500 — eine kaputte Zeile
+       hätte damit die Artikelgrössen aller Geräte mitgerissen. */
+    const { env, keks } = await haus(d1Echt());
+    env.DB.sql("INSERT INTO stamm (schluessel,wert,geaendert,wer) VALUES (?,?,?,?)",
+      "kaputt", "{kein json", Date.now(), "Prüfung");
+    await schreibStamm(env, keks, { schluessel: "groessen", wert: GRO });
+    const r = await worker.fetch(anfrage("/api/stamm", { keks }), env);
+    assert.equal(r.status, 200);
+    const j = await r.json();
+    assert.deepEqual(j.groessen, GRO, "das Gute kommt trotzdem durch");
+    assert.equal(j.kaputt, null, "und das Kaputte sagt ehrlich nichts");
+  });
+});

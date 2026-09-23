@@ -547,3 +547,25 @@ gemessen: 32 Einzelanfragen, 33 Meldungen. Der Nachbarweg
 **Niedrig — „Zuordnungen vom Server" zählt weiter alles**, was die
 Zeile zwei Bildschirme tiefer seit dieser Runde bewusst nicht mehr
 mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".
+
+
+## Runde 23 (23.09.2026) · Größen am Artikel, Bier vom Fass
+
+### Erledigt
+
+| Punkt | Wo |
+|---|---|
+| **`mapping.gebinde_ml` hängt am Kassennamen, nicht am Artikel** (alter Backlog-Punkt) | Die Größen stehen jetzt je Artikel in `stamm.groessen`; `gebindeGroesse` hat dafür eine eigene Stufe vor den Vorschlägen. |
+| **`GET /api/stamm` hat keinen Verbraucher / kein Schreibweg** | Beides da: `POST /api/stamm` (Rolle `leitung`), gelesen beim Laden des Backoffice. |
+| **Widerspruch zweier Kassennamen fiel still auf 750 durch** (Jagd Runde 16) | Die hinterlegte Artikelgröße gewinnt jetzt davor. Dass der Widerspruch auch GEMELDET gehört, bleibt offen — siehe unten. |
+
+### Neu
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| **mittel** | **Läuft der Hauskonsum in den ARTIKELzeilen des Z-Berichts mit?** `tests/fixtures/zbericht-37-extended.csv` führt 22 Warengruppen „… - Inner Haus" (Beverage 87 Einheiten). Das sind Gruppensummen; der Abgleich rechnet gegen Artikelzeilen. Sind die Hausmengen dort nicht enthalten, erscheinen Sonderentnahmen als Schwund. Nachsehen, nicht raten. | `src/gnparse.js` |
+| **mittel** | **Auswertung nach Kellner fehlt ganz** — Casimirs Stufe 3 („welcher Kellner verkauft am meisten"). Der Z-Bericht hat den Abschnitt, `parseZ` erkennt ihn und nimmt nur Titel und Zeilenzahl mit (`src/gnparse.js:219`). **Der Rohtext liegt aber in `fassungsliste.roh`** — eine Auswertung wäre rückwirkend möglich, ohne dass jemand neu importiert. | `src/gnparse.js:219`, `src/index.js` (Import) |
+| niedrig | **Ein Widerspruch zweier bestätigter Größen wird nicht gemeldet.** Er wird seit Runde 23 von der hinterlegten Zahl überstimmt, aber niemand erfährt, dass es ihn gibt. | `public/leitung.html` (`gebArtikelBestaetigt`) |
+| niedrig | **33 von 37 Getränken haben keine Größe.** Sie stehen in der Liste und sagen es; ausfüllen muss sie jemand, der die Flaschen kennt. Für `st03` („Stiegl 0,0 % · 0,33") ist das besonders unangenehm: ein Mensch liest 0,33 l, der Parser liest nichts, weil die Einheit fehlt. | Einstellungen · Artikelgrößen |
+| niedrig | **`EINST` und `REZ` liegen weiter nur im Gerätespeicher.** Die Artikelgrößen sind jetzt in der Datenbank; diese beiden nicht. Zwei Geräte rechnen damit weiter verschieden. Der Weg steht jetzt offen (`POST /api/stamm`). | `public/leitung.html` |
+| niedrig | **`vVorgaenge` ist ein toter Menüpunkt** — definiert, aber in keiner `SEITEN`-Zeile und keinem `ANSICHT`-Eintrag. | `public/leitung.html` (`vVorgaenge`) |

@@ -1,3 +1,139 @@
+# Was mit diesem Merge live geht · Runde 23 (23.09.2026)
+
+**Stand davor: `48d1d01` (Runde 22, `sw.js` v71, live). Stand danach: `sw.js` v72.**
+
+> ## ⚠ Vor dem Merge Migration einspielen
+> Diese Runde bringt **Migration 002**. Sie ist additiv (eine neue,
+> nullable Spalte), und ohne sie läuft alles wie bisher — aber der
+> Fassartikel bleibt dann unsichtbar. **Erst einspielen, dann mergen.**
+
+Anlass waren drei Sätze von Casimir:
+
+> „im backoffice gibt es aber die option 1/8 nicht oder? also kann nicht
+> eingelesen werden. und bier auch nicht also vom fass um zu kontrolieren
+> wie viel fässer gebraucht werden. und spritzer ca 200ml von der 1L
+> spritzer flasche."
+
+---
+
+## Was wirklich los war
+
+Nachgesehen in der laufenden Datenbank: **21 Zuordnungen, davon 0 mit
+Gebindegröße.** Deshalb rechnete keine einzige Zeile. Das Achtel wird
+sehr wohl gelesen — 125 ml stehen bei sieben Kassennamen längst da; es
+fehlte die zweite Zahl. Fassbier gab es als Artikel überhaupt nicht.
+
+## 1 · Größen gehören an den Artikel
+
+Neue Ansicht in **Einstellungen**: alle 95 Artikel, je zwei Zahlen — wie
+groß die Flasche (oder das Fass) ist und was bei einem Verkauf ins Glas
+geht. Vorausgefüllt nach den Regeln aus dem Haus:
+
+| Regel | gilt für | Zahl |
+|---|---|---|
+| Weinflasche | alle 57 Weine | Gebinde 750 ml |
+| Glas Wein | 53 stille Weine | 125 ml |
+| Glas Sekt/Champagner | die 4 Schaumweine | 100 ml |
+| Bierfass | der Fassartikel | Gebinde 50 000 ml |
+| Getränke | 2 von 37 | was im Artikelnamen steht |
+
+**Gerechnet wird erst, was einmal bestätigt ist.** Damit bleibt die
+Entscheidung aus Runde 6 unverändert in Kraft — *lieber eine Zeile
+weniger gerechnet als eine falsch*, nachdem „Amaro Averna 2 cl" × 3
+einmal als drei ganze Flaschen in der Differenz stand. Eine Klassenregel
+ist Wissen, das jemand ausgesprochen hat; wer keine Klasse hat (Amaro,
+Spirituosen, 33 der 37 Getränke), bekommt weiter nichts. Der eine Blick
+auf die Liste ist außerdem die Stelle, an der eine Magnum auffällt.
+
+**Kein Schemaeingriff dafür:** Die Tabelle `stamm` steht seit je live und
+war leer — `GET /api/stamm` las sie, ein Schreibweg fehlte. Den gibt es
+jetzt, an die Rolle `leitung` gebunden.
+
+## 2 · Bier vom Fass
+
+Neuer Artikel „Raschhofer Pils vom Fass", 50 l. Er taucht **nur** im
+Abgleich auf — nicht im Kellerbestand, nicht in der Zählliste, nicht auf
+dem Bestellzettel, nicht in der Fassung. Eigener Abschnitt **„Vom Fass"**
+unter Verkauf ↔ Fassung: Kassenname, Stück, ins Glas mit Herkunft, Liter,
+darunter die Fässer.
+
+**Er erzeugt keine Falschmeldung.** Ein Fass wird nicht gezählt, steht
+also nie auf der Entnahmeseite. Liefe es durch die normale Rechnung,
+stünde dort jeden Tag „verkauft 0,03 · geholt 0 · Differenz". Es hat
+deshalb einen eigenen Topf, und dieselbe Ausnahme gilt im Keller.
+
+**Radler ist halb Pils** — und das ist der gefährlichste Fall der ganzen
+Runde: „Radler 0,5l" sagt im Namen 500, verbraucht werden 250. Die Zahl
+ist nicht leer, sondern **falsch und sieht richtig aus**. Deshalb lässt
+sich die Menge je Kassenname von Hand setzen (Migration 002), und die
+Anzeige nennt überall, **woher** sie kommt: „von Hand" oder „aus dem
+Namen".
+
+## 3 · Die Zuordnung zeigt nur noch
+
+Neue Spalte **„Rechnung"**: `250 ml ins Glas · von Hand → 50 000 ml
+Gebinde`. Gepflegt wird bei den Artikelgrößen — Casimir: *„Es hat keinen
+Mehrwert das immer irgendwo stehen zu haben."*
+
+## 4 · Frage 1 steht ganz oben
+
+Gemessen stand „Ist heute gefasst worden?" in **Block 5 von 8** der
+Übersicht — unter Urteil, Abdeckungsbalken, Kette und Aufgabenliste, am
+MacBook unter der Falz. Und alles darüber rechnet auf **gestern**.
+
+Jetzt in der ersten Zeile, ohne Scrollen: links heute (gefasst / läuft /
+noch nicht), rechts der letzte Abgleichtag — beide anklickbar. Steht der
+letzte Tag mit Daten nicht wirklich gestern, heißt die Karte „Zuletzt"
+statt „Gestern".
+
+---
+
+## Die Migration · Zeile für Zeile in die D1-Konsole
+
+| # | Eingabe | Erwartete Ausgabe |
+|---|---|---|
+| 1 | `PRAGMA table_info(mapping);` | 6 Zeilen |
+| 2 | `ALTER TABLE mapping ADD COLUMN ausschank_ml INTEGER;` | „Executed 1 command", 0 rows |
+| 3 | `PRAGMA table_info(mapping);` | 7 Zeilen, neu `ausschank_ml` |
+| 4 | `SELECT COUNT(*) FROM mapping;` | unverändert |
+
+Danach die Seite einmal neu laden. Der Worker fragt die Spalte zur
+Laufzeit ab und merkt sich ein „Nein" höchstens eine Minute.
+
+## Sechs Handgriffe danach
+
+1. **Einstellungen → „Alle Vorgaben übernehmen"** (60 Größen auf einmal).
+2. **Zuordnung:** `Raschhofer Pils 0,2l/0,3l/0,5l` und `Radler 0,3l/0,5l`
+   → „Raschhofer Pils vom Fass".
+3. Bei `Radler 0,5l` **250** und bei `Radler 0,3l` **150** ins Glas.
+4. `Weißer Spritzer` → Spritzerwein, 200 ins Glas, 1000 Gebinde.
+5. `Weizen alkoholfrei 0,5` → Franziskaner alkoholfrei, 500 / 500.
+6. Die übrigen Getränke, wenn du Zeit hast — sie stehen in der Liste
+   untereinander und sagen, dass sie fehlen.
+
+---
+
+## Nachweis
+
+* `npm test`: **634 von 634** grün (vorher 608; 26 neue in
+  `tests/artikelgroessen`, `tests/fassbier`, `tests/migration-002`).
+* **Gegenproben gefahren.** Die neue Stufe zurückgebaut → 3 Prüfungen in
+  `artikelgroessen` und 3 in `fassbier` fallen. Die Ausnahme in der App
+  zurückgebaut → 1 weitere fällt.
+* **Am echten Bericht 37:** Raschhofer Pils 1×0,3 l + 2×0,5 l = 1,30 l =
+  0,03 Fass, und `fasspils` steht in **keiner** Differenzzeile. Ohne die
+  Handzahlen käme 5,40 l statt 4,75 l heraus — plausibel und falsch.
+* Oberfläche von Hand (nicht Teil von `npm test`): `ui-mass` (LAUF=runde-23)
+  alle Urteile grün in sechs Breiten, Gestaltungsschicht wortgleich ·
+  `ui-runde22` 31/31 · `ui-runde21` 19/19 · `ui-runde18` 54/54 ·
+  `ui-runde17` 38/38 · `ui-leitung-echt` 44/44 · `ui-fremdgeraet` 10/10.
+* Am echten Backoffice bei 1440 und 393 px gemessen: kein Überlauf,
+  nichts abgeschnitten, kein Querscrollen, alle 190 Zahlenfelder gleich
+  breit auf zwei Kanten, keine JS-Fehler.
+* Bilder: `review/screens/runde-23/`, Mockups in `review/mockup/`.
+
+---
+
 # Runde 22 · Die Vorabliste
 
 Der Z-Bericht liest sich seit Runde 21 sauber ein. Was danach kam, war

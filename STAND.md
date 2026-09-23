@@ -1,9 +1,37 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 21.09.2026 (Runde 22 · Vorabliste für Kassennamen)
+**Letzte Aktualisierung:** 23.09.2026 (Runde 23 · Größen am Artikel, Bier vom Fass)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
+
+## Runde 23 (23.09.2026) — noch NICHT live
+
+**Braucht Migration 002 vor dem Merge.** Was sie bringt:
+
+- **Größen gehören an den Artikel.** Neue Liste in den Einstellungen: alle
+  95 Artikel, je zwei Zahlen (Flasche/Fass und Glas), vorausgefüllt nach
+  den Regeln aus dem Haus — Weinflasche 750, Glas Wein 125, Glas Sekt 100,
+  Fass 50 000. Ein Knopf übernimmt alle. **Gerechnet wird erst, was
+  bestätigt ist**; die Entscheidung aus Runde 6 bleibt damit in Kraft.
+  Gespeichert in `stamm` — die Tabelle stand seit je live und war leer,
+  es fehlte nur der Schreibweg. Keine Migration dafür.
+- **Bier vom Fass** wird gerechnet, ohne im Keller aufzutauchen. Eigener
+  Abschnitt „Vom Fass" unter Verkauf ↔ Fassung, keine Differenzzeile.
+  Radler ist halb Pils: der Kassenname sagt 500, verbraucht werden 250 —
+  deshalb die Menge von Hand je Kassenname (**Migration 002**), und die
+  Anzeige nennt überall, woher die Zahl kommt.
+- **Die Zuordnung zeigt nur noch** (Spalte „Rechnung"), gepflegt wird bei
+  den Größen.
+- **Frage 1 steht ganz oben.** „Ist heute gefasst worden?" stand in Block
+  5 von 8 und war am MacBook unter der Falz.
+
+Der Befund, der alles ausgelöst hat: In der laufenden Datenbank haben
+**21 Zuordnungen, davon 0 eine Gebindegröße** — deshalb rechnete keine
+einzige Zeile. Das Achtel wurde die ganze Zeit korrekt gelesen.
+
+`sw.js` steht auf **v72**. `npm test`: **634 von 634** grün.
+Die Einrichtungsliste (sechs Handgriffe) steht in `review/ERGEBNIS.md`.
 
 ## Wo wir stehen
 - **Runde 22 ist gemergt und LIVE** (PR #16, 21.09.2026). Alle Runden bis

@@ -138,8 +138,13 @@ const ok = (satz, bedingung, dazu) => {
   const schirm = await p.evaluate(() => {
     const zeile = n => [...document.querySelectorAll("tr")]
       .find(r => r.firstElementChild && r.firstElementChild.textContent === n);
+    /* Die LETZTE Zelle, nicht die vierte: In Runde 23 ist die Spalte
+       „Rechnung" dazwischengekommen, und eine feste Nummer haette die
+       Pruefung daran scheitern lassen, dass eine Spalte dazukam — nicht
+       daran, dass der Zustand falsch ist. Die Zustandsspalte steht
+       hinten, und dort bleibt sie. */
     const lies = n => { const r = zeile(n); if (!r) return null;
-      return { zustand: r.children[3].textContent.trim(),
+      return { zustand: r.lastElementChild.textContent.trim(),
                feld: r.querySelector("select").value }; };
     return {
       wein: lies("ZW Glatzer Rubin Carnuntum 1/8 l"),
@@ -228,7 +233,7 @@ const ok = (satz, bedingung, dazu) => {
   const streit = await p.evaluate(() => {
     const r = [...document.querySelectorAll("tr")]
       .find(x => x.firstElementChild && x.firstElementChild.textContent === "Cola Zero 0,35l");
-    return { zustand: r.children[3].textContent.trim(),
+    return { zustand: r.lastElementChild.textContent.trim(),
              feld: r.querySelector("select").value,
              db: null };
   });
@@ -261,7 +266,7 @@ const ok = (satz, bedingung, dazu) => {
   const nein = await p.evaluate(n => {
     const r = [...document.querySelectorAll("tr")]
       .find(x => x.firstElementChild && x.firstElementChild.textContent === n);
-    return { zustand: r.children[3].textContent.trim(),
+    return { zustand: r.lastElementChild.textContent.trim(),
              feld: r.querySelector("select").value,
              status: zuordnung({ name: n }).status };
   }, ABGELEHNT);
@@ -301,7 +306,7 @@ const ok = (satz, bedingung, dazu) => {
   const pille = await p.evaluate(n => {
     const r = [...document.querySelectorAll("tr")]
       .find(x => x.firstElementChild && x.firstElementChild.textContent === n);
-    return r ? r.children[3].textContent.trim() : null;
+    return r ? r.lastElementChild.textContent.trim() : null;
   }, ABGELEHNT);
   ok("und die Zeile zeigt, dass jemand hingesehen hat",
      /abgelehnt/.test(pille || ""), pille);

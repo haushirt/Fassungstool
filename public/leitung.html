@@ -3274,10 +3274,68 @@ function vHeute(m){
        u:"Keine Abweichung über zwei Flaschen im Zeitraum"
         +(ohneUrteil.length?" — "+ohneUrteil.length+" Positionen bleiben ohne Urteil ("+gruendeSatz+").":".")};
 
+  /* ── 0 · Frage 1, ohne Scrollen ───────────────────────────────────
+     Casimir, 22.09.2026: „Ziel des Backoffice ist es diese Fragen in der
+     kürzesten Zeit zu beantworten: 1. Ist gefasst worden? Stimmt die
+     Entnahme mit dem verbuchten überein? Wenn nein was nicht."
+
+     Gemessen stand die Antwort auf die erste Hälfte bis hierher in Block
+     5 von 8 — unter Urteil, Abdeckungsbalken mit bis zu fünf
+     Lückensätzen, Kette und Aufgabenliste, am MacBook unter der Falz.
+     Alles darüber rechnet ausserdem auf `letzterTag()`, also auf
+     GESTERN. Beides steht jetzt nebeneinander in der ersten Zeile:
+     links heute, rechts gestern.
+
+     Die Blöcke darunter bleiben, wie sie waren. */
+  const heute=wienTag(), HV=VORGAENGE.filter(v=>v.tag===heute);
+  const hf=HV.find(v=>v.mode==="tag");
+  const uhr=v=>{ const t=v.ts||v.roh&&v.roh.zeit; if(!t) return "";
+    const d=new Date(t); return isNaN(d)?"":d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}); };
+  const summeW=HV.reduce((x,v)=>x+summe(v.wein),0);
+  const summeG=HV.reduce((x,v)=>x+summe(v.getr),0);
+
+  const k1 = hf && hf.fertig
+    ? {k:"ok",   t:"Gefasst",
+       u:(hf.name||"ohne Namen")+(uhr(hf)?" · "+uhr(hf):"")}
+    : hf
+    ? {k:"warn", t:"Fassung läuft",
+       u:(hf.name||"ohne Namen")+" ist gerade dabei"}
+    : {k:"bad",  t:"Noch nicht gefasst",
+       u:HV.length ? "seit Mitternacht "+num(summeW)+" Fl. Wein · "+num(summeG)+" Fl. Getränke"
+                   : "seit Mitternacht nichts erfasst"};
+  /* Kurzform desselben Urteils, das unten ausführlich steht — nicht ein
+     zweites, das auseinanderlaufen kann. */
+  const k2 = !a.berichte
+    ? {k:"bad",  t:"Kein Z-Bericht", u:"ohne Verkauf kein Abgleich"}
+    : a.offen.length
+    ? {k:"bad",  t:num(a.offen.length)+" ohne Zuordnung", u:"den Differenzen ist nicht zu trauen"}
+    : grob.length
+    ? {k:"warn", t:num(grob.length)+(grob.length===1?" Abweichung":" Abweichungen"),
+       u:"sonst stimmt es"}
+    : {k:"ok",   t:"Stimmt", u:ohneUrteil.length
+        ? ohneUrteil.length+" Positionen ohne Urteil" : "keine Abweichung über zwei Flaschen"};
+  const karte=(kl,kopf,x,ziel)=>`<button class="f1 ${kl}" data-geh="${ziel}">
+      <div class="f1k">${esc(kopf)}</div>
+      <div class="f1w"><b>${esc(x.t)}</b><span class="mini">${esc(x.u)}</span></div></button>`;
+
+  /* „Gestern" nur, wenn es wirklich gestern ist. `letzterTag()` gibt den
+     letzten Tag MIT DATEN zurück — liegt der zwei Tage zurück, wäre das
+     Wort eine falsche Auskunft, und gerade hier oben soll keine stehen. */
+  const gesternIso=(d=>{const x=new Date(d+"T12:00");x.setDate(x.getDate()-1);
+    return x.toISOString().slice(0,10);})(heute);
+  const kopf2=(tag===gesternIso?"Gestern · ":"Zuletzt · ")+deTag(tag);
+
   m.innerHTML=`<section>
+    <div class="frage1">
+      ${karte(k1.k, "Heute · "+deTag(heute), k1, "eingaenge")}
+      ${karte(k2.k, kopf2,                   k2, "abgleich")}
+    </div></section>
+    <section>
     <h2>Übersicht · ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</h2>
     <div class="urteil urteil--${urteil.k}">
       <b>${esc(urteil.t)}</b>${esc(urteil.u)}</div></section>`;
+  m.querySelectorAll("button[data-geh]").forEach(b=>
+    b.onclick=()=>{ SEITE=b.dataset.geh; zeichne(); });
 
   /* ── 2 · Abdeckung ───────────────────────────────────────────────
      Die eine Zahl, die sagt, wie viel eine Differenz wert ist. Sie wird
@@ -3410,14 +3468,11 @@ function vHeute(m){
      Er endet bei gestern (`letzterTag`) — was heute früh gefasst wurde,
      kam auf dieser Seite bis Runde 19 nirgends vor. */
   {
-    const h=wienTag(), HV=VORGAENGE.filter(v=>v.tag===h);
-    const hf=HV.find(v=>v.mode==="tag");
+    /* `heute`, `HV`, `hf`, `uhr`, `summeW`, `summeG` stehen schon oben
+       bei Frage 1 — dieselben Zahlen, einmal gerechnet. */
+    const h=heute;
     const sonder=HV.filter(v=>v.mode==="nach");
     const laufend=offeneVorgaenge();
-    const summeW=HV.reduce((x,v)=>x+summe(v.wein),0);
-    const summeG=HV.reduce((x,v)=>x+summe(v.getr),0);
-    const uhr=v=>{ const t=v.ts||v.roh&&v.roh.zeit; if(!t) return "";
-      const d=new Date(t); return isNaN(d)?"":d.toLocaleTimeString("de-AT",{hour:"2-digit",minute:"2-digit"}); };
     const s=document.createElement("section");
     s.innerHTML=`<h3>Heute · ${esc(deTag(h))}
         <span class="mini">läuft noch — nicht im Abgleich oben</span></h3>
