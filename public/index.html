@@ -4690,7 +4690,20 @@ toneAll(GETR.col);toneAll(GETR.spec);
    brechen koennen muss (`Nob\u00ADlier` in Lade 3). */
 
 /* Weinplätze in den Laden tragen Winzer und Weinname. */
-const GN=id=>{const w=byId(id);return w?w.winzer+" · "+w.wein:(GETR.name[id]||id);};
+/* ── Nur-Verkauf-Artikel ──────────────────────────────────────────────
+   Etwas, das die Kasse verkauft und der Keller nie in die Hand nimmt.
+   Ein Fass Pils haengt am Zapfhahn; es wird nicht gezaehlt, nicht
+   gefasst, nicht nachbestellt — es wird nur leer.
+
+   Hier steht nur, WELCHE Artikel das sind. Wie gross so ein Fass ist,
+   steht im Backoffice bei den Artikelgroessen — eine Zahl, ein Ort.
+   WORTGLEICH mit `NUR_VERKAUF` in public/leitung.html. */
+const NUR_VERKAUF=[{id:"fasspils", name:"Raschhofer Pils vom Fass",
+                    einheit:"Fass", mehrzahl:"Fässer"}];
+const NV={}; NUR_VERKAUF.forEach(a=>NV[a.id]=a);
+
+const GN=id=>{const w=byId(id);return w?w.winzer+" · "+w.wein
+  :(NV[id]?NV[id].name:(GETR.name[id]||id));};
 const GK=id=>{const w=byId(id);return w?w.winzer:(GETR.kurz[id]||GETR.name[id]||id);};
 /* Eine einzige Flaschenzeichnung fuer die zwei Positionen ohne Produktfoto
    (Spritzerwein, Noblier). Zurueckhaltend gezeichnet, damit sie neben
@@ -6025,6 +6038,12 @@ function abgleichZeilen(d,z,groessen){
   const gr = geholt ? groessen : {};
   (z.positionen||[]).forEach(p=>{
     if(!p.artikel){ ohneZuordnung++; return; }
+    /* Ein Nur-Verkauf-Artikel (das Fass) kommt nicht aus dem Keller und
+       hat hier keine Gegenseite. Ohne diese Zeile stuende er als
+       „gefasst 0, verkauft 0,2" in der Liste — eine Differenz, die keine
+       ist. Vor `zeilenJe`, damit er auch keinen Vorbehalt ausloest.
+       Gerechnet wird er im Backoffice (Abschnitt „Vom Fass"). */
+    if(NV[p.artikel]) return;
     zeilenJe[p.artikel]=(zeilenJe[p.artikel]||0)+1;
     if(!(+p.ausschankMl>0)){ ohneMenge++; ohneJe[p.artikel]=(ohneJe[p.artikel]||0)+1; return; }
     const fl=verkaufteFlaschen(p,gr);

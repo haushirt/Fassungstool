@@ -768,6 +768,12 @@ describe("R16/2 · Der Abgleich zeigt nur die Abweichungen", () => {
      `tests/soll-gleich.test.mjs` an den echten Daten. */
   const rechne = new Function(
     "const GSOLL={cola:7,colaz:7};\n" +
+    /* `NV` seit Runde 23: die Nur-Verkauf-Artikel (das Bierfass). Dieser
+       Prüfstand schneidet nur die Rechenfunktionen aus der Datei, die
+       Liste steht weiter oben. Leer heisst „es gibt keinen solchen
+       Artikel" — genau der Zustand, in dem alle Fälle hier spielen.
+       Dass die Ausnahme wirkt, prüft `tests/fassbier.test.mjs`. */
+    "const NV={};\n" +
     schnitt("gefassteMengen") + "\n" + schnitt("verbrauchteMengen") +
     "\n" + schnitt("verkaufteFlaschen") +
     "\n" + schnitt("abgleichZeilen") +

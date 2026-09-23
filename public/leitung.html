@@ -2554,6 +2554,10 @@ function abgleich(tag, spanne){
   const imFenster = t => t>=von && t<=bis;
 
   const verk={}, offen=[], ohneGroesse=[], berichte=[];
+  /* Was die Kasse verkauft hat, der Keller aber nie getragen hat — heute
+     nur das Bierfass. Steht neben `verk` und nicht darin, damit daraus
+     keine Differenzzeile wird. */
+  const fass={};
   /* NACHTRICHTIGUNG (zweite Jagd nach Runde 18 · A): Bis hierher zählte
      nur, was sich selbst meldet — fehlende Berichte, offene Namen,
      fehlende Gebindegrössen. Zwei Wege nehmen den Verkauf aber STILL aus
@@ -2703,6 +2707,26 @@ function abgleich(tag, spanne){
         return;
       }
       const f=flaschen(p, zu.id);
+      /* Ein Nur-Verkauf-Artikel (das Fass) hat KEINE Gegenseite: Der
+         Keller trägt ihn nie hinaus, `ent` kennt ihn nie. Liefe er in
+         `verk`, baute `zeilen` daraus „verkauft 0,17 · geholt 0 · −0,17"
+         — eine Differenz, die keine ist, jeden Tag aufs Neue.
+         Deshalb ein eigener Topf, und `zaehlePos` bleibt aussen vor:
+         sonst stünde ein Vorbehalt zu einem Artikel da, zu dem es keine
+         einzige Zeile gibt. */
+      if(istNurVerkauf(zu.id)){
+        if(!f.ok){ merkeOhneGroesse(p, zu.id, f); return; }
+        const t=fass[zu.id]||(fass[zu.id]={id:zu.id, fl:0, ml:0, stk:0, zeilen:[]});
+        const stk=+p.anzahl||0;
+        t.fl+=f.fl; t.ml+=stk*f.aus; t.stk+=stk;
+        const d=t.zeilen.find(x=>x.name===p.name);
+        if(d){ d.anzahl+=stk; d.ml+=stk*f.aus; }
+        else t.zeilen.push({name:p.name, anzahl:stk, aus:f.aus,
+                            woher:f.woher, ml:stk*f.aus});
+        umsatzJe[zu.id]=(umsatzJe[zu.id]||0)+(+p.umsatz||0);
+        stkGerechnet+=stk;
+        return;
+      }
       if(!f.ok){ merkeOhneGroesse(p, zu.id, f); zaehlePos(zu.id,false,f.fehlt); return; }
       verk[zu.id]=(verk[zu.id]||0)+f.fl; zaehlePos(zu.id,true);
       umsatzJe[zu.id]=(umsatzJe[zu.id]||0)+(+p.umsatz||0);
@@ -2801,7 +2825,7 @@ function abgleich(tag, spanne){
   }).sort((a,b)=>(a.unklar?1:0)-(b.unklar?1:0)
                  || Math.abs(b.diff)-Math.abs(a.diff) || b.verkauf-a.verkauf);
 
-  return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, umsatzJe,
+  return {z, zeilen, offen, ohneGroesse, unklar, vorbehalt, verk, ent, umsatzJe, fass,
           entLaufend, stkLaufend, laufendImFenster,
           umsatzFenster, von, bis, spanne,
           berichte:berichte.length,
@@ -3284,7 +3308,7 @@ function vHeute(m){
           a.ignoriert&&a.ignoriert.length?" ("+a.ignoriert.length+" ignoriert)":""
         } · ${num(fehlt)} fehlen</span>
         <span class="rechts">${a.berichte} von ${a.spanne} Z-Berichten eingelesen</span></div>
-      <div class="unter">„Ausgenommen“ sind Speisen, Kaffee und Fassbier — alles auf „Ignorieren“.
+      <div class="unter">„Ausgenommen“ sind Speisen und Kaffee — alles auf „Ignorieren“.
         „Fehlen“ heißt: der Verkauf ist da, aber die Rechnung kann ihn nicht rechnen.</div>`;
 
     /* Woraus die Lücke besteht. Drei Ursachen mit drei verschiedenen
@@ -3321,7 +3345,7 @@ function vHeute(m){
       +(a.ignoriert.length===1?" Kassenname":" Kassennamen")
       +" ("+einh(a.stkIgnoriert)+") "+(a.ignoriert.length===1?"steht":"stehen")
       +" auf „Ignorieren“ und "+(a.ignoriert.length===1?"zählt":"zählen")
-      +" nicht als Verkauf — richtig für Speisen, Kaffee und Fassbier. Steht dort "
+      +" nicht als Verkauf — richtig für Speisen und Kaffee. Steht dort "
       +"ein Getränk aus dem Keller, fehlt sein Verkauf, und seine Zeile unten "
       +"sieht aus, als stimme sie.");
     if(t.ausschank.length) L.push("Menge fehlt im Kassennamen: "+nam(t.ausschank.length)
@@ -3622,7 +3646,7 @@ function vAbgleich(m){
   }
   /* NACHTRICHTIGUNG (vierte Jagd · A): Der vierte Weg, auf dem Verkauf
      aus der Rechnung fällt, stand auf diesem Schirm nirgends. Er ist
-     nicht rot: „Ignorieren" ist für Speisen, Kaffee und Fassbier genau
+     nicht rot: „Ignorieren" ist für Speisen und Kaffee genau
      richtig und der Alltag. Er steht hier, weil unter denselben Namen
      auch ein Getränk aus dem Keller liegen kann — und dann trägt seine
      Zeile eine grüne Plakette über einer halben Rechnung. */
@@ -3632,7 +3656,7 @@ function vAbgleich(m){
       (${num(a.stkIgnoriert)} Einheiten) ${a.ignoriert.length===1?"steht":"stehen"} auf „Ignorieren“
       im Zeitraum ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))} und
       ${a.ignoriert.length===1?"zählt":"zählen"} nicht als Verkauf — richtig für Speisen, Kaffee
-      und Fassbier. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf hier, und seine
+      Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf hier, und seine
       Zeile sieht aus, als stimme sie.
       <button class="b klein" id="bIgn" style="margin-left:8px">Nachsehen</button></div>`;
     m.appendChild(s); $("#bIgn").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
@@ -3717,6 +3741,46 @@ function vAbgleich(m){
         await bestaetigeAlleGebinde(vorschlaege);   /* zeichnet danach neu */
       };
     }
+  }
+
+  /* ── Vom Fass ──────────────────────────────────────────────────────
+     Hier steht NUR, was die Kasse gebucht hat. Es gibt keine Gegenseite:
+     ein Fass wird nicht gezählt und nicht gefasst, es wird leer. Deshalb
+     auch keine Differenzspalte und keine Plakette — und deshalb steht es
+     hier und nicht auf der Übersicht, wo Frage 1 nicht verwässert
+     werden darf.
+
+     Die Spalte „ins Glas" nennt die Herkunft der Zahl. Das ist kein
+     Schmuck: „Radler 0,5l" sagt im Namen 500, verbraucht werden 250 —
+     steht dort „aus dem Namen" neben einem Radler, sieht man den Fehler
+     sofort. */
+  const fassArten=Object.keys(a.fass||{});
+  if(fassArten.length){
+    const fs=document.createElement("section");
+    const woher1=w=>w==="hand"?"von Hand":w==="regel"?"Regel":"aus dem Namen";
+    fs.innerHTML=`<h3 style="margin:0 0 4px">Vom Fass
+        <span class="mini">${esc(deTag(a.von))} bis ${esc(deTag(a.bis))}</span></h3>
+      <div class="unter" style="margin-bottom:10px">Was die Kasse gebucht hat, umgerechnet auf Fässer.
+      Fässer werden nicht gezählt und stehen in keiner Differenz.</div>
+      ${fassArten.map(id=>{
+        const t=a.fass[id], g=gebindeGroesse(id,null), liter=t.ml/1000;
+        const nv=NV[id]||{einheit:"Gebinde", mehrzahl:"Gebinde"};
+        return `<div class="tabhuelle zweisp" style="margin-bottom:10px">
+          <table><thead><tr><th>${esc(artName(id))}</th>
+            <th class="r">Stk</th><th class="r">ins Glas</th><th class="r">Liter</th>
+          </tr></thead><tbody>
+          ${t.zeilen.map(z=>`<tr><td>${esc(z.name)}</td>
+            <td class="r zahl">${num(z.anzahl)}</td>
+            <td class="r zahl">${z.aus} ml <span class="mini">${esc(woher1(z.woher))}</span></td>
+            <td class="r zahl">${(z.ml/1000).toFixed(2).replace(".",",")}</td></tr>`).join("")}
+          <tr class="zwt"><td>Summe</td><td class="r zahl">${num(t.stk)}</td><td></td>
+            <td class="r zahl">${liter.toFixed(2).replace(".",",")} l</td></tr>
+          </tbody></table></div>
+          <div class="mini" style="margin-bottom:14px"><b>${t.fl.toFixed(2).replace(".",",")} ${
+            esc(t.fl>=2?nv.mehrzahl:nv.einheit)}</b>${
+            g.ml?" · bei "+(g.ml/1000)+" l je "+esc(nv.einheit):""}</div>`;
+      }).join("")}`;
+    m.appendChild(fs);
   }
 
   const s=document.createElement("section");
@@ -3975,7 +4039,7 @@ function druckDifferenzen(tag, a){
   if(a.ignoriert && a.ignoriert.length) vorbehalte.push(
     a.ignoriert.length+(a.ignoriert.length===1?" Kassenname (":" Kassennamen (")
     +num(a.stkIgnoriert)+(a.ignoriert.length===1?" Einheiten) steht auf ":" Einheiten) stehen auf ")
-    +"\u201eIgnorieren\u201c: Speisen, Kaffee, Fassbier — alles, was nicht aus dem Keller "
+    +"\u201eIgnorieren\u201c: Speisen, Kaffee — alles, was nicht aus dem Keller "
     +"kommt. Steht dort ein Getränk, fehlt sein Verkauf in dieser Rechnung.");
   /* Solange irgendein Verkauf fehlt, ist ein Plus kein Befund über den
      Keller. `draussen` deckt auch die Wege ab, für die es keinen eigenen
@@ -4419,7 +4483,8 @@ function vZuordnung(m){
   m.innerHTML=`<section><h2>Zuordnung</h2>
     <div class="unter">Kassenname zu Artikel. Weine mit Rebsorten-Kürzel gehen automatisch durch.
     Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
-    „Ignorieren“ ist ein vollwertiger Zustand: Speisen, Kaffee, Fassbier.
+    „Ignorieren“ ist ein vollwertiger Zustand: Speisen und Kaffee. Bier vom Fass gehört
+    NICHT mehr dazu — es hat seit Runde 23 einen eigenen Artikel und wird gerechnet.
     Was „vorgeschlagen“ heißt, ist einzeln nachgesehen, aber noch nicht bestätigt —
     der Knopf unten nimmt alle Vorschläge auf einmal an.</div></section>`;
 
@@ -4449,14 +4514,43 @@ function vZuordnung(m){
 
   const optionen=`<option value="">— offen —</option><option value="__ignoriert">Ignorieren</option>`+
     `<optgroup label="Wein">${WINES.map(w=>`<option value="${w.id}">${esc(w.winzer)} · ${esc(w.wein)} ${esc(w.jg)}</option>`).join("")}</optgroup>`+
-    `<optgroup label="Getränke">${GIDS.map(id=>`<option value="${id}">${esc(GN(id))}</option>`).join("")}</optgroup>`;
+    `<optgroup label="Getränke">${GIDS.map(id=>`<option value="${id}">${esc(GN(id))}</option>`).join("")}</optgroup>`+
+    /* Seit Runde 23: Artikel, die nur verkauft und nie gefasst werden.
+       Sie stehen in einer eigenen Gruppe, damit niemand das Fass für
+       etwas hält, das im Keller liegt. */
+    (KANN_AUS ? `<optgroup label="Nur Verkauf · nicht im Keller">${
+      NUR_VERKAUF.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("")}</optgroup>` : "");
+
+  /* Was mit dieser Zeile gerechnet wird, in einem Satz — nicht zum
+     Bearbeiten. Gepflegt werden die Zahlen bei den Artikelgrößen in den
+     Einstellungen; Casimir dazu: „Es hat keinen Mehrwert das immer
+     irgendwo stehen zu haben. Das Ziel ist die richtige Ausrechnung."
+     Was hier steht, ist die Auskunft, ob es aufgeht — und woher die
+     Menge kommt. */
+  const woher1=w=>w==="hand"?"von Hand":w==="regel"?"Regel":"aus dem Namen";
+  const rechnung=p=>{
+    const z=zuordnung(p);
+    if(z.status==="ignoriert") return '<span class="dim">wird nicht gerechnet</span>';
+    if(!z.id)                  return '<span class="dim">erst zuordnen</span>';
+    if(z.status==="rezept")    return '<span class="dim">Mischgetränk · siehe Rezepturen</span>';
+    const f=flaschen(p, z.id);
+    const teile=[];
+    if(f.aus) teile.push(`<b>${f.aus} ml</b> ins Glas <span class="quelle${
+      f.woher==="hand"?" regel":""}">${esc(woher1(f.woher))}</span>`);
+    else teile.push('<span class="quelle fehlt">keine Menge je Verkauf</span>');
+    if(f.geb && f.geb.quelle==="bestaetigt") teile.push(`<b>${f.geb.ml} ml</b> Gebinde`);
+    else teile.push('<span class="quelle fehlt">keine Gebindegröße</span>');
+    return teile.join(' <span class="dim">→</span> ');
+  };
 
   const s=document.createElement("section");
   s.innerHTML=`<div class="tabhuelle"><table><thead><tr>
-    <th>Kassenname</th><th class="r">Menge gesamt</th><th>Zuordnung</th><th>Zustand</th></tr></thead><tbody>
+    <th>Kassenname</th><th class="r">Menge gesamt</th><th>Zuordnung</th>
+    <th>Rechnung</th><th>Zustand</th></tr></thead><tbody>
     ${L.map(p=>{ const z=zuordnung(p); const ab=vorabAbweichung(p.name);
       return `<tr><td>${esc(p.name)}</td><td class="r">${num(p.anzahl)}</td>
         <td><select class="klein" data-name="${esc(p.name)}">${optionen}</select></td>
+        <td>${rechnung(p)}</td>
         <td>${z.status==="offen"
               /* „abgelehnt" ist offen MIT Vorgeschichte: jemand hat
                  hingesehen. Ohne diesen Unterschied stünde die Zeile
