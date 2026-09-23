@@ -857,6 +857,45 @@ td.geld{white-space:nowrap}
    gut 600 px — man verliert beim Hinüberschauen die Zeile. Diese
    Tabelle wird gelesen, nicht durchsucht; sie bleibt so breit, dass
    Name und Zahlen in einem Blick liegen. */
+/* ── Artikelgrössen (Runde 23) ────────────────────────────────────────
+   Drei Spalten, nicht vier: „woher" steht UNTER dem Artikelnamen. Im
+   ersten Entwurf war es eine eigene Spalte — bei 393 px fiel sie damit
+   ganz aus dem Bild, und ausgerechnet sie sagt, ob eine Zahl gilt.
+   Die Breite ist begrenzt wie bei der Tafel darüber: am MacBook lägen
+   sonst 900 px zwischen dem Namen und seinen Zahlen. */
+.tabhuelle.liste{max-width:720px}
+.tabhuelle.liste table{min-width:0;width:100%}
+.tabhuelle.liste th.r,.tabhuelle.liste td.nw{width:1%}
+.tabhuelle.liste td.nw{white-space:nowrap}
+input.zahl-e{width:86px;padding:6px 8px;text-align:right;
+  font:var(--text-sm)/1 var(--font-ui);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--fg)}
+.quelle{font-size:var(--text-xs);color:var(--fg-secondary);margin-top:2px}
+.quelle.regel{color:#2d6a4f;font-weight:var(--weight-medium)}
+/* Keine Flächenfarbe für leere Zeilen: 33 von 37 Getränken haben keine
+   Grösse, die halbe Liste wäre gelb und sagte damit nichts mehr. Der
+   Satz an der Zeile und die Zahl im Gruppenkopf tun es. */
+.quelle.fehlt{color:#8a5a00;font-weight:var(--weight-medium)}
+
+/* ── Frage 1 ganz oben (Runde 23) ─────────────────────────────────────
+   „Ist heute gefasst worden?" stand bis hierher in Block 5 von 8 und war
+   am MacBook unter der Falz. */
+.frage1{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+.f1{display:block;padding:14px 16px;border-radius:var(--radius-lg);
+  border:1px solid var(--border);background:var(--surface);
+  text-align:left;width:100%;cursor:pointer;
+  border-left-width:4px;min-height:44px}
+.f1.ok{border-left-color:#2d6a4f}
+.f1.warn{border-left-color:#8a5a00}
+.f1.bad{border-left-color:var(--danger)}
+.f1k{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;
+  color:var(--fg-secondary);margin-bottom:4px}
+.f1w b{font-size:var(--text-lg);display:block}
+/* Eigene Zeile, nicht hinter dem fetten Wort: bei 393 px brach
+   „seit Mitternacht 43 verkauft" sonst mitten im Satz um. */
+.f1w .mini{display:block;margin-top:2px}
+
 .tabhuelle.zweisp{max-width:620px}
 .tabhuelle.zweisp table{min-width:0;width:100%}
 .tabhuelle.zweisp td.zahl,.tabhuelle.zweisp th.r{white-space:nowrap}
@@ -872,6 +911,9 @@ td.geld{white-space:nowrap}
    der Grund, warum es zwei Spalten gibt. */
 tr.weicht td{background:var(--warn-bg)}
 @media(max-width:700px){
+  .frage1{grid-template-columns:1fr}
+  input.zahl-e{width:76px}
+  .tabhuelle.liste th,.tabhuelle.liste td{padding-left:10px;padding-right:10px}
   .tabhuelle.zweisp th,.tabhuelle.zweisp td{padding-left:8px;padding-right:8px}
   .spuz{display:none}
   .spL{display:none} .spK{display:inline}
@@ -1187,11 +1229,14 @@ const istNurVerkauf = id => !!NV[id];
    wurde (`GROESSEN`). Genau dieser eine Blick ist die Stelle, an der
    eine Magnum oder eine 0,375er auffällt. */
 function vorgabe(id){
-  if(NV[id]) return {g:50000, a:null, satz:"Regel · ein Fass 50 l"};
+  /* Die Sätze bleiben kurz: sie stehen an JEDER Zeile, und die Zahlen
+     stehen daneben schon in den Feldern. „Regel · Flasche 0,75 l, Glas
+     Wein 125 ml" siebenundfünfzigmal untereinander ist Lärm. */
+  if(NV[id]) return {g:50000, a:null, satz:"Regel · Fass"};
   const w=byId(id);
   if(w) return w.f==="BUBBLES"
-    ? {g:750, a:100, satz:"Regel · Flasche 0,75 l, Glas Sekt 100 ml"}
-    : {g:750, a:125, satz:"Regel · Flasche 0,75 l, Glas Wein 125 ml"};
+    ? {g:750, a:100, satz:"Regel · Sekt"}
+    : {g:750, a:125, satz:"Regel · Weinflasche"};
   /* Getränke haben keine Warenart in den Stammdaten — in Lade 6 liegen
      0,33er und 0,5er nebeneinander. Was sich sagen lässt, steht im
      Artikelnamen („Gasteiner 1 l"), und das sind zwei von 37. */
@@ -4521,9 +4566,130 @@ function vZuordnung(m){
 }
 
 /* ── Einstellungen ──────────────────────────────────────────────────── */
+/* ── Die Artikelliste ─────────────────────────────────────────────────
+   Alles, was der Abgleich kennt: Wein, Getränke, Nur-Verkauf. Je Artikel
+   zwei Zahlen — wie gross die Flasche (oder das Fass) ist, und was bei
+   einem Verkauf ins Glas geht.
+
+   Casimir, 22.09.2026: „pro Artikel im Hintergrund einmal anzulegen. Es
+   hat keinen Mehrwert das immer irgendwo stehen zu haben. Das Ziel ist
+   die richtige Ausrechnung."
+
+   Vorausgefüllt aus `vorgabe()`, gerechnet wird aber erst, was hier
+   steht (`GROESSEN`). Der Knopf schreibt alle Vorgaben auf einmal — und
+   dieser eine Blick ist die Stelle, an der eine Magnum oder eine 0,375er
+   auffällt, bevor sie ein halbes Jahr still falsch rechnet. */
+function groessenListe(){
+  const zeile = id => {
+    const hat = GROESSEN[id] || {};
+    const v   = vorgabe(id);
+    return { id, name: artName(id),
+             g: hat.g!=null ? +hat.g : null, a: hat.a!=null ? +hat.a : null,
+             vg: v.g, va: v.a, satz: v.satz,
+             /* Drei Zustände, und der mittlere ist der wichtige:
+                  steht     — eine Gebindegrösse ist hinterlegt, es rechnet
+                  bereit    — nicht hinterlegt, aber eine Vorgabe liegt da
+                              (ein Klick auf den Knopf, keine Tipparbeit)
+                  fehlt     — weder noch; hier muss jemand eine Zahl wissen
+                Im ersten Einbau stand unter allen 57 Weinen „fehlt",
+                obwohl in jedem Feld schon 750 als Vorgabe stand. Das
+                erschreckt und stimmt nicht. */
+             steht: !!(hat.g!=null && +hat.g>0),
+             bereit: !(hat.g!=null && +hat.g>0) && v.g!=null };
+  };
+  return [
+    {t:"Wein",      zeilen: WINES.map(w=>zeile(w.id))},
+    {t:"Getränke",  zeilen: GIDS.map(zeile)},
+    {t:"Vom Fass",  zeilen: NUR_VERKAUF.map(a=>zeile(a.id))}
+  ].filter(g=>g.zeilen.length);
+}
+
+function groessenTafel(){
+  const G = groessenListe();
+  const alle = G.flatMap(g=>g.zeilen);
+  const offen    = alle.filter(z=>!z.steht).length;
+  const bereit   = alle.filter(z=>z.bereit).length;
+  const handisch = alle.filter(z=>!z.steht && !z.bereit).length;
+  const zFeld = (id,art,wert,vor) =>
+    `<input class="zahl-e" type="number" min="1" max="200000" step="1"
+       data-gid="${esc(id)}" data-art="${art}"
+       value="${wert!=null?wert:""}" placeholder="${vor!=null?vor:"ml"}">`;
+  const satzZu = z =>
+      z.steht  ? `<div class="quelle regel">gilt${z.satz?" · "+esc(z.satz):""}</div>`
+    : z.bereit ? `<div class="quelle">${esc(z.satz)} — noch nicht übernommen</div>`
+               : `<div class="quelle fehlt">fehlt — rechnet nicht mit</div>`;
+  const zeile = z => `<tr>
+      <td>${esc(z.name)}${satzZu(z)}</td>
+      <td class="r nw">${zFeld(z.id,"g",z.g,z.vg)}</td>
+      <td class="r nw">${zFeld(z.id,"a",z.a,z.va)}</td></tr>`;
+  const kopf = g => {
+    const b = g.zeilen.filter(z=>z.bereit).length;
+    const f = g.zeilen.filter(z=>!z.steht && !z.bereit).length;
+    const teile=[];
+    if(b) teile.push(b+" mit Vorgabe");
+    if(f) teile.push(f+" ohne Größe");
+    return `<tr class="zwt"><td colspan="3">${esc(g.t)}
+      <span class="mini">${g.zeilen.length} Artikel${
+        teile.length?" · "+teile.join(" · "):" · alle hinterlegt"}</span>
+      </td></tr>`;
+  };
+
+  const s=document.createElement("section");
+  s.innerHTML=`<h3 style="margin:0 0 4px">Flaschen- und Glasgrößen</h3>
+    <div class="unter" style="margin-bottom:12px">Einmal hinterlegt, gilt für alle Geräte.
+    Gerechnet wird nur, was hier steht — ein leeres Feld heißt „nicht hinterlegt",
+    und die Position bleibt aus dem Abgleich heraus.</div>
+    <div class="tabhuelle liste"><table><thead><tr>
+      <th>Artikel</th><th class="r">Gebinde</th><th class="r">ins Glas</th>
+    </tr></thead><tbody>${G.map(g=>kopf(g)+g.zeilen.map(zeile).join("")).join("")}</tbody></table></div>
+    <div class="reihe" style="margin-top:14px">
+      <button class="b stark" id="gAlle">Alle Vorgaben übernehmen</button></div>
+    <div class="mini" style="margin-top:8px">${alle.length-offen} von ${alle.length} Artikeln rechnen.${
+      bereit?" "+bereit+" weitere stehen als Vorgabe bereit — ein Klick auf den Knopf.":""}${
+      handisch?" Für "+handisch+" gibt es keine Vorgabe; die brauchen eine Zahl von Hand.":""}</div>`;
+
+  /* Ein Feld ändern schreibt sofort — wie überall sonst auf dieser Seite
+     auch (Zuordnung, Gebinde). Ein „Speichern" für eine Tabelle mit 95
+     Zeilen wäre eine Falle: wer zwischendurch die Ansicht wechselt,
+     verlöre alles. */
+  s.querySelectorAll("input[data-gid]").forEach(inp=>{
+    inp.onchange=async()=>{
+      const id=inp.dataset.gid, art=inp.dataset.art, n=+inp.value||0;
+      const neu=Object.assign({}, GROESSEN);
+      const e=Object.assign({}, neu[id]||{});
+      if(n>0) e[art]=n; else delete e[art];
+      if(e.g==null && e.a==null) delete neu[id]; else neu[id]=e;
+      const ok=await sendeGroessen(neu);
+      zeichne();
+      toast(ok ? (n>0 ? artName(id)+": "+n+" ml" : artName(id)+" — Zahl entfernt")
+               : "Nur auf diesem Gerät gemerkt");
+    };
+  });
+
+  const b=s.querySelector("#gAlle");
+  if(b) b.onclick=async()=>{
+    const neu=Object.assign({}, GROESSEN);
+    let n=0;
+    groessenListe().forEach(g=>g.zeilen.forEach(z=>{
+      const e=Object.assign({}, neu[z.id]||{});
+      /* Nur füllen, nie überschreiben: Was ein Mensch eingetragen hat,
+         wiegt schwerer als jede Regel. */
+      if(e.g==null && z.vg!=null){ e.g=z.vg; n++; }
+      if(e.a==null && z.va!=null){ e.a=z.va; }
+      if(e.g!=null || e.a!=null) neu[z.id]=e;
+    }));
+    if(!n) return toast("Es ist schon alles hinterlegt, was eine Vorgabe hat");
+    const ok=await sendeGroessen(neu);
+    zeichne();
+    toast(ok ? n+" Größen übernommen" : "Nur auf diesem Gerät gemerkt");
+  };
+  return s;
+}
+
 function vEinst(m){
   m.innerHTML=`<section><h2>Einstellungen</h2>
-    <div class="unter">Gilt nur für diese Ansicht. Die Fassungsseite bleibt unberührt.</div></section>`;
+    <div class="unter">Die beiden Zahlen unten gelten nur für diese Ansicht.
+    Die Artikelgrößen darunter gelten für ALLE Geräte — sie stehen in der Datenbank.</div></section>`;
   const s=document.createElement("section"); s.className="karte";
   s.innerHTML=`<div class="reihe" style="margin-bottom:16px">
       <label style="width:230px">Nachbestellen unter</label>
@@ -4549,6 +4715,8 @@ function vEinst(m){
     toast(ok ? Object.keys(MAP).length+" Zuordnungen vom Server"
              : "Keine Verbindung — es bleibt bei der Abschrift dieses Geräts");
   };
+
+  m.appendChild(groessenTafel());
 
   const s2=document.createElement("section");
   s2.innerHTML=`<h3>Quelle</h3><div class="karte">
