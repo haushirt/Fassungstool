@@ -196,3 +196,33 @@
   Einträgen fällt der eine nicht auf — und genau er ist der, der die
   Liste zu dem macht, wogegen sie gebaut wurde. Analogie gehört in den
   Morgenbrief, nicht in den Code.
+
+## 23.09.2026 · Die Warengruppen des Z-Berichts sind ein Beweismittel
+
+`gnparse.js` kann einer Position keine Warengruppe zuordnen (Falle 4:
+der Positionsblock führt keine). Von Hand geht etwas anderes: prüfen, ob
+eine **Menge** von Namen zusammen genau die Stückzahl einer Warengruppe
+ergibt — über mehrere Berichte hinweg, ohne Rest.
+
+So ist die Frage „Raschhofer Pils und Radler" gefallen, die seit dem
+21.09. offen stand: Pils (0,2/0,3/0,5) und Radler (0,3/0,5) füllen in den
+Berichten Z 41, 42, 43 die Gruppe „Bier · vom Fass" exakt aus (12 · 7 ·
+11). Gegenprobe mit „Bier · Flaschenbier" (4 · 4 · 2) — dort stehen genau
+die Artikel, die im Keller liegen.
+
+Das ist kein Raten und keine Ähnlichkeitssuche (Regel 5 bleibt
+unberührt): das Ergebnis geht als einzelner, ganzer Name in die
+Vorabliste, so wie jeder andere Eintrag auch.
+
+**Merksatz:** Wenn ein Kassenname keinen Kellerartikel findet, zuerst
+nachsehen, in welcher Warengruppe er steht und ob die Gruppe ohne ihn
+nicht aufgeht.
+
+## 23.09.2026 · Prüfungen dürfen nicht an echten Kassennamen hängen
+
+`tests/abgleich-unklar.test.mjs` prüft die Summe über das Abgleichfenster
+und brauchte dafür einen Namen, der offen bleibt. Sie ist zweimal rot
+geworden, weil der gewählte Name in die Vorabliste gewandert ist — erst
+„HP Omelett", dann ein Cocktail. Jetzt steht dort ein erfundener Name.
+Wer eine Eigenschaft prüft, soll nicht am Inhalt einer wachsenden Liste
+hängen.

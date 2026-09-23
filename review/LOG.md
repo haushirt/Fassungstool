@@ -4754,3 +4754,68 @@ Erfolgsmeldung umformuliert, muss das Wort mitnehmen.
 **Phase/Thema:** A / Kassennamen-Erkennung
 
 **STATUS:** FERTIG
+
+---
+
+### Runde 23 – Kassennamen der Berichte Z 41 bis Z 43
+
+**Kritik am Vorgänger:**
+- `src/gnmap.js` (Runde 22): Cocktails bewusst offen gelassen, Begründung
+  „sie zehren Zitronensaft, Ginger Ale, Tonic". Sachlich richtig,
+  ↩️ **geändert** — nicht weil die Begründung falsch wäre, sondern weil
+  die Entscheidung inzwischen gefallen ist: im Backoffice stehen Aperol
+  Spritz, Sarti Spritz, Monkey Sour und Ipanema seit dem 22.09. von Hand
+  auf Ignorieren, und Casimir hat es am 23.09. ausdrücklich angeordnet.
+  Der Einwand steht wörtlich im Quelltext über dem neuen Block.
+- `src/gnmap.js:VORAB_GETRAENK` (vierte Jagd): „Johannisbeer gespritzt"
+  als Schluss aus dem Mango-Eintrag entfernt. ✅ **übernommen** als
+  Verfahren — der Name steht jetzt drin, aber auf Anweisung, nicht auf
+  einem Schluss; der Unterschied steht daneben.
+- `tests/abgleich-unklar.test.mjs:300`: hängt an einem echten Kassennamen,
+  der offen bleiben soll. ↩️ **geändert** — der Name ist jetzt erfunden.
+  Die Prüfung ist zweimal an der Vorabliste zerbrochen, obwohl sie von
+  der Summe über das Abgleichfenster handelt.
+- `tests/ui-runde22.cjs:162`: prüfte „der Cocktail bleibt offen".
+  ↩️ **geändert** auf „vorgeschlagen: ignorieren", mit dem Datum der
+  Entscheidung daneben.
+
+**Umgesetzt:**
+1. Vorabliste von 36 auf **100 geprüfte Kassennamen**; von 104 Namen der
+   drei Berichte bleiben **3** offen (vorher 58).
+2. Die Frage „Raschhofer Pils und Radler" ist **an den Daten beantwortet**,
+   nicht geraten: beide gehen in allen drei Berichten Stück für Stück in
+   der Warengruppe Bier · vom Fass auf (12 · 7 · 11), und im Keller liegt
+   kein Fass.
+3. Neuer Block `VORAB_MISCHGETRAENK` — getrennt, damit das Zurücknehmen
+   eine Löschung ist und keine Suche.
+
+**Geprüft:** `npm test` **581 von 581**. Browser: `ui-runde22.cjs` 31/31,
+`ui-leitung-echt.cjs` 44/44, `ui-runde21.cjs` 19/19, `ui-runde18.cjs`
+54/54. Vorabliste gegen alle vier echten Berichte gerechnet (Z 40 aus der
+Live-D1, Z 41–43 neu, Fixture 37): Rest offen 3 bzw. 2. Live-D1 nur
+gelesen. `sw.js` auf **v72**.
+
+**Für die Nächsten:** Die Warengruppen des Berichts sind ein Beweismittel,
+das `gnparse.js` nicht hat (Falle 4: keine Warengruppe je Zeile). Von Hand
+lässt sich damit aber prüfen, ob eine Menge Namen zusammen genau eine
+Gruppe füllt — so ist das Fassbier gefallen. Wer die Vorabliste erweitert,
+hat hier ein Werkzeug, das nicht rät.
+
+**Phase/Thema:** A / Kassennamen-Erkennung
+
+**Backlog:** (niedrig) Gasteiner-Familie im Stamm klären — 0,20 l / 0,25 l
+/ 0,5 l / 0,75 l / 1 l stehen in der Kasse, im Keller drei Artikel.
+(niedrig) Apfelsaft fehlt im Stamm.
+
+**Nachtrag (23.09.2026, nach Casimirs Antwort):** Die Gasteiner-Familie
+ist geklärt — es gibt still, sparkling gross (0,75) und sparkling klein
+(0,2), Quellwasser ist keine davon. Damit sind vier weitere Namen
+eingetragen; offen bleibt allein „Apfelsaft 0,25 l". Der Referenzbericht
+37 hat keine offene Zeile mehr. Zwei Stammdaten-Etiketten tragen die
+falsche Grösse („Gasteiner 1 l" ist die 0,75er, „Gasteiner 0,25 l" die
+0,2er) — gerechnet wird richtig, im Backlog vermerkt. `sw.js` auf v73.
+`tests/gebinde.test.mjs:188` zählt auf, welche Namen ohne bestätigte
+Grösse dastehen; der grosse Gasteiner ist dazugekommen.
+
+**STATUS:** FERTIG
+

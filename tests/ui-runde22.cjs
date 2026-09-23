@@ -159,8 +159,12 @@ const ok = (satz, bedingung, dazu) => {
   ok("und im Feld steht „Ignorieren“",
      schirm.speise && schirm.speise.feld === "__ignoriert",
      schirm.speise && schirm.speise.feld);
-  ok("der Cocktail bleibt offen — er braucht ein Rezept",
-     schirm.cocktail && /offen/.test(schirm.cocktail.zustand),
+  /* Bis Runde 22 stand hier „der Cocktail bleibt offen". Casimir hat am
+     23.09.2026 entschieden, dass Mischgetränke nichts aus dem Keller
+     zehren sollen — im Backoffice stehen vier davon seit dem 22.09. von
+     Hand auf Ignorieren. Die Vorabliste zieht seither nach. */
+  ok("das Mischgetränk steht als „vorgeschlagen: ignorieren“",
+     schirm.cocktail && /ignorieren/.test(schirm.cocktail.zustand),
      schirm.cocktail && schirm.cocktail.zustand);
   ok("der Knopf verspricht nicht mehr nur Weine", /Alle Vorschläge/.test(schirm.knopf),
      schirm.knopf);

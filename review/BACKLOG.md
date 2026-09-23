@@ -547,3 +547,25 @@ gemessen: 32 Einzelanfragen, 33 Meldungen. Der Nachbarweg
 **Niedrig — „Zuordnungen vom Server" zählt weiter alles**, was die
 Zeile zwei Bildschirme tiefer seit dieser Runde bewusst nicht mehr
 mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".
+
+## Neu aus Runde 23 (23.09.2026)
+
+**Niedrig · Zwei Gasteiner-Artikel tragen die falsche Grösse im Namen.**
+Casimir hat die Familie am 23.09.2026 geklärt (still, sparkling 0,75,
+sparkling 0,2) und alle fünf Kassennamen sind zugeordnet. Im Stamm
+heissen die beiden prickelnden aber „Gasteiner 1 l" und
+„Gasteiner 0,25 l". Gerechnet wird richtig, nur das Etikett im Tool
+stimmt nicht. Umbenennen ist eine reine Stammdatenänderung.
+
+**Niedrig · Apfelsaft fehlt im Stamm.**
+Ein Stück in Z 42, Warengruppe „AFG · Säfte | Gespritzt". Im Keller liegt
+kein Apfelsaft. Entweder Artikel anlegen oder dauerhaft ignorieren.
+
+**Hoch · „Ignorieren" wird durch Runde 23 teurer.**
+Die offene Frage aus Runde 19 (Was soll „Ignorieren" in der
+Abgleichszeile bedeuten? Heute nimmt es den Verkauf aus der Rechnung und
+die Zeile sagt trotzdem „stimmt") betrifft jetzt 31 Mischgetränke mehr.
+Zitronensaft, Limettensaft, Tonic, Ginger Ale, Holundersirup, Sanbitter
+und Sprite gehen damit rechnerisch verloren und kommen als Schwund
+zurück. Entweder die Deutung der Zeile ändern oder Rezepte bauen
+(~30 Zeilen, der Zuordnung-Bildschirm kann „Mischgetränk" schon).
