@@ -1,11 +1,14 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 23.09.2026 (Runde 23 · Kassennamen Z 41–43)
+**Letzte Aktualisierung:** 24.09.2026 (Runde 24 · Entwurf Apple-Stil, nichts live)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
+- **Runde 24 (Nacht auf 24.09.): nur Entwurf, kein App-Code geändert.** Neues Aussehen im
+  Apple-Stil (Liquid Glass + Dunkelmodus) mit Vorher/Nachher-Bildern und Etappenplan:
+  `review/DESIGN-APPLE.md`. Wartet auf Casimirs Antworten (Schrift, Tableiste, Nacht automatisch).
 - **Runde 23 ist gemergt und LIVE** (PR #18, 23.09.2026). Alle Runden bis
   einschliesslich 23 sind auf `main`.
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.

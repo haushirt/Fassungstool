@@ -2,6 +2,12 @@
 
 <!-- Kurz und datiert. Neueste oben. -->
 
+## 24.09.2026 (Runde 24)
+- **Glas braucht etwas dahinter.** Milchglas-Leisten wirken nur, wenn Inhalt darunter durchläuft;
+  deshalb schweben Leisten über der Liste statt über leerem Grund. Auf Listen selbst kein Glas (Leistung, Lesbarkeit).
+- **Teal #004947 ist im Dunkeln unlesbar** – für Nacht eine aufgehellte Variante (#4FC3B8) als Akzent, das dunkle Teal nur als Knopffläche.
+- Für Entwurfsbilder: Google Fonts ist erreichbar, rsms.me nicht (Proxy).
+
 ## 19.09.2026 (Runde 17)
 - **Ein `save()` ist noch kein Arbeiten.** `start()` speichert unbedingt, und die
   45-Sekunden-Uhr machte daraus einen laufenden Vorgang am Server. Eine Schwelle,

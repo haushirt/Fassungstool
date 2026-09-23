@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fassungstool · Entwurf Apple-Stil</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   NUR ENTWURF · nicht Teil der App.
+   Zeigt, wie die Gestaltungsschicht in Richtung iOS 26 / Liquid Glass
+   gehen könnte. Aufruf: mock.html?s=start&t=hell|nacht
+   Inter steht hier für SF Pro (auf dem iPhone kommt die echte
+   Systemschrift, ohne Datei).
+   ═══════════════════════════════════════════════════════════════════ */
+@font-face{font-family:"Inter";src:url("fonts/inter-400.woff2") format("woff2");font-weight:400}
+@font-face{font-family:"Inter";src:url("fonts/inter-500.woff2") format("woff2");font-weight:500}
+@font-face{font-family:"Inter";src:url("fonts/inter-600.woff2") format("woff2");font-weight:600}
+@font-face{font-family:"Inter";src:url("fonts/inter-700.woff2") format("woff2");font-weight:700}
+
+:root{
+  --font:-apple-system,"SF Pro Text","Inter",system-ui,sans-serif;
+  --font-marke:"Cormorant Garamond",Georgia,serif;
+
+  /* Hell · Haus-Hirt-Cream bleibt der Grund */
+  --grund:#EEEBE4;
+  --karte:#FFFFFF;
+  --karte-2:#F6F4EF;
+  --linie:rgba(60,60,67,.14);
+  --text:#1C2220;
+  --text-2:rgba(28,34,32,.62);
+  --text-3:rgba(28,34,32,.40);
+  --akzent:#00625E;         /* Haus-Hirt-Teal, eine Spur heller für Glas */
+  --akzent-fl:#004947;
+  --akzent-tint:rgba(0,98,94,.12);
+  --gut:#2F8A4A; --warn:#C98A00; --rot:#B4471F; --wein:#8E1F2F;
+  --glas:rgba(250,249,246,.72);
+  --glas-rand:rgba(255,255,255,.75);
+  --glas-schatten:0 10px 30px rgba(20,30,28,.14),0 1px 2px rgba(20,30,28,.08);
+  --glas-glanz:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.04);
+  --statusleiste:#1C2220;
+}
+[data-t="nacht"]{
+  --grund:#000000;
+  --karte:#1C1C1E;
+  --karte-2:#2C2C2E;
+  --linie:rgba(84,84,88,.55);
+  --text:#FFFFFF;
+  --text-2:rgba(235,235,245,.62);
+  --text-3:rgba(235,235,245,.34);
+  --akzent:#4FC3B8;         /* Teal fürs Dunkle aufgehellt, sonst unlesbar */
+  --akzent-fl:#1F8F87;
+  --akzent-tint:rgba(79,195,184,.16);
+  --gut:#4CC46E; --warn:#F2B530; --rot:#FF7A50; --wein:#FF6B7F;
+  --glas:rgba(38,38,42,.70);
+  --glas-rand:rgba(255,255,255,.14);
+  --glas-schatten:0 10px 30px rgba(0,0,0,.55);
+  --glas-glanz:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.3);
+  --statusleiste:#FFFFFF;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--grund);color:var(--text);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;font-size:17px;letter-spacing:-.01em}
+.handy{position:relative;width:393px;height:852px;overflow:hidden;background:var(--grund)}
+.scroll{position:absolute;inset:0;overflow:hidden;padding:0 16px 140px}
+
+/* ── Glas ─────────────────────────────────────────────────────────── */
+.glas{background:var(--glas);-webkit-backdrop-filter:blur(26px) saturate(190%);
+  backdrop-filter:blur(26px) saturate(190%);border:.5px solid var(--glas-rand);
+  box-shadow:var(--glas-schatten),var(--glas-glanz)}
+
+/* Statusleiste (nur Attrappe für das Bild) */
+.sb{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;
+  justify-content:space-between;padding:6px 34px 0 44px;font-weight:600;font-size:17px;
+  color:var(--statusleiste);z-index:30}
+.sb i{display:inline-block;width:26px;height:12px;border:1.5px solid currentColor;border-radius:4px;
+  position:relative;opacity:.9}
+.sb i:after{content:"";position:absolute;inset:1.5px;right:5px;background:currentColor;border-radius:1.5px}
+
+/* Kopf: runde Glasknöpfe wie tricount/iOS 26 */
+.nav{position:absolute;top:54px;left:16px;right:16px;height:48px;display:flex;
+  justify-content:space-between;align-items:center;z-index:20}
+.rund{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--text)}
+.pille{height:48px;border-radius:24px;display:flex;align-items:center;gap:22px;padding:0 18px;color:var(--text)}
+.nav .mitte{position:absolute;left:50%;transform:translateX(-50%);font-weight:600;font-size:16px}
+svg{display:block}
+
+.gross{font-size:34px;font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.ueber{font-size:15px;color:var(--text-2);font-weight:500;margin-bottom:4px}
+.kopf{padding-top:116px;margin-bottom:18px}
+
+/* Abschnitte wie iOS „inset grouped" */
+.abschnitt{font-size:20px;font-weight:700;margin:26px 4px 10px;letter-spacing:-.015em}
+.abschnitt small{font-size:15px;color:var(--text-2);font-weight:500;float:right;margin-top:4px}
+.gruppe{background:var(--karte);border-radius:24px;overflow:hidden}
+.zeile{display:flex;align-items:center;gap:14px;padding:13px 16px;min-height:64px;position:relative}
+.zeile + .zeile:before{content:"";position:absolute;top:0;right:0;left:66px;height:.5px;background:var(--linie)}
+.gruppe.ohne-ikon .zeile + .zeile:before{left:16px}
+.ikon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:none}
+.zeile .t{flex:1;min-width:0}
+.zeile .t b{display:block;font-weight:600;font-size:17px}
+.zeile .t span{display:block;color:var(--text-2);font-size:15px;margin-top:2px}
+.chev{color:var(--text-3)}
+.wert{font-weight:600;font-size:17px;text-align:right}
+.wert small{display:block;font-weight:500;font-size:13px;color:var(--text-2)}
+
+/* Große Statuskarte oben */
+.held{background:var(--karte);border-radius:26px;padding:18px 18px 16px}
+.held .zeit{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--text-2);font-weight:500}
+.punkt{width:9px;height:9px;border-radius:50%;background:var(--gut);box-shadow:0 0 0 4px color-mix(in srgb,var(--gut) 22%,transparent)}
+.held h2{font-size:22px;font-weight:700;margin:10px 0 4px;letter-spacing:-.02em}
+.held p{color:var(--text-2);font-size:15px}
+.knopf{height:52px;border-radius:26px;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:600;font-size:17px;background:var(--akzent-fl);color:#fff;margin-top:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 16px color-mix(in srgb,var(--akzent-fl) 35%,transparent)}
+.zahlen{display:flex;margin-top:16px;border-top:.5px solid var(--linie);padding-top:14px}
+.zahlen div{flex:1;text-align:center}
+.zahlen span{display:block;font-size:13px;color:var(--text-2);font-weight:500}
+.zahlen b{display:block;font-size:22px;font-weight:700;margin-top:2px;letter-spacing:-.02em}
+
+/* Schwebende Tableiste + Aktionskreis (iOS 26) */
+.tabs{position:absolute;left:16px;bottom:26px;height:66px;border-radius:33px;display:flex;
+  align-items:center;padding:0 6px;z-index:25;width:293px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;
+  color:var(--text);height:56px;justify-content:center;border-radius:28px}
+.tab.an{color:var(--akzent);background:var(--akzent-tint)}
+.aktion{position:absolute;right:16px;bottom:26px;width:66px;height:66px;border-radius:50%;
+  display:grid;place-items:center;z-index:25;color:var(--akzent)}
+.aktion-schild{position:absolute;right:6px;bottom:98px;font-size:13px;font-weight:600;padding:6px 10px;
+  border-radius:12px;color:var(--akzent);z-index:25}
+
+/* Segmente (Glas) */
+.seg{display:flex;border-radius:22px;padding:4px;height:44px;margin:14px 0 4px}
+.seg div{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border-radius:18px;
+  font-weight:600;font-size:15px;color:var(--text-2)}
+.seg div.an{background:var(--karte);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+[data-t="nacht"] .seg div.an{background:#636366}
+.seg .ok{color:var(--gut)}
+
+/* Zählzeile Tagesfassung */
+.wz{display:grid;grid-template-columns:1fr 136px 46px;align-items:center;gap:10px;padding:12px 14px 12px 16px;min-height:78px;position:relative;background:var(--karte)}
+.wz + .wz:before{content:"";position:absolute;top:0;right:0;left:16px;height:.5px;background:var(--linie)}
+.wz .w{font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+.wz .n{font-size:17px;font-weight:600;margin:1px 0}
+.wz .s{font-size:15px;color:var(--text-2)}
+.dots{display:flex;gap:8px;align-items:center}
+.dot{width:40px;height:40px;border-radius:50%;border:2px solid var(--akzent);display:grid;place-items:center}
+.dot.voll{background:var(--akzent);color:#fff}
+[data-t="nacht"] .dot.voll{color:#003B38}
+.dot.leer{border-color:var(--linie);border-style:dashed}
+.haken{width:40px;height:40px;border-radius:50%;background:var(--gut);color:#fff;display:grid;place-items:center}
+.fehlt{font-size:13px;font-weight:700;color:var(--rot);background:color-mix(in srgb,var(--rot) 14%,transparent);padding:3px 8px;border-radius:9px}
+.sorte{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--wein);margin:22px 6px 8px;text-transform:none}
+.sorte:before{content:"";width:10px;height:10px;border-radius:50%;background:var(--wein)}
+
+/* Wischaktion */
+.wisch{position:relative;overflow:hidden;background:var(--karte)}
+.wisch .wz{transform:translateX(-148px)}
+.wisch .hinter{position:absolute;top:0;bottom:0;right:0;display:flex}
+.wisch .hinter div{width:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:13px;font-weight:600}
+
+/* Unterleiste mit Hauptknopf */
+.unten{position:absolute;left:16px;right:16px;bottom:26px;height:66px;border-radius:33px;display:flex;
+  align-items:center;padding:0 7px 0 20px;gap:12px;z-index:25}
+.unten .info{flex:1;font-size:15px;color:var(--text-2);font-weight:500;line-height:1.2}
+.unten .info b{color:var(--text);display:block;font-size:17px}
+.unten .los{height:52px;border-radius:26px;padding:0 22px;display:flex;align-items:center;gap:6px;
+  background:var(--akzent-fl);color:#fff;font-weight:600;font-size:17px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+
+/* Suche und Filterchips */
+.suche{height:44px;border-radius:22px;display:flex;align-items:center;gap:8px;padding:0 14px;
+  color:var(--text-2);font-size:17px;background:var(--karte-2)}
+[data-t="nacht"] .suche{background:#1C1C1E}
+.chips{display:flex;gap:8px;margin:12px -16px 0;padding:0 16px;overflow:hidden}
+.chip{height:36px;border-radius:18px;padding:0 14px;display:flex;align-items:center;gap:6px;font-weight:600;font-size:15px;
+  background:var(--karte);color:var(--text);white-space:nowrap}
+.chip.an{background:var(--text);color:var(--grund)}
+.chip em{font-style:normal;color:var(--text-2);font-weight:500}
+.chip.an em{color:var(--grund);opacity:.7}
+
+/* Kellerzeile mit Steppern */
+.kz{background:var(--karte);border-radius:22px;padding:14px 16px;margin-bottom:10px}
+.kz .oben{display:flex;justify-content:space-between;align-items:flex-start}
+.kz .sum{font-size:28px;font-weight:700;letter-spacing:-.02em;text-align:right;line-height:1}
+.kz .sum small{display:block;font-size:12px;color:var(--text-2);font-weight:500;letter-spacing:0}
+.stepper{display:flex;gap:10px;margin-top:12px}
+.st{flex:1;display:flex;align-items:center;justify-content:space-between;height:48px;border-radius:24px;background:var(--karte-2);padding:0 4px}
+[data-t="nacht"] .st{background:#2C2C2E}
+.st button{all:unset;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--akzent);font-size:24px;font-weight:500}
+.st .m{text-align:center;line-height:1.05}
+.st .m b{font-size:19px;display:block}
+.st .m span{font-size:12px;color:var(--text-2);font-weight:600}
+
+/* Toast mit Rückgängig */
+.toast{white-space:nowrap;position:absolute;left:16px;right:16px;bottom:108px;height:54px;border-radius:27px;display:flex;align-items:center;
+  gap:10px;padding:0 8px 0 16px;z-index:26;font-size:15px;font-weight:500}
+.toast b{flex:1}
+.toast .rk{color:var(--akzent);font-weight:700;padding:0 12px}
+
+/* Blatt (Sheet) */
+.dimm{position:absolute;inset:0;background:rgba(0,0,0,.28);z-index:28}
+[data-t="nacht"] .dimm{background:rgba(0,0,0,.55)}
+.blatt{position:absolute;left:8px;right:8px;bottom:8px;top:250px;border-radius:38px;z-index:29;padding:10px 18px 20px}
+.griff{width:40px;height:5px;border-radius:3px;background:var(--text-3);margin:0 auto 10px}
+.blatt .kb{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.blatt h3{font-size:20px;font-weight:700}
+
+/* Verlauf */
+.zeile .t span.status{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;display:inline-block;margin-top:4px}
+.status.wart{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.status.ok{color:var(--gut);background:color-mix(in srgb,var(--gut) 16%,transparent)}
+.leer{text-align:center;padding:70px 20px 10px;color:var(--text-2)}
+.leer .kreis{width:84px;height:84px;border-radius:50%;margin:0 auto 16px;background:var(--akzent-tint);display:grid;place-items:center;color:var(--akzent)}
+.leer b{display:block;color:var(--text);font-size:20px;margin-bottom:6px}
+
+/* ── Backoffice (MacBook) ─────────────────────────────────────────── */
+.mac{position:relative;width:1440px;height:900px;overflow:hidden;background:var(--grund);font-size:14px}
+[data-t="hell"] .mac{background:linear-gradient(180deg,#EEEBE4,#E7E3DA)}
+.seite{position:absolute;left:12px;top:12px;bottom:12px;width:250px;border-radius:22px;padding:18px 12px;z-index:5}
+.ampel{display:flex;gap:8px;margin:0 6px 22px}
+.ampel i{width:12px;height:12px;border-radius:50%;background:#FF5F57}.ampel i+i{background:#FEBC2E}.ampel i+i+i{background:#28C840}
+.seite h6{font-size:11px;font-weight:700;color:var(--text-3);margin:16px 10px 6px;letter-spacing:.02em}
+.nv{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:10px;font-weight:500;color:var(--text)}
+.nv.an{background:var(--akzent-tint);color:var(--akzent);font-weight:600}
+.nv em{margin-left:auto;font-style:normal;font-size:12px;color:var(--text-2);background:var(--karte-2);padding:1px 7px;border-radius:9px}
+.nv svg{color:var(--akzent)}
+.leiste{position:absolute;left:280px;right:16px;top:12px;height:52px;display:flex;align-items:center;gap:12px;z-index:5}
+.leiste .titel{font-size:20px;font-weight:700;margin-right:auto;padding-left:8px;letter-spacing:-.02em}
+.mseg{display:flex;border-radius:18px;padding:3px;height:36px}
+.mseg div{padding:0 14px;display:flex;align-items:center;border-radius:15px;font-weight:600;font-size:13px;color:var(--text-2)}
+.mseg div.an{background:var(--karte);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+[data-t="nacht"] .mseg div.an{background:#636366}
+.mrund{height:36px;border-radius:18px;padding:0 14px;display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px}
+.inhalt{position:absolute;left:280px;right:16px;top:80px;bottom:0;padding:8px 8px 40px}
+.hinweis{border-radius:18px;padding:14px 18px;display:flex;gap:12px;align-items:center;background:color-mix(in srgb,var(--rot) 12%,var(--karte));margin-bottom:22px}
+.hinweis b{display:block;font-size:15px}
+.hinweis span{color:var(--text-2)}
+.hinweis .mk{margin-left:auto;height:34px;border-radius:17px;padding:0 16px;display:flex;align-items:center;background:var(--akzent-fl);color:#fff;font-weight:600}
+.reihe{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+.kette{background:var(--karte);border-radius:20px;padding:16px;position:relative}
+.kette .nr{font-size:12px;font-weight:700;color:var(--text-3)}
+.kette .lb{font-size:13px;color:var(--text-2);font-weight:600;margin-top:4px}
+.kette .v{font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.02em}
+.kette .u{font-size:13px;color:var(--text-2);margin-top:4px}
+.kette .bal{height:4px;border-radius:2px;margin-top:12px;background:var(--karte-2)}
+.kette .bal i{display:block;height:100%;border-radius:2px}
+.zwei{display:grid;grid-template-columns:1.35fr 1fr;gap:18px}
+.box{background:var(--karte);border-radius:22px;padding:6px 0}
+.box h4{font-size:16px;font-weight:700;padding:12px 18px 8px;display:flex;justify-content:space-between}
+.box h4 small{color:var(--text-2);font-weight:500;font-size:13px}
+.tz{display:flex;align-items:center;gap:14px;padding:12px 18px;position:relative}
+.tz + .tz:before{content:"";position:absolute;top:0;left:18px;right:18px;height:.5px;background:var(--linie)}
+.tz .t{flex:1}
+.tz .t b{display:block;font-size:15px;font-weight:600}
+.tz .t span{color:var(--text-2);font-size:13px}
+.tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:9px}
+.mk2{height:32px;border-radius:16px;padding:0 14px;display:flex;align-items:center;font-weight:600;font-size:13px;background:var(--karte-2);color:var(--akzent)}
+.mk2.voll{background:var(--akzent-fl);color:#fff}
+.balken{display:flex;align-items:flex-end;gap:10px;height:150px;padding:10px 18px 0}
+.balken div{flex:1;border-radius:8px 8px 3px 3px;background:var(--akzent);opacity:.85}
+.balken div.lo{background:var(--karte-2);opacity:1}
+.achse{display:flex;gap:10px;padding:6px 18px 12px;font-size:12px;color:var(--text-2)}
+.achse span{flex:1;text-align:center}
+</style>
+</head>
+<body>
+<div id="w"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const S = q.get("s") || "start", T = q.get("t") || "hell";
+document.documentElement.dataset.t = T;
+
+/* Symbole im Stil von SF Symbols (vereinfacht) */
+const I = {
+  zurueck:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  lupe:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+  mehr:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>',
+  hilfe:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.3a2.8 2.8 0 1 1 3.7 2.6c-.7.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>',
+  chev:'<svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg>',
+  liste:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+  flasche:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M10 2.5h4v4.2c2.2 1 3 2.8 3 5V20a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 20v-8.3c0-2.2.8-4 3-5z"/><path d="M7 13h10"/></svg>',
+  blitz:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2L4.5 13.5h6L9.5 22l9-11.5h-6z"/></svg>',
+  kiste:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"><path d="M12 2.8l8.5 4.6v9.2L12 21.2l-8.5-4.6V7.4z"/><path d="M3.5 7.4L12 12l8.5-4.6M12 12v9.2"/></svg>',
+  lkw:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"><path d="M2.5 6h11v10h-11zM13.5 9.5h4l3.5 3.5v3h-7.5z"/><circle cx="7" cy="17.5" r="1.8" fill="currentColor"/><circle cx="17.5" cy="17.5" r="1.8" fill="currentColor"/></svg>',
+  haus:'<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.6V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-9.2z"/></svg>',
+  uhr:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+  regal:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3.5" y="3" width="17" height="18" rx="2.5"/><path d="M3.5 9.5h17M3.5 15h17"/></svg>',
+  person:'<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.3"/><path d="M3.5 21c.6-4.3 4-6.8 8.5-6.8s7.9 2.5 8.5 6.8z"/></svg>',
+  plus:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 4.5v15M4.5 12h15"/></svg>',
+  haken:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 7"/></svg>',
+  hakenk:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 7"/></svg>',
+  notiz:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  wolke:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/><path d="M3 3l18 18"/></svg>',
+  pfeil:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>',
+  mac_haus:'<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.6V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-9.2z"/></svg>',
+};
+const sb = () => `<div class="sb"><span>21:47</span><span style="display:flex;gap:7px;align-items:center">
+  <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><i></i></span></div>`;
+const tabs = an => `<div class="tabs glas">
+  ${[["heute","Heute",I.haus],["verlauf","Verlauf",I.uhr],["bestand","Bestand",I.regal],["ich","Ich",I.person]]
+    .map(([k,l,s]) => `<div class="tab ${k===an?"an":""}">${s}<span>${l}</span></div>`).join("")}
+</div>`;
+const W = (w,n,s,dots,extra="") => `<div class="wz"><div><div class="w">${w}</div><div class="n">${n}</div><div class="s">${s}</div></div>
+  <div class="dots">${dots}</div><div style="display:grid;place-items:center">${extra}</div></div>`;
+const d = (n,voll) => Array.from({length:n},(_,i)=>`<div class="dot ${i<voll?"voll":""}">${i<voll?I.hakenk:""}</div>`).join("");
+
+const SCREENS = {
+
+/* ── 1 · Start ─────────────────────────────────────────────────────── */
+start: () => `<div class="handy">${sb()}
+ <div class="nav"><div></div><div class="pille glas">${I.hilfe}<span style="width:30px;height:30px;border-radius:50%;background:var(--akzent-fl);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700">AS</span></div></div>
+ <div class="scroll">
+  <div class="kopf" style="padding-top:112px"><div class="ueber">Donnerstag, 24. September</div><div class="gross">Guten Abend,<br>Asad</div></div>
+  <div class="held">
+   <div class="zeit"><span class="punkt"></span>Verbunden · alles gesendet</div>
+   <h2>Tagesfassung steht noch an</h2>
+   <p>Bar, Restaurant, Keller und Lade – ca. 12 Minuten.</p>
+   <div class="knopf">Tagesfassung starten ${I.pfeil}</div>
+   <div class="zahlen"><div><span>Heute geholt</span><b>0 Fl.</b></div><div><span>Sonderentnahmen</span><b>2</b></div><div><span>Offen</span><b style="color:var(--gut)">0</b></div></div>
+  </div>
+  <div class="abschnitt">Service</div>
+  <div class="gruppe">
+   <div class="zeile"><div class="ikon" style="background:#00625E">${I.liste}</div><div class="t"><b>Tagesfassung</b><span>Bar, Restaurant, Keller</span></div><span class="chev">${I.chev}</span></div>
+   <div class="zeile"><div class="ikon" style="background:#3A7CA5">${I.flasche}</div><div class="t"><b>Nachfüllen</b><span>Am Nachmittag Bar auffüllen</span></div><span class="chev">${I.chev}</span></div>
+  </div>
+  <div class="abschnitt">Bestand</div>
+  <div class="gruppe">
+   <div class="zeile"><div class="ikon" style="background:#7A5426">${I.kiste}</div><div class="t"><b>Kellerzählung</b><span>Zuletzt So., 20.09. · Marlene</span></div><span class="chev">${I.chev}</span></div>
+   <div class="zeile"><div class="ikon" style="background:#5A4A6A">${I.lkw}</div><div class="t"><b>Wareneingang</b><span>Lieferung aufnehmen</span></div><span class="chev">${I.chev}</span></div>
+  </div>
+ </div>
+ <div class="aktion-schild glas">Sonderentnahme</div>
+ ${tabs("heute")}
+ <div class="aktion glas">${I.blitz}</div>
+</div>`,
+
+/* ── 2 · Tagesfassung ──────────────────────────────────────────────── */
+fassung: () => `<div class="handy">${sb()}
+ <div class="nav"><div class="rund glas">${I.zurueck}</div><div class="pille glas">${I.lupe}${I.mehr}</div></div>
+ <div class="scroll">
+  <div class="kopf" style="padding-top:112px;margin-bottom:6px"><div class="ueber">Donnerstag, 24.09. · Schritt 2 von 4</div><div class="gross">Restaurant</div></div>
+  <div class="seg glas"><div class="ok">${I.hakenk} Bar</div><div class="an">Restaurant</div><div>Keller</div><div>Lade</div></div>
+  <div class="zahlen" style="border:0;padding-top:10px;margin-top:6px"><div><span>Gezählt</span><b>4 / 9</b></div><div><span>Fehlen oben</span><b style="color:var(--rot)">5 Fl.</b></div><div><span>Schrank</span><b>1 von 4</b></div></div>
+  <div class="sorte">Zweigelt</div>
+  <div class="gruppe" style="border-radius:22px">
+   ${W("Werner Achs","Goldberg","Soll 3",d(3,3),`<div class="haken">${I.haken}</div>`)}
+   ${W("Glatzer","Rubin Carnuntum","Soll 3 · 2 da",d(3,2),`<span class="fehlt">−1</span>`)}
+   <div class="wisch">
+     <div class="hinter"><div style="background:#8E8E93">${I.notiz}Notiz</div><div style="background:var(--gut)">${I.haken}Voll</div></div>
+     ${W("Kollwentz","Leithakalk","Soll 3",d(3,0))}
+   </div>
+   ${W("Glatzer","Dornenvogel","Soll 3",d(3,0))}
+  </div>
+  <div class="sorte">Blaufränkisch</div>
+  <div class="gruppe">${W("Nittnaus","Kalk &amp; Schiefer","Soll 2",d(2,0))}</div>
+ </div>
+ <div class="unten glas"><div class="info"><b>5 Fl. fehlen</b>werden im Keller geholt</div><div class="los">Weiter ${I.pfeil}</div></div>
+</div>`,
+
+/* ── 3 · Kellerzählung ─────────────────────────────────────────────── */
+keller: () => `<div class="handy">${sb()}
+ <div class="nav"><div class="rund glas">${I.zurueck}</div><div class="pille glas">${I.hilfe}${I.mehr}</div></div>
+ <div class="scroll">
+  <div class="kopf" style="padding-top:112px;margin-bottom:12px"><div class="ueber">Linker Raum · Hauptregal</div><div class="gross">Kellerzählung</div></div>
+  <div class="suche glas">${I.lupe}<span>Wein oder Winzer suchen</span></div>
+  <div class="chips"><div class="chip an">Rot <em>3/19</em></div><div class="chip">Rosé <em>0/4</em></div><div class="chip">Natur <em>0/6</em></div><div class="chip">Weiß <em>0/22</em></div><div class="chip">Cuvée</div></div>
+  <div class="sorte">Zweigelt</div>
+  <div class="kz"><div class="oben"><div><div class="w" style="font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--text-2)">WERNER ACHS</div><div style="font-weight:600;font-size:17px">Goldberg</div><div style="color:var(--text-2);font-size:15px">2024 · Gols</div></div><div class="sum">13<small>Flaschen</small></div></div>
+   <div class="stepper"><div class="st"><button>−</button><div class="m"><b>2</b><span>Reihen ×6</span></div><button>+</button></div><div class="st"><button>−</button><div class="m"><b>1</b><span>Einzeln</span></div><button>+</button></div></div></div>
+  <div class="kz"><div class="oben"><div><div class="w" style="font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--text-2)">GLATZER</div><div style="font-weight:600;font-size:17px">Rubin Carnuntum</div><div style="color:var(--text-2);font-size:15px">2023 · Göttlesbrunn</div></div><div class="sum" style="color:var(--text-3)">–<small>noch offen</small></div></div>
+   <div class="stepper"><div class="st"><button>−</button><div class="m"><b>0</b><span>Reihen ×6</span></div><button>+</button></div><div class="st"><button>−</button><div class="m"><b>0</b><span>Einzeln</span></div><button>+</button></div></div></div>
+  <div class="kz"><div class="oben"><div><div class="w" style="font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--text-2)">KOLLWENTZ</div><div style="font-weight:600;font-size:17px">Leithakalk</div></div></div></div>
+ </div>
+ <div class="toast glas"><span style="color:var(--gut)">${I.haken}</span><b>Goldberg: 13 Fl. gemerkt</b><span class="rk">Rückgängig</span></div>
+ <div class="unten glas"><div class="info"><b>3 von 19 gezählt</b>Rot · Linker Raum</div><div class="los">Weiter ${I.pfeil}</div></div>
+</div>`,
+
+/* ── 4 · Wareneingang mit Blatt ────────────────────────────────────── */
+ware: () => `<div class="handy">${sb()}
+ <div class="nav"><div class="rund glas">${I.zurueck}</div><div class="pille glas">${I.hilfe}${I.mehr}</div></div>
+ <div class="scroll">
+  <div class="kopf" style="padding-top:112px"><div class="ueber">Donnerstag, 24.09.</div><div class="gross">Wareneingang</div></div>
+  <div class="leer"><div class="kreis">${I.lkw}</div><b>Noch nichts aufgenommen</b>Lieferschein zur Hand?<br>Tippe auf + und such den Artikel.</div>
+ </div>
+ <div class="dimm"></div>
+ <div class="blatt glas" style="background:var(--karte);-webkit-backdrop-filter:none;backdrop-filter:none">
+  <div class="griff"></div>
+  <div class="kb"><div class="rund" style="background:var(--karte-2);width:40px;height:40px">✕</div><h3>Position hinzufügen</h3><div class="rund" style="background:var(--akzent-fl);color:#fff;width:40px;height:40px">${I.haken}</div></div>
+  <div class="suche">${I.lupe}<span style="color:var(--text)">gasteiner</span></div>
+  <div class="abschnitt" style="font-size:15px;color:var(--text-2);margin:18px 4px 8px;font-weight:600">Treffer</div>
+  <div class="gruppe ohne-ikon" style="background:var(--karte-2)">
+   <div class="zeile" style="min-height:58px"><div class="t"><b>Gasteiner still 0,75</b><span>Kiste à 12 · zuletzt 18.09.</span></div><span style="color:var(--akzent)">${I.haken}</span></div>
+   <div class="zeile" style="min-height:58px"><div class="t"><b>Gasteiner prickelnd 0,25</b><span>Kiste à 24</span></div></div>
+  </div>
+  <div class="abschnitt" style="font-size:15px;color:var(--text-2);margin:18px 4px 8px;font-weight:600">Menge</div>
+  <div class="stepper" style="margin-top:0"><div class="st" style="height:56px"><button>−</button><div class="m"><b>3</b><span>Kisten</span></div><button>+</button></div><div class="st" style="height:56px"><button>−</button><div class="m"><b>0</b><span>Einzeln</span></div><button>+</button></div></div>
+  <div class="knopf" style="margin-top:18px">36 Flaschen hinzufügen</div>
+ </div>
+</div>`,
+
+/* ── 5 · Verlauf (neu) ─────────────────────────────────────────────── */
+verlauf: () => `<div class="handy">${sb()}
+ <div class="nav"><div></div><div class="pille glas">${I.lupe}${I.mehr}</div></div>
+ <div class="scroll">
+  <div class="kopf" style="padding-top:112px;margin-bottom:8px"><div class="gross">Verlauf</div></div>
+  <div class="zahlen" style="border:0;margin-top:0"><div><span>Meine Vorgänge</span><b>14</b></div><div><span>Noch nicht gesendet</span><b style="color:var(--warn)">1</b></div></div>
+  <div class="abschnitt">Heute</div>
+  <div class="gruppe">
+   <div class="zeile"><div class="ikon" style="background:#E0B200">${I.blitz}</div><div class="t"><b>Sonderentnahme</b><span>2 Fl. Prosecco · Küche</span><span class="status wart">${I.wolke.replace('width="16"','width="11"').replace('height="16"','height="11"').replace('<svg','<svg style="display:inline;vertical-align:-1px"')} wartet auf Netz</span></div><div class="wert">2 Fl.<small>21:12</small></div></div>
+  </div>
+  <div class="abschnitt">Gestern</div>
+  <div class="gruppe">
+   <div class="zeile"><div class="ikon" style="background:#00625E">${I.liste}</div><div class="t"><b>Tagesfassung</b><span>von Asad</span><span class="status ok">gesendet</span></div><div class="wert">18 Fl.<small>23:04</small></div></div>
+   <div class="zeile"><div class="ikon" style="background:#3A7CA5">${I.flasche}</div><div class="t"><b>Nachfüllen Bar</b><span>von Lena</span></div><div class="wert">9 Fl.<small>16:30</small></div></div>
+  </div>
+  <div class="abschnitt">Dienstag, 22.09.</div>
+  <div class="gruppe">
+   <div class="zeile"><div class="ikon" style="background:#5A4A6A">${I.lkw}</div><div class="t"><b>Wareneingang</b><span>Getränke Kaiser · 14 Pos.</span></div><div class="wert">212 Fl.<small>10:15</small></div></div>
+  </div>
+ </div>
+ <div class="aktion-schild glas" style="display:none"></div>
+ ${tabs("verlauf")}
+ <div class="aktion glas">${I.blitz}</div>
+</div>`,
+
+/* ── 6 · Backoffice ────────────────────────────────────────────────── */
+leitung: () => `<div class="mac">
+ <div class="seite glas">
+  <div class="ampel"><i></i><i></i><i></i></div>
+  <div style="padding:0 10px 8px"><div style="font-family:var(--font-marke);font-size:22px;font-weight:700">Haus Hirt</div><div style="color:var(--text-2);font-size:12px">Fassungstool · Leitung</div></div>
+  <h6>Täglich</h6>
+  <div class="nv an">${I.mac_haus}Übersicht</div><div class="nv">Verkauf ↔ Fassung</div><div class="nv">Z-Bericht</div>
+  <h6>Bestand</h6>
+  <div class="nv">Kellerbestand</div><div class="nv">Nachbestellen<em>4</em></div><div class="nv">Getränke</div><div class="nv">Zählliste<em>4</em></div>
+  <h6>Nachschlagen</h6>
+  <div class="nv">Eingänge<em>3</em></div><div class="nv">Speicher<em>3</em></div><div class="nv">Zuordnung</div><div class="nv">Rezepturen</div>
+  <h6>Verwaltung</h6>
+  <div class="nv">Mitarbeiter</div><div class="nv">Einstellungen</div>
+ </div>
+ <div class="leiste">
+  <div class="titel">Übersicht <span style="color:var(--text-2);font-weight:500;font-size:15px">· 16.–22. September</span></div>
+  <div class="mseg glas"><div>1 Tag</div><div class="an">7 Tage</div><div>14 Tage</div><div>30 Tage</div></div>
+  <div class="mrund glas"><span class="punkt" style="width:7px;height:7px;box-shadow:none"></span>gerade geholt</div>
+  <div class="mrund glas">${I.lupe.replace(/22/g,"16")}</div>
+  <div class="mrund glas" style="color:var(--akzent)">Zur App ›</div>
+ </div>
+ <div class="inhalt">
+  <div class="hinweis"><div><b>Für diesen Zeitraum ist kein Verkauf bekannt.</b><span>Ohne Z-Bericht ist jede Entnahme nur eine Entnahme – noch kein Abgleich.</span></div><div class="mk">Z-Bericht einlesen</div></div>
+  <div class="reihe">
+   ${[["1","Fassung","da","Lena · 8 Fl. Wein","var(--gut)",100],["2","Z-Bericht","fehlt","kein Bericht im Zeitraum","var(--rot)",0],["3","Zuordnung","wartet","braucht Schritt 2","var(--text-3)",0],["4","Abgleich","wartet","braucht Schritt 2","var(--text-3)",0],["5","Bestand","4 unter null","Zählung vom 20.09. überholt","var(--rot)",60]]
+    .map(([n,l,v,u,c,p])=>`<div class="kette"><div class="nr">${n}</div><div class="lb">${l}</div><div class="v" style="color:${c==="var(--text-3)"?"var(--text-2)":c}">${v}</div><div class="u">${u}</div><div class="bal"><i style="width:${p}%;background:${c}"></i></div></div>`).join("")}
+  </div>
+  <div class="zwei">
+   <div class="box"><h4>Jetzt zu tun <small>2 Punkte</small></h4>
+    <div class="tz"><span class="tag" style="color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)">fehlt</span><div class="t"><b>7 Z-Berichte nachreichen</b><span>Für diese Tage ist nur die Entnahme bekannt.</span></div><div class="mk2 voll">Einlesen</div></div>
+    <div class="tz"><span class="tag" style="color:var(--rot);background:color-mix(in srgb,var(--rot) 14%,transparent)">prüfen</span><div class="t"><b>4 Positionen stehen unter null</b><span>Die Zählliste nennt genau diese.</span></div><div class="mk2">Zählliste</div></div>
+    <div class="tz"><span class="tag" style="color:var(--akzent);background:var(--akzent-tint)">heute</span><div class="t"><b>Tagesfassung fehlt noch</b><span>Do., 24.09. · läuft noch, nicht im Abgleich</span></div><div class="mk2">Ansehen</div></div>
+   </div>
+   <div class="box"><h4>Entnahme je Tag <small>Flaschen</small></h4>
+    <div class="balken">${[40,62,35,80,55,20,70].map((h,i)=>`<div class="${i===5?"lo":""}" style="height:${h}%"></div>`).join("")}</div>
+    <div class="achse">${["Mi","Do","Fr","Sa","So","Mo","Di"].map(x=>`<span>${x}</span>`).join("")}</div>
+   </div>
+  </div>
+  <div class="box" style="margin-top:18px"><h4>Abweichungen nach Euro <small>Verkauf gegen Fassung · 16.–22.09.</small></h4>
+   ${[["Moric Reserve 2021","Rotwein · 0,75","−2 Fl.","−178 €","var(--rot)"],["Grüner Veltliner Ried Lamm","Weißwein · Glas","−5 Gl.","−47 €","var(--rot)"],["Gasteiner still 0,75","Wasser","+6 Fl.","+21 €","var(--gut)"]]
+     .map(([n,u,m,e,c])=>`<div class="tz"><div class="t"><b>${n}</b><span>${u}</span></div><div style="width:90px;text-align:right;color:var(--text-2);font-weight:600">${m}</div><div style="width:90px;text-align:right;font-weight:700;color:${c}">${e}</div><div class="mk2">Beleg ›</div></div>`).join("")}
+  </div>
+ </div>
+</div>`
+};
+document.getElementById("w").innerHTML = SCREENS[S]();
+</script>
+</body>
+</html>

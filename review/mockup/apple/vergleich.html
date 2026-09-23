@@ -1,0 +1,14 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:"Inter";src:url("fonts/inter-700.woff2");font-weight:700}
+@font-face{font-family:"Inter";src:url("fonts/inter-500.woff2");font-weight:500}
+body{margin:0;background:#E8E5DE;font-family:Inter,sans-serif;color:#1C2220}
+.w{display:flex;gap:28px;padding:28px;align-items:flex-start}
+.s{display:flex;flex-direction:column;gap:10px}
+.s b{font-size:20px}.s span{font-size:14px;color:#5F6866;font-weight:500}
+img{border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:block}
+</style></head><body><div class="w" id="w"></div><script>
+const q=new URLSearchParams(location.search),s=q.get("s"),mac=s==="leitung";
+const w=mac?620:300;
+document.getElementById("w").innerHTML=[["ist-"+s,"Heute","so sieht es jetzt aus"],["soll-"+s+"-hell","Vorschlag · Tag","hell, Haus-Hirt-Cream"],["soll-"+s+"-nacht","Vorschlag · Nacht","dunkel, schont die Augen im Keller"]]
+ .map(([f,t,u])=>`<div class="s"><b>${t}</b><span>${u}</span><img src="bilder/${f}.png" width="${w}" style="${mac?'border-radius:12px;':''}"></div>`).join("");
+</script></body></html>

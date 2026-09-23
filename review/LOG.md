@@ -4819,3 +4819,12 @@ Grösse dastehen; der grosse Gasteiner ist dazugekommen.
 
 **STATUS:** FERTIG
 
+
+### Runde 24 – ui-designer (Nachtschicht · Entwurf Apple-Stil)
+**Kritik am Vorgänger:** Die Oberfläche ist geprüft und robust (Messung `review/screens/ist-nacht/` alles grün), wirkt aber wie ein Formular: dunkler Balkenkopf mit „Menü“-Kasten, fünf gleich große Kacheln ohne Rangfolge auf der Startseite, sechs Einzelknöpfe je Weinzeile in der Kellerzählung, Kürzelkästen RT/RS am Rand, kein Dunkelmodus (`prefers-color-scheme` kommt in keiner Datei vor). ↩️ nur als Entwurf beantwortet, kein App-Code geändert.
+**Umgesetzt:** Ist-Aufnahme aller Schritte · Entwurf in 6 Ansichten, je hell und nacht (`review/mockup/apple/`) · Übergabe mit Vorher/Nachher, Etappenplan und 3 Fragen (`review/DESIGN-APPLE.md`).
+**Geprüft:** `LAUF=ist-nacht node tests/ui-mass.cjs` alles grün (Stand vor dem Entwurf). App-Code unverändert, `npm test` nicht betroffen.
+**Für die Nächsten:** Vor jeder Etappe die Antworten auf die 3 Fragen in `review/DESIGN-APPLE.md` §7 abwarten. Glas nur auf Leisten/Knöpfen, nie auf Listen. Zählpunkte in fester Spalte (INPUT-TEAM F3) sind im Entwurf eingehalten.
+**Phase/Thema:** Gestaltung / Apple-Stil
+**Backlog:** mittel – Dunkelmodus · mittel – Verlauf-Ansicht · niedrig – Rückgängig-Hinweis und Wischgesten
+**STATUS:** VERBESSERUNGEN
