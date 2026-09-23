@@ -16,7 +16,7 @@ ich nicht.)
 ### 2 · Einmal „Alle Vorschläge übernehmen" drücken
 
 Danach ist alles zugeordnet — auch rückwirkend für Z 40 und Z 41.
-Von 104 Kassennamen der drei Berichte bleiben **3 offen** statt 58.
+Von 104 Kassennamen der drei Berichte bleibt **1 offen** statt 58.
 
 ---
 
@@ -61,21 +61,29 @@ stimmt es von selbst.
 
 ---
 
-## Was ich nicht entscheiden konnte (3 Namen)
+## Gasteiner — erledigt
 
-Alle drei hängen am selben Punkt: **welche Gasteiner-Flaschen gibt es
-wirklich?** Im Keller stehen drei Artikel (1 l, 0,25 l, still), die Kasse
-kennt fünf Grössen.
+Du hast gesagt: es gibt still, sparkling 0,75 und sparkling 0,2 (die
+kleine). Damit ist alles eingetragen:
 
-| Kassenname | Stück | Frage |
-|---|---|---|
-| Gasteiner sparkling 0,20 l | 4 | die 0,25-l-Flasche? |
-| Gasteiner Quellwasser 0,5 l | 1 | still oder prickelnd? |
-| Apfelsaft 0,25 l | 1 | im Keller gibt es keinen Apfelsaft — fehlt er? |
+| Kassenname | geht auf |
+|---|---|
+| Gasteiner still 0,75 l | Gasteiner still |
+| Gasteiner sparkling 0,75 l | Gasteiner 1 l (die grosse) |
+| Gasteiner sparkling 0,20 l | Gasteiner 0,25 l (die kleine) |
+| Gasteiner Quellwasser 0,5 l und 1 l | Ignorieren — keine der drei |
 
-Dazu unverändert: **Gasteiner sparkling 0,75 l** steht auf dem Artikel
-„Gasteiner 1 l". Wenn die 0,75er eine eigene Flasche ist, fehlt sie im
-Stamm.
+**Zum Nachsehen, wenn du mal Zeit hast:** im Keller heissen die zwei
+prickelnden „Gasteiner 1 l" und „Gasteiner 0,25 l" — also mit den
+falschen Grössen. Gerechnet wird richtig, nur die Etiketten im Tool
+stimmen nicht. Sag Bescheid, dann benenne ich sie um.
+
+---
+
+## Was noch offen ist (1 Name)
+
+**Apfelsaft 0,25 l**, ein Stück in Z 42. Im Keller gibt es keinen
+Apfelsaft. Soll ich ihn als Artikel anlegen, oder dauerhaft ignorieren?
 
 ---
 

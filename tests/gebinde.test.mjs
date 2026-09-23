@@ -198,9 +198,15 @@ describe("abgleich(): unbestätigte Größen sind keine Abweichung", () => {
        Seit Runde 22 gilt dasselbe für die Vorabliste: zwölf Namen mehr,
        die vorher unter „nicht zugeordnet" liefen und jetzt unter
        „zugeordnet, Größe fehlt" stehen. Das ist der Fortschritt — die
-       Größe bestätigt weiterhin nur ein Mensch, der die Flasche kennt. */
+       Größe bestätigt weiterhin nur ein Mensch, der die Flasche kennt.
+
+       Runde 23 bringt den grossen Gasteiner dazu: Casimir hat am
+       23.09.2026 aufgezählt, welche drei Flaschen es im Haus gibt.
+       Die Zuordnung steht damit, die Grösse weiterhin nicht — im Stamm
+       heisst der Artikel 1 l, die Kasse schreibt 0,75. */
     assert.deepEqual(namen, ["Amaro Averna Siciliano 2 cl", "BF Gesellmann Gols 1/8 l",
       "CH Gesellmann 1/8 l", "Cola Zero 0,35l", "GV Leindl Langenlois 1/8 l",
+      "Gasteiner sparkling 0,75l",
       "Hefeweizen hell 0,5l", "MU Muster, Gelber Muskateller Styria 0,75 l",
       "Mango gespritzt 0,25l 0,25l", "NW Heinrich, Naked Red 1/8",
       "Now-Limo Orange 0,35l", "Prosecco, Serena 0,1l", "Prosecco, Serena 0,75l",

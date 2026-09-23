@@ -550,13 +550,12 @@ mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".
 
 ## Neu aus Runde 23 (23.09.2026)
 
-**Niedrig · Die Gasteiner-Familie im Stamm klären.**
-Die Kasse kennt fünf Grössen (Quellwasser 0,5 l und 1 l, sparkling
-0,20 l und 0,75 l, still 0,75 l), der Keller drei Artikel (1 l, 0,25 l,
-still). Heute steht „sparkling 0,75 l" auf „Gasteiner 1 l" und
-„Quellwasser 1 l" auf Ignorieren — beides von Casimir bestätigt, beides
-schwer zu deuten. Solange das offen ist, bleiben drei Kassennamen ohne
-Zuordnung. Braucht eine Antwort von Casimir, keine Runde.
+**Niedrig · Zwei Gasteiner-Artikel tragen die falsche Grösse im Namen.**
+Casimir hat die Familie am 23.09.2026 geklärt (still, sparkling 0,75,
+sparkling 0,2) und alle fünf Kassennamen sind zugeordnet. Im Stamm
+heissen die beiden prickelnden aber „Gasteiner 1 l" und
+„Gasteiner 0,25 l". Gerechnet wird richtig, nur das Etikett im Tool
+stimmt nicht. Umbenennen ist eine reine Stammdatenänderung.
 
 **Niedrig · Apfelsaft fehlt im Stamm.**
 Ein Stück in Z 42, Warengruppe „AFG · Säfte | Gespritzt". Im Keller liegt

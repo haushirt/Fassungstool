@@ -7,15 +7,15 @@ Z 40 und Z 41; Z 42 und Z 43 fehlen und müssen eingelesen werden.
 
 ## Was sich ändert
 
-Die geprüfte Vorabliste wächst von **36 auf 100 ganze Kassennamen**.
-Über die drei Berichte zusammen (104 verschiedene Namen) bleiben damit
-**3 offen** statt 58.
+Die geprüfte Vorabliste wächst von **36 auf 104 ganze Kassennamen**.
+Über die drei Berichte zusammen (104 verschiedene Namen) bleibt damit
+**1 offen** statt 58.
 
 | | vorher | nachher |
 |---|---|---|
-| Namen in der Vorabliste | 36 | 100 |
-| offen in Z 41–43 | 58 | 3 |
-| offen im Referenzbericht 37 | 7 | 2 |
+| Namen in der Vorabliste | 36 | 104 |
+| offen in Z 41–43 | 58 | 1 |
+| offen im Referenzbericht 37 | 7 | 0 |
 
 ### 1 · Fassbier ist keine Vermutung mehr
 
@@ -49,13 +49,24 @@ eine Löschung ist: wer Rezepte will, entfernt den Block.
 * **Kein Keller:** ganze Gänge (Dinner Menü, Suppe, Salatbuffet), Tee und
   Milchgetränke aus der Maschine, zwei Schnäpse, hausgemachte Limonaden.
 
+### 4 · Die Gasteiner-Familie ist geklärt
+
+Casimir hat am 23.09.2026 aufgezählt, welche Flaschen es im Haus gibt:
+**still, sparkling gross (0,75) und sparkling klein (0,2)** — mehr nicht.
+
+* `Gasteiner sparkling 0,75l` → **Gasteiner 1 l** (der Artikelname im
+  Stamm trägt die falsche Grösse; die Zuordnung steht live seit Wochen
+  bestätigt und ist richtig)
+* `Gasteiner sparkling 0,20l` → **Gasteiner 0,25 l**, die kleine
+* `Gasteiner still 0,75l` → **Gasteiner still**
+* `Gasteiner Quellwasser 0,5l` und `1l` → **kein Keller**, weil
+  Quellwasser keine der drei Flaschen ist
+
 ## Was offen bleibt
 
-Drei Namen, alle aus derselben Ecke:
-
-* **Gasteiner sparkling 0,20 l** — im Keller stehen 1 l, 0,25 l, still.
-* **Gasteiner Quellwasser 0,5 l** — welcher der drei?
-* **Apfelsaft 0,25 l** — im Keller gibt es keinen Apfelsaft.
+Ein Name: **Apfelsaft 0,25 l** (1 Stück in Z 42). Im Keller gibt es
+keinen Apfelsaft — entweder fehlt der Artikel im Stamm, oder der Name
+gehört dauerhaft auf Ignorieren.
 
 ## Geprüft
 

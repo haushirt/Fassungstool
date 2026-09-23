@@ -10,7 +10,7 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   den Merge. Alle Runden bis einschliesslich 22 sind auf `main`.
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
-- `sw.js` steht mit Runde 23 auf **v72**.
+- `sw.js` steht mit Runde 23 auf **v73**.
 - `npm test`: **581 von 581 grün** (Stand 23.09.2026, Laufzeit ca. 4 s).
 - Oberfläche von Hand, **nicht** Teil von `npm test` (Regel 8), braucht
   Playwright: `node tests/ui-runde22.cjs` 31/31 ·
@@ -169,7 +169,7 @@ Namen bleiben offen und brauchen ein Rezept (`review/BACKLOG.md`, hoch).
 ## Runde 23 (23.09.2026) — die Kassennamen der Berichte Z 41 bis Z 43
 
 Runde im Log unter „Runde 23". PR-Beschreibung in `review/ERGEBNIS.md`.
-`sw.js` steht auf **v72**. `npm test`: **581 von 581** grün. Browser:
+`sw.js` steht auf **v73**. `npm test`: **581 von 581** grün. Browser:
 `ui-runde22.cjs` 31/31, `ui-leitung-echt.cjs` 44/44, `ui-runde21.cjs`
 19/19, `ui-runde18.cjs` 54/54. **Keine Migration**, Live-D1 nur gelesen.
 
@@ -177,9 +177,9 @@ Anlass waren drei neue Z-Berichte. Im Backoffice lagen **Z 40 und Z 41**;
 **Z 42 und Z 43 fehlen** und müssen von Casimir eingelesen werden — in
 die Datenbank schreiben darf kein Agent (Regel 2).
 
-1. **Die Vorabliste wächst von 36 auf 100 ganze Kassennamen.** Von den
-   104 verschiedenen Namen der drei Berichte bleiben **3 offen** statt
-   58; im Referenzbericht 37 sind es 2 statt 7.
+1. **Die Vorabliste wächst von 36 auf 104 ganze Kassennamen.** Von den
+   104 verschiedenen Namen der drei Berichte bleibt **1 offen** statt
+   58; im Referenzbericht 37 ist keiner mehr offen.
 2. **Fassbier ist an den Daten entschieden, nicht geraten.** Raschhofer
    Pils und Radler gehen in allen drei Berichten Stück für Stück in der
    Warengruppe „Bier · vom Fass" auf (12 · 7 · 11, ohne Rest), und im
@@ -209,9 +209,13 @@ die Datenbank schreiben darf kein Agent (Regel 2).
 - **Casimirs zwei Handgriffe** (stehen in `review/MORGENBRIEF.md`):
   Z 42 und Z 43 einlesen, dann einmal „Alle Vorschläge übernehmen".
   Der Klick zieht Z 40 und Z 41 rückwirkend mit.
-- **Drei Namen bleiben offen**, alle aus derselben Ecke: Gasteiner
-  sparkling 0,20 l, Gasteiner Quellwasser 0,5 l, Apfelsaft 0,25 l. Im
-  Keller stehen drei Gasteiner-Artikel, die Kasse kennt fünf Grössen.
+- **Ein Name bleibt offen:** Apfelsaft 0,25 l (1 Stück). Im Keller gibt
+  es keinen Apfelsaft — Artikel anlegen oder dauerhaft ignorieren.
+- **Die Gasteiner-Familie ist geklärt** (Casimir, 23.09.): es gibt
+  still, sparkling gross (0,75) und sparkling klein (0,2). Quellwasser
+  ist keine davon. Im Stamm heisst die grosse „Gasteiner 1 l" und die
+  kleine „Gasteiner 0,25 l" — die Namen tragen die falschen Grössen,
+  die Zuordnung stimmt trotzdem.
 - **Rezepte statt Ignorieren?** Die Frage steht weiter offen und wird
   durch die 31 neuen Ignorieren-Namen grösser, nicht kleiner.
 - **Casimirs Aufgabe für die Automation:** die Weiterleitung von

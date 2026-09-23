@@ -4807,4 +4807,15 @@ hat hier ein Werkzeug, das nicht rät.
 / 0,5 l / 0,75 l / 1 l stehen in der Kasse, im Keller drei Artikel.
 (niedrig) Apfelsaft fehlt im Stamm.
 
+**Nachtrag (23.09.2026, nach Casimirs Antwort):** Die Gasteiner-Familie
+ist geklärt — es gibt still, sparkling gross (0,75) und sparkling klein
+(0,2), Quellwasser ist keine davon. Damit sind vier weitere Namen
+eingetragen; offen bleibt allein „Apfelsaft 0,25 l". Der Referenzbericht
+37 hat keine offene Zeile mehr. Zwei Stammdaten-Etiketten tragen die
+falsche Grösse („Gasteiner 1 l" ist die 0,75er, „Gasteiner 0,25 l" die
+0,2er) — gerechnet wird richtig, im Backlog vermerkt. `sw.js` auf v73.
+`tests/gebinde.test.mjs:188` zählt auf, welche Namen ohne bestätigte
+Grösse dastehen; der grosse Gasteiner ist dazugekommen.
+
 **STATUS:** FERTIG
+

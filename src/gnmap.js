@@ -235,10 +235,22 @@ const VORAB_GETRAENK = {
   /* „Almdudler" — wörtlich, der einzige im Stamm.
      Warengruppe: AFG · Softdrinks. */
   "Almdudler 0,35l": "almd",
-  /* „Gasteiner still" — wörtlich der einzige stille Gasteiner.
-     (Die prickelnden Gasteiner-Grössen sind damit NICHT geklärt; sie
-     stehen weiter offen, siehe `review/MORGENBRIEF.md`.) */
+  /* Die Gasteiner-Familie, am 23.09.2026 von Casimir geklärt: im Haus
+     gibt es genau drei Flaschen — still, sparkling gross (0,75) und
+     sparkling klein (0,2). Alles, was die Kasse sonst noch Gasteiner
+     nennt, ist keine davon.
+
+     „Gasteiner still" — wörtlich. */
   "Gasteiner still 0,75l": "gastill",
+  /* Die grosse prickelnde. Im Keller heisst sie „Gasteiner 1 l"; auf
+     diesen Artikel steht der Name seit Wochen bestätigt, und Casimir
+     hat ihn am 23.09. als die 0,75er bezeichnet. Der Artikelname im
+     Stamm trägt also die falsche Grösse — die Zuordnung stimmt. */
+  "Gasteiner sparkling 0,75l": "gasteiner",
+  /* Die kleine prickelnde — im Keller „Gasteiner 0,25 l". Auch hier
+     weicht die Grösse im Namen ab (0,2 gegen 0,25); es ist die einzige
+     kleine Flasche im Haus. */
+  "Gasteiner sparkling 0,20l": "gastklein",
   /* „Fentimans Ginger Beer" — wörtlich, Lade 4 · Mischgetränke. Im
      Bericht vom 22.09. die einzige Zeile der Warengruppe AFG · Bar Mixer. */
   "Fentimans Ginger Beer 1 Glas": "gingerbeer",
@@ -296,7 +308,12 @@ const VORAB_KEIN_KELLER = [
      bestätigt. Diese beiden Namen sind dieselbe Sache unter anderem
      Etikett und folgen seiner Entscheidung. */
   "Hausgemachte Limonade 1 Glas", "Hauslimo 0,25l 0,25l",
-  "Hauslimo 0,5l 0,5l", "Holundersoda 0,5l 0,5l"
+  "Hauslimo 0,5l 0,5l", "Holundersoda 0,5l 0,5l",
+  /* Gasteiner Quellwasser. Im Haus gibt es drei Gasteiner-Flaschen
+     (still, sparkling gross, sparkling klein) — Quellwasser ist keine
+     davon. Die 1-Liter-Zeile steht live schon von Hand auf Ignorieren;
+     Casimir hat die Familie am 23.09.2026 abschliessend aufgezählt. */
+  "Gasteiner Quellwasser 0,5l", "Gasteiner Quellwasser 1l"
 ];
 
 /* Mischgetränke: Cocktails, Mocktails, Spritz, Sours, Gin & Tonic, Mules.
