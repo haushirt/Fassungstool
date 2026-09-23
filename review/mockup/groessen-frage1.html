@@ -1,0 +1,1005 @@
+<!doctype html><html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mockup · Artikelgrößen und Frage 1</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   ACHTUNG · geteilte Gestaltungsschicht
+   Dieser Block steht wortgleich in index.html und leitung.html.
+   Wird hier etwas geändert, muss es in der anderen Datei genauso
+   geändert werden — sonst laufen die beiden Oberflächen auseinander.
+   Stand: v12 · 15.09.2026
+   ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   Fassungstool · tokens.css
+   Haus Hirt, Bad Gastein
+
+   Eine Quelle für beide Oberflächen: index.html (Fassung, Finger) und
+   leitung.html (Backoffice, Maus). Wer hier etwas ändert, ändert es an
+   beiden Stellen — das ist der ganze Zweck der Datei.
+
+   NICHT als Datei einbinden. tokens.css gab es kurz als eigene Datei;
+   ohne Bauschritt muss sie von Hand mitgeliefert werden, und fehlt sie,
+   steht die Seite nackt da. Der Block gehört deshalb in jede Seite
+   hinein — wortgleich, siehe Kasten oben.
+
+   Dichte: leitung.html setzt am <html> data-dichte="maus".
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Schriften ──────────────────────────────────────────────────────
+   Barlow steht für Interstate, Cormorant Garamond für Mrs Eaves.
+   Die Dateien liegen unter /fonts/. Fehlen sie, greift der Systemstack
+   und nichts bricht — es sieht nur aus wie vorher.
+   WICHTIG: die vier Dateien müssen in die Cache-Liste des Service
+   Workers, sonst ist die App offline ohne Schrift.                     */
+@font-face{font-family:"Barlow";src:url("/fonts/barlow-500.woff2") format("woff2");
+  font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Barlow";src:url("/fonts/barlow-600.woff2") format("woff2");
+  font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Barlow";src:url("/fonts/barlow-700.woff2") format("woff2");
+  font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Cormorant Garamond";src:url("/fonts/cormorant-600.woff2") format("woff2");
+  font-weight:600;font-style:normal;font-display:swap}
+
+:root{
+  --marke:#462500;   /* Hauszeichen, Dunkelbraun */
+  /* ── Flächen und Rahmen ── Haus-Hirt-Cream als Grund, Weiß als Inhalt */
+  --bg:#ECE9E2;
+  --surface:#FFFFFF;
+  --surface-2:#F4F2EC;
+  --surface-3:#EFEDE6;
+  --surface-4:#E5E2D9;
+  --border:#DDD9D0;
+  --border-strong:#CBC6BA;
+  --border-heavy:#B5AFA1;
+
+  /* ── Text ── */
+  --fg:#1C2220;
+  --fg-secondary:#4E5654;
+  --fg-muted:#5F6866;
+  --fg-subtle:#5F6866;
+
+  /* ── Text auf dunklen Leisten ── */
+  --fg-on-dark:#FFFFFF;
+  --fg-on-dark-2:#BFD0CE;
+  --fg-on-dark-3:#9DB2AF;
+  --surface-on-dark:rgba(255,255,255,.12);
+  --surface-on-dark-2:rgba(255,255,255,.07);
+  --border-on-dark:rgba(255,255,255,.16);
+
+  /* ── Marke, Status ── */
+  --accent:#004947;           /* Haus-Hirt-Teal */
+  --accent-dunkel:#00605D;    /* gedrückter Zustand */
+  --accent-tint:#E4EDEC;
+  --accent-ring:rgba(0,73,71,.10);
+  --danger:#B4471F;  --danger-bg:#FBEDE6;  --danger-fg:#7A3A12;
+  --danger-border:#E7C3B2;  --danger-surface:#FDF9F6;
+  --danger-ring:rgba(180,71,31,.10);
+  --success:#3E7A3E;  --success-bg:#EFF5EE;  --success-fg:#2F5E2F;
+  --success-border:#CFE0CC;  --success-tint:#DCEBD8;  --success-on-dark:#8FBF8F;
+  --warn:#E0B200;  --warn-bg:#FDF3D0;  --warn-fg:#6B4E00;  --warn-border:#E6D6B4;
+  --info:#004947;  --info-bg:#E4EDEC;  --info-border:#C5D8D6;
+  --diff-minus:#3A5266;       /* Richtung, nicht Hinweis */
+
+  /* Zielorte im Holen-Schritt */
+  --tag-bar-bg:#F3E7D9;  --tag-bar-fg:#7A5426;
+  --tag-back-bg:#EDE7F0; --tag-back-fg:#5A4A6A;
+
+  /* ── Raum, 4px-Basis ── */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-7:32px; --space-8:40px;
+
+  /* ── Radien ── */
+  --radius-xs:2px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+  --radius-pill:999px; --radius-ctl:8px;
+  --track-caps:.08em;
+
+  /* ── Typografie ── */
+  --font:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  /* Im Keller wird nichts unter 15px gelesen — Kunstlicht, kalte Finger,
+     Flasche in der anderen Hand. Die beiden kleinen Grade sind deshalb
+     für den FINGER auf 15px gehoben; die Rangfolge macht dort Gewicht,
+     Farbe und Laufweite, nicht mehr die Größe. Am Schreibtisch
+     (data-dichte="maus") gelten weiter 11/13px — dort zählt Dichte, und
+     die Leitung sitzt vor einem MacBook, nicht im Keller. */
+  --text-xs:15px; --text-sm:15px; --text-md:15px; --text-base:16px;
+  --text-lg:19px; --text-display:28px;
+  --leading-tight:1.25; --leading-normal:1.45;
+  --weight-regular:400; --weight-medium:600; --weight-bold:700;
+
+  /* ── Bedienelemente · Finger ── */
+  --tap-min:44px; --control-h-sm:36px; --control-h:44px; --control-h-lg:52px;
+
+  /* ── Fokus und Bewegung ── */
+  --ring:#004947; --ring-width:2px; --ring-offset:2px;
+  --dur-fast:120ms; --dur:180ms; --ease:cubic-bezier(.2,0,0,1);
+
+  /* ── Schichten ── */
+  --z-rail:35; --z-top:40; --z-overlay:80; --z-toast:90;
+  --shadow-overlay:0 4px 16px rgba(28,34,32,.25);
+
+  /* ── Layout ── */
+  --foot:0px; --rail:36px; --maxw:720px; --topH:92px;
+
+  /* ── Getränke: Trefferflächen skalieren mit der Viewport-Breite ── */
+  --gd:clamp(26px,7vw,42px);
+  --gpt-s:clamp(26px,7.5vw,40px);
+  --gcell:clamp(40px,11vw,64px);
+  --grack:clamp(30px,9vw,52px);
+  --gnum-on-dot:rgba(255,255,255,.5)
+}
+
+/* Maus statt Finger: dieselben Bauteile, engere Geometrie. */
+[data-dichte="maus"]{
+  --control-h:36px; --control-h-sm:28px; --control-h-lg:40px; --radius-ctl:6px;
+  --text-xs:11px; --text-sm:13px
+}
+/* Auf schmalen Schirmen zählt wieder der Finger — auch im Backoffice. */
+@media(max-width:900px){
+  [data-dichte="maus"]{
+    --control-h:44px; --control-h-sm:36px; --control-h-lg:52px; --radius-ctl:8px
+  }
+}
+
+/* ═══════════════ Knopf ═══════════════
+   Drei Stufen, klar getrennt: gefüllt trägt die Hauptsache, gerahmt die
+   Nebensache, Text die Ausweichmöglichkeit. Wer alles rahmt, hat keine
+   Hierarchie, nur Kästchen. */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+  min-height:var(--control-h);padding:0 var(--space-4);
+  font:var(--weight-medium) var(--text-md)/1.2 var(--font);
+  border:1px solid var(--border-strong);border-radius:var(--radius-ctl);
+  background:var(--surface);color:var(--fg);text-align:center;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease),
+             border-color var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease)}
+.btn--stark{background:var(--accent);border-color:var(--accent);color:var(--fg-on-dark)}
+.btn--leise{background:none;border-color:transparent;color:var(--fg-muted);
+  font-weight:var(--weight-regular)}
+.btn--klein{min-height:var(--control-h-sm);padding:0 var(--space-3);font-size:var(--text-sm)}
+.btn--breit{width:100%}
+.btn--gross{min-height:var(--control-h-lg);font-size:var(--text-base);width:100%}
+.btn--gefahr{color:var(--danger)}
+.btn:active{background:var(--surface-3)}
+.btn--stark:active{background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
+.btn--leise:active{background:var(--surface-3);color:var(--fg)}
+.btn[disabled]{opacity:.5;cursor:default}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover{background:var(--surface-2)}
+  .btn--stark:hover{background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
+  .btn--leise:hover{background:var(--surface-3);color:var(--fg)}}
+
+/* ═══════════════ Eingabe ═══════════════
+   16px Grundgröße verhindert das Auto-Zoomen von iOS Safari. */
+.feld,.wahl{width:100%;min-height:var(--control-h);
+  padding:var(--space-2) var(--space-3);
+  font:var(--weight-regular) var(--text-base)/1.3 var(--font);
+  border:1px solid var(--border-strong);border-radius:var(--radius-ctl);
+  background:var(--surface);color:var(--fg)}
+.wahl{appearance:none;-webkit-appearance:none;padding-right:var(--space-8);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6866' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M9 6l6 6-6 6'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;background-size:16px 16px}
+
+/* ═══════════════ Karte, Hinweis, Pille ═══════════════
+   Kanon aus der Leitung — die Fassungsseite zieht nach. */
+.karte{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-5)}
+
+.hinweis{border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);
+  font-size:var(--text-md);line-height:var(--leading-normal);
+  background:var(--info-bg);border:1px solid var(--info-border);color:var(--info)}
+.hinweis.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
+.hinweis.bad{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-fg)}
+.hinweis.good{background:var(--success-bg);border-color:var(--success-border);color:var(--success-fg)}
+.hinweis b{font-weight:var(--weight-medium)}
+
+/* Inhaltsspalten, die erklären — nicht Beiwerk. 11px war zu klein. */
+.deutung{font-size:var(--text-sm);color:var(--fg-secondary);line-height:var(--leading-normal)}
+.neg{color:var(--danger-fg);font-weight:var(--weight-bold)}
+
+/* ═══════════════ Finger am Glas ═══════════════
+   Runde 16 · Zwei Dinge, die Safari am iPhone von sich aus tut und die im
+   Keller stören:
+
+   · Ein Doppeltipp zoomt. Genau das passiert beim Zählen: zwei Flaschen,
+     zweimal schnell auf dieselbe Zeile — und statt der zweiten Zahl steht
+     die Seite vergrössert da. `manipulation` nimmt GENAU diese Geste weg.
+     Wischen und Zwei-Finger-Zoom bleiben; `none` oder `pan-x pan-y` würden
+     beides mitnehmen und kommen deshalb nicht in Frage.
+   · Ein Feld unter 16px zoomt beim Fokus. Am Schreibtisch
+     (data-dichte="maus") sind die kleinen Grade gewollt — dort zählt
+     Dichte und es wird nicht getippt. Gehoben wird deshalb nur, wo
+     wirklich ein Finger im Spiel ist (pointer:coarse). */
+html{touch-action:manipulation}
+@media(pointer:coarse){
+  input,select,textarea{font-size:var(--text-base)}
+}
+
+/* ═══════════════ Fokus ═══════════════ */
+:where(button,input,select,textarea,a,[tabindex]):focus-visible{
+  outline:var(--ring-width) solid var(--ring);
+  outline-offset:var(--ring-offset);position:relative;z-index:1}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ═══════════════ Hauszeichen ═══════════════
+   Der Hirte mit dem Hund. Nimmt currentColor an, skaliert verlustfrei,
+   braucht keine Datei. In dunklen Leisten wird es über die Höhe
+   bemessen — sonst sprengt ein breites Zeichen die 56px-Zeile. */
+.marke{display:block;margin:0 0 var(--space-2);line-height:0}
+.marke svg{display:block;width:100%;max-width:200px;height:auto;color:var(--marke)}
+.marke--klein svg{max-width:180px}
+.kopf .marke,header .marke{margin:0}
+.kopf .marke svg,header .marke svg{
+  color:var(--fg-on-dark);width:auto;height:24px;max-width:none}
+.tuer .marke{margin:0 auto var(--space-3)}
+.tuer .marke svg{max-width:220px;margin:0 auto}
+/* Für Bildschirmlesegeräte bleibt der Name stehen, sichtbar ist er nicht. */
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap}
+/* ═══════════════════════════════════════════════════════════════════
+   Fassungstool · leitung.css
+   Was nur das Backoffice braucht. Alles Gemeinsame steht im Block
+   darüber — in derselben Datei, nicht als eigenes Stylesheet. Auch
+   leitung.css gab es kurz als Datei; sie ist aus demselben Grund wieder
+   hier hereingezogen worden.
+   Am <html> steht data-dichte="maus".
+   ═══════════════════════════════════════════════════════════════════ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);
+  font:var(--weight-regular) var(--text-md)/var(--leading-normal) var(--font);
+  -webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select,textarea{font:inherit;color:inherit}
+table{border-collapse:collapse;width:100%}
+
+/* ═══════════════ Kopf ═══════════════ */
+/* F6 (18.09.2026): Auch das Backoffice wird gelegentlich am iPad gelesen,
+   und dort lag der Kopf unter der Statusleiste. Das Polster oben ist
+   dasselbe wie in index.html; `viewport-fit=cover` steht seit heute auch
+   im meta-Tag dieser Datei — ohne das liefert env() 0.
+   BERICHTIGUNG (Jagd 13, B2): Die Zeile bleibt 56 px hoch, der Kasten
+   waechst aber um das Polster. Drei weitere Regeln rechneten fest mit
+   56 px — die Navigationsschublade (`top`), ihr Grund (`inset`) und die
+   Huelle (`min-height`); unter einer Notch lagen deren oberste Pixel
+   hinter dem Kopf. Die Hoehe steht deshalb an EINER Stelle, als
+   `--kopfh`, und alle vier lesen sie. */
+:root{--kopfh:calc(56px + max(12px,env(safe-area-inset-top)))}
+/* `flex-wrap` und `min-height` statt `height` seit Runde 19: Unter 900px
+   rutscht die Zeitraumwahl in eine eigene Zeile (siehe unten). Mit fester
+   Höhe lief sie aus dem Bild — bei 393px war „30 Tage" abgeschnitten. */
+.kopf{position:sticky;top:0;z-index:var(--z-top);background:var(--accent);
+  color:var(--fg-on-dark);display:flex;flex-wrap:wrap;align-items:center;
+  gap:var(--space-4);
+  padding:max(12px,env(safe-area-inset-top)) var(--space-6) 0;
+  box-sizing:content-box;min-height:56px}
+.kopf h1{font:var(--weight-medium) var(--text-lg)/1.15 var(--font-display);
+  letter-spacing:.01em}
+.kopf .haus{font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-on-dark-3)}
+.kopf .sp{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;
+  border-radius:var(--radius-pill);background:var(--surface-on-dark);
+  border:1px solid var(--border-on-dark);font-size:var(--text-xs);color:var(--fg-on-dark)}
+.chip .pkt{width:7px;height:7px;border-radius:50%;background:var(--success-on-dark)}
+.chip.aus .pkt{background:var(--fg-on-dark-3)}
+/* Die Quelle stand mit gruenem Punkt da, solange sie nicht „Keine Daten"
+   war — „Lokal" und „Nicht angemeldet" sahen aus wie in Ordnung.
+   Kein Farbwechsel, sondern ein Formwechsel: aus dem Punkt wird ein
+   Ausrufezeichen. Gemessen: --danger auf der Teal-Leiste ergibt 1,89:1 und
+   waere praktisch unsichtbar, --fg-on-dark ergibt 10,27:1. Die Bedeutung
+   traegt ohnehin die Quellzeile ueber dem Inhalt. */
+.chip.warn .pkt,.chip.bad .pkt{width:auto;height:auto;border-radius:0;
+  background:none;color:var(--fg-on-dark);
+  font:var(--weight-bold) var(--text-sm)/1 var(--font)}
+.chip.warn .pkt::before,.chip.bad .pkt::before{content:"!"}
+/* 30px war unter jeder Schwelle. Es gelten 36px (data-dichte="maus") und
+   44px unter 900px — beides steht im Token --control-h. Nachgemessen. */
+.kopf button.k{min-height:var(--control-h);padding:0 12px;border-radius:var(--radius-ctl);
+  background:var(--surface-on-dark);border:1px solid var(--border-on-dark);
+  font-size:var(--text-sm);color:var(--fg-on-dark)}
+.kopf button.k:hover{background:rgba(255,255,255,.20)}
+/* Nur auf schmalen Schirmen sichtbar — oeffnet die Navigation.
+   Dort gilt der Finger: --control-h steht unter 900px auf 44px. */
+.navknopf{display:none;width:var(--control-h);height:var(--control-h);
+  border-radius:var(--radius-ctl);
+  background:var(--surface-on-dark);border:1px solid var(--border-on-dark);
+  color:var(--fg-on-dark);place-items:center;flex-shrink:0}
+
+/* ═══════════════ Gerüst ═══════════════ */
+.huelle{display:grid;grid-template-columns:212px 1fr;min-height:calc(100vh - var(--kopfh))}
+nav.seite{border-right:1px solid var(--border);background:var(--surface-2);
+  padding:var(--space-5) var(--space-3)}
+nav.seite .grp{font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle);
+  padding:0 10px;margin:var(--space-5) 0 var(--space-2)}
+nav.seite .grp:first-child{margin-top:0}
+nav.seite button{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;width:100%;min-height:var(--control-h);padding:8px 10px;
+  border-radius:var(--radius-ctl);font-size:var(--text-sm);
+  color:var(--fg-secondary);text-align:left}
+nav.seite button:hover{background:var(--surface-4)}
+nav.seite button.on{background:var(--surface);color:var(--fg);
+  font-weight:var(--weight-medium);box-shadow:inset 0 0 0 1px var(--border-strong)}
+/* --fg-muted auf --surface-4 sind 4,43:1 und damit unter dem Maß des
+   Hauses. Die Zahl in der Navigation sagt, wie viel offen ist — sie ist
+   keine Zierde. --fg-secondary bringt 5,83:1 auf demselben Grund. */
+nav.seite .zahl{font-size:var(--text-xs);font-weight:var(--weight-medium);
+  padding:1px 7px;border-radius:var(--radius-pill);
+  background:var(--surface-4);color:var(--fg-secondary);font-variant-numeric:tabular-nums}
+nav.seite button.on .zahl{background:var(--surface-3)}
+nav.seite .zahl.rot{background:var(--danger-bg);color:var(--danger-fg)}
+/* Der Ausgang steht unten, abgesetzt und leise — er ist kein Menuepunkt. */
+nav.seite button.ausgang{margin-top:var(--space-6);border-top:1px solid var(--border);
+  border-radius:0;padding-top:var(--space-4);color:var(--fg-muted)}
+main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
+
+/* ═══════════════ Überschriften ═══════════════ */
+h2{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
+  letter-spacing:0}
+.unter{color:var(--fg-muted);font-size:var(--text-sm);margin-top:6px;
+  max-width:70ch;line-height:var(--leading-normal)}
+/* Die zweite bis vierte Zeile der Erklaerung liegt hinter „Warum so
+   gerechnet?" — gut geschrieben, aber ab dem dritten Mal ueberlesen. */
+.unter .mehr{display:none}
+.unter.offen .mehr{display:block;margin-top:var(--space-2)}
+h3{font-size:var(--text-base);font-weight:var(--weight-medium);
+  margin-bottom:var(--space-3)}
+section{margin-bottom:var(--space-8)}
+.gitter{display:grid;gap:var(--space-4)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+/* ═══════════════ Kennzahl ═══════════════
+   Steht hier und nicht in tokens.css: die Fassungsseite hat unter
+   demselben Namen eine andere Komponente (die Zahlenreihe im
+   Protokoll). Ein Name, zwei Bedeutungen — also getrennt halten.
+   Zwei Varianten: Ziffern gehören in den großen Slot, Zustände nicht.
+   Ein 26px-Bold-„eingegangen" wiegt schwerer als jede Zahl daneben. */
+.kpi{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-4)}
+.kpi span{display:block;font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle)}
+.kpi b{display:block;font-size:26px;font-weight:var(--weight-bold);
+  letter-spacing:-.02em;margin-top:6px;line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.kpi small{display:block;color:var(--fg-muted);font-size:var(--text-sm);margin-top:2px}
+.kpi--status b{font-size:var(--text-md);font-weight:var(--weight-medium);
+  letter-spacing:0;margin-top:8px;display:flex;align-items:center;gap:var(--space-2)}
+.kpi--status b::before{content:"";width:9px;height:9px;border-radius:50%;
+  background:currentColor;flex-shrink:0;opacity:.75}
+.kpi.warn{background:var(--warn-bg);border-color:var(--warn-border)}
+.kpi.warn b,.kpi.warn small{color:var(--warn-fg)}
+.kpi.bad{background:var(--danger-bg);border-color:var(--danger-border)}
+.kpi.bad b,.kpi.bad small{color:var(--danger-fg)}
+.kpi.ok{background:var(--success-bg);border-color:var(--success-border)}
+.kpi.ok b,.kpi.ok small{color:var(--success-fg)}
+
+/* ═══════════════ Quellzeile ═══════════════
+   Woher die Zahlen kommen, gehoert nicht allein in einen Chip in der Ecke:
+   unter 900px ist der Chip ausgeblendet (.kopf .chip{display:none}) — am
+   Handy war gar nicht zu sehen, ob gerade der Server oder ein alter Stand
+   aus dem Browser gelesen wird. Steht die Quelle nicht auf „Server", sagt
+   es jetzt eine Leiste ueber dem Inhalt: Grund, Folge, und ein Knopf, der
+   etwas tut. Der Satz traegt die Bedeutung, die Farbe nur die Dringlichkeit. */
+.quellzeile{display:flex;align-items:flex-start;gap:var(--space-3);
+  flex-wrap:wrap;margin-bottom:var(--space-6);
+  border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);
+  font-size:var(--text-sm);line-height:var(--leading-normal);
+  background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-fg)}
+.quellzeile.bad{background:var(--danger-bg);border-color:var(--danger-border);
+  color:var(--danger-fg)}
+.quellzeile.info{background:var(--info-bg);border-color:var(--info-border);color:var(--info)}
+.quellzeile .txt{flex:1;min-width:220px}
+.quellzeile b{display:block;font-weight:var(--weight-bold)}
+.quellzeile .b{flex-shrink:0;text-decoration:none}
+
+/* Ohne Sitzung und ohne lokale Daten: eine klare Tür statt einer
+   leeren Tabelle. */
+.tuer{max-width:420px;margin:18vh auto;text-align:center;padding:0 var(--space-4)}
+.tuer .haus{font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle)}
+.tuer h2{margin:6px 0 10px}
+.tuer p{color:var(--fg-secondary);margin-bottom:var(--space-6);
+  line-height:var(--leading-normal)}
+.tuer .b{text-decoration:none}
+
+/* ═══════════════ Tabellen ═══════════════
+   .tabhuelle war overflow:hidden — das hebt position:sticky am <th> auf.
+   Bei 53 Zeilen Kellerbestand scrollte man ohne Spaltenkoepfe. Jetzt ist
+   die Huelle selbst die Scrollflaeche, und die Koepfe bleiben stehen. */
+.tabhuelle{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);max-height:70vh;overflow:auto}
+/* Runde 15 · Der neue Code nach dem Zurücksetzen. Er ist genau einmal zu
+   sehen, also legt er sich über alles und geht erst weg, wenn jemand
+   „Notiert" drückt. Die Ziffern gross und in der Zifferschrift — sie
+   werden abgeschrieben, nicht gelesen. */
+.pinzeig{position:fixed;inset:0;z-index:90;display:flex;align-items:center;
+  justify-content:center;padding:var(--space-4);
+  background:rgba(28,34,32,.55)}
+.pinzeig-karte{background:var(--surface);border-radius:var(--radius-lg);
+  padding:var(--space-6);max-width:420px;width:100%;text-align:center;
+  box-shadow:var(--shadow-overlay)}
+.pinzeig-wer{margin:0 0 var(--space-3);color:var(--fg-muted);
+  font-size:var(--text-sm)}
+.pinzeig-wer b{color:var(--fg);font-weight:var(--weight-medium)}
+.pinzeig-zahl{margin:0 0 var(--space-4);font-family:var(--mono);
+  font-size:44px;font-weight:var(--weight-bold);letter-spacing:.18em;
+  color:var(--accent);font-variant-numeric:tabular-nums}
+.pinzeig-warn{margin:0 0 var(--space-5);font-size:var(--text-sm);
+  color:var(--warn-fg);background:var(--warn-bg);
+  border:1px solid var(--warn-border);border-radius:var(--radius-md);
+  padding:var(--space-3);line-height:var(--leading-normal)}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);
+  font-size:var(--text-sm);vertical-align:middle}
+th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:var(--track-caps);
+  color:var(--fg-subtle);font-weight:var(--weight-medium);background:var(--surface-2);
+  position:sticky;top:0;z-index:5;box-shadow:inset 0 -1px 0 var(--border)}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+.zwt td{background:var(--surface-3);font-size:var(--text-xs);text-transform:uppercase;
+  letter-spacing:var(--track-caps);color:var(--fg-subtle);
+  font-weight:var(--weight-medium);padding:var(--space-2) 12px}
+.dim{color:var(--fg-muted)}
+.mini{font-size:var(--text-xs);color:var(--fg-subtle)}
+.diff-plus{color:var(--danger-fg);font-weight:var(--weight-medium)}
+.diff-minus{color:var(--diff-minus);font-weight:var(--weight-medium)}
+
+/* Alias auf den Kanon in tokens.css */
+.pill{display:inline-block;padding:2px var(--space-2);border-radius:var(--radius-pill);
+  font-size:var(--text-xs);font-weight:var(--weight-medium)}
+.p-ok{background:var(--success-bg);color:var(--success-fg)}
+.p-warn{background:var(--warn-bg);color:var(--warn-fg)}
+.p-bad{background:var(--danger-bg);color:var(--danger-fg)}
+.p-neu{background:var(--warn-bg);color:var(--warn-fg)}   /* verlangt Bestaetigung */
+/* Die neutrale Plakette. Bis v27 stand hier --fg-muted: 4,43:1 auf
+   --surface-4, unter dem Maß des Hauses — deshalb war sie als Befund
+   nicht brauchbar. --fg-secondary bringt 5,83:1 auf demselben Grund,
+   bleibt aber ruhiger als jede farbige Plakette. */
+.p-grau{background:var(--surface-4);color:var(--fg-secondary)}
+/* Kopfzeile eines Abschnitts mit einer Handlung rechts. Bis v27 stand der
+   Sammelknopf mitten im Satz eines Hinweiskastens („… oder es ist ein
+   Mischgetränk. [Alle 2 Vorschläge übernehmen]") — er brach die Zeile und
+   war weder Text noch Werkzeugleiste. Hier steht der Satz links, die
+   Handlung rechts, und beide bleiben auf schmalem Schirm lesbar. */
+.abschnitt{display:flex;gap:var(--space-4);align-items:flex-start;
+  flex-wrap:wrap;margin-bottom:var(--space-3)}
+.abschnitt>div{flex:1 1 380px;min-width:0}
+.abschnitt h3{margin:0}
+.abschnitt .unter{margin-top:2px}
+.abschnitt .tat{flex:0 0 auto;margin-left:auto}
+/* Derselbe Aufbau als Hinweiskasten: Satz links, Handlung rechts, und der
+   Knopf sitzt auf der Mitte des Satzes statt an seiner ersten Zeile. */
+.hinweis.abschnitt{margin-top:var(--space-3);align-items:center}
+/* Vorschlag und Knopf in einer Tabellenzelle: der Knopf steht immer
+   rechts, egal wie lang der Vorschlag ist — sonst tanzt die Spalte. */
+.vorschlag{display:flex;gap:var(--space-3);align-items:center;
+  justify-content:space-between}
+.vorschlag .b{flex:0 0 auto}
+/* Befund ohne Abgleich: Plakette plus Grund. Die Plakette allein wäre nur
+   Farbe; der Grund steht daneben im Klartext. */
+.befund{display:flex;gap:var(--space-2);align-items:baseline;flex-wrap:wrap}
+
+/* ═══════════════ Knöpfe und Felder ═══════════════
+   Namen bleiben, damit das JS unveraendert laeuft. Form kommt aus tokens.css.
+   Der Selektor hiess `button.b` — ein Typselektor. Die Tuer („Zum
+   Fassungstool") ist aber ein <a class="b stark">, und der einzige Ausweg
+   aus der abgelaufenen Sitzung stand deshalb als blauer Browserlink da,
+   rund 20px hoch. Jetzt greift die Klasse, egal an welchem Element. */
+.b{min-height:var(--control-h);padding:0 14px;border-radius:var(--radius-ctl);
+  border:1px solid var(--border-strong);background:var(--surface);
+  font-size:var(--text-sm);font-weight:var(--weight-medium);color:var(--fg);
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+  text-decoration:none}
+.b:hover{background:var(--surface-2)}
+.b.stark{background:var(--accent);color:var(--fg-on-dark);border-color:var(--accent)}
+.b.stark:hover{background:var(--accent-dunkel);border-color:var(--accent-dunkel)}
+.b.klein{min-height:var(--control-h-sm);padding:0 10px;font-weight:var(--weight-regular)}
+.b.leise{background:none;border-color:transparent;color:var(--fg-muted);
+  font-weight:var(--weight-regular)}
+.b.leise:hover{background:var(--surface-3);color:var(--fg)}
+.reihe{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+.rechts{margin-left:auto}
+select,input[type=text],input[type=number],input[type=date]{
+  min-height:var(--control-h);padding:0 10px;border-radius:var(--radius-ctl);
+  border:1px solid var(--border-strong);background:var(--surface);font-size:var(--text-sm)}
+select{appearance:none;-webkit-appearance:none;padding-right:30px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F6866' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M9 6l6 6-6 6'/></svg>");
+  background-repeat:no-repeat;background-position:right 9px center;background-size:16px}
+select.klein{min-height:var(--control-h-sm);font-size:var(--text-xs);max-width:270px}
+textarea{width:100%;min-height:150px;padding:var(--space-3);
+  border-radius:var(--radius-md);border:1px solid var(--border-strong);
+  font:400 12px/1.5 var(--mono);background:var(--surface);resize:vertical}
+
+/* ═══════════════ Sonstiges ═══════════════ */
+.leer{text-align:center;padding:var(--space-8) var(--space-4);
+  color:var(--fg-muted);font-size:var(--text-sm)}
+.zone{display:flex;align-items:center;justify-content:center;min-height:190px;
+  border:2px dashed var(--border-heavy);border-radius:var(--radius-lg);
+  background:var(--surface-2);color:var(--fg-muted);font-size:var(--text-sm);
+  text-align:center;padding:var(--space-5);cursor:pointer}
+.zone:hover,.zone.ueber{border-color:var(--accent);background:var(--accent-tint);color:var(--fg)}
+.balken{height:6px;border-radius:3px;background:var(--surface-4);overflow:hidden;min-width:70px}
+.balken i{display:block;height:100%;background:var(--accent)}
+.balken i.knapp{background:var(--danger)}
+.balken i.satt{background:var(--success)}
+/* BERICHTIGUNG (qa-guardian, zweite Schlusskontrolle · mittel): Der
+   Kasten hatte weder `max-width` noch `text-align`, und mit
+   `--radius-pill` (999px) ist der Radius immer die halbe Höhe. Bei
+   390 px und einem langen Satz wurde daraus ein KREIS: 195 × 208 px,
+   elf Zeilen, erste und letzte Zeile hell auf hellem Seitengrund und
+   damit unlesbar (gemessen am echten 409-Satz). Die App hat das seit
+   je richtig (`.toast` in index.html: `max-width:88vw`, `radius-md`,
+   mittig) — dasselbe hier. Es ist NICHT der geteilte Block; der endet
+   bei Zeile 244, und die beiden Regeln heißen auch verschieden. */
+/* BERICHTIGUNG (zehnte Jagd Runde 16 · C): Die erste Fassung hatte
+   `left:50%` und `max-width` — und das `max-width` griff unter rund
+   1120 px gar nicht, weil bei `position:fixed` mit `left:50%` nur noch
+   die halbe Fensterbreite als Platz danebensteht. Gemessen blieb der
+   Kasten bei 390 px genau 195 px breit, also 50 vw: rund statt Kreis,
+   aber nicht breiter. Er steht deshalb jetzt zwischen zwei festen
+   Rändern und zentriert sich über `margin-inline:auto`; `width:fit-content`
+   hält ihn bei kurzen Sätzen schmal.
+   Dazu die Safe-Area unten — die App hat sie seit je (`.toast` in
+   index.html), das Backoffice stand auf festen 28 px. Kein Bruch der
+   geteilten Schicht: die endet bei Zeile 244, und die beiden Regeln
+   heißen verschieden. */
+#toast{position:fixed;left:var(--space-4);right:var(--space-4);
+  bottom:calc(28px + env(safe-area-inset-bottom));
+  margin-inline:auto;width:fit-content;max-width:min(560px, 100%);
+  transform:translateY(12px);
+  background:var(--fg);color:var(--fg-on-dark);padding:10px 18px;
+  border-radius:var(--radius-md);text-align:center;box-shadow:var(--shadow-overlay);
+  font-size:var(--text-sm);opacity:0;
+  pointer-events:none;transition:opacity .18s,transform .18s;z-index:var(--z-toast)}
+#toast.on{opacity:1;transform:none}
+
+/* ═══════════════ Schmale Schirme ═══════════════
+   Die Navigation war 212px breit und galt ohne Medienabfrage — bei 390px
+   nahm sie mehr als die halbe Breite und der Inhalt lief rechts hinaus.
+   Das ist die Ansicht, die der Nachmittagsblick am Handy braucht. */
+@media(max-width:900px){
+  .navknopf{display:grid}
+  .kopf{padding:max(12px,env(safe-area-inset-top)) var(--space-3) 0;gap:var(--space-2)}
+  .kopf .chip{display:none}
+  /* Auf dem Handy traegt die Leiste die Marke, nicht den Seitentitel —
+     der steht ohnehin als Ueberschrift direkt darunter. */
+  .kopf h1{display:none}
+  .kopf .haus{display:block;font:var(--weight-medium) var(--text-base)/1 var(--font-display);
+    text-transform:none;letter-spacing:0;color:var(--fg-on-dark);white-space:nowrap}
+  .kopf button.k{padding:0 10px;font-size:var(--text-xs);white-space:nowrap}
+  .huelle{display:block}
+  nav.seite{position:fixed;left:0;top:var(--kopfh);bottom:0;width:min(280px,86vw);
+    z-index:var(--z-overlay);overflow:auto;border-right:1px solid var(--border);
+    transform:translateX(-102%);transition:transform var(--dur) var(--ease);
+    box-shadow:var(--shadow-overlay)}
+  body.navoffen nav.seite{transform:none}
+  body.navoffen::after{content:"";position:fixed;inset:var(--kopfh) 0 0;
+    background:rgba(28,34,32,.4);z-index:calc(var(--z-overlay) - 1)}
+  main{padding:var(--space-5) var(--space-4) var(--space-8)}
+  h2{font-size:24px}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  /* Waagrecht scrollen statt umbrechen, erste Spalte bleibt stehen. */
+  .tabhuelle{max-height:none;overflow:auto;-webkit-overflow-scrolling:touch}
+  /* B3 (Runde 18) · AUSSER bei zwei Spalten. Die Mindestbreite von 560px
+     ist für die breiten Tabellen gedacht; eine Tabelle „Position |
+     Flaschen" schob damit am Handy genau die Zahl aus dem Bild — und das
+     ist der Grund, aus dem das Detail im Speicher „nur Positionen, keine
+     Anzahl" zeigte. Die Zahl stand immer da, nur 170px rechts daneben.
+     Zwei Spalten passen auf 390px; sie bekommen deshalb keine
+     Mindestbreite und keine klebende erste Spalte. */
+  .tabhuelle.schmal table{min-width:0}
+  .tabhuelle.schmal th:first-child,.tabhuelle.schmal td:first-child{
+    position:static;box-shadow:none}
+  /* Nur Tabellen in einer Scrollhuelle duerfen breiter sein als der Schirm.
+     Die Quelle-Tabelle in den Einstellungen steht in einer .karte ohne
+     Scrollflaeche und schob sonst die ganze Seite auf 597px. */
+  .tabhuelle table{min-width:560px}
+  th:first-child,td:first-child{position:sticky;left:0;background:var(--surface);
+    box-shadow:1px 0 0 var(--border)}
+  th:first-child{background:var(--surface-2);z-index:6}
+  .zwt td:first-child{background:var(--surface-3)}
+  /* Einstellungen, Mitarbeiter und Rezepturen setzen feste Breiten als
+     Inline-Stil (230px Etikett, 280px Feld). Auf 390px läuft das über den
+     rechten Rand — hier gewinnt die Medienabfrage. */
+  .karte .reihe>label,.reihe>input[type=text],.reihe>select,.karte .reihe>select{
+    width:100%!important;max-width:none!important}
+  .reihe>input[type=number]{width:100px!important}
+  .karte .reihe{align-items:stretch}
+}
+@media(max-width:560px){
+  .g4,.g3{grid-template-columns:1fr}
+}
+
+/* ═══════════════ Randwisch ═══════════════
+   B4 (Runde 18) · Chrome und die Android-Browser blättern bei einem
+   waagrechten Überzug über den Rand hinaus zurück. `contain` nimmt
+   genau das weg und lässt Scrollen unberührt. Safari hört nicht darauf —
+   dort erledigt es der Horcher `randwisch()` im Skript. */
+html{overscroll-behavior-x:contain}
+
+/* ═══════════════ Kachel als Knopf ═══════════════
+   B2 (Runde 18) · Die vier Kacheln des Mittagsblicks waren reine
+   Anzeigen. „7 auffällige Differenzen" ist aber genau die Zeile, auf die
+   getippt wird — und es passierte nichts. Wer ein Ziel hat, ist jetzt
+   ein <button> und sagt am Fuss, wohin er führt. Wer keines hat (weil es
+   nichts zu zeigen gibt), bleibt ein <div> und sieht unverändert aus. */
+button.kpi{display:flex;flex-direction:column;width:100%;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;-webkit-appearance:none;appearance:none;
+  transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+button.kpi:hover{border-color:var(--fg-subtle);box-shadow:0 2px 10px rgba(28,34,32,.10)}
+button.kpi:active{box-shadow:none}
+/* `margin-top:auto` hält die Zeile am Fuss: Die vier Kacheln stehen
+   nebeneinander und sind verschieden hoch gefüllt — ohne das säße der
+   Weg bei jeder woanders. */
+.kpi .weiter{margin-top:auto;padding-top:14px;color:var(--fg-subtle);
+  text-transform:none;letter-spacing:0;font-size:var(--text-sm)}
+
+/* Eine Zeile, die sich öffnen lässt, sagt das auch. */
+tr.klickbar{cursor:pointer}
+tr.klickbar:hover td{background:var(--surface-2)}
+
+/* ═══════════════ Druckblatt ═══════════════
+   B5 (Runde 18) · Siehe `drucke()` im Skript: Das PDF macht der Browser,
+   diese Seite macht das Blatt. `#druck` ist am Schirm nie zu sehen.
+   Gedruckt wird NUR, wenn `body.drucken` gesetzt ist — ein Druck mit
+   Befehlstaste-P ohne Knopf bringt weiter die Seite selbst aufs Papier
+   und nicht ein leeres Blatt. */
+#druck{display:none}
+@media print{
+  @page{margin:16mm 14mm}
+  body.drucken{background:#fff}
+  body.drucken>*{display:none}
+  body.drucken>#druck{display:block;color:#000;
+    font:12pt/1.45 var(--font-body,Georgia,"Times New Roman",serif)}
+  #druck h1{font-size:19pt;line-height:1.15;margin:0 0 2mm;letter-spacing:-.01em}
+  #druck h2{font-size:12.5pt;margin:7mm 0 2mm;padding-bottom:1mm;
+    border-bottom:.8pt solid #000;break-after:avoid;page-break-after:avoid}
+  #druck p{margin:0 0 3mm}
+  #druck .druckkopf{border-bottom:1.2pt solid #000;padding-bottom:3mm;margin-bottom:5mm}
+  #druck .druckhaus{font-size:9pt;letter-spacing:.09em;text-transform:uppercase;color:#333}
+  #druck .druckunter{font-size:10.5pt;margin-top:1mm}
+  #druck .druckzeit{font-size:9pt;color:#555;margin-top:2mm}
+  #druck .notiz{border:.6pt solid #000;padding:2.5mm 3mm;margin:0 0 5mm}
+  /* Der Vorbehaltskasten muss beim Überfliegen auffallen — er ist der
+     Unterschied zwischen einer Messung und einer halben Rechnung. */
+  #druck .notiz.vorbehalt{border-width:1.4pt;margin-top:-3mm}
+  #druck .notiz.vorbehalt ul{margin:1.5mm 0 2mm;padding-left:6mm}
+  #druck .notiz.vorbehalt li{margin:.8mm 0}
+  #druck table{width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:3mm}
+  /* Kein Flächenton auf Papier: die Bildschirmregel färbt `th` und die
+     Summenzeile, und eine graue Fläche über die ganze Blattbreite kostet
+     Toner, ohne etwas zu sagen. */
+  #druck th,#druck td{border-bottom:.4pt solid #aaa;padding:1.5mm 2mm;
+    text-align:left;vertical-align:top;background:none;box-shadow:none}
+  #druck th{border-bottom:.8pt solid #000;font-weight:700;font-size:9.5pt;
+    text-transform:uppercase;letter-spacing:.05em}
+  #druck th.r,#druck td.r{text-align:right;font-variant-numeric:tabular-nums;
+    white-space:nowrap}
+  #druck tr{break-inside:avoid;page-break-inside:avoid}
+  #druck thead{display:table-header-group}
+  #druck .zwt td{font-weight:700;border-top:.8pt solid #000;border-bottom:none;
+    background:none;text-transform:none;letter-spacing:0}
+  #druck .plus{font-weight:700}
+  #druck .mini{font-size:9pt;color:#444}
+  #druck .fuss{margin-top:8mm;padding-top:2mm;border-top:.4pt solid #aaa;
+    font-size:9pt;color:#444}
+}
+
+
+/* ═══════════════ Übersicht (Runde 19) ═══════════════
+   Die Bausteine der Startseite. Sie stehen hier, im Block der Leitung,
+   und NICHT in der gemeinsamen Gestaltungsschicht darüber: Die
+   Fassungsseite kennt weder Kette noch Abdeckungsbalken, und die
+   gemeinsame Schicht muss in beiden Dateien wortgleich bleiben. */
+
+/* Der Urteilssatz. Ein Satz, der sagt, woran man ist — darum trägt er
+   die Farbe, nicht die Kacheln darunter. */
+.urteil{border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);
+  line-height:var(--leading-normal);border:1px solid var(--border);
+  background:var(--surface);color:var(--fg-secondary)}
+.urteil b{display:block;font-size:var(--text-lg);margin-bottom:4px;color:var(--fg)}
+.urteil--bad{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-fg)}
+.urteil--bad b{color:var(--danger-fg)}
+.urteil--warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
+.urteil--warn b{color:var(--warn-fg)}
+.urteil--ok{background:var(--success-bg);border-color:var(--success-border);color:var(--success-fg)}
+.urteil--ok b{color:var(--success-fg)}
+
+/* Abdeckungsbalken. Die Beschriftung steht IM Balken, nicht nur in der
+   Farbe: Wer Rot und Grün nicht unterscheidet, liest sonst nichts. */
+.vbalken{display:flex;height:38px;border-radius:var(--radius-md);overflow:hidden;
+  border:1px solid var(--border-strong)}
+.vbalken i{display:flex;align-items:center;justify-content:center;font-style:normal;
+  font-size:var(--text-xs);font-weight:var(--weight-medium);white-space:nowrap;
+  overflow:hidden;min-width:0}
+.vbalken i span{padding:0 6px;overflow:hidden;text-overflow:ellipsis}
+.v-ok{background:var(--success);color:#fff}
+.v-aus{background:var(--surface-4);color:var(--fg-secondary)}
+.v-fehlt{background:var(--danger);color:#fff}
+.vlegende{display:flex;gap:var(--space-4);margin-top:var(--space-2);
+  font-size:var(--text-xs);color:var(--fg-secondary)}
+.vlegende .rechts{margin-left:auto}
+
+/* Die Kette. Jedes Glied ist ein Knopf und führt dorthin, wo man das
+   Glied repariert. `--tot` heißt: kann nichts sagen, weil ein Glied
+   davor gerissen ist. */
+.kette{display:flex;align-items:stretch;gap:var(--space-2)}
+.glied{flex:1;min-width:0;text-align:left;background:var(--surface);
+  border:1px solid var(--border);border-left-width:4px;
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);
+  position:relative;font:inherit;color:inherit;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease)}
+.glied:hover{background:var(--surface-2)}
+.glied:focus-visible{outline:var(--ring-width) solid var(--ring);outline-offset:var(--ring-offset)}
+.glied--ok{border-left-color:var(--success)}
+.glied--warn{border-left-color:var(--warn)}
+.glied--bad{border-left-color:var(--danger)}
+.glied--tot{border-left-color:var(--border-heavy);background:var(--surface-3)}
+.gnr{position:absolute;top:8px;right:10px;font-size:var(--text-xs);color:var(--fg-subtle)}
+.gt{display:block;font-size:var(--text-xs);letter-spacing:var(--track-caps);
+  text-transform:uppercase;color:var(--fg-muted)}
+.gw{display:block;font-size:var(--text-lg);font-weight:var(--weight-bold);margin:2px 0}
+.glied--ok .gw{color:var(--success-fg)}
+.glied--warn .gw{color:var(--warn-fg)}
+.glied--bad .gw{color:var(--danger-fg)}
+.glied--tot .gw{color:var(--fg-muted)}
+.gu{display:block;font-size:var(--text-xs);color:var(--fg-secondary)}
+/* Zierde, kein Text: Die Reihenfolge steht als Ziffer IM Glied. Als
+   Schriftzeichen „›" gemessen fiel der Pfeil mit 1,8:1 durch den
+   Kontrast (`tests/ui-mass.cjs`) — dunkler wäre er lauter als die
+   Glieder, die er verbindet. Gezeichnet statt geschrieben: kein Text,
+   keine Vorlesestimme, dasselbe Bild. */
+.gpfeil{display:flex;align-items:center;flex:0 0 auto}
+.gpfeil::after{content:"";width:7px;height:7px;
+  border-top:2px solid var(--border-heavy);border-right:2px solid var(--border-heavy);
+  transform:rotate(45deg)}
+.gpfeil--tot::after{opacity:.4}
+
+/* Aufgaben. Jede Zeile hat einen Knopf — der alte Kasten „Was noch
+   fehlt" hatte bis zu acht Sätze Fließtext und keinen einzigen. */
+.tun{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden}
+.tunz{display:flex;align-items:center;gap:var(--space-4);
+  padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border)}
+.tunz:last-child{border-bottom:0}
+.tunt{flex:1;min-width:0}
+.tunt b{font-size:var(--text-base)}
+.tunz > .pill{flex:0 0 92px;text-align:center}
+.tunr{flex:0 0 auto}
+
+/* Der laufende Tag. */
+.heutzeile{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3)}
+.ht{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4)}
+.ht > span{display:block;font-size:var(--text-xs);letter-spacing:var(--track-caps);
+  text-transform:uppercase;color:var(--fg-muted)}
+.ht b{display:block;font-size:var(--text-lg);margin:2px 0}
+.ht b.ok{color:var(--success-fg)} .ht b.bad{color:var(--danger-fg)}
+.ht small{font-size:var(--text-xs);color:var(--fg-secondary)}
+
+/* Die Zahlen. `--tot` ist die Kachel ohne berechenbare Zahl: ein Strich
+   und der Grund, nie eine 0. */
+.zahlwand{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--space-3)}
+.zw{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-3) var(--space-4);min-width:0}
+.zw > span{display:block;font-size:var(--text-xs);letter-spacing:var(--track-caps);
+  text-transform:uppercase;color:var(--fg-muted)}
+.zw b{display:block;font-family:var(--font-display);font-size:var(--text-display);
+  line-height:1.1;margin:4px 0;white-space:nowrap}
+.zw small{display:block;font-size:var(--text-xs);color:var(--fg-secondary)}
+.zw--tot{background:var(--surface-3)}
+.zw--tot b{color:var(--fg-muted)}
+
+/* Zwei Spalten am Schreibtisch, eine am Gerät. */
+.zwei{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--space-6);
+  padding:0 var(--space-7)}
+/* `min-width:0` ist hier kein Feinschliff, sondern die ganze Miete: Ein
+   Gitterfeld hat von sich aus `min-width:auto` und schrumpft deshalb
+   NICHT unter den Inhalt. Die Tabellen darin tragen unter 900px
+   `min-width:560px` (damit die Spalten lesbar bleiben und die Hülle
+   waagrecht rollt) — ohne diese Zeile wuchs die Spalte auf 594px und
+   schob die ganze Seite bei 390px und 430px aus dem Bild. Gemessen mit
+   `tests/ui-mass.cjs`: „Seite rollt waagrecht: 594 > 390". */
+.zwei > section{padding:0;margin-bottom:var(--space-6);min-width:0}
+tr.tot td{background:var(--surface-3);color:var(--fg-muted)}
+/* Ein Betrag darf nicht zwischen Zahl und Zeichen umbrechen — „245,00"
+   in der einen und „€" in der nächsten Zeile liest sich wie zwei Zahlen. */
+td.geld{white-space:nowrap}
+
+/* Vierzehn Tage. Schraffur heißt „keine Angabe" — sie sieht anders aus
+   als jede Farbe und lässt sich mit keiner verwechseln. */
+.kalender{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5)}
+.kzeile{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.kzeile:last-child{margin-bottom:0}
+.klab{flex:0 0 96px;font-size:var(--text-xs);color:var(--fg-muted);
+  letter-spacing:var(--track-caps);text-transform:uppercase}
+.kzeile i{flex:1;min-width:0;height:22px;border-radius:var(--radius-sm);font-style:normal}
+.kzeile i.ok{background:var(--success-tint)}
+.kzeile i.warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+.kzeile i.bad{background:var(--danger)}
+.kzeile i.nix{background:repeating-linear-gradient(45deg,var(--surface-3),
+  var(--surface-3) 4px,var(--surface-4) 4px,var(--surface-4) 8px)}
+.ktage i{height:auto;text-align:center;font-size:var(--text-xs);
+  color:var(--fg-subtle);background:none}
+.legende{display:flex;flex-wrap:wrap;gap:var(--space-5);margin-top:var(--space-3);
+  font-size:var(--text-xs);color:var(--fg-secondary)}
+.legende i{display:inline-block;width:14px;height:14px;border-radius:3px;
+  margin-right:6px;vertical-align:-3px;font-style:normal}
+.legende i.ok{background:var(--success-tint)}
+.legende i.warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+.legende i.bad{background:var(--danger)}
+.legende i.nix{background:repeating-linear-gradient(45deg,var(--surface-3),
+  var(--surface-3) 4px,var(--surface-4) 4px,var(--surface-4) 8px)}
+
+/* ── Das Vorgangsfenster (Runde 20) ──────────────────────────────────
+   Die Klasse heisst `zweisp` und nicht `zwei`: `.zwei` ist seit Runde 19
+   das zweispaltige Raster der Übersicht (`display:grid`, Zeile 803). Die
+   Tabellenhülle hätte das geerbt und wäre selbst zum Raster geworden —
+   die Tabelle sass dann in der linken 1.3fr-Spalte und liess die halbe
+   Karte leer. Zwei Klassen, zwei Namen.
+
+   Zwei Zahlenspalten neben einem langen Weinnamen. Bei 390 px ist das
+   eng: „Weinberghof Fritsch · Ried Schlossberg 1ÖTW". Die Namensspalte
+   darf deshalb umbrechen, die Zahlen nie — eine Zahl, die zwischen
+   Ziffer und Ziffer bricht, ist keine Zahl mehr. */
+/* Am MacBook ist die Karte 820 px breit. Über die ganze Breite gezogen
+   lägen zwischen „Nittnaus · Kalk & Schiefer" und seinen zwei Zahlen
+   gut 600 px — man verliert beim Hinüberschauen die Zeile. Diese
+   Tabelle wird gelesen, nicht durchsucht; sie bleibt so breit, dass
+   Name und Zahlen in einem Blick liegen. */
+.tabhuelle.zweisp{max-width:620px}
+.tabhuelle.zweisp table{min-width:0;width:100%}
+.tabhuelle.zweisp td.zahl,.tabhuelle.zweisp th.r{white-space:nowrap}
+.tabhuelle.zweisp th:first-child,.tabhuelle.zweisp td:first-child{white-space:normal}
+/* Die Zahlenspalten nehmen nur, was sie brauchen — der Name bekommt den Rest. */
+.tabhuelle.zweisp th.r,.tabhuelle.zweisp td.zahl{width:1%}
+.spK{display:none}
+/* Der Auftrag der Spalte steht unter ihrem Namen, leiser: „oben gefehlt"
+   sagt, WAS gezählt wird, „→ Z-Bericht" sagt, WOFÜR. */
+.spuz{display:block;font-weight:var(--weight-regular);
+  text-transform:none;letter-spacing:0;color:var(--fg-subtle)}
+/* Die eine Zeile, bei der die beiden Zahlen auseinandergehen — sie ist
+   der Grund, warum es zwei Spalten gibt. */
+tr.weicht td{background:var(--warn-bg)}
+@media(max-width:700px){
+  .tabhuelle.zweisp th,.tabhuelle.zweisp td{padding-left:8px;padding-right:8px}
+  .spuz{display:none}
+  .spL{display:none} .spK{display:inline}
+}
+/* Woraus die Lücke im Abdeckungsbalken besteht — drei Ursachen, drei
+   Maßnahmen, deshalb drei Zeilen statt einer Zahl. */
+.luecke{margin:var(--space-3) 0 0;padding-left:var(--space-5);
+  font-size:var(--text-xs);color:var(--fg-secondary);
+  line-height:var(--leading-normal)}
+.luecke li{margin-bottom:4px}
+/* „Außerdem" — alles, was nicht unter die ersten drei Aufgaben passt,
+   aber nicht verschwinden darf. Knapp, aber vollständig. */
+.auch{margin-top:var(--space-4);background:var(--surface-2);
+  border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:var(--space-4) var(--space-5)}
+.auch h4{margin:0 0 var(--space-3);font-size:var(--text-xs);
+  letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-muted)}
+.auch ul{list-style:none;margin:0;padding:0}
+.auch li{display:flex;align-items:flex-start;gap:var(--space-3);
+  padding:6px 0;font-size:var(--text-xs);color:var(--fg-secondary);
+  line-height:var(--leading-normal)}
+.auch li > :first-child{flex:0 0 auto}
+/* Der Zeitraum im Kopf. */
+.zeitwahl{display:inline-flex;background:var(--surface-on-dark);
+  border-radius:var(--radius-pill);padding:3px;gap:2px}
+.zeitwahl button{background:none;border:0;color:var(--fg-on-dark-2);font:inherit;
+  font-size:var(--text-xs);padding:5px 12px;border-radius:var(--radius-pill);
+  cursor:pointer;white-space:nowrap}
+.zeitwahl button:hover{color:var(--fg-on-dark)}
+.zeitwahl button.on{background:var(--surface);color:var(--fg);
+  font-weight:var(--weight-medium)}
+.zeitwahl button:focus-visible{outline:2px solid var(--fg-on-dark);outline-offset:1px}
+
+@media(max-width:1100px){
+  .zahlwand{grid-template-columns:repeat(3,1fr)}
+  .zwei{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  /* Die Kette bricht auf eine Spalte. Die Pfeile fallen weg: Untereinander
+     zeigen sie nach rechts ins Leere, und die Reihenfolge sagt die
+     Nummer im Glied ohnehin. */
+  .kette{flex-wrap:wrap}
+  .glied{flex:1 1 100%}
+  .gpfeil{display:none}
+  .zahlwand{grid-template-columns:repeat(2,1fr)}
+  .heutzeile{grid-template-columns:repeat(2,1fr)}
+  .zwei{padding:0 var(--space-4)}
+  .tunz{flex-wrap:wrap}
+  .tunz > .pill{flex:0 0 auto}
+  .tunr{flex:1 1 100%}
+  .tunr .b{width:100%}
+  .klab{flex:0 0 72px}
+  .vlegende{flex-direction:column;gap:2px}
+  .vlegende .rechts{margin-left:0}
+  /* Im Kopf ist unter 900px kein Platz mehr: Der Zeitraum rutscht unter
+     die Leiste und nimmt die ganze Breite. */
+  .zeitwahl{order:10;flex:1 1 100%;justify-content:space-between;margin-top:6px}
+  .zeitwahl button{flex:1;text-align:center}
+}
+@media(max-width:560px){
+  .zahlwand{grid-template-columns:repeat(2,1fr)}
+  .zw b{font-size:22px}
+  .heutzeile{grid-template-columns:1fr}
+}
+
+
+.mockseite{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
+.mockkopf{font:var(--text-xs)/1.4 var(--font-ui);letter-spacing:.08em;
+  text-transform:uppercase;color:var(--fg-subtle);margin:0 0 10px}
+.blk{padding-bottom:20px;background:var(--bg)}
+input.zahl-e{width:92px;padding:6px 8px;text-align:right;
+  font:var(--text-sm)/1 var(--font-ui);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--fg)}
+td.nw{white-space:nowrap}
+.quelle{font-size:var(--text-xs);color:var(--fg-subtle)}
+.quelle.regel{color:var(--ok-fg,#2d6a4f);font-weight:var(--weight-medium)}
+.quelle.leer{color:var(--fg-subtle);font-style:italic}
+tr.fehlt td{background:var(--warn-bg)}
+.frage1{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+.f1{display:block;padding:14px 16px;border-radius:var(--radius-lg);
+  border:1px solid var(--border);background:var(--surface);
+  text-decoration:none;color:inherit;border-left-width:4px}
+.f1.ok{border-left-color:var(--ok-fg,#2d6a4f)}
+.f1.warn{border-left-color:var(--warn-fg,#8a6d1f)}
+.f1.bad{border-left-color:var(--danger)}
+.f1k{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;
+  color:var(--fg-subtle);margin-bottom:4px}
+.f1w b{font-size:var(--text-lg)}
+@media(max-width:700px){
+  .mockseite{padding:16px}
+  .frage1{grid-template-columns:1fr}
+  input.zahl-e{width:74px}
+  .tabhuelle table{min-width:520px}
+}
+
+</style></head><body><div class="mockseite">
+<div id="liste" class="blk"><div class="mockkopf">Einstellungen · die Artikelliste</div><section>
+ <h3 style="margin:0 0 4px">Flaschen- und Glasgrößen</h3>
+ <div class="unter" style="margin-bottom:12px">Einmal hinterlegt, gilt für alle Geräte.
+ Gerechnet wird nur, was hier steht — ein leeres Feld heißt „nicht hinterlegt",
+ und die Position bleibt aus dem Abgleich heraus.</div>
+ <div class="tabhuelle"><table><thead><tr>
+   <th>Artikel</th><th class="r">Gebinde</th><th class="r">ins Glas</th><th>woher</th>
+ </tr></thead><tbody><tr class="zwt"><td colspan="4">Wein <span class="mini">57 Artikel</span></td></tr><tr><td>Werner Achs · Goldberg 2024</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td><td><span class="quelle regel">Regel</span></td></tr><tr><td>Nittnaus · Kalk & Schiefer 2019</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td><td><span class="quelle regel">Regel</span></td></tr><tr><td>Bründlmayer · Spiegel 2022</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="125"></td><td><span class="quelle regel">Regel</span></td></tr><tr><td>Serena · Piu Frizzante</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="100"></td><td><span class="quelle regel">Regel · Sekt</span></td></tr><tr><td>De Saint Gall · Champagne 1er Cru</td><td class="r nw"><input class="zahl-e" type="number" value="750"></td><td class="r nw"><input class="zahl-e" type="number" value="100"></td><td><span class="quelle regel">Regel · Sekt</span></td></tr><tr class="zwt"><td colspan="4">Getränke <span class="mini">37 Artikel</span></td></tr><tr><td>Gasteiner 1 l</td><td class="r nw"><input class="zahl-e" type="number" value="1000"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus dem Artikelnamen</span></td></tr><tr><td>Gasteiner 0,25 l</td><td class="r nw"><input class="zahl-e" type="number" value="250"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus dem Artikelnamen</span></td></tr><tr><td>Cola Zero</td><td class="r nw"><input class="zahl-e" type="number" value="350"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus „Cola Zero 0,35l"</span></td></tr><tr><td>Orange Lemonade</td><td class="r nw"><input class="zahl-e" type="number" value="350"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle">aus „Now-Limo Orange 0,35l"</span></td></tr><tr class="fehlt"><td>Almdudler</td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle leer">fehlt</span></td></tr><tr class="fehlt"><td>Spritzerwein</td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle leer">fehlt</span></td></tr><tr class="fehlt"><td>Stiegl 0,0 % · 0,33</td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle leer">fehlt</span></td></tr><tr class="zwt"><td colspan="4">Vom Fass <span class="mini">1 Artikel</span></td></tr><tr><td>Raschhofer Pils vom Fass</td><td class="r nw"><input class="zahl-e" type="number" value="50000"></td><td class="r nw"><input class="zahl-e" type="number" placeholder="ml"></td><td><span class="quelle regel">Regel · ein Fass 50 l</span></td></tr></tbody></table></div>
+ <div class="reihe" style="margin-top:14px">
+   <button class="b stark">Alle Vorgaben übernehmen</button>
+   <span class="mini" style="margin-left:12px">53 Weine · 4 Sekt · 1 Fass · 4 Getränke aus dem Namen</span>
+ </div>
+</section></div>
+<div id="frage1" class="blk"><div class="mockkopf">Übersicht · die neue erste Zeile (zwei Lagen)</div><section>
+ <div class="frage1">
+   <a class="f1 heute ok" href="#">
+     <div class="f1k">Heute · Di., 23.09.</div>
+     <div class="f1w"><b>Gefasst</b> <span class="mini">Asad · 06:41</span></div>
+   </a>
+   <a class="f1 gestern warn" href="#">
+     <div class="f1k">Gestern · Mo., 22.09.</div>
+     <div class="f1w"><b>2 Abweichungen</b> <span class="mini">sonst stimmt es</span></div>
+   </a>
+ </div>
+ <div class="frage1" style="margin-top:14px">
+   <a class="f1 heute bad" href="#">
+     <div class="f1k">Heute · Di., 23.09.</div>
+     <div class="f1w"><b>Noch nicht gefasst</b> <span class="mini">seit Mitternacht 43 verkauft</span></div>
+   </a>
+   <a class="f1 gestern ok" href="#">
+     <div class="f1k">Gestern · Mo., 22.09.</div>
+     <div class="f1w"><b>Stimmt</b> <span class="mini">alle Zeilen gerechnet</span></div>
+   </a>
+ </div>
+ <div class="mini" style="margin-top:10px">Darunter dann wie bisher: Urteil, Abdeckung, Kette, Aufgaben, Zahlen, Verlauf.</div>
+</section></div>
+</div></body></html>
