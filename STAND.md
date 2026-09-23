@@ -1,17 +1,17 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 21.09.2026 (Runde 22 · Vorabliste für Kassennamen)
+**Letzte Aktualisierung:** 23.09.2026 (Runde 23 · Kassennamen Z 41–43)
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 22 ist gemergt und LIVE** (PR #16, 21.09.2026). Alle Runden bis
-  einschliesslich 22 sind auf `main`.
+- **Runde 23 liegt auf `claude/happy-dijkstra-8gk2wu`** und wartet auf
+  den Merge. Alle Runden bis einschliesslich 22 sind auf `main`.
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
-- `sw.js` steht mit Runde 22 auf **v71**.
-- `npm test`: **581 von 581 grün** (Stand 21.09.2026, Laufzeit ca. 4 s).
+- `sw.js` steht mit Runde 23 auf **v72**.
+- `npm test`: **581 von 581 grün** (Stand 23.09.2026, Laufzeit ca. 4 s).
 - Oberfläche von Hand, **nicht** Teil von `npm test` (Regel 8), braucht
   Playwright: `node tests/ui-runde22.cjs` 31/31 ·
   `node tests/ui-runde21.cjs` 19/19 · `node tests/ui-leitung-echt.cjs` 44/44 ·
@@ -166,13 +166,54 @@ die Vorgabe war. Sie zehren Zitronensaft, Ginger Ale, Holundersirup und
 Tonic aus dem Keller; ignoriert käme das als Schwund zurück. Die 15
 Namen bleiben offen und brauchen ein Rezept (`review/BACKLOG.md`, hoch).
 
+## Runde 23 (23.09.2026) — die Kassennamen der Berichte Z 41 bis Z 43
+
+Runde im Log unter „Runde 23". PR-Beschreibung in `review/ERGEBNIS.md`.
+`sw.js` steht auf **v72**. `npm test`: **581 von 581** grün. Browser:
+`ui-runde22.cjs` 31/31, `ui-leitung-echt.cjs` 44/44, `ui-runde21.cjs`
+19/19, `ui-runde18.cjs` 54/54. **Keine Migration**, Live-D1 nur gelesen.
+
+Anlass waren drei neue Z-Berichte. Im Backoffice lagen **Z 40 und Z 41**;
+**Z 42 und Z 43 fehlen** und müssen von Casimir eingelesen werden — in
+die Datenbank schreiben darf kein Agent (Regel 2).
+
+1. **Die Vorabliste wächst von 36 auf 100 ganze Kassennamen.** Von den
+   104 verschiedenen Namen der drei Berichte bleiben **3 offen** statt
+   58; im Referenzbericht 37 sind es 2 statt 7.
+2. **Fassbier ist an den Daten entschieden, nicht geraten.** Raschhofer
+   Pils und Radler gehen in allen drei Berichten Stück für Stück in der
+   Warengruppe „Bier · vom Fass" auf (12 · 7 · 11, ohne Rest), und im
+   Keller liegt kein Fass. Gegenprobe: „Bier · Flaschenbier" geht ebenso
+   ohne Rest in den Kellerartikeln auf. Damit ist die Morgenbrief-Frage
+   3a/3b beantwortet.
+   **Die Warengruppen sind ein Beweismittel, das der Parser nicht hat**
+   (`gnparse.js`, Falle 4: keine Warengruppe je Zeile) — von Hand lässt
+   sich aber prüfen, ob eine Menge Namen zusammen genau eine Gruppe füllt.
+3. **Mischgetränke stehen jetzt auf Ignorieren** — 31 Namen, im eigenen
+   Block `VORAB_MISCHGETRAENK`. Runde 22 hatte das abgelehnt; die
+   Begründung gilt unverändert und steht wörtlich darüber. Entschieden
+   hat es Casimir, und zwar auch in der Datenbank: Aperol Spritz, Sarti
+   Spritz, Monkey Sour und Ipanema stehen dort seit dem 22.09. von Hand
+   auf Ignorieren. Der Block steht getrennt, damit das Zurücknehmen eine
+   Löschung ist.
+   **Preis der Entscheidung:** Zitronensaft, Limettensaft, Tonic, Ginger
+   Ale, Holundersirup, Sanbitter und Sprite verschwinden rechnerisch und
+   kommen als Schwund zurück. Alternative sind Rezepte (~30 Zeilen).
+4. **Zwei Prüfungen hingen an echten Kassennamen**, die offen bleiben
+   sollten, und wurden durch die Liste rot. `abgleich-unklar.test.mjs`
+   hängt jetzt an einem erfundenen Namen — sie handelt von der Summe
+   über das Abgleichfenster, nicht von der Vorabliste.
+
 ## Was als Nächstes ansteht
 
-- **Sechs Fragen aus Runde 22** stehen fertig aufbereitet in
-  `review/MORGENBRIEF.md`: die zwei Vertipper, die Gasteiner-Artikel,
-  Raschhofer Pils (im Keller gibt es kein Pils), Radler, Hauslimo,
-  „Weißer Spritzer", „Tomate" — und die grosse: sollen die 15 Cocktails
-  Rezepte bekommen oder ignoriert werden?
+- **Casimirs zwei Handgriffe** (stehen in `review/MORGENBRIEF.md`):
+  Z 42 und Z 43 einlesen, dann einmal „Alle Vorschläge übernehmen".
+  Der Klick zieht Z 40 und Z 41 rückwirkend mit.
+- **Drei Namen bleiben offen**, alle aus derselben Ecke: Gasteiner
+  sparkling 0,20 l, Gasteiner Quellwasser 0,5 l, Apfelsaft 0,25 l. Im
+  Keller stehen drei Gasteiner-Artikel, die Kasse kennt fünf Grössen.
+- **Rezepte statt Ignorieren?** Die Frage steht weiter offen und wird
+  durch die 31 neuen Ignorieren-Namen grösser, nicht kleiner.
 - **Casimirs Aufgabe für die Automation:** die Weiterleitung von
   gastronovi auf die Mailadresse des Workers einrichten und `ABSENDER`
   prüfen. Dashboard — für Agenten nicht erreichbar (Regel 13).

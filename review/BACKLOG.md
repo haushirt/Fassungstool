@@ -547,3 +547,26 @@ gemessen: 32 Einzelanfragen, 33 Meldungen. Der Nachbarweg
 **Niedrig — „Zuordnungen vom Server" zählt weiter alles**, was die
 Zeile zwei Bildschirme tiefer seit dieser Runde bewusst nicht mehr
 mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".
+
+## Neu aus Runde 23 (23.09.2026)
+
+**Niedrig · Die Gasteiner-Familie im Stamm klären.**
+Die Kasse kennt fünf Grössen (Quellwasser 0,5 l und 1 l, sparkling
+0,20 l und 0,75 l, still 0,75 l), der Keller drei Artikel (1 l, 0,25 l,
+still). Heute steht „sparkling 0,75 l" auf „Gasteiner 1 l" und
+„Quellwasser 1 l" auf Ignorieren — beides von Casimir bestätigt, beides
+schwer zu deuten. Solange das offen ist, bleiben drei Kassennamen ohne
+Zuordnung. Braucht eine Antwort von Casimir, keine Runde.
+
+**Niedrig · Apfelsaft fehlt im Stamm.**
+Ein Stück in Z 42, Warengruppe „AFG · Säfte | Gespritzt". Im Keller liegt
+kein Apfelsaft. Entweder Artikel anlegen oder dauerhaft ignorieren.
+
+**Hoch · „Ignorieren" wird durch Runde 23 teurer.**
+Die offene Frage aus Runde 19 (Was soll „Ignorieren" in der
+Abgleichszeile bedeuten? Heute nimmt es den Verkauf aus der Rechnung und
+die Zeile sagt trotzdem „stimmt") betrifft jetzt 31 Mischgetränke mehr.
+Zitronensaft, Limettensaft, Tonic, Ginger Ale, Holundersirup, Sanbitter
+und Sprite gehen damit rechnerisch verloren und kommen als Schwund
+zurück. Entweder die Deutung der Zeile ändern oder Rezepte bauen
+(~30 Zeilen, der Zuordnung-Bildschirm kann „Mischgetränk" schon).

@@ -1,116 +1,75 @@
-# Runde 22 · Die Vorabliste
+# Runde 23 · Die Kassennamen der Berichte Z 41 bis Z 43
 
-Der Z-Bericht liest sich seit Runde 21 sauber ein. Was danach kam, war
-Handarbeit: 44 von 48 Kassennamen standen offen und warteten auf ein
-Auswahlfeld. Diese Runde nimmt den Großteil davon vorweg — ohne die
-Regel aufzuweichen, die genau das bisher verhindert hat.
+Anlass: drei neue Z-Berichte (19.–23.09.2026). Im Backoffice lagen
+Z 40 und Z 41; Z 42 und Z 43 fehlen und müssen eingelesen werden.
+
+**Keine Migration.** Live-D1 wurde nur gelesen.
 
 ## Was sich ändert
 
-**1 · Eine geprüfte Liste ganzer Kassennamen.**
-36 Einträge in `src/gnmap.js`: 15 zeigen auf einen Artikel, 21 sind
-„kommt nicht aus dem Keller" (Speisen, Kaffee, Spirituosen pur auf
-2 cl). Jeder Eintrag ist einzeln nachgesehen und trägt seinen Grund in
-der Zeile daneben. Die Namen stammen aus den beiden echten Berichten,
-die im Haus liegen: Z 40 vom 19.09.2026 aus dem Backoffice und
-Bericht 37 aus `tests/fixtures/` — 71 Namen zusammen.
+Die geprüfte Vorabliste wächst von **36 auf 100 ganze Kassennamen**.
+Über die drei Berichte zusammen (104 verschiedene Namen) bleiben damit
+**3 offen** statt 58.
 
-Im echten Bericht von gestern bleiben danach **21 von 57** offen statt
-43 (dort sind 13 Namen schon von Hand bestätigt). Und diese 21 sind
-keine Tipparbeit mehr, sondern Fragen, die eine Entscheidung brauchen
-(`review/MORGENBRIEF.md`).
+| | vorher | nachher |
+|---|---|---|
+| Namen in der Vorabliste | 36 | 100 |
+| offen in Z 41–43 | 58 | 3 |
+| offen im Referenzbericht 37 | 7 | 2 |
 
-**2 · Regel 5 bleibt, wie sie war.**
-`mappe()` ist Wort für Wort unverändert und rät bei keinem einzigen
-dieser Namen — die drei Fehltreffer der abgeschalteten
-Ähnlichkeitssuche stehen weiter als Prüfung in `tests/mapping.test.mjs`
-und sind grün. Die Vorabliste steht **daneben**, nicht darin, und
-schlägt nur nach: ein `Object.hasOwn` und ein Zugriff, kein Vergleich,
-kein Teilstück, keine Ähnlichkeit. Ein Name, der morgen neu in der
-Kasse auftaucht, kann hier nicht stillschweigend hineinrutschen.
+### 1 · Fassbier ist keine Vermutung mehr
 
-Die Reihenfolge im Worker ist **bestätigt → Vorabliste → Kassenmuster**.
-Die Datenbank schlägt die Liste: was die Leitung bestätigt hat, gilt.
+Raschhofer Pils (0,2 / 0,3 / 0,5 l) und Radler (0,3 / 0,5 l) standen im
+Morgenbrief als offene Frage. Sie ist an den Daten entschieden: in allen
+drei Berichten gehen genau diese fünf Namen Stück für Stück in der
+Warengruppe **Bier · vom Fass** auf — 12 · 7 · 11, ohne Rest. Im Keller
+liegt kein Fass und kein Pils. Gegenprobe: **Bier · Flaschenbier** geht
+ebenso ohne Rest in den Kellerartikeln auf (4 · 4 · 2).
 
-**3 · Ein Klick im Backoffice.**
-Neuer Zustand „vorgeschlagen" — nachgesehen, Artikel steht schon im
-Feld, aber noch nicht bestätigt. Der Knopf heißt jetzt „Alle Vorschläge
-übernehmen" und nimmt Weine, Getränke und die dauerhaft zu
-ignorierenden Speisen auf einmal an. Eine bestätigte Zuordnung fasst er
-nie an.
+### 2 · Mischgetränke stehen auf Ignorieren
 
-**4 · Zwei Vertipper sind dabei aufgefallen.**
-Live steht „Cola Zero 0,35l" auf dem Artikel **Cola** (es gibt „Cola
-Zero" als eigenen Artikel) und „Now-Limo Orange 0,35l" auf **Lemon
-Lemonade**. Geändert wurde nichts — die Bestätigung gilt. Aber wo die
-geprüfte Liste widerspricht, steht es jetzt in der Zeile:
-*„geprüfte Liste sagt: …"*. Beides steht im Morgenbrief zum Nachsehen.
+Runde 22 hatte das abgelehnt, mit einer Begründung, die weiter gilt: ein
+Whiskey Sour nimmt Zitronensaft, ein Gin & Tonic nimmt Tonic, ein Virgin
+Hugo nimmt Holundersirup — alles das wird im Keller gezählt und fehlt der
+Rechnung, sobald es ignoriert wird.
 
-## Was ausdrücklich NICHT gemacht wurde
+Die Entscheidung ist inzwischen gefallen: im Backoffice stehen Aperol
+Spritz, Sarti Spritz, Monkey Sour und Ipanema seit dem 22.09. von Hand
+auf Ignorieren. Der neue Block `VORAB_MISCHGETRAENK` zieht die übrigen 27
+Namen derselben Art nach. Er steht **getrennt**, damit das Zurücknehmen
+eine Löschung ist: wer Rezepte will, entfernt den Block.
 
-**Cocktails sind nicht auf „Ignorieren" gesetzt**, obwohl das die
-Vorgabe war. Ein Whiskey Sour nimmt Zitronensaft, ein Ipanema Ginger
-Ale, ein Virgin Hugo Holundersirup, ein Vermouth & Tonic Tonic — alle
-vier liegen im Keller und werden gezählt. Ignoriert verschwände ihr
-Verbrauch aus der Rechnung und käme in der nächsten Kellerzählung als
-Schwund zurück. Die 15 Cocktailnamen bleiben offen und stehen mit
-Begründung im Morgenbrief; sie brauchen ein Rezept, nicht ein Kreuz.
+### 3 · Was sonst dazukam
 
-Nicht eingetragen wurde außerdem alles, wo ein Zweifel blieb:
-Raschhofer Pils (im Keller gibt es kein Pils), Radler, Hauslimo,
-Gasteiner Quellwasser, Weißer Spritzer, Tomate (gleicher Name wie der
-Tomatensaft im Keller). Sechs Fragen, alle im Morgenbrief.
+* **Wein:** Fritsch Wagram Rosé (Glas und Flasche, Kürzel `RS` — keine
+  Rebsorte, deshalb greift das Kassenmuster nicht), Kollwentz Leithakalk
+  Chardonnay (die Kasse schreibt `Ch kollwenz`).
+* **Getränke:** Franziskaner dunkel, Almdudler, Gasteiner still,
+  Fentimans Ginger Beer, Spritzerwein, Johannisbeersaft.
+* **Kein Keller:** ganze Gänge (Dinner Menü, Suppe, Salatbuffet), Tee und
+  Milchgetränke aus der Maschine, zwei Schnäpse, hausgemachte Limonaden.
+
+## Was offen bleibt
+
+Drei Namen, alle aus derselben Ecke:
+
+* **Gasteiner sparkling 0,20 l** — im Keller stehen 1 l, 0,25 l, still.
+* **Gasteiner Quellwasser 0,5 l** — welcher der drei?
+* **Apfelsaft 0,25 l** — im Keller gibt es keinen Apfelsaft.
 
 ## Geprüft
 
-- `npm test`: **581 von 581** grün (vorher 560). Neu
-  `tests/vorab-gleich.test.mjs` mit 11 Urteilen: beide Dateien Eintrag
-  für Eintrag gleich, jede Artikel-Id im Stamm, kein Name doppelt, und
-  fünf Gegenproben, dass ein nur ähnlicher Name nicht durchgeht.
-- Neu `node tests/ui-runde22.cjs`: **31 von 31** im echten Browser
-  gegen echten Worker und echte SQLite. Darin gemessen: 15 statt 44
-  offene Namen in Bericht 37, ein Klick schreibt 32 Zeilen in die
-  Zuordnungstabelle, und eine widersprechende Bestätigung setzt sich
-  gegen die Liste durch.
-- `node tests/ui-leitung-echt.cjs`: unverändert **44 von 44**.
-- `node tests/ui-runde21.cjs`: unverändert **19 von 19**.
-- Die Zahlen des Berichts vom 19.09. sind aus der **Live-Datenbank
-  gelesen** (nur `SELECT`, Regel 2).
-- **Eine Jagd danach** (`review/JAGD.md`): 2 A, 4 B, 7 C. Beide A-Funde
-  behoben und je mit einer eigenen Prüfung belegt:
-  1. Der Sammelknopf fasste **Rezeptzeilen** an und setzte sie auf
-     „ignoriert" — für eine Position mit Rezeptur ist eine Artikel-Id
-     ein Bestandteil, kein Artikel. Jetzt überspringt er sie, derselbe
-     Riegel, den der Nachbarknopf seit Runde 16 hat.
-  2. **Ein Vorschlag liess sich nicht ablehnen.** „— offen —" schickte
-     eine Zeile ohne Artikel hinaus, die Seite warf sie beim Laden weg,
-     die Vorabliste griff wieder — der abgelehnte Vorschlag stand sofort
-     erneut da. Die Datenbank hatte die Ablehnung die ganze Zeit; nur
-     gelesen hat sie niemand. Jetzt hält sie, auch über das Neuladen.
-  Dazu drei B-Funde behoben (Zuordnungen gelten erst nach dem Senden,
-  eine Karte nennt die wartenden Vorschläge, der Hinweis auf eine
-  abweichende Bestätigung steht nicht mehr in der kleinsten Schrift) und
-  ein Eintrag **entfernt**, dessen Begründung ein Schluss statt eines
-  Nachschlagens war („Johannisbeer gespritzt" — geschlossen aus
-  „Mango gespritzt", und es ist nicht derselbe Saft).
-- **Und eine zweite Jagd auf die Reparatur**: 1 A, 2 B, 7 C. Der A-Fund
-  war eine Sackgasse — eine Ablehnung sperrte die Position dauerhaft aus
-  dem Rezeptur-Bildschirm aus, und zurück führte kein Weg. Behoben, samt
-  beider B-Funde: die Rücknahme bei Fehlschlag nimmt jetzt auch die
-  bestätigte Gebindegröße zurück, und die Meldung danach sagt, was
-  wirklich geschehen ist.
-- **Und eine dritte Jagd**: an der Reparatur **kein A, kein B**. Ein
-  B-Fund aus dem Gesamtzustand ist mitgenommen, weil er genau die erste
-  Aufgabe des Morgenbriefs trifft: die Übersicht erklärte **jeden
-  geglückten Mailempfang zum Ausfall** („solange das so bleibt, kommt
-  kein Z-Bericht mehr von selbst herein" hing an jeder Mailnotiz, auch
-  an der Erfolgsmeldung). Am ersten Morgen, an dem die Weiterleitung
-  steht, wäre das ein Alarm, der nie ausgeht. Behoben und mit
-  `tests/mailmeldung.test.mjs` (9 Urteile) festgehalten. Alles in
-  `review/JAGD.md`.
+* `npm test` **581 von 581**
+* Browser: `ui-runde22.cjs` 31/31 · `ui-leitung-echt.cjs` 44/44 ·
+  `ui-runde21.cjs` 19/19 · `ui-runde18.cjs` 54/54
+* Vorabliste gegen **vier echte Berichte** gerechnet: Z 40 (Rohtext aus
+  der Live-D1), Z 41, Z 42, Z 43 und der Fixture-Bericht 37.
+* Zwei Prüfungen hingen an Kassennamen, die offen bleiben sollten, und
+  sind dadurch rot geworden. Beide sind so geändert, dass sie das prüfen,
+  wovon sie handeln — eine davon hängt jetzt an einem erfundenen Namen.
 
-## Keine Migration
+## Nach dem Merge
 
-Es kommt keine Spalte und keine Tabelle dazu. Die Liste steht im Code,
-die Zuordnungstabelle bleibt, wie sie ist. `sw.js` steht auf **v71**.
-`public/index.html` ist nicht angefasst.
+Z 42 und Z 43 im Backoffice einlesen und einmal
+**„Alle Vorschläge übernehmen"** drücken. Der Klick zieht auch die schon
+eingelesenen Berichte Z 40 und Z 41 nach.

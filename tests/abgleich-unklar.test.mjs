@@ -308,14 +308,16 @@ describe("Verkauf nicht bestimmbar: keine Differenz, keine Deutung", () => {
     /* Derselbe Kassenname an drei Tagen, verschiedene Stückzahlen, keine
        Zuordnung — also „offen".
 
-       Hier stand bis Runde 21 „HP Omelett 1 Portion". Seit der
-       Vorabliste ist die Speise dauerhaft als „kommt nicht aus dem
-       Keller" hinterlegt und damit nicht mehr offen. Der Cocktail steht
-       weiter offen — er braucht ein Rezept (`review/MORGENBRIEF.md`). */
+       Der Name ist ABSICHTLICH erfunden. Hier stand bis Runde 21
+       „HP Omelett 1 Portion", danach ein Cocktail — beide sind
+       inzwischen in der Vorabliste gelandet und damit nicht mehr offen,
+       und diese Prüfung ist zweimal daran zerbrochen, obwohl sie von
+       etwas ganz anderem handelt (Summe über das Fenster). Ein Name,
+       den keine Kasse je schreibt, kann auf keiner Liste stehen. */
     const zber = {};
     [5, 3, 4].forEach((n, i) => {
       zber[tage[i]] = { tag: tage[i], nr: 90 + i, umsatz: 0,
-        positionen: [{ name: "Whiskey Sour 1 Glas", anzahl: n, umsatz: n * 4 }] };
+        positionen: [{ name: "Erfundenes Getränk (nur Prüfstand)", anzahl: n, umsatz: n * 4 }] };
     });
     f.setzte({}, {}, zber, [vorgang({ w001: 1 }, {})]);
     const a = f.abgleich(TAG, 3);

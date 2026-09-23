@@ -172,7 +172,19 @@ const VORAB_WEIN = {
   /* Seher · La Petite Frizzante Rosé — der einzige Schaumwein von Seher.
      Der andere Seher im Haus (Wolfgang Seher, Wilde Reben) ist ein
      Weißwein und kann „Sparkling Rosé" nicht sein. */
-  "Glas Seher Sparkling Rosé 0,1l": "w055"
+  "Glas Seher Sparkling Rosé 0,1l": "w055",
+  /* Fritsch (Karl) · Wagram Rosé — Glas. „RS" ist keine Rebsorte,
+     deshalb greift das Kassenmuster nicht. Der Bericht bucht die Flasche
+     desselben Namens unter der Warengruppe Wein · Rosé · Flaschen; es
+     gibt im Haus genau einen Wagram-Rosé. */
+  "RS Fritsch Wagram 1/8 l": "w043",
+  /* Derselbe Wein als Flasche. */
+  "RS Fritsch, Wagram 0,75 l": "w043",
+  /* Kollwentz · Leithakalk Chardonnay — die Kasse schreibt den Winzer
+     klein und ohne t, das Kürzel CH steht für Chardonnay. Von Kollwentz
+     liegen zwei Weine im Haus: der Leithakalk als Zweigelt und als
+     Chardonnay. Das Kürzel entscheidet. */
+  "Ch kollwenz": "w066"
 };
 
 /* Getränke. Jeder Eintrag: der Name der Kasse links, der Name des
@@ -208,42 +220,127 @@ const VORAB_GETRAENK = {
      „gespritzt" heisst Saft plus Soda; hier steht trotzdem der ganze
      Saft. Das hat das Haus so entschieden, es steht seit Wochen in der
      Datenbank, und diese Zeile schreibt nur mit, was ohnehin gilt. */
-  "Mango gespritzt 0,25l 0,25l": "mango"
-  /* Hier stand bis zur vierten Jagd „Johannisbeer gespritzt 0,25l 0,25l"
-     → `johan`, begründet mit „dasselbe Muster wie Mango gespritzt".
-     Das war ein SCHLUSS, kein Nachschlagen — und genau davon lebt diese
-     Liste nicht. „Mango gespritzt" hat das Haus selbst bestätigt;
-     „Johannisbeer gespritzt" niemand. Es steht jetzt im Morgenbrief. */
+  "Mango gespritzt 0,25l 0,25l": "mango",
+  /* „Schwarze Johannisbeere" (Lade 1 · Säfte). Bis Runde 22 stand dieser
+     Name bewusst NICHT hier: er wäre ein Schluss aus dem Mango-Eintrag
+     gewesen, kein Nachschlagen. Am 23.09.2026 hat Casimir ihn
+     ausdrücklich angeordnet — beide Säfte gehen gleich, so wie er
+     „Mango gespritzt" selbst bestätigt hat. Steht damit auf seiner
+     Anweisung, nicht auf einem Schluss. */
+  "Johannisbeer gespritzt 0,25l 0,25l": "johan",
+  /* „Franziskaner Weissbier dunkel" — wörtlich. Das Gegenstück zum
+     hellen Weizen, das seit Wochen auf `hell` bestätigt steht, und das
+     einzige dunkle Weizen im Haus. Warengruppe: Bier · Flaschenbier. */
+  "Hefeweizen dunkel 0,5l": "dunkel",
+  /* „Almdudler" — wörtlich, der einzige im Stamm.
+     Warengruppe: AFG · Softdrinks. */
+  "Almdudler 0,35l": "almd",
+  /* „Gasteiner still" — wörtlich der einzige stille Gasteiner.
+     (Die prickelnden Gasteiner-Grössen sind damit NICHT geklärt; sie
+     stehen weiter offen, siehe `review/MORGENBRIEF.md`.) */
+  "Gasteiner still 0,75l": "gastill",
+  /* „Fentimans Ginger Beer" — wörtlich, Lade 4 · Mischgetränke. Im
+     Bericht vom 22.09. die einzige Zeile der Warengruppe AFG · Bar Mixer. */
+  "Fentimans Ginger Beer 1 Glas": "gingerbeer",
+  /* „Spritzerwein" (Lade 1). Der Bericht bucht diesen Namen unter den
+     offenen Weinen, und im Keller liegt genau ein Spritzerwein. */
+  "Weißer Spritzer": "spritzer"
 };
 
 /* Kommt nicht aus dem Keller. Diese Namen stehen im Z-Bericht, zehren
    aber nichts, was hier gezählt wird — sie gehören dauerhaft aus der
    Zuordnungsliste heraus (Vorgabe Casimir, 20.09.2026).
 
-   Cocktails stehen bewusst NICHT hier: ein Whiskey Sour nimmt
-   Zitronensaft, ein Ipanema Ginger Ale, ein Virgin Hugo Holundersirup —
-   alle drei liegen im Keller und werden gezählt. Sie wegzuwerfen hiesse,
-   ihren Verbrauch später als Schwund wiederzufinden. Sie brauchen ein
-   Rezept und stehen in `review/MORGENBRIEF.md`. */
+   Zu den Mischgetränken siehe den eigenen Block weiter unten. */
 const VORAB_KEIN_KELLER = [
   /* Küche: Beilagen und Zutaten, durchweg mit 0 € gebucht. */
   "Champignons", "Käse", "Paprika", "Pinien", "Rucola", "Schinken",
-  "Schnittlauch", "Speck", "Zwiebeln",
+  "Schnittlauch", "Speck", "Zwiebeln", "Extra Speck",
+  /* Die Tomate steht im Bericht zwischen Käse und Zwiebeln, mit 0 €.
+     Im Keller gibt es einen gleichnamigen Tomatensaft — Runde 22 wollte
+     das nicht raten. Casimir hat den Namen am 22.09. im Backoffice
+     selbst auf Ignorieren gesetzt; diese Zeile schreibt das mit. */
+  "Tomate",
   "HP Omelett 1 Portion", "HP Rührei 1 Portion",
+  /* Küche: ganze Gänge und Buffets. Warengruppen Abendessen und
+     Mittagessen — Speisen, nie ein Getränk. */
+  "Dinner Menü 1 Person", "Abend suppe", "Salatbuffet 1 Person",
   /* Kaffee: Maschine und Kühlschrank, kein Kellerartikel. */
   "Cappuccino 1 Tasse", "Cappuccino Hafer 1 Glas", "Espresso",
   "Espresso doppio 1 Glas", "Espresso Macchiato",
   "Latte Macchiato 1 Glas", "Verlängerter 1 Glas",
-  /* Spirituosen pur, 2 cl: die Bar führt sie, der Keller zählt sie
-     nicht — im Stamm gibt es zu keinem davon einen Artikel. */
+  /* Dieselbe Maschine, dieselbe Milch: Warengruppen Heissgetränke ·
+     Tee und Extra zu Heissgetränke. Tee liegt als Beutel in der Bar,
+     im Stamm steht zu keinem davon ein Artikel. */
+  "Tee Ingwer-Zitrone frisch 1 Tasse", "Tee Kamille 1 Tasse",
+  "Tee Früchtetee 1 Tasse", "Heiße Schokolade 1 Glas",
+  "Golden Milk (Kurkuma Latte) 1 Glas", "Babyccino 1 Tasse",
+  /* Spirituosen pur: die Bar führt sie, der Keller zählt sie
+     nicht — im Stamm gibt es zu keinem davon einen Artikel.
+     Die beiden Schreyer & Muster stehen im Bericht unter der
+     Warengruppe Spirituosen · Schnaps. */
   "Amaro Averna Siciliano 2 cl", "Lagavulin 16 Years 2 cl",
-  "Obstler Durzbauer 2 cl"
+  "Obstler Durzbauer 2 cl", "Zirberl Schreyer & Muster 2 cl",
+  "Zwetschke Schreyer & Muster 2 cl", "Vermouth 12cl",
+  /* Fassbier. Nachgesehen an der Warengruppe: in allen drei Berichten
+     vom 19. bis 23.09. gehen genau diese fünf Namen in Bier · vom Fass
+     auf, Stück für Stück (12 · 7 · 11). Im Keller liegt kein Fass und
+     kein Pils — nur Flaschen. Damit ist die Frage aus dem Morgenbrief
+     beantwortet: das Pils kommt vom Fass. Der Radler steht in derselben
+     Warengruppe; sein Limonadenanteil ist damit nicht geklärt, sondern
+     mit dem Fassbier zusammen aus der Rechnung genommen. */
+  "Raschhofer Pils 0,2l 0,2l", "Raschhofer Pils 0,3l 0,3l",
+  "Raschhofer Pils 0,5l 0,5l", "Radler 0,3l 0,3l", "Radler 0,5l 0,5l",
+  /* Hausgemachte Limonaden. Im Backoffice steht „Hausgemachte Limonade
+     1 Glas" seit dem 22.09. auf Ignorieren — von Casimir selbst
+     bestätigt. Diese beiden Namen sind dieselbe Sache unter anderem
+     Etikett und folgen seiner Entscheidung. */
+  "Hausgemachte Limonade 1 Glas", "Hauslimo 0,25l 0,25l",
+  "Hauslimo 0,5l 0,5l", "Holundersoda 0,5l 0,5l"
+];
+
+/* Mischgetränke: Cocktails, Mocktails, Spritz, Sours, Gin & Tonic, Mules.
+
+   Bis Runde 22 stand hier bewusst nichts. Der Grund gilt unverändert:
+   ein Whiskey Sour nimmt Zitronensaft, ein Ipanema Ginger Ale, ein
+   Virgin Hugo Holundersirup, ein Gin & Tonic Tonic — alles das liegt im
+   Keller und wird gezählt. Auf Ignorieren gesetzt, verschwindet ihr
+   Verbrauch aus der Rechnung und kommt in der nächsten Kellerzählung
+   als Schwund zurück.
+
+   Casimir hat trotzdem so entschieden, und zwar nicht nur in Worten:
+   im Backoffice stehen Aperol Spritz, Sarti Spritz, Monkey Sour und
+   Ipanema seit dem 22.09. von Hand auf Ignorieren. Dieser Block zieht
+   die übrigen Namen derselben Art nach.
+
+   Er steht getrennt, damit das Zurücknehmen ein Handgriff ist: wer
+   Rezepte will, löscht diesen Block und legt sie im Zuordnung-Bildschirm
+   unter „Mischgetränk" an. Eine bestätigte Zuordnung in der Datenbank
+   schlägt diese Liste ohnehin jederzeit. */
+const VORAB_MISCHGETRAENK = [
+  "Amaretto Sour 1 Glas", "Averna Sour 1 Glas", "Whiskey Sour 1 Glas",
+  "Pisco Sour 1 Glas", "Penicillin 1 Glas", "Sanbittèr Sour",
+  "Campari Spritz 1 Glas", "Sanbitter Spritz 1 Glas", "Hugo 1 Glas",
+  "Virgin Hugo 1 Glas", "Nojito 1 Glas", "Kinder Cocktail 1 Glas",
+  "Negroni 1 Glas", "Old fashioned 1 Glas", "Daiquiri 1 Glas",
+  "Margarita 1 Glas", "Espresso Martini 1 Glas", "Pornstar Martini 1 Glas",
+  "Cosmopolitan 1 Glas",
+  "Moscow Mule 1 Glas", "Milano Mule", "Gin Basil Smash 1 Glas",
+  "Gin & Tonic Hendrick's 1 Glas", "Gin & Tonic Monkey 47 Dry 1 Glas",
+  "Gin & Tonic Tanqueray 1 Glas", "Vermouth & Tonic 1 Glas",
+  "Special Cocktail",
+  /* Diese fünf stehen live schon von Hand auf Ignorieren. Sie stehen
+     hier trotzdem: sonst wäre die Liste bei genau den Namen stumm, an
+     denen sich die Entscheidung ablesen lässt. */
+  "Aperol Spritz 1 Glas", "Sarti Spritz 1 Glas", "Monkey Sour 1 Glas",
+  "Ipanema 1 Glas", "Campari Orange 1 Glas"
 ];
 
 export const VORAB = {
   ...VORAB_WEIN,
   ...VORAB_GETRAENK,
-  ...Object.fromEntries(VORAB_KEIN_KELLER.map(n => [n, null]))
+  ...Object.fromEntries(VORAB_KEIN_KELLER.map(n => [n, null])),
+  ...Object.fromEntries(VORAB_MISCHGETRAENK.map(n => [n, null]))
 };
 
 /* Nachschlagen, sonst nichts. Kein Vergleich, kein Teilstück, keine
