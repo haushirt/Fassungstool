@@ -100,7 +100,7 @@ CREATE TABLE fassungszeile (
 );
 
 -- `ausschank_ml` kommt aus migrations/002_mapping_ausschank.sql und ist
--- VOR dem Merge von Runde 21 einzuspielen. Der Worker fragt zur Laufzeit
+-- VOR dem Merge von Runde 23 einzuspielen. Der Worker fragt zur Laufzeit
 -- nach (`kannAusschank`) und kommt ohne die Spalte aus.
 CREATE TABLE mapping (
   fremd      TEXT PRIMARY KEY,

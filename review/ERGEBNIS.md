@@ -115,18 +115,28 @@ Laufzeit ab und merkt sich ein „Nein" höchstens eine Minute.
 
 ## Nachweis
 
-* `npm test`: **634 von 634** grün (vorher 608; 26 neue in
-  `tests/artikelgroessen`, `tests/fassbier`, `tests/migration-002`).
+* **Eine Jagd vor dem Veröffentlichen**, und sie hat drei A- und zwei
+  B-Funde gemeldet — alle in dem, was diese Runde gebaut hat, alle an der
+  Seite, auf der 95 Zahlen eingetippt werden. Alle behoben, jeder mit
+  einer Prüfung, die ihn nachstellt (`review/JAGD.md`). Der Kern: zwei
+  Änderungen kurz nacheinander löschten einander, ein halb getippter Wert
+  wurde als „bestätigt" gespeichert, und eine vom Server abgewiesene
+  Änderung galt im Gerät trotzdem.
+* `npm test`: **644 von 644** grün (vorher 608; 36 neue in
+  `tests/artikelgroessen`, `tests/fassbier`, `tests/migration-002`,
+  `tests/groessen-schreiben`).
 * **Gegenproben gefahren.** Die neue Stufe zurückgebaut → 3 Prüfungen in
   `artikelgroessen` und 3 in `fassbier` fallen. Die Ausnahme in der App
-  zurückgebaut → 1 weitere fällt.
+  zurückgebaut → 1 weitere. Die Reparatur der Artikelliste zurückgebaut →
+  3 in `groessen-schreiben` und 2 im Browser.
 * **Am echten Bericht 37:** Raschhofer Pils 1×0,3 l + 2×0,5 l = 1,30 l =
   0,03 Fass, und `fasspils` steht in **keiner** Differenzzeile. Ohne die
   Handzahlen käme 5,40 l statt 4,75 l heraus — plausibel und falsch.
-* Oberfläche von Hand (nicht Teil von `npm test`): `ui-mass` (LAUF=runde-23)
+* Oberfläche von Hand (nicht Teil von `npm test`): `ui-mass` (LAUF=runde-23b)
   alle Urteile grün in sechs Breiten, Gestaltungsschicht wortgleich ·
-  `ui-runde22` 31/31 · `ui-runde21` 19/19 · `ui-runde18` 54/54 ·
-  `ui-runde17` 38/38 · `ui-leitung-echt` 44/44 · `ui-fremdgeraet` 10/10.
+  `ui-runde23` 11/11 · `ui-runde22` 31/31 · `ui-runde21` 19/19 ·
+  `ui-runde18` 54/54 · `ui-runde17` 38/38 · `ui-leitung-echt` 44/44 ·
+  `ui-fremdgeraet` 10/10.
 * Am echten Backoffice bei 1440 und 393 px gemessen: kein Überlauf,
   nichts abgeschnitten, kein Querscrollen, alle 190 Zahlenfelder gleich
   breit auf zwei Kanten, keine JS-Fehler.

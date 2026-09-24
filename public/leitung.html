@@ -1053,6 +1053,7 @@ const K_MAP="hh_map_v1", K_ZBER="hh_zberichte_v1", K_EINST="hh_einst_v1";
 const K_GEB="hh_gebinde_v1";        /* Abschrift von mapping.gebinde_ml */
 const K_AUS="hh_ausschank_v1";      /* Abschrift von mapping.ausschank_ml */
 const K_GRO="hh_groessen_v1";       /* Abschrift von stamm.groessen */
+const K_KANN="hh_kann_ausschank_v1"; /* letzter bekannter Stand des Schalters */
 const K_CODES="hh_codes_v1", K_ROLLEN="hh_rollen_v1", K_REZ="hh_rezepte_v1";
 const K_SPANNE="hh_spanne_v1";      /* gewählter Zeitraum, überlebt das Neuladen */
 
@@ -1078,7 +1079,15 @@ let AUS_BEST = lese(K_AUS) || {};
    Server (`kann.ausschank`), und zwar bei jedem Laden neu. Bewusst NICHT
    im localStorage: der Vorrat ist die Abschrift der WERTE, nicht die des
    Schalters. Ohne Netz ist er aus, und die Seite ist genau die von heute. */
-let KANN_AUS = false;
+/* BERICHTIGT (Jagd Runde 23 · B1): Er startete bei jedem Laden auf
+   `false` und wurde nur bei geglücktem Abruf gesetzt. Offline ist aber
+   der Normalfall — und dann zeigte eine Zeile mit einem Fassartikel
+   gleichzeitig „— offen —" im Auswahlfeld und „festgelegt" in der
+   Zustandsspalte; ein Griff in das Feld hob die Zuordnung auf.
+   Der letzte bekannte Stand wird deshalb mitgeschrieben, wie die Werte
+   auch. Er sagt nichts über die Datenbank von JETZT — aber er ist das
+   Letzte, was jemand wirklich gesehen hat, und das schlägt „nein". */
+let KANN_AUS = !!lese(K_KANN);
 let ZBER  = lese(K_ZBER) || {};     /* Betriebstag → geparster Z-Bericht */
 let REZ   = lese(K_REZ) || {};      /* Kassenname → [{id, ml}] für Mischgetränke */
 const ROLLNAME={service:"Service", wirtschaft:"Wirtschaft", leitung:"Leitung"};
@@ -1884,6 +1893,7 @@ async function ladeZuordnung(){
     /* Fehlt `kann`, ist es eine ältere Antwort — dann gibt es die Spalte
        nicht, und die Seite bleibt die von vorher. */
     KANN_AUS = !!(j.kann && j.kann.ausschank);
+    schreib(K_KANN, KANN_AUS);
     (j.mapping||[]).forEach(m=>{
       if(m.ignoriert) neu[m.kassenname]="__ignoriert";
       else if(m.artikel) neu[m.kassenname]=m.artikel;
@@ -1913,25 +1923,64 @@ async function ladeGroessen(){
     const r=await fetch("/api/stamm",{headers:{Accept:"application/json"}});
     if(!r.ok) return false;
     const j=await r.json();
-    GROESSEN = (j && j.groessen) || {};
+    /* Eine beschädigte Zeile in `stamm` liefert `null`. Das ist etwas
+       anderes als „es steht nichts darin" — und dürfte NICHT die
+       Abschrift dieses Geräts überschreiben (Jagd Runde 23 · C8). */
+    if(!j || !("groessen" in j)) { GROESSEN={}; schreib(K_GRO,GROESSEN); return true; }
+    if(j.groessen===null) return false;
+    GROESSEN = j.groessen || {};
     schreib(K_GRO, GROESSEN); return true;
   }catch(e){ return false; }
 }
 
 /* Und zurück. Die ganze Liste in einem Zug: sie wird als Ganzes
-   angesehen und bestätigt, nicht Artikel für Artikel. */
-async function sendeGroessen(neu){
-  try{
-    const r=await fetch("/api/stamm",{method:"POST",
-      headers:{"content-type":"application/json"},
-      body:JSON.stringify({schluessel:"groessen", wert:neu})});
-    if(r.ok){ GROESSEN=neu; schreib(K_GRO,GROESSEN); return true; }
-    toast(r.status===403 ? "Nur die Leitung darf Größen festlegen" : "Nicht gespeichert");
-  }catch(e){ toast("Keine Verbindung — die Größen sind nur auf diesem Gerät"); }
-  /* Auch ohne Server im Gerät merken: Die Seite rechnet damit weiter, und
-     der nächste geglückte Abruf holt den Serverstand zurück. */
-  GROESSEN=neu; schreib(K_GRO,GROESSEN);
-  return false;
+   angesehen und bestätigt, nicht Artikel für Artikel.
+
+   ZWEI FUNDE der Jagd nach Runde 23 stecken in dieser Funktion, beide
+   gemessen, beide mit Datenverlust:
+
+   A1 · Der Aufrufer baute seinen Körper aus einem SCHNAPPSCHUSS von
+   `GROESSEN`, und hier wurde `GROESSEN` erst NACH dem `await` gesetzt.
+   Zwei Änderungen 60 ms auseinander: geschrieben `{w001:1500}`, dann
+   `{w005:375}` — in der Datenbank stand danach nur `{w005:375}`. w001
+   war weg, auf dem Server und im Gerät, ohne eine Meldung. Eine Zeile
+   trägt alle 95 Artikel; wer aus einem alten Stand baut, löscht den
+   neueren mit. Deshalb: `GROESSEN` wird vom Aufrufer SYNCHRON gesetzt,
+   diese Funktion schickt den dann geltenden Stand, und die Anfragen
+   laufen in einer Kette hintereinander — sonst kommen sie in
+   umgekehrter Reihenfolge an.
+
+   A3 · Nach 403, 500 und Netzausfall führten alle Wege auf „trotzdem
+   übernehmen". Gemessen: Rolle `wirtschaft` (403) — die Datenbank hält
+   750, das Gerät rechnet 1500, jede Differenz dieses Geräts ist
+   halbiert. Und bei 500 stand der Wert im Gerät und war nach dem
+   Neuladen spurlos weg. Die Nachbarfunktion `sendeZuordnung` macht seit
+   Runde 22 das Gegenteil und begründet es. Jetzt beide gleich: Was der
+   Server nicht angenommen hat, gilt auch hier nicht. */
+let groessenKette = Promise.resolve();
+function sendeGroessen(){
+  /* Der Stand VOR dem Versuch — dorthin geht es zurück, wenn der Server
+     ablehnt. Nicht der Stand vor dem Tippen: dazwischen kann eine
+     andere Änderung durchgegangen sein, die stehen bleiben soll. */
+  groessenKette = groessenKette.then(async () => {
+    const gesendet = JSON.parse(JSON.stringify(GROESSEN));
+    try{
+      const r=await fetch("/api/stamm",{method:"POST",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({schluessel:"groessen", wert:gesendet})});
+      if(r.ok){ schreib(K_GRO,GROESSEN); return true; }
+      toast(r.status===403 ? "Nur die Leitung darf Größen festlegen"
+                           : "Nicht gespeichert — es bleibt beim alten Stand");
+    }catch(e){ toast("Keine Verbindung — es bleibt beim alten Stand"); }
+    /* Zurück auf das, was der Server hat. `ladeGroessen` ist der einzige
+       Weg, der `GROESSEN` gültig setzt; scheitert auch der, bleibt die
+       Abschrift des Geräts stehen, und die ist der letzte bestätigte
+       Stand. */
+    await ladeGroessen();
+    zeichne();
+    return false;
+  });
+  return groessenKette;
 }
 
 /* Eine Zuordnung geht sofort hinaus. Der Worker zieht die schon
@@ -2351,15 +2400,28 @@ function ausschankMenge(name, artId){
   if(hand) return {ml:hand, woher:"hand"};
   const ausName = mlAusText(name);
   if(ausName) return {ml:ausName, woher:"name"};
-  /* Zuletzt die Glasmenge des Artikels („Glas Sekt 100 ml").
-     Die Reihenfolge ist hier der ganze Punkt: Der KASSENNAME muss die
-     Artikelregel schlagen. „Prosecco, Serena 0,75l" ist eine ganze
-     Flasche — griffe die Sekt-Regel davor, stünden 0,13 Flaschen statt
-     einer. Die Artikelregel gilt nur dort, wo der Name schweigt. */
-  const regel = +((GROESSEN[artId]||{}).a)||0;
-  if(regel) return {ml:regel, woher:"regel"};
+  /* Und sonst NICHTS — kein Rückfall auf die Glasmenge des Artikels.
+
+     ZURÜCKGEBAUT (Jagd Runde 23 · B2). Hier stand eine dritte Stufe:
+     sagt der Kassenname keine Menge, gilt `GROESSEN[artId].a`. Sie war
+     gut gemeint (Casimirs „ein Glas Wein 125ml") und im Ergebnis genau
+     der Fehler, gegen den die Entscheidung aus Runde 6 steht.
+     Nachgerechnet: „Flasche Leindl Langenlois" × 3 wurde damit zu 0,5
+     Flaschen statt 3 — Faktor 1/6, lautlos. Vorher stand dort sichtbar
+     „keine Menge je Verkauf".
+
+     Der Grund ist einfach: An einem Kassennamen ohne Zahl ist nicht zu
+     erkennen, ob er ein Glas oder eine Flasche meint. Die Glasmenge des
+     Artikels bleibt deshalb ein ANGEBOT — im Abschnitt „Nicht
+     gerechnet" steht sie als Knopf („als Glas rechnen · 125 ml") und
+     wird mit einem Klick für DIESEN Kassennamen festgeschrieben. Danach
+     kommt sie als `hand` zurück, sichtbar und von jemandem gewollt. */
   return {ml:0, woher:"keine"};
 }
+
+/* Die Glasmenge, die für diesen Artikel hinterlegt ist — als Vorschlag
+   für eine Position, deren Kassenname keine Menge trägt. */
+const glasVorschlag = artId => +((GROESSEN[artId]||{}).a) || 0;
 
 /* Verkauf in Flaschen: (anzahl × ausschank_ml) / gebinde_ml.
    Fehlt eine der beiden Zahlen, wird KEINE erfunden — die Position bleibt
@@ -3710,8 +3772,8 @@ function vAbgleich(m){
     s.innerHTML=`<div class="hinweis">${a.ignoriert.length} Kassenname${a.ignoriert.length===1?"":"n"}
       (${num(a.stkIgnoriert)} Einheiten) ${a.ignoriert.length===1?"steht":"stehen"} auf „Ignorieren“
       im Zeitraum ${esc(deTag(a.von))} bis ${esc(deTag(a.bis))} und
-      ${a.ignoriert.length===1?"zählt":"zählen"} nicht als Verkauf — richtig für Speisen, Kaffee
-      Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf hier, und seine
+      ${a.ignoriert.length===1?"zählt":"zählen"} nicht als Verkauf — richtig für Speisen
+      und Kaffee. Steht dort ein Getränk aus dem Keller, fehlt sein Verkauf hier, und seine
       Zeile sieht aus, als stimme sie.
       <button class="b klein" id="bIgn" style="margin-left:8px">Nachsehen</button></div>`;
     m.appendChild(s); $("#bIgn").onclick=()=>{ SEITE="zuordnung"; zeichne(); };
@@ -3760,10 +3822,21 @@ function vAbgleich(m){
                <button class="b klein" data-geb="${esc(o.name)}" data-art="${esc(o.id)}"
                  data-ml="${o.geb.ml}">Übernehmen</button></span>`
           : o.rezept ? '<span class="dim">kein Knopf an dieser Zeile — die Größe gehört zum Bestandteil und wird an dessen eigener Kassenposition bestätigt</span>'
+          /* Der Kassenname sagt keine Menge, aber für den Artikel ist
+             eine Glasmenge hinterlegt. Sie gilt NICHT von selbst — an
+             einem Namen ohne Zahl ist nicht zu erkennen, ob er ein Glas
+             oder eine Flasche meint (Jagd Runde 23 · B2). Ein Klick
+             schreibt sie für DIESEN Kassennamen fest. */
+          : o.fehlt==="ausschank" && KANN_AUS && glasVorschlag(o.id)
+          ? `<span class="vorschlag"><span>${glasVorschlag(o.id)} ml <span class="mini">(Glas laut Artikelliste)</span></span>
+               <button class="b klein" data-glas="${esc(o.name)}" data-art="${esc(o.id)}"
+                 data-ml="${glasVorschlag(o.id)}">Als Glas rechnen</button></span>`
           : o.fehlt==="ausschank" ? '<span class="dim">kein Vorschlag — Kassenname oder Rezeptur nötig</span>'
           : '<span class="dim">kein Vorschlag — Gebindegröße von Hand eintragen</span>'}</td>
       </tr>`).join("")}</tbody></table></div>`;
     m.appendChild(s);
+    s.querySelectorAll("button[data-glas]").forEach(b=>b.onclick=()=>
+      setzeAusschank(b.dataset.glas, b.dataset.art, +b.dataset.ml));
     s.querySelectorAll("button[data-geb]").forEach(b=>b.onclick=()=>
       bestaetigeGebinde(b.dataset.geb, b.dataset.art, +b.dataset.ml));
 
@@ -3827,13 +3900,13 @@ function vAbgleich(m){
           ${t.zeilen.map(z=>`<tr><td>${esc(z.name)}</td>
             <td class="r zahl">${num(z.anzahl)}</td>
             <td class="r zahl">${z.aus} ml <span class="mini">${esc(woher1(z.woher))}</span></td>
-            <td class="r zahl">${(z.ml/1000).toFixed(2).replace(".",",")}</td></tr>`).join("")}
+            <td class="r zahl">${liter2(z.ml/1000)}</td></tr>`).join("")}
           <tr class="zwt"><td>Summe</td><td class="r zahl">${num(t.stk)}</td><td></td>
-            <td class="r zahl">${liter.toFixed(2).replace(".",",")} l</td></tr>
+            <td class="r zahl">${liter2(liter)} l</td></tr>
           </tbody></table></div>
-          <div class="mini" style="margin-bottom:14px"><b>${t.fl.toFixed(2).replace(".",",")} ${
+          <div class="mini" style="margin-bottom:14px"><b>${liter2(t.fl)} ${
             esc(t.fl>=2?nv.mehrzahl:nv.einheit)}</b>${
-            g.ml?" · bei "+(g.ml/1000)+" l je "+esc(nv.einheit):""}</div>`;
+            g.ml?" · bei "+liter2(g.ml/1000)+" l je "+esc(nv.einheit):""}</div>`;
       }).join("")}`;
     m.appendChild(fs);
   }
@@ -3944,6 +4017,24 @@ function csvAbgleich(tag,a){
         :o.rezept?"Größe am Bestandteil bestätigen"
         :"Gebindegröße von Hand eintragen",
       sammelbar(o)?(o.geb.ml||""):""].map(e).join(";"))); }
+  /* Vom Fass gehört mit hinaus. Die Lehre aus Runde 18 steht im Log:
+     „Eine Wahrheit mit mehreren Lesern heilt man nicht bei einem Leser."
+     Ohne diesen Block sagte der Kopf „davon gerechnet 23", und die
+     Zeilen trugen 20 (Jagd Runde 23 · C3). */
+  const fassIds=Object.keys(a.fass||{});
+  if(fassIds.length){
+    L.push("", "Vom Fass (kein Kellerbestand, keine Differenz)");
+    L.push(["Artikel","Kassenname","Anzahl","ins Glas ml","woher","Liter","Gebinde"]
+      .map(e).join(";"));
+    fassIds.forEach(id=>{
+      const t=a.fass[id], nv=NV[id]||{einheit:"Gebinde"};
+      t.zeilen.forEach(z=>L.push([artName(id), z.name, z.anzahl, z.aus,
+        z.woher==="hand"?"von Hand":z.woher==="regel"?"Regel":"aus dem Namen",
+        liter2(z.ml/1000), ""].map(e).join(";")));
+      L.push([artName(id), "Summe", t.stk, "", "", liter2(t.ml/1000),
+        liter2(t.fl)+" "+nv.einheit].map(e).join(";"));
+    });
+  }
   hol("abgleich_"+(a.spanne>1?a.von+"_bis_"+a.bis:tag)+".csv",
       "\uFEFF"+L.join("\r\n"), "text/csv");
 }
@@ -4157,8 +4248,30 @@ function druckDifferenzen(tag, a){
         <td>${esc(UNKLAR_GRUND[r.unklar]||"Verkauf nicht bestimmbar")}</td></tr>`).join("")}
       </tbody></table>` : "";
 
+  /* Vom Fass gehört auf dasselbe Blatt — es ist das Blatt, das aus dem
+     Haus geht, und die Fassmengen stecken in „davon gerechnet" im Kopf.
+     Ohne diesen Block nennt der Kopf 23 und die Zeilen tragen 20
+     (Jagd Runde 23 · C3). Keine Differenzspalte: ein Fass hat keine
+     Gegenseite. */
+  const fassIds=Object.keys(a.fass||{});
+  const fassBlatt = fassIds.length ? `<h2>Vom Fass</h2>
+    <p class="mini">Was die Kasse gebucht hat, umgerechnet auf Fässer. Fässer werden nicht
+      gezählt und stehen in keiner Differenz.</p>
+    ${fassIds.map(id=>{ const t=a.fass[id], nv=NV[id]||{einheit:"Gebinde", mehrzahl:"Gebinde"};
+      return `<table><thead><tr><th>${esc(artName(id))}</th>
+        <th class="r">Stk</th><th class="r">ins Glas</th><th class="r">Liter</th>
+        </tr></thead><tbody>
+        ${t.zeilen.map(z=>`<tr><td>${esc(z.name)}</td><td class="r">${num(z.anzahl)}</td>
+          <td class="r">${z.aus} ml <span class="mini">${
+            esc(z.woher==="hand"?"von Hand":z.woher==="regel"?"Regel":"aus dem Namen")}</span></td>
+          <td class="r">${liter2(z.ml/1000)}</td></tr>`).join("")}
+        <tr class="zwt"><td>${liter2(t.fl)} ${esc(t.fl>=2?nv.mehrzahl:nv.einheit)}</td>
+          <td class="r">${num(t.stk)}</td><td></td>
+          <td class="r">${liter2(t.ml/1000)} l</td></tr>
+        </tbody></table>`; }).join("")}` : "";
+
   drucke("Verkauf ↔ Fassung · was nicht aufgeht",
-    kopf + zeilen + rest
+    kopf + zeilen + rest + fassBlatt
     + `<div class="fuss">Gerechnet in Flaschen: Anzahl × Ausschank in Millilitern, geteilt durch
        das Gebinde. Was am Abend verkauft wird, holt oft erst der nächste Tag nach — über einen
        einzelnen Tag verschiebt das jede Zeile, über eine Woche gleicht es sich aus.
@@ -4538,8 +4651,9 @@ function vZuordnung(m){
   m.innerHTML=`<section><h2>Zuordnung</h2>
     <div class="unter">Kassenname zu Artikel. Weine mit Rebsorten-Kürzel gehen automatisch durch.
     Getränke folgen keiner Systematik — jedes wird einmal bestätigt und ist danach festgelegt.
-    „Ignorieren“ ist ein vollwertiger Zustand: Speisen und Kaffee. Bier vom Fass gehört
-    NICHT mehr dazu — es hat seit Runde 23 einen eigenen Artikel und wird gerechnet.
+    „Ignorieren“ ist ein vollwertiger Zustand: Speisen und Kaffee.${KANN_AUS
+      ? " Bier vom Fass gehört NICHT mehr dazu — es hat einen eigenen Artikel und wird gerechnet."
+      : ""}
     Was „vorgeschlagen“ heißt, ist einzeln nachgesehen, aber noch nicht bestätigt —
     der Knopf unten nimmt alle Vorschläge auf einmal an.</div></section>`;
 
@@ -4749,26 +4863,39 @@ function groessenListe(){
   return [
     {t:"Wein",      zeilen: WINES.map(w=>zeile(w.id))},
     {t:"Getränke",  zeilen: GIDS.map(zeile)},
-    {t:"Vom Fass",  zeilen: NUR_VERKAUF.map(a=>zeile(a.id))}
+    /* Denselben Schalter wie die Auswahlgruppe in der Zuordnung: Ohne
+       Migration lässt sich der Fassartikel nicht zuordnen, also hat es
+       auch keinen Sinn, hier eine Grösse für ihn zu hinterlegen. */
+    {t:"Vom Fass",  zeilen: KANN_AUS ? NUR_VERKAUF.map(a=>zeile(a.id)) : []}
   ].filter(g=>g.zeilen.length);
+}
+
+/* Der Satz unter dem Artikelnamen. Steht ausserhalb der Tafel, weil ihn
+   nach einer Änderung auch die Auffrischung einer EINZELNEN Zeile
+   braucht — und die darf die ganze Ansicht nicht neu bauen (A2). */
+const satzZu = z =>
+    z.steht  ? `<div class="quelle regel">gilt${z.satz?" · "+esc(z.satz):""}</div>`
+  : z.bereit ? `<div class="quelle">${esc(z.satz)} — noch nicht übernommen</div>`
+             : `<div class="quelle fehlt">fehlt — rechnet nicht mit</div>`;
+
+function fussSatz(){
+  const alle = groessenListe().flatMap(g=>g.zeilen);
+  const steht    = alle.filter(z=>z.steht).length;
+  const bereit   = alle.filter(z=>z.bereit).length;
+  const handisch = alle.filter(z=>!z.steht && !z.bereit).length;
+  return steht+" von "+alle.length+" Artikeln rechnen."
+    + (bereit?" "+bereit+" weitere stehen als Vorgabe bereit — ein Klick auf den Knopf.":"")
+    + (handisch?" Für "+handisch+" gibt es keine Vorgabe; die brauchen eine Zahl von Hand.":"");
 }
 
 function groessenTafel(){
   const G = groessenListe();
-  const alle = G.flatMap(g=>g.zeilen);
-  const offen    = alle.filter(z=>!z.steht).length;
-  const bereit   = alle.filter(z=>z.bereit).length;
-  const handisch = alle.filter(z=>!z.steht && !z.bereit).length;
   const zFeld = (id,art,wert,vor) =>
-    `<input class="zahl-e" type="number" min="1" max="200000" step="1"
+    `<input class="zahl-e" type="number" min="${art==="g"?50:10}" max="200000" step="1"
        data-gid="${esc(id)}" data-art="${art}"
        value="${wert!=null?wert:""}" placeholder="${vor!=null?vor:"ml"}">`;
-  const satzZu = z =>
-      z.steht  ? `<div class="quelle regel">gilt${z.satz?" · "+esc(z.satz):""}</div>`
-    : z.bereit ? `<div class="quelle">${esc(z.satz)} — noch nicht übernommen</div>`
-               : `<div class="quelle fehlt">fehlt — rechnet nicht mit</div>`;
   const zeile = z => `<tr>
-      <td>${esc(z.name)}${satzZu(z)}</td>
+      <td data-zeile="${esc(z.id)}">${esc(z.name)}${satzZu(z)}</td>
       <td class="r nw">${zFeld(z.id,"g",z.g,z.vg)}</td>
       <td class="r nw">${zFeld(z.id,"a",z.a,z.va)}</td></tr>`;
   const kopf = g => {
@@ -4793,44 +4920,77 @@ function groessenTafel(){
     </tr></thead><tbody>${G.map(g=>kopf(g)+g.zeilen.map(zeile).join("")).join("")}</tbody></table></div>
     <div class="reihe" style="margin-top:14px">
       <button class="b stark" id="gAlle">Alle Vorgaben übernehmen</button></div>
-    <div class="mini" style="margin-top:8px">${alle.length-offen} von ${alle.length} Artikeln rechnen.${
-      bereit?" "+bereit+" weitere stehen als Vorgabe bereit — ein Klick auf den Knopf.":""}${
-      handisch?" Für "+handisch+" gibt es keine Vorgabe; die brauchen eine Zahl von Hand.":""}</div>`;
+    <div class="mini" id="gFuss" style="margin-top:8px">${esc(fussSatz())}</div>`;
 
   /* Ein Feld ändern schreibt sofort — wie überall sonst auf dieser Seite
      auch (Zuordnung, Gebinde). Ein „Speichern" für eine Tabelle mit 95
      Zeilen wäre eine Falle: wer zwischendurch die Ansicht wechselt,
-     verlöre alles. */
+     verlöre alles.
+
+     ZWEI FUNDE der Jagd nach Runde 23 hängen an diesen zwanzig Zeilen:
+
+     A1 · Der Körper wurde aus `Object.assign({}, GROESSEN)` gebaut —
+     einem Schnappschuss VOR der Anfrage. Zwei Änderungen kurz
+     nacheinander löschten einander. `GROESSEN` wird jetzt SYNCHRON
+     geändert, bevor gesendet wird; `sendeGroessen` liest den dann
+     geltenden Stand.
+
+     A2 · Danach lief `zeichne()`. Das baut `vEinst` neu, das Feld im
+     Fokus fliegt aus dem DOM, und Chrome feuert darauf `change` mit dem
+     BRUCHSTÜCK. Gemessen: „750" über ein `zeichne()` hinweg getippt →
+     `{"g":7}` in der Datenbank, als bestätigt gerechnet, drei Achtel
+     wurden zu 53,57 Flaschen. Deshalb hier kein `zeichne()` mehr — nur
+     die eine Zeile und die Fußzeile werden aufgefrischt. */
+  const frischeZeile = id => {
+    const z = groessenListe().flatMap(g=>g.zeilen).find(x=>x.id===id);
+    const td = s.querySelector('td[data-zeile="'+CSS.escape(id)+'"]');
+    if(z && td) td.innerHTML = esc(z.name) + satzZu(z);
+    const f = s.querySelector("#gFuss");
+    if(f) f.textContent = fussSatz();
+  };
+
   s.querySelectorAll("input[data-gid]").forEach(inp=>{
+    const vorher = inp.value;
     inp.onchange=async()=>{
       const id=inp.dataset.gid, art=inp.dataset.art, n=+inp.value||0;
-      const neu=Object.assign({}, GROESSEN);
-      const e=Object.assign({}, neu[id]||{});
+      /* Ein Band gegen den Vertipper. `min="1"` liess 7 ml zu, und aus
+         „75" statt „750" wurden lautlos 6,67 statt 0,667 Flaschen — eine
+         Zahl, die bis in den Euro-Wert auf dem Differenzblatt läuft.
+         50 ml, weil das kleinste echte Gebinde im Haus die 0,1-l-Flasche
+         ist; 200 000, weil ein 50-l-Fass das grösste ist und Platz für
+         das Doppelte bleiben soll. */
+      const UNTEN = art==="g" ? 50 : 10, OBEN = 200000;
+      if(n && (n<UNTEN || n>OBEN)){
+        inp.value = vorher;
+        return toast(n+" ml ist keine Größe, die es hier gibt — "
+                     +UNTEN+" bis "+OBEN+" ml");
+      }
+      const e=Object.assign({}, GROESSEN[id]||{});
       if(n>0) e[art]=n; else delete e[art];
-      if(e.g==null && e.a==null) delete neu[id]; else neu[id]=e;
-      const ok=await sendeGroessen(neu);
-      zeichne();
-      toast(ok ? (n>0 ? artName(id)+": "+n+" ml" : artName(id)+" — Zahl entfernt")
-               : "Nur auf diesem Gerät gemerkt");
+      /* Synchron, VOR dem Senden — siehe A1 oben. */
+      if(e.g==null && e.a==null) delete GROESSEN[id]; else GROESSEN[id]=e;
+      frischeZeile(id);
+      const ok=await sendeGroessen();
+      if(ok) toast(n>0 ? artName(id)+": "+n+" ml" : artName(id)+" — Zahl entfernt");
+      /* Bei einer Absage hat `sendeGroessen` schon zurückgesetzt und
+         neu gezeichnet; der Toast von dort bleibt stehen. */
     };
   });
 
   const b=s.querySelector("#gAlle");
   if(b) b.onclick=async()=>{
-    const neu=Object.assign({}, GROESSEN);
     let n=0;
     groessenListe().forEach(g=>g.zeilen.forEach(z=>{
-      const e=Object.assign({}, neu[z.id]||{});
+      const e=Object.assign({}, GROESSEN[z.id]||{});
       /* Nur füllen, nie überschreiben: Was ein Mensch eingetragen hat,
          wiegt schwerer als jede Regel. */
       if(e.g==null && z.vg!=null){ e.g=z.vg; n++; }
-      if(e.a==null && z.va!=null){ e.a=z.va; }
-      if(e.g!=null || e.a!=null) neu[z.id]=e;
+      if(e.a==null && z.va!=null){ e.a=z.va; n++; }
+      if(e.g!=null || e.a!=null) GROESSEN[z.id]=e;
     }));
     if(!n) return toast("Es ist schon alles hinterlegt, was eine Vorgabe hat");
-    const ok=await sendeGroessen(neu);
-    zeichne();
-    toast(ok ? n+" Größen übernommen" : "Nur auf diesem Gerät gemerkt");
+    const ok=await sendeGroessen();
+    if(ok){ zeichne(); toast(n+" Größen übernommen"); }
   };
   return s;
 }
@@ -5010,6 +5170,12 @@ function vgMengen(v){
     return s+" Fl. gezählt (Getränke)";
   });
 }
+/* Zwei Nachkommastellen mit Komma. `num()` rundet auf eine Stelle und
+   wäre hier zu grob: 0,03 Fass würde zu 0,0. Deutsches Komma, weil der
+   Rest des Hauses eins hat — roh gedruckt stand dort „50.5 l"
+   (Jagd Runde 23 · C4). */
+const liter2 = n => (Math.round((+n||0)*100)/100).toFixed(2).replace(".",",");
+
 const vgName = id => { const w=byId(id); return w ? w.winzer+" · "+w.wein+" "+w.jg : GN(id); };
 
 /* ── Der Laufweg durch den Keller ────────────────────────────────────

@@ -569,3 +569,11 @@ mitzählt: „36 Zuordnungen vom Server" neben „Feste Zuordnungen 15".
 | niedrig | **33 von 37 Getränken haben keine Größe.** Sie stehen in der Liste und sagen es; ausfüllen muss sie jemand, der die Flaschen kennt. Für `st03` („Stiegl 0,0 % · 0,33") ist das besonders unangenehm: ein Mensch liest 0,33 l, der Parser liest nichts, weil die Einheit fehlt. | Einstellungen · Artikelgrößen |
 | niedrig | **`EINST` und `REZ` liegen weiter nur im Gerätespeicher.** Die Artikelgrößen sind jetzt in der Datenbank; diese beiden nicht. Zwei Geräte rechnen damit weiter verschieden. Der Weg steht jetzt offen (`POST /api/stamm`). | `public/leitung.html` |
 | niedrig | **`vVorgaenge` ist ein toter Menüpunkt** — definiert, aber in keiner `SEITEN`-Zeile und keinem `ANSICHT`-Eintrag. | `public/leitung.html` (`vVorgaenge`) |
+
+### Nachtrag · Jagd vor dem Veröffentlichen (Runde 23)
+
+| Priorität | Punkt | Datei:Zeile |
+|---|---|---|
+| niedrig | **„Gestern" wird ein zweites Mal gerechnet.** Der neue Block in `vHeute` bildet den Vortag mit `new Date(iso+"T12:00")` und `toISOString()` statt mit `tagMinus()`, das genau dafür existiert. In Wien gleich; östlich von UTC+12 fällt das Wort „Gestern" auf „Zuletzt" zurück. | `public/leitung.html` (`vHeute`, Frage-1-Block) |
+| niedrig | **Zwei Quellen für eine gezeigte Beziehung.** Die Fußzeile des Fass-Blocks nennt `gebindeGroesse(id, null)`, die Summe darüber stammt aus `gebindeGroesse(id, kassenname)` je Zeile. Heute nicht erreichbar, aber es sind zwei Wege zu derselben Zahl. | `public/leitung.html` (Abschnitt „Vom Fass") |
+| niedrig | **„Es ist schon alles hinterlegt" kann zu früh kommen.** Der Knopf zählt seit der Reparatur Gebinde UND Glasmengen; sind alle Gebinde von Hand gesetzt und alle Glasmengen leer, stimmt der Satz wieder nicht. | `public/leitung.html` (`groessenTafel`, `#gAlle`) |

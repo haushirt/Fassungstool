@@ -39,7 +39,7 @@ function backoffice() {
   vm.createContext(s);
   vm.runInContext(QUELLE + `
     globalThis.zeichne = () => {};
-    globalThis.__f = { vorgabe, gebindeGroesse, flaschen, ausschankMenge, byId,
+    globalThis.__f = { vorgabe, gebindeGroesse, flaschen, ausschankMenge, byId, glasVorschlag,
       setzte: (map, geb, aus, gro) => { MAP = map || {}; GEB_BEST = geb || {};
         AUS_BEST = aus || {}; GROESSEN = gro || {}; REZ = {}; KANN_AUS = true; } };`,
     s, { filename: "leitung.html#groessen" });
@@ -131,13 +131,39 @@ describe("Der Kassenname schlägt die Artikelregel", () => {
     nah(r.fl, 1, "eine ganze Flasche");
   });
 
-  test("wo der Name schweigt, trägt die Regel", () => {
+  test("wo der Name schweigt, rechnet NICHTS — die Regel gilt nicht von selbst", () => {
+    /* BERICHTIGT nach der Jagd (Runde 23 · B2). Hier stand zuerst die
+       Zusicherung, die Artikelregel trage dort, wo der Name schweigt.
+       Nachgerechnet war das ein Faktor 1/6: „Flasche Leindl Langenlois"
+       × 3 wurde zu 0,5 Flaschen statt 3, lautlos. An einem Kassennamen
+       ohne Zahl ist nicht zu erkennen, ob er ein Glas oder eine Flasche
+       meint — also wird er nicht gerechnet, wie vor Runde 23 auch. */
     const f = backoffice();
+    const p = { name: "Flasche Leindl Langenlois", anzahl: 3 };
+    f.setzte({ [p.name]: "w001" }, {}, {}, { w001: { g: 750, a: 125 } });
+    const r = f.flaschen(p, "w001");
+    assert.equal(r.ok, false);
+    assert.equal(r.fehlt, "ausschank");
+    assert.equal(r.woher, "keine");
+  });
+
+  test("die Glasmenge bleibt als Angebot da", () => {
+    /* Sie verschwindet nicht — sie wird nur nicht mehr still angewandt.
+       Im Abschnitt „Nicht gerechnet" steht sie als Knopf, ein Klick
+       schreibt sie für DIESEN Kassennamen fest, und danach kommt sie
+       als „von Hand" zurück. */
+    const f = backoffice();
+    f.setzte({}, {}, {}, { serena: { g: 750, a: 100 } });
+    assert.equal(f.glasVorschlag("serena"), 100);
+    assert.equal(f.glasVorschlag("w001"), 0, "ohne Eintrag kein Angebot");
+
     const p = { name: "Glas Sekt", anzahl: 4 };
-    f.setzte({ [p.name]: "serena" }, {}, {}, { serena: { g: 750, a: 100 } });
+    f.setzte({ [p.name]: "serena" }, {}, { [p.name]: 100 },
+             { serena: { g: 750, a: 100 } });
     const r = f.flaschen(p, "serena");
-    assert.equal(r.aus, 100);
-    assert.equal(r.woher, "regel");
+    assert.equal(r.ok, true);
+    assert.equal(r.woher, "hand", "nach dem Klick ist es eine Entscheidung");
+    nah(r.fl, 4 * 100 / 750, "4 Gläser aus der 0,75er");
   });
 
   test("und von Hand schlägt beides", () => {

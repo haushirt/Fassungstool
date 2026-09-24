@@ -26,11 +26,18 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 - **Frage 1 steht ganz oben.** „Ist heute gefasst worden?" stand in Block
   5 von 8 und war am MacBook unter der Falz.
 
+Vor dem Veröffentlichen lief eine Jagd. Sie hat drei schwere Fehler
+gefunden — alle in der neuen Artikelliste, alle mit Datenverlust: zwei
+Änderungen kurz nacheinander löschten einander, ein halb getippter Wert
+wurde als bestätigt gespeichert, und eine abgewiesene Änderung galt im
+Gerät trotzdem. Alle behoben, jeder mit einer Prüfung dazu
+(`review/JAGD.md`).
+
 Der Befund, der alles ausgelöst hat: In der laufenden Datenbank haben
 **21 Zuordnungen, davon 0 eine Gebindegröße** — deshalb rechnete keine
 einzige Zeile. Das Achtel wurde die ganze Zeit korrekt gelesen.
 
-`sw.js` steht auf **v72**. `npm test`: **634 von 634** grün.
+`sw.js` steht auf **v72**. `npm test`: **644 von 644** grün.
 Die Einrichtungsliste (sechs Handgriffe) steht in `review/ERGEBNIS.md`.
 
 ## Wo wir stehen

@@ -1158,3 +1158,36 @@ unterscheiden), die Import-Vorschau nennt eine Rezeptposition
 verschieden, sobald Rezepte im Spiel sind, `#bAuto` bricht bei einem
 Fehlschlag nicht ab, „Zuordnungen vom Server" zählt weiter alles, und
 die Unterlagen datieren einen Tag vor.
+
+## Jagd nach Runde 23 · Größen am Artikel, Bier vom Fass
+
+Gelaufen vor dem Veröffentlichen, auf Casimirs „Schau dir es an". Urteil
+der Jagd: **NICHT mergen** — 3 × A, 2 × B, 8 × C, alle in dem, was diese
+Runde gebaut hat. Alle A- und B-Funde sind behoben, jeder mit einer
+Prüfung, die ihn nachstellt.
+
+| Grad | Fund | Wo | Gemessen | Behoben |
+|---|---|---|---|---|
+| A | Zwei Größenänderungen löschen einander | `public/leitung.html` (`groessenTafel` onchange, `sendeGroessen`) | 2 Änderungen 60 ms auseinander, 300 ms Netz: geschrieben `{w001:1500}`, dann `{w005:375}`; in der D1 danach nur `{w005:375}`. Der Toast hatte „1500 ml" gesagt. | `GROESSEN` wird synchron gesetzt, `sendeGroessen` liest den dann geltenden Stand, Anfragen laufen in einer Kette. `tests/groessen-schreiben.test.mjs`, `tests/ui-runde23.cjs` 1 |
+| A | Ein halb getippter Wert wird gespeichert und rechnet als „bestätigt" | `public/leitung.html` (`zeichne()` nach jeder Änderung) | „750" über ein `zeichne()` hinweg getippt → `{"g":7}` in der D1, `quelle:"bestaetigt"`, 3 Achtel = 53,57 Flaschen statt 0,5. `min="1"` liess 7 ml zu. | Kein `zeichne()` mehr nach einer Feldänderung — nur die Zeile und die Fußzeile. Dazu ein Band 50–200 000 ml (Glas ab 10). `tests/ui-runde23.cjs` 2 und 3 |
+| A | `sendeGroessen` behält den Wert nach 403/500/offline | `public/leitung.html` (`sendeGroessen`) | Rolle `wirtschaft` (403): D1 hält 750, Gerät rechnet 1500 — jede Differenz dieses Geräts halbiert. Bei 500 stand der Wert im Gerät und war nach dem Neuladen weg. Der 403-Toast wurde vom Aufrufer überschrieben. | Bei einer Absage zurück auf den Serverstand, wie `sendeZuordnung` seit Runde 22. Der Aufrufer meldet nur im Erfolgsfall. `tests/groessen-schreiben.test.mjs`, `tests/ui-runde23.cjs` 4 |
+| B | Die Zuordnung verspricht den Fassartikel, den sie nicht anbietet | `public/leitung.html` (`vZuordnung` Vorspann gegen `<optgroup>`) | Ohne Migration: Text da, Gruppe fehlt. Offline (`KANN_AUS` startete immer auf `false`): eine Fasszeile zeigte gleichzeitig „— offen —" im Feld und „festgelegt" daneben; ein Griff ins Feld hob die Zuordnung auf. | Der Schalter wird mitgeschrieben (`hh_kann_ausschank_v1`); Text, Auswahlgruppe und die Gruppe in der Größentafel hängen an demselben. |
+| B | Ein Kassenname ohne Menge rechnet still als Glas | `public/leitung.html` (dritte Stufe in `ausschankMenge`) | „Flasche Leindl Langenlois" × 3 → 0,5 Flaschen statt 3. Faktor 1/6, lautlos. Vor Runde 23 stand dort sichtbar „keine Menge je Verkauf". | Die dritte Stufe ist weg. Die Glasmenge ist ein ANGEBOT: im Abschnitt „Nicht gerechnet" ein Knopf „Als Glas rechnen", der sie je Kassenname festschreibt — danach kommt sie als „von Hand" zurück. `tests/artikelgroessen.test.mjs` |
+
+**C-Funde behoben:** der beim Streichen von „und Fassbier" zerrissene
+Satz · CSV und Druckblatt kennen „Vom Fass" jetzt (die Lehre aus Runde
+18, im eigenen Plan gestanden und liegen geblieben) · die Fass-Zahlen
+gehen durch `liter2()` statt roh mit Punkt · die Jahresangabe in
+`docs/live-schema.sql` · eine beschädigte `stamm`-Zeile überschreibt die
+Geräteabschrift nicht mehr.
+
+**C-Funde in den Backlog:** eigene Gestern-Rechnung statt `tagMinus` ·
+zwei Quellen für die Fußzeile des Fass-Blocks · „alles hinterlegt",
+obwohl Glasmengen fehlen.
+
+**Die Lehre dieser Runde:** Die drei A-Funde stecken alle in derselben
+Bewegung — *erst senden, dann den eigenen Stand ändern*. Wer den Körper
+aus einem Schnappschuss baut, wer nach dem Senden neu zeichnet und wer
+eine Absage trotzdem übernimmt, macht dreimal denselben Fehler an
+derselben Stelle. **Der eigene Stand gehört vor die Anfrage, und die
+Antwort entscheidet, ob er bleibt.**
