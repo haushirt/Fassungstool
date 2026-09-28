@@ -569,3 +569,6 @@ Zitronensaft, Limettensaft, Tonic, Ginger Ale, Holundersirup, Sanbitter
 und Sprite gehen damit rechnerisch verloren und kommen als Schwund
 zurück. Entweder die Deutung der Zeile ändern oder Rezepte bauen
 (~30 Zeilen, der Zuordnung-Bildschirm kann „Mischgetränk" schon).
+
+## Neu aus Runde 24 (28.09.2026)
+- (niedrig) Zählliste im Backoffice (Druck/CSV) folgt noch dem Kellerlaufweg, die Kellerzählung in der App jetzt der Tagesfassung. Angleichen? Casimir fragen.

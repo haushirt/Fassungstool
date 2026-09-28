@@ -226,3 +226,11 @@ geworden, weil der gewählte Name in die Vorabliste gewandert ist — erst
 „HP Omelett", dann ein Cocktail. Jetzt steht dort ein erfundener Name.
 Wer eine Eigenschaft prüft, soll nicht am Inhalt einer wachsenden Liste
 hängen.
+
+## 28.09.2026 · Runde 24
+- Der Worker verwarf Journalzeilen mit Menge 0 pauschal. Für Entnahmen
+  richtig, für Zählungen falsch: eine gezählte 0 ist eine Auskunft
+  („leer"). Das Backoffice behielt die Nullen schon — Worker und
+  Backoffice rechneten auseinander.
+- „0 im Feld" darf nie zugleich „nicht gezählt" und „leer" heissen. Leer
+  braucht einen eigenen Knopf.

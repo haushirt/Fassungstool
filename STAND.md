@@ -1,11 +1,23 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 23.09.2026 (Runde 23 · Kassennamen Z 41–43)
+**Letzte Aktualisierung:** 28.09.2026 (Runde 24 · Kellerzählung-Reihenfolge und „Leer")
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
+
+## Runde 24 (28.09.2026, Branch `claude/sharp-babbage-gnxpdd`, NICHT gemergt)
+- **Kellerzählung** läuft jetzt in der Reihenfolge der Tagesfassung:
+  Schrank 1–4 (wie Restaurant), danach Bubbles. Das Holen bleibt beim
+  Gang durch den Keller.
+- **Knopf „Leer"** in Kellerzählung, Holen Wein und Holen Getränke. Eine
+  leere Position gilt als gezählt bzw. erledigt (Menge 0).
+- **Worker:** Eine gezählte 0 steht jetzt als Zählung im Journal (vorher
+  fiel sie weg, der alte Bestand blieb stehen).
+- Backoffice zeigt beim Vorgang den Block „Im Lager leer · nachbestellen".
+- `sw.js` **v74**. `npm test` **585/585**. Keine Migration.
+
 - **Runde 23 ist gemergt und LIVE** (PR #18, 23.09.2026). Alle Runden bis
   einschliesslich 23 sind auf `main`.
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.

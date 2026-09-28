@@ -910,7 +910,22 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .zw{padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
 .zw.zebra{background:var(--surface-3)}
 .zw.seen .nm{opacity:.55}
-.ztop{margin-bottom:var(--space-2)}
+.ztop{margin-bottom:var(--space-2);display:flex;align-items:flex-start;
+ justify-content:space-between;gap:var(--space-2)}
+.ztop .ztx{min-width:0}
+/* Runde 24 · „Leer" in Kellerzählung und Holen: dieselbe leise Pille wie
+   „Abweichung". Gedrückt wird sie ruhig, nicht rot — leer ist ein Befund,
+   kein Fehler. */
+.leerk{background:none;color:var(--fg-muted);font-size:var(--text-xs);
+ font-weight:var(--weight-medium);cursor:pointer;
+ border:1px solid var(--border-strong);border-radius:var(--radius-pill);
+ padding:0 var(--space-3);min-height:var(--control-h-sm);
+ display:inline-flex;align-items:center;flex-shrink:0;white-space:nowrap}
+.leerk:active{background:var(--surface-3)}
+.leerk.on{color:var(--fg);border-color:var(--fg);background:var(--surface-3)}
+.zw.leer .zsteppers{opacity:.45}
+.holk{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-1);flex-shrink:0}
+.holk .abwk,.holk .leerk{justify-content:center}
 /* NEU GEMESSEN (Jagd 13): Die Zeile traegt drei Felder — Reihen, Einzeln,
    Summe. Zwei davon brauchen je 122 px (40 + 34 + 40 + zwei Fugen), das
    dritte mindestens 60. Bei 320 px stehen 288 zur Verfuegung: die Summe
@@ -2124,7 +2139,7 @@ const HOWTO={
      ohnehin bei jedem Wein auf dem Schirm („Soll 3") — und sobald die
      Leitung eines ändert, widerspricht die Hilfe dem, was danebensteht. */
   {t:"Restaurant prüfen",p:"Vier Schränke der Reihe nach. Das Soll steht bei jedem Wein — du tippst herunter auf das, was noch dasteht.",tip:"Ist ein Schrank ganz voll, genügt der Knopf am Ende der Liste."},
-  {t:"Holen und einräumen",p:"Diese Flaschen fehlen, sortiert nach Laufweg. Holen, einräumen, abhaken – die Zeile wandert nach unten zu Bar oder Restaurant.",tip:"Weg: Rot, Rosé, Weiss, Cuvée, Natural, Bubbles. Zusätzlich Entnommenes unten eintragen."},
+  {t:"Holen und einräumen",p:"Diese Flaschen fehlen, sortiert nach Laufweg. Holen, einräumen, abhaken – die Zeile wandert nach unten zu Bar oder Restaurant.",tip:"Weg: Rot, Rosé, Natural, Weiss, Cuvée, Bubbles. Ist ein Wein im Keller aus, „Leer“ tippen. Zusätzlich Entnommenes unten eintragen."},
   /* Der Schritt heißt „Abschluss" und die Hilfe sagt, was der Knopf
      auslöst — wer hier um 23 Uhr auf das Fragezeichen tippt, will genau
      das wissen. Vom Foto der Fassungsliste steht hier nichts mehr: der
@@ -2135,7 +2150,7 @@ const HOWTO={
   {t:"Holen und einräumen",p:"Das Fehlende aus dem Getränkelager holen und einräumen. Abgehaktes wandert nach unten.",tip:"Oben steht, wie viele Kisten du brauchst."},
   {t:"Fertig",p:"",tip:""}],
  keller:[
-  {t:"Keller zählen",p:"Du zählst den tatsächlichen Bestand. Im Laufweg: Rot, Rosé, Weiss, Cuvée, Natural, Bubbles, Einzelgänger. Pro Wein Reihen und einzelne Flaschen.",tip:"1 Reihe = 6 Flaschen."},
+  {t:"Keller zählen",p:"Du zählst den tatsächlichen Bestand – in derselben Reihenfolge wie die Tagesfassung: Schrank 1 bis 4, dann Bubbles. Pro Wein Reihen und einzelne Flaschen.",tip:"1 Reihe = 6 Flaschen. Ist ein Wein aus, „Leer“ tippen – sonst gilt er als nicht gezählt."},
   {t:"Fertig",p:"",tip:""}],
  nach:[
   {t:"Was wurde geholt",p:"Du zählst geholte Flaschen. Wein antippen, pro Flasche einmal. Minus links, falls zu viel. Nur was zwischendurch aus dem Keller geholt wurde.",tip:""},
@@ -4373,6 +4388,7 @@ function holRow(it){
   b.onclick=()=>{if(on)delete d.holt[it.w.id];else d.holt[it.w.id]=1;save();render();};
   r.appendChild(b);
   abwKnopf(r,it.w.id,it.n,menge,d.holtN,v=>b.querySelector(".gq").textContent=v);
+  leerKnopf(r,it.w.id,d.holt,d.holtN,it.w.wein);
   return r;
 }
 /* Die Menge stimmt fast immer. Nur wenn im Lager etwas aus ist, klappt
@@ -4400,6 +4416,27 @@ function abwKnopf(zeile,id,soll,menge,topf,zeigen){
       render();};
     inp.onblur=fin;inp.onkeydown=ev=>{if(ev.key==="Enter")inp.blur();};};
   zeile.appendChild(k);
+}
+
+/* Runde 24 · Im Lager aus. Bisher ging das nur über „Abweichung" → 0, und
+   die Zeile blieb offen („Noch nicht alles geholt"). „Leer" setzt beides:
+   geholt 0 UND erledigt. Gespeichert wird nichts Neues — `holt` + Menge 0
+   ist genau das, was die Abweichung schon kannte; das Backoffice liest es
+   als „im Lager leer". Nochmals tippen nimmt es zurück. */
+function leerKnopf(zeile,id,holt,topf,name){
+  const leer=!!holt[id]&&topf[id]!=null&&+topf[id]===0;
+  const k=document.createElement("button");k.type="button";
+  k.className="leerk"+(leer?" on":"");k.textContent=leer?"\u2713 leer":"Leer";
+  k.setAttribute("aria-label",leer?name+" ist als leer gemeldet – antippen zum Lösen":name+" ist im Lager leer");
+  k.onclick=e=>{e.stopPropagation();
+    if(leer){delete topf[id];delete holt[id];}else{topf[id]=0;holt[id]=1;}
+    save();render();};
+  /* Bei 320 px passen zwei Pillen nicht neben den Namen: übereinander. */
+  const st=document.createElement("div");st.className="holk";
+  const a=zeile.querySelector(".abwk");
+  if(a&&!leer)st.appendChild(a);else if(a)a.remove();
+  st.appendChild(k);zeile.appendChild(st);
+  if(leer)zeile.classList.add("leer");
 }
 
 /* ── Nachschub ── */
@@ -4478,16 +4515,36 @@ function rNach(m){
 }
 
 /* ── Kellerzählung ── */
+/* Runde 24 · Die Kellerzählung läuft in der Reihenfolge der Tagesfassung:
+   Schrank 1 bis 4 wie im Restaurant, danach, was nur an der Bar steht
+   (Bubbles). Vorher lief sie nach den Kellerzonen (Rot, Rosé, Natural,
+   Weiss …) — wer die Tagesfassung kennt, suchte Rosé und Natural an der
+   falschen Stelle. Das Holen in der Tagesfassung bleibt beim Gang durch
+   den Keller (`wegCmp`), es geht hier nur um die Zählung. */
+const ZGRUPPEN={1:{t:"Rotwein kräftig",kurz:"Rot 1"},2:{t:"Rotwein fein & Cuvées",kurz:"Rot 2"},
+ 3:{t:"Weisswein klassisch",kurz:"Weiss 3"},4:{t:"Weiss übrige, Rosé, Natur",kurz:"Weiss 4"}};
+function zaehlGruppen(){
+  const G=[];
+  [1,2,3,4].forEach(n=>{
+    const list=WINES.filter(w=>PLAN.schrank[w.id]===n)
+      .sort((a,b)=>(PLAN.restorder[a.id]??999)-(PLAN.restorder[b.id]??999)||WIDX[a.id]-WIDX[b.id]);
+    if(list.length)G.push({id:"z_s"+n,t:ZGRUPPEN[n].t,s:SCHRANK[n].s,kurz:ZGRUPPEN[n].kurz,list});});
+  /* Was in keinem Schrank steht, folgt nach Zone (Bubbles, Einzelgänger). */
+  const rest=WINES.filter(w=>PLAN.schrank[w.id]==null).sort(wegCmp);
+  [...new Set(rest.map(w=>PLAN.zone[w.id]))].forEach(z=>{
+    const zn=PLAN.zonen[z]||{t:"Weitere",s:""};
+    G.push({id:"z_z"+z,t:zn.t,s:zn.s,kurz:zn.t,list:rest.filter(w=>PLAN.zone[w.id]===z)});});
+  return G;
+}
 function rZaehl(m){
   const d=D();railGroups=[];
-  const zones=[...new Set(WINES.map(w=>PLAN.zone[w.id]))].sort((a,b)=>ZR(a)-ZR(b));
-  zones.forEach(z=>{
-    const list=WINES.filter(w=>PLAN.zone[w.id]===z).sort(wegCmp);
+  zaehlGruppen().forEach(gr=>{
+    const list=gr.list;
     const done=list.filter(w=>d.zdone[w.id]).length,pct=Math.round(done/list.length*100);
-    railGroups.push({id:"z_"+z,kurz:PLAN.zonen[z].t.slice(0,4)});
-    const wrap=add(m,"hd1w grpanchor","");wrap.id="anchor_z_"+z;
-    wrap.innerHTML=`<div class="hd1">${PLAN.zonen[z].t}<span class="cnt2${done===list.length?" full":""}">${done}/${list.length}</span></div>
-      <div class="hd1sub">${PLAN.zonen[z].s}</div>
+    railGroups.push({id:gr.id,kurz:gr.kurz});
+    const wrap=add(m,"hd1w grpanchor","");wrap.id="anchor_"+gr.id;
+    wrap.innerHTML=`<div class="hd1">${esc(gr.t)}<span class="cnt2${done===list.length?" full":""}">${done}/${list.length}</span></div>
+      <div class="hd1sub">${esc(gr.s)}</div>
       <div class="prog"><i class="${done===list.length?"full":""}" style="width:${pct}%"></i></div>`;
     let lg=null,zi=0;
     list.forEach(w=>{if(w.grp!==lg){lg=w.grp;rebKopf(m,w);}m.appendChild(zRow(w,zi++));});
@@ -4497,16 +4554,30 @@ function zRow(w,idx){
   const d=D(),on=!!d.zdone[w.id];
   const row=document.createElement("div");row.className="zw"+(on?" seen":"")+(idx%2?" zebra":"");
   const top=document.createElement("div");top.className="ztop";
-  top.innerHTML=`<span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
-    <span class="mt">${esc(w.jg)} · ${esc(w.region)}</span>`;
+  top.innerHTML=`<div class="ztx"><span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
+    <span class="mt">${esc(w.jg)} · ${esc(w.region)}</span></div>`;
+  /* Runde 24 · Ist ein Wein aus, stand bisher 0 da — und 0 hiess
+     „nicht gezählt". Der Knopf sagt „gezählt, es ist keiner da". */
+  const leer=on&&!(g(d.reihen,w.id)*6+g(d.einzel,w.id));
+  const lk=document.createElement("button");lk.type="button";
+  lk.className="leerk"+(leer?" on":"");lk.textContent=leer?"\u2713 leer":"Leer";
+  lk.setAttribute("aria-label",leer?`${w.wein} ist als leer gezählt – antippen zum Lösen`:`${w.wein} ist leer`);
+  lk.onclick=()=>{
+    if(leer)delete d.zdone[w.id];
+    else{delete d.reihen[w.id];delete d.einzel[w.id];d.zdone[w.id]=1;}
+    save();render();};
+  top.appendChild(lk);
   row.appendChild(top);
+  if(leer)row.classList.add("leer");
   const z=document.createElement("div");z.className="zsteppers";
   const stepper=(bucket,lab)=>{
     const box=document.createElement("div");box.className="zstep";
     const set=(v)=>{v=Math.max(0,v);if(v)d[bucket][w.id]=v;else delete d[bucket][w.id];
       const tot=g(d.reihen,w.id)*6+g(d.einzel,w.id);
-      if(tot>0)d.zdone[w.id]=1;else delete d.zdone[w.id];
+      /* Ein Minus auf einer leeren Zeile lässt sie leer. */
+      if(tot>0)d.zdone[w.id]=1;else if(!lk.classList.contains("on"))delete d.zdone[w.id];
       save();
+      if(tot>0&&lk.classList.contains("on")){render();return;}
       valEl.textContent=g(d[bucket],w.id);valEl.classList.toggle("on",!!g(d[bucket],w.id));
       row.classList.toggle("seen",tot>0);
       sumEl.textContent=tot;sumEl.classList.toggle("on",!!tot);renderFoot();};
@@ -5443,6 +5514,7 @@ function holZeile(blk,x){
   l.onclick=()=>{if(on)delete d.gholt[x.id];else d.gholt[x.id]=1;save();render();};
   r.appendChild(l);
   abwKnopf(r,x.id,x.n,menge,d.gholtN,v=>l.querySelector(".gq").textContent=v);
+  leerKnopf(r,x.id,d.gholt,d.gholtN,GN(x.id));
   blk.appendChild(r);
 }
 function holBlock(m,titel,anz,liste){
@@ -5612,6 +5684,14 @@ function docGetrMenge(gent){
         '<tr class="tot"><td>Summe</td><td class="r">'+fl+'</td></tr>')+'</div>';
   }
   return h;
+}
+/* Runde 24 · Getränke, die im Lager aus waren — sonst stünden sie in
+   keiner Tabelle, weil nur Mengen über 0 erscheinen. */
+function docGLeer(d){
+  const ids=Object.keys(d.gholt||{}).filter(id=>(d.gholtN||{})[id]!=null&&+d.gholtN[id]===0);
+  if(!ids.length)return "";
+  return '<div class="sec"><h3>Im Lager leer</h3><p style="font-size:14px">'+
+    ids.map(id=>esc(GN(id))).join(" · ")+'</p></div>';
 }
 let branch=null;
 /* 4.4 · Wein/Getränke auch in Kellerzählung, Nachschub, Wareneingang */
@@ -6450,7 +6530,7 @@ function docTag(){
     hl.forEach(it=>{const z=PLAN.zone[it.w.id];if(z!==lz){lz=z;t2+=`<tr><td class="grp" colspan="4">${PLAN.zonen[z].t}</td></tr>`;}
       const g=getragen(it);
       t2+=`<tr><td><b>${esc(it.w.winzer)}</b> · ${esc(it.w.wein)}</td><td>${it.q.join(" · ")}</td>`+
-          `<td class="r"><b>${it.n}</b></td><td class="r"><b>${g}</b></td></tr>`;});
+          `<td class="r"><b>${it.n}</b></td><td class="r"><b>${g||(d.holt[it.w.id]?"leer":0)}</b></td></tr>`;});
     h+=`<div class="sec"><h3>Fassung</h3>
       ${tbl(`<th>Wein</th><th>Wohin</th><th class="r">oben gefehlt</th><th class="r">aus dem Keller</th>`,t2,
         `<tr class="tot"><td colspan="2">Summe</td><td class="r">${rest+bar}</td><td class="r">${sumG}</td></tr>`)}
@@ -6464,6 +6544,7 @@ function docTag(){
       ${tbl(`<th>Wein</th><th class="r">Flaschen</th>`,t3,
         `<tr class="tot"><td>Summe</td><td class="r">${sum(d.zusatz)}</td></tr>`)}</div>`;}
   h+=docGetrMenge(d.gent);
+  h+=docGLeer(d);
   h+=docGetrZusatz(d.gzusatz);
   return h;
 }
@@ -6473,6 +6554,7 @@ function docFuellen(){
   h+=`<div class="kpi"><div><span>Getränke fehlten</span><b>${gFehltSum()}</b></div>
     <div><span>Laden</span><b>${ALLE_LADEN().length}</b></div></div>`;
   h+=gDocSec();
+  h+=docGLeer(d);
   h+=docGetrZusatz(d.gzusatz);
   return h;
 }
@@ -6482,12 +6564,14 @@ function docKeller(){
   let h=docHeadHtml();
   h+=`<div class="kpi"><div><span>Gezählt</span><b>${gez.length}</b></div>
     <div><span>Offen</span><b>${off.length}</b></div><div><span>Flaschen</span><b>${tot}</b></div></div>`;
-  if(gez.length){let tr="",lz=null;
-    gez.sort(wegCmp).forEach(w=>{const z=PLAN.zone[w.id];
-      if(z!==lz){lz=z;tr+=`<tr><td class="grp" colspan="5">${PLAN.zonen[z].t}</td></tr>`;}
+  if(gez.length){let tr="";
+    /* Dieselbe Reihenfolge wie auf dem Schirm (Runde 24). */
+    zaehlGruppen().forEach(gr=>{const L=gr.list.filter(w=>d.zdone[w.id]);if(!L.length)return;
+      tr+=`<tr><td class="grp" colspan="5">${esc(gr.t)}</td></tr>`;
+      L.forEach(w=>{
       const R=g(d.reihen,w.id),E=g(d.einzel,w.id);
       tr+=`<tr><td><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</td><td>${esc(w.jg)}</td>
-        <td class="r">${R||"–"}</td><td class="r">${E||"–"}</td><td class="r"><b>${R*6+E}</b></td></tr>`;});
+        <td class="r">${R||"–"}</td><td class="r">${E||"–"}</td><td class="r"><b>${R*6+E||"leer"}</b></td></tr>`;});});
     h+=`<div class="sec"><h3>Gezählter Bestand</h3>
       ${tbl(`<th>Wein</th><th>Jg.</th><th class="r">Reihen</th><th class="r">Einz.</th><th class="r">Fl.</th>`,tr,
         `<tr class="tot"><td colspan="4">Summe</td><td class="r">${tot}</td></tr>`)}</div>`;}

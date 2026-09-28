@@ -1242,6 +1242,11 @@ function normVorgang(v){
     const fehlte={};
     ["barrot","bar","backup","rest"].forEach(k=>
       Object.keys(v[k]||{}).forEach(id=>fehlte[id]=(fehlte[id]||0)+(+v[k][id]||0)));
+    /* Runde 24 · „Leer" beim Holen: abgehakt mit Menge 0. Die App
+       speichert dafür nichts Neues — es ist die Abweichung auf 0. */
+    const leer=(h,n)=>Object.keys(h||{}).forEach(id=>{
+      if(n && n[id]!=null && +n[id]===0){ o.leer=o.leer||{}; o.leer[id]=0; } });
+    leer(v.holt,v.holtN); leer(v.gholt,v.gholtN);
     Object.keys(fehlte).forEach(id=>{
       zu(o.verbraucht,id,fehlte[id]);                     /* oben gefehlt */
       zu(o.wein,id,(v.holtN && v.holtN[id]!=null) ? +v.holtN[id] : fehlte[id]);
@@ -4611,8 +4616,12 @@ function vgTafel(v){
       zeilen:ids.map(id=>({id, wert:topf[id]})),
       summe:ids.reduce((x,id)=>x+(+topf[id]||0),0)});
   };
-  eins("Wareneingang · geliefert", v.eingang, false, (a,b)=>
-    istWein(a)&&istWein(b)?wegCmp(a,b):istWein(a)?-1:istWein(b)?1:ladeCmp(a,b));
+  const gemischt=(a,b)=>
+    istWein(a)&&istWein(b)?wegCmp(a,b):istWein(a)?-1:istWein(b)?1:ladeCmp(a,b);
+  eins("Wareneingang · geliefert", v.eingang, false, gemischt);
+  /* Runde 24 · Beim Holen im Lager aus: die 0 ist die Auskunft. */
+  eins("Im Lager leer · nachbestellen", v.leer, true, gemischt,
+       "Beim Holen war nichts mehr da.");
   /* Eine gezählte 0 heisst „nichts mehr da" und ist eine Angabe — sie
      bleibt stehen. */
   eins("Gezählter Bestand · Weinkeller", v.zaehlung, true, wegCmp,

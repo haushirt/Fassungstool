@@ -4819,3 +4819,12 @@ Grösse dastehen; der grosse Gasteiner ist dazugekommen.
 
 **STATUS:** FERTIG
 
+
+### Runde 24 – Kellerzählung-Reihenfolge und „Leer"
+**Kritik am Vorgänger:** `public/index.html` rZaehl lief nach Kellerzonen (Rosé/Natural zwischen Rot und Weiss) – ↩️ geändert auf Schrankfolge der Tagesfassung. `src/index.js` `zu()` verwarf gezählte Nullen – ↩️ geändert. Hilfetext Holen nannte Natural nach Cuvée, die Liste zeigt es davor – ↩️ Text an die Liste angepasst.
+**Umgesetzt:** Kellerzählung in Schrankfolge (Schirm + Protokoll) · Knopf „Leer" in Kellerzählung und Holen (Wein/Getränke), Backoffice-Block „Im Lager leer" · Worker schreibt Zählung 0 ins Journal
+**Geprüft:** `npm test` 585/585 (neu `tests/leer.test.mjs`, 4 Prüfungen; ohne Worker-Fix rot). Playwright 320 px: Kellerzählung und Holen ohne waagrechten Überlauf, keine JS-Fehler.
+**Für die Nächsten:** Die Zählliste im Backoffice (Druck) folgt weiter dem Kellerlaufweg – bei Bedarf angleichen (Casimir fragen).
+**Phase/Thema:** A / Kellerzählung
+**Backlog:** Zählliste im Backoffice an Tagesfassungs-Reihenfolge angleichen? (niedrig)
+**STATUS:** FERTIG

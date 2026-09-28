@@ -550,7 +550,9 @@ async function ereignisseAbleiten(env, vid, d, p) {
      vergessene Angabe keine D1-Ausnahme mitten im Abschluss wird. */
   const zu = (art, artikel, menge, ort) => {
     menge = +menge || 0;
-    if (menge) zeilen.push({ art, artikel, menge, ort: ort || "" });
+    /* Eine gezählte 0 ist eine Auskunft („leer"), keine fehlende Zeile —
+       sonst bliebe der alte Bestand stehen (Runde 24). */
+    if (menge || art === "zaehlung") zeilen.push({ art, artikel, menge, ort: ort || "" });
   };
 
   if (d.mode === "tag" || d.mode === "fuellen") {
