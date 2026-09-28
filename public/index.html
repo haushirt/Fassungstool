@@ -924,6 +924,10 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .leerk:active{background:var(--surface-3)}
 .leerk.on{color:var(--fg);border-color:var(--fg);background:var(--surface-3)}
 .zw.leer .zsteppers{opacity:.45}
+/* Sichtbar 36 px hoch, gegriffen wird auf 44 px — wie bei .zbtn. */
+.ztop .leerk{position:relative}
+.ztop .leerk::after{content:"";position:absolute;left:50%;top:50%;
+ transform:translate(-50%,-50%);width:max(100%,var(--tap-min));height:var(--tap-min)}
 .holk{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-1);flex-shrink:0}
 .holk .abwk,.holk .leerk{justify-content:center}
 /* NEU GEMESSEN (Jagd 13): Die Zeile traegt drei Felder — Reihen, Einzeln,

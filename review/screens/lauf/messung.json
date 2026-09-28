@@ -1,75 +1,14 @@
 {
  "lauf": "lauf",
- "zeit": "2026-09-20T15:37:49.954Z",
+ "zeit": "2026-09-28T12:43:11.134Z",
  "seiten": {
   "leitung/heute@390": {
    "vw": 390,
-   "scrollW": 594,
+   "scrollW": 390,
    "umbruch": [],
    "umbruchN": 0,
-   "ueber": [
-    {
-     "was": "SECTION.",
-     "li": 32,
-     "re": 594,
-     "text": "Weicht ab\n      Nur Zeilen, für die Verk"
-    },
-    {
-     "was": "H3.",
-     "li": 32,
-     "re": 594,
-     "text": "Weicht ab"
-    },
-    {
-     "was": "DIV.unter",
-     "li": 32,
-     "re": 538,
-     "text": "Nur Zeilen, für die Verkauf UND Entnahme"
-    },
-    {
-     "was": "DIV.karte",
-     "li": 32,
-     "re": 594,
-     "text": "Kein Z-Bericht im Zeitraum — es gibt nic"
-    },
-    {
-     "was": "DIV.reihe",
-     "li": 32,
-     "re": 594,
-     "text": "Zum vollständigen Abgleich"
-    },
-    {
-     "was": "SECTION.",
-     "li": 32,
-     "re": 594,
-     "text": "Geht aus\n      Reichweite unter 14 Tagen"
-    },
-    {
-     "was": "H3.",
-     "li": 32,
-     "re": 594,
-     "text": "Geht aus"
-    },
-    {
-     "was": "DIV.unter",
-     "li": 32,
-     "re": 538,
-     "text": "Reichweite unter 14 Tagen."
-    },
-    {
-     "was": "DIV.tabhuelle",
-     "li": 32,
-     "re": 594,
-     "text": "Wein\n            Best.ReichtKisten\n     "
-    },
-    {
-     "was": "DIV.reihe",
-     "li": 32,
-     "re": 594,
-     "text": "Zum Bestellvorschlag"
-    }
-   ],
-   "ueberN": 10,
+   "ueber": [],
+   "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
    "klein": [
@@ -1295,72 +1234,11 @@
   },
   "leitung/heute@430": {
    "vw": 430,
-   "scrollW": 594,
+   "scrollW": 430,
    "umbruch": [],
    "umbruchN": 0,
-   "ueber": [
-    {
-     "was": "SECTION.",
-     "li": 32,
-     "re": 594,
-     "text": "Weicht ab\n      Nur Zeilen, für die Verk"
-    },
-    {
-     "was": "H3.",
-     "li": 32,
-     "re": 594,
-     "text": "Weicht ab"
-    },
-    {
-     "was": "DIV.unter",
-     "li": 32,
-     "re": 538,
-     "text": "Nur Zeilen, für die Verkauf UND Entnahme"
-    },
-    {
-     "was": "DIV.karte",
-     "li": 32,
-     "re": 594,
-     "text": "Kein Z-Bericht im Zeitraum — es gibt nic"
-    },
-    {
-     "was": "DIV.reihe",
-     "li": 32,
-     "re": 594,
-     "text": "Zum vollständigen Abgleich"
-    },
-    {
-     "was": "SECTION.",
-     "li": 32,
-     "re": 594,
-     "text": "Geht aus\n      Reichweite unter 14 Tagen"
-    },
-    {
-     "was": "H3.",
-     "li": 32,
-     "re": 594,
-     "text": "Geht aus"
-    },
-    {
-     "was": "DIV.unter",
-     "li": 32,
-     "re": 538,
-     "text": "Reichweite unter 14 Tagen."
-    },
-    {
-     "was": "DIV.tabhuelle",
-     "li": 32,
-     "re": 594,
-     "text": "Wein\n            Best.ReichtKisten\n     "
-    },
-    {
-     "was": "DIV.reihe",
-     "li": 32,
-     "re": 594,
-     "text": "Zum Bestellvorschlag"
-    }
-   ],
-   "ueberN": 10,
+   "ueber": [],
+   "ueberN": 0,
    "schnitt": [],
    "schnittN": 0,
    "klein": [
@@ -4157,12 +4035,6 @@
      "SPAN.gw",
      "SPAN.gw"
     ],
-    "22": [
-     "DIV.gpfeil",
-     "DIV.gpfeil",
-     "DIV.gpfeil",
-     "DIV.gpfeil"
-    ],
     "28": [
      "H2.",
      "B.",
@@ -4170,45 +4042,8 @@
      "B."
     ]
    },
-   "schwach": [
-    {
-     "was": "DIV.gpfeil",
-     "v": 1.8,
-     "grenze": 4.5,
-     "px": 22,
-     "vg": "rgb(181, 175, 161)",
-     "hg": "rgb(236,233,226)",
-     "text": "›"
-    },
-    {
-     "was": "DIV.gpfeil",
-     "v": 1.8,
-     "grenze": 4.5,
-     "px": 22,
-     "vg": "rgb(181, 175, 161)",
-     "hg": "rgb(236,233,226)",
-     "text": "›"
-    },
-    {
-     "was": "DIV.gpfeil",
-     "v": 1.8,
-     "grenze": 4.5,
-     "px": 22,
-     "vg": "rgb(181, 175, 161)",
-     "hg": "rgb(236,233,226)",
-     "text": "›"
-    },
-    {
-     "was": "DIV.gpfeil",
-     "v": 1.8,
-     "grenze": 4.5,
-     "px": 22,
-     "vg": "rgb(181, 175, 161)",
-     "hg": "rgb(236,233,226)",
-     "text": "›"
-    }
-   ],
-   "schwachN": 4,
+   "schwach": [],
+   "schwachN": 0,
    "leiseZiffern": 0,
    "kontrastUebersprungen": 0,
    "jsFehler": []
@@ -4351,9 +4186,9 @@
     },
     {
      "was": "SELECT.",
-     "b": 135,
+     "b": 134,
      "h": 36,
-     "text": "Sa., 19.09.2026Do., 17.09.2026"
+     "text": "So., 27.09.2026Fr., 25.09.2026"
     },
     {
      "was": "SELECT.",
@@ -4498,9 +4333,9 @@
     },
     {
      "was": "SELECT.",
-     "b": 135,
+     "b": 134,
      "h": 36,
-     "text": "Sa., 19.09.2026Do., 17.09.2026"
+     "text": "So., 27.09.2026Fr., 25.09.2026"
     },
     {
      "was": "SELECT.",
@@ -8331,49 +8166,37 @@
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RT"
+     "text": "R1"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RS"
+     "text": "R2"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "NA"
+     "text": "W3"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "WE"
+     "text": "W4"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "CU"
+     "text": "BB"
     },
     {
-     "was": "BUTTON.",
-     "b": 36,
-     "h": 44,
-     "text": "BU"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -8400,16 +8223,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -8436,16 +8253,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -8472,16 +8283,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -8508,16 +8313,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -8542,9 +8341,45 @@
      "b": 40,
      "h": 44,
      "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     }
    ],
-   "kleinN": 238,
+   "kleinN": 294,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -10199,49 +10034,37 @@
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RT"
+     "text": "R1"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RS"
+     "text": "R2"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "NA"
+     "text": "W3"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "WE"
+     "text": "W4"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "CU"
+     "text": "BB"
     },
     {
-     "was": "BUTTON.",
-     "b": 36,
-     "h": 44,
-     "text": "BU"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -10268,16 +10091,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -10304,16 +10121,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -10340,16 +10151,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -10376,16 +10181,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -10410,9 +10209,45 @@
      "b": 40,
      "h": 44,
      "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     }
    ],
-   "kleinN": 238,
+   "kleinN": 294,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -12067,49 +11902,37 @@
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RT"
+     "text": "R1"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RS"
+     "text": "R2"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "NA"
+     "text": "W3"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "WE"
+     "text": "W4"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "CU"
+     "text": "BB"
     },
     {
-     "was": "BUTTON.",
-     "b": 36,
-     "h": 44,
-     "text": "BU"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -12136,16 +11959,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -12172,16 +11989,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -12208,16 +12019,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -12244,16 +12049,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -12278,9 +12077,45 @@
      "b": 40,
      "h": 44,
      "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     }
    ],
-   "kleinN": 238,
+   "kleinN": 294,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -13935,49 +13770,37 @@
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RT"
+     "text": "R1"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RS"
+     "text": "R2"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "NA"
+     "text": "W3"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "WE"
+     "text": "W4"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "CU"
+     "text": "BB"
     },
     {
-     "was": "BUTTON.",
-     "b": 36,
-     "h": 44,
-     "text": "BU"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -14004,16 +13827,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -14040,16 +13857,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -14076,16 +13887,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -14112,16 +13917,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -14146,9 +13945,45 @@
      "b": 40,
      "h": 44,
      "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     }
    ],
-   "kleinN": 238,
+   "kleinN": 294,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -15803,49 +15638,37 @@
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RT"
+     "text": "R1"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RS"
+     "text": "R2"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "NA"
+     "text": "W3"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "WE"
+     "text": "W4"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "CU"
+     "text": "BB"
     },
     {
-     "was": "BUTTON.",
-     "b": 36,
-     "h": 44,
-     "text": "BU"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -15872,16 +15695,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -15908,16 +15725,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -15944,16 +15755,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -15980,16 +15785,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -16014,9 +15813,45 @@
      "b": 40,
      "h": 44,
      "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     }
    ],
-   "kleinN": 238,
+   "kleinN": 294,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -17671,49 +17506,37 @@
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RT"
+     "text": "R1"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "RS"
+     "text": "R2"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "NA"
+     "text": "W3"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "WE"
+     "text": "W4"
     },
     {
      "was": "BUTTON.",
      "b": 36,
      "h": 44,
-     "text": "CU"
+     "text": "BB"
     },
     {
-     "was": "BUTTON.",
-     "b": 36,
-     "h": 44,
-     "text": "BU"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -17740,16 +17563,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -17776,16 +17593,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -17812,16 +17623,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -17848,16 +17653,10 @@
      "text": "+"
     },
     {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "−"
-    },
-    {
-     "was": "BUTTON.zbtn",
-     "b": 40,
-     "h": 44,
-     "text": "+"
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     },
     {
      "was": "BUTTON.zbtn",
@@ -17882,9 +17681,45 @@
      "b": 40,
      "h": 44,
      "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "−"
+    },
+    {
+     "was": "BUTTON.zbtn",
+     "b": 40,
+     "h": 44,
+     "text": "+"
+    },
+    {
+     "was": "BUTTON.leerk",
+     "b": 58,
+     "h": 36,
+     "text": "Leer"
     }
    ],
-   "kleinN": 238,
+   "kleinN": 294,
    "griff": [],
    "griffN": 0,
    "schrift": {
@@ -22585,12 +22420,12 @@
   }
  },
  "summe": {
-  "ueberGes": 20,
-  "kleinGes": 3062,
-  "kleinSvc": 2604,
+  "ueberGes": 0,
+  "kleinGes": 3398,
+  "kleinSvc": 2940,
   "griffGes": 437,
   "griffSvc": 0,
-  "schwachGes": 4,
+  "schwachGes": 0,
   "winzig": 0,
   "fehlerGes": 0
  }
