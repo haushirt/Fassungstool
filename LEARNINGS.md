@@ -3,6 +3,9 @@
 <!-- Kurz und datiert. Neueste oben. -->
 
 ## 30.09.2026 (Runde 24)
+- **Eine fehlende Fassung verschiebt alles.** Wird ein Morgen ausgelassen, trägt die nächste
+  Fassung zwei Tage — die Tagesansicht zeigt dann Unsinn, die Woche stimmt. Erst die Vorgänge
+  ansehen, dann an der Rechnung zweifeln.
 - **Vor dem Bauen die Live-Daten ansehen.** Die neue Übersicht war streng gebaut
   (nur bestätigte Flaschengrößen) — live gab es davon genau null. Ein Blick in die
   D1 (nur lesend) hat die Frage an Casimir erst möglich gemacht.

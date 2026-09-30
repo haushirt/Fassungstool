@@ -416,6 +416,17 @@ nav.seite button.ana{padding-left:var(--space-5)}
 .brow.zu .ql,.brow.zu .rt{border-color:transparent}
 .bzu{display:block;width:100%;padding:6px var(--space-4);text-align:left;color:var(--fg-muted);
   font-size:var(--text-xs);background:var(--surface-2);border-top:1px solid var(--surface-3)}
+.bblock{margin-bottom:var(--space-6)}
+.bbkopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);margin-bottom:var(--space-2);
+  width:100%;text-align:left;padding:var(--space-2) 0;border-bottom:1px solid var(--border)}
+.bbkopf h2{font-size:24px}
+.bbkopf .bbn{margin-left:auto;font-size:var(--text-sm);color:var(--fg-muted)}
+.bbkopf .bbn b{color:var(--danger)}
+.bbkopf .bbpf{color:var(--fg-muted);width:18px;text-align:right}
+.bblock.info .btab{opacity:.9}.bblock.info .bhd{background:var(--surface-3)}
+.bspur{background:var(--surface-2);border-top:1px solid var(--surface-3);padding:4px var(--space-4) 8px var(--space-6);font-size:var(--text-xs)}
+.bspur div{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:8px;padding:3px 0;font-variant-numeric:tabular-nums}
+.bspur div.ab{color:var(--danger-fg);font-weight:var(--weight-medium)}
 .leertag{display:inline-block;border-radius:var(--radius-pill);background:var(--fg);color:var(--fg-on-dark);
   font-size:11px;font-weight:var(--weight-bold);padding:1px 8px;text-transform:uppercase;letter-spacing:.04em}
 .boffen{margin-top:var(--space-4)}
@@ -3167,7 +3178,15 @@ function zeilenName(id, namen){
    alles unter Analytics rechnen weiter streng. Ohne Ausschankmenge im
    Kassennamen (Cocktail „1 Glas") wird nichts angenommen. */
 function annehmen(f, p, artId){
-  if(f.ok || f.fehlt!=="gebinde") return f;
+  if(f.ok) return f;
+  /* Casimir (30.09.2026): Frei getippte Weinbuchungen ohne Menge im Namen
+     („Pinot noir", „Glass Wein Pinot noir") sind Gläser. Sie zählen als
+     ⅛ l aus einer Flasche der vorgeschlagenen Grösse — markiert. */
+  if(f.fehlt==="ausschank" && byId(artId)){
+    const geb=gebindeGroesse(artId, p.name), ml=(geb&&geb.ml)||GEBINDE_STANDARD.wein;
+    return {ok:true, fl:(+p.anzahl||0)*125/ml, aus:125, geb:{ml}, ann:"glas"};
+  }
+  if(f.fehlt!=="gebinde") return f;
   /* Getränke: ein Stück an der Kasse = eine Flasche. Die Grösse im
      Stammnamen taugt dafür nicht („Gasteiner 1 l" ist die 0,75er). */
   if(!byId(artId)) return {ok:true, fl:(+p.anzahl||0), aus:f.aus, geb:{ml:f.aus}, ann:"stueck"};
@@ -3274,17 +3293,105 @@ function blickZeile(z){
     '<div class="rt">'+rechts+'</div></div>';
 }
 
+/* ════════════ 7b · Runde 24 · Drei getrennte Abgleiche (Casimir, 30.09.2026) ════════════
+   „Das Wichtigste Weinflaschen, dann Softdrinks, dann alles, was offen ist."
+     1 · Flaschenwein: was im RESTAURANT gefehlt hat gegen die an der Kasse
+         verkauften GANZEN Flaschen (Ausschank ≥ 0,5 l). Im Restaurant wird
+         nur flaschenweise verkauft (Casimir) — damit muss nichts geraten
+         werden. Aufsummiert seit der letzten Kellerzählung je Wein, mit
+         einer Spur Tag für Tag: wo die Summe kippt, liegt der Fehler.
+     2 · Flaschen: Bier, Softdrinks, Wasser. Ein Stück an der Kasse ist eine
+         Flasche. Im gewählten Zeitraum.
+     3 · Offen: Bar-Weine (Glas), Serena und Sekt, Mixer, Säfte. Nicht unter
+         Kontrolle — die Zahlen stehen da, ohne Urteil.
+   Grundlage links sind die Rohfelder der Fassung (`roh.rest`, `roh.barrot`,
+   `roh.bar`, `roh.backup`), rechts dieselbe Zuordnung wie überall
+   (`zuordnung()`). */
+const OFFEN_WEIN=["serena"];                   /* Casimir: Serena in Block 3 */
+const istFlaschenPos = ml => ml!=null && ml>=500;
+function feld(v,k,id){ return +(((v.roh||{})[k]||{})[id])||0; }
+/* Verkauf je Artikel an EINEM Tag, getrennt nach Flasche und Glas. */
+function kasseTag(t){
+  const r={};
+  ((ZBER[t]||{}).positionen||[]).forEach(p=>{
+    if(REZ[p.name] && REZ[p.name].length) return;
+    const zu=zuordnung(p); if(!zu.id) return;
+    const ml=mlAusText(p.name), n=+p.anzahl||0;
+    const x=r[zu.id]||(r[zu.id]={fl:0, gl:0, glMl:0, stk:0, namen:[]});
+    x.stk+=n; if(!x.namen.includes(p.name)) x.namen.push(p.name);
+    if(byId(zu.id)){ if(istFlaschenPos(ml)) x.fl+=n; else { x.gl+=n; x.glMl+=n*(ml||125); } }
+  });
+  return r;
+}
+function block1(){
+  const B=bestand(), bis=letzterTag(), namen=gnNamen();
+  const erster=[...Object.keys(ZBER), ...gebucht().map(v=>v.tag)].filter(Boolean).sort()[0]||bis;
+  const cache={}; const kt=t=>cache[t]||(cache[t]=kasseTag(t));
+  const fassTage=new Set(gebucht().filter(v=>v.mode==="tag"||v.mode==="fuellen").map(v=>v.tag));
+  const zeilen=[], luecken={ohneZ:new Set(), ohneF:new Set()};
+  WINES.filter(w=>!OFFEN_WEIN.includes(w.id)).forEach(w=>{
+    const von=B.zaehltag&&B.zaehltag[w.id]||erster;
+    let L=0,R=0; const spur=[];
+    for(let t=von; t<=bis; t=tagMinus(t,-1)){
+      const l=gebucht().filter(v=>v.tag===t).reduce((a,v)=>a+feld(v,"rest",w.id),0);
+      const r=(kt(t)[w.id]||{}).fl||0;
+      if(!ZBER[t]) luecken.ohneZ.add(t); if(!fassTage.has(t)) luecken.ohneF.add(t);
+      L+=l; R+=r; if(l||r) spur.push({t,l,r,kum:L-R});
+    }
+    if(!L && !R) return;
+    zeilen.push({id:w.id, w, von, L, R, diff:L-R, spur, name:zeilenName(w.id,namen), gn:!!namen[w.id]});
+  });
+  zeilen.sort((a,b)=>ARTEN.findIndex(x=>x.id===artVon(a.id))-ARTEN.findIndex(x=>x.id===artVon(b.id)) ||
+    (a.w.grp||"").localeCompare(b.w.grp||"","de") || a.name.localeCompare(b.name,"de"));
+  return {zeilen, luecken, bis};
+}
+function block2(F){
+  const drin=t=>t>=F.von&&t<=F.bis, je={};
+  const z=id=>je[id]||(je[id]={id, L:0, R:0, namen:[]});
+  gebucht().filter(v=>drin(v.tag)).forEach(v=>Object.keys(v.verbraucht||{}).forEach(id=>{
+    if(byId(id)) return; const a=artVon(id); if(a==="bier"||a==="soft") z(id).L+=v.verbraucht[id]; }));
+  Object.keys(ZBER).filter(drin).forEach(t=>{ const k=kasseTag(t);
+    Object.keys(k).forEach(id=>{ if(byId(id)) return; const a=artVon(id); if(a!=="bier"&&a!=="soft") return;
+      z(id).R+=k[id].stk; k[id].namen.forEach(n=>{ if(!je[id].namen.includes(n)) je[id].namen.push(n); }); }); });
+  return Object.values(je).filter(x=>x.L||x.R).map(x=>({...x, diff:x.L-x.R}))
+    .sort((a,b)=>ARTEN.findIndex(q=>q.id===artVon(a.id))-ARTEN.findIndex(q=>q.id===artVon(b.id)) || GN(a.id).localeCompare(GN(b.id),"de"));
+}
+function block3(F){
+  const drin=t=>t>=F.von&&t<=F.bis, je={};
+  const z=id=>je[id]||(je[id]={id, L:0, gl:0, glFl:0, stk:0});
+  gebucht().filter(v=>drin(v.tag)).forEach(v=>{
+    WINES.forEach(w=>{ const n=feld(v,"barrot",w.id)+feld(v,"bar",w.id)+feld(v,"backup",w.id)+
+      (OFFEN_WEIN.includes(w.id)?feld(v,"rest",w.id):0); if(n) z(w.id).L+=n; });
+    Object.keys(v.verbraucht||{}).forEach(id=>{ if(byId(id)) return; const a=artVon(id);
+      if(a==="mixer"||a==="saft") z(id).L+=v.verbraucht[id]; });
+  });
+  Object.keys(ZBER).filter(drin).forEach(t=>{ const k=kasseTag(t);
+    Object.keys(k).forEach(id=>{ const x=k[id];
+      if(byId(id)){ if(x.gl){ const q=z(id); q.gl+=x.gl; q.glFl+=x.glMl/750; }
+        if(OFFEN_WEIN.includes(id)&&x.fl) z(id).stk+=x.fl; }
+      else { const a=artVon(id); if(a==="mixer"||a==="saft") z(id).stk+=x.stk; } }); });
+  return Object.values(je).filter(x=>x.L||x.gl||x.stk)
+    .sort((a,b)=>ARTEN.findIndex(q=>q.id===artVon(a.id))-ARTEN.findIndex(q=>q.id===artVon(b.id)) || artName(a.id).localeCompare(artName(b.id),"de"));
+}
+const pkt = d => Math.abs(d)<0.05 ? '<span class="dot ok" title="stimmt">✓</span>' : '<span class="dot no" title="weicht ab">'+fmtD(d)+'</span>';
+/* Runde 24 · Vier Blöcke in dieser Reihenfolge (Casimir, 30.09.): Flaschenwein,
+   Glaswein, Bar-Flaschen, Rest. Jeder für sich filter- und aufklappbar. */
+const BLOECKE=[
+  {id:"flasche", t:"Flaschenwein", s:"Restaurant „fehlt oben“ gegen verkaufte ganze Flaschen · aufsummiert seit der letzten Kellerzählung"},
+  {id:"glas",    t:"Glaswein",     s:"Bar-Weine gegen verkaufte Gläser · nur zur Info, ohne Urteil"},
+  {id:"bar",     t:"Bar-Flaschen", s:"Bier, Softdrinks, Wasser · ein Stück an der Kasse ist eine Flasche"},
+  {id:"rest",    t:"Rest",         s:"Serena, Mixer, Säfte · offen, nicht unter Kontrolle, nur zur Info"}
+];
 function vBlick(m){
   if(!UEB.ende) UEB.ende=letzterTag();
+  UEB.spur=UEB.spur||{}; UEB.zu=UEB.zu||{}; UEB.block=UEB.block||"alle";
   const F=fenster(UEB.art, UEB.ende);
-  const G=gegenueber(F);
-  const passt = z => UEB.filter==="alle" || artInfo(z.art).f===UEB.filter;
-  const sicht=G.zeilen.filter(passt);
-  const nicht = z => z.status!=="ok";
-  const abw={}; G.zeilen.filter(nicht).forEach(z=>{ const f=artInfo(z.art).f; abw[f]=(abw[f]||0)+1; });
-  const nNicht=sicht.filter(nicht).length;
-  const gl=sicht.reduce((a,z)=>a+z.gl,0), glFl=sicht.reduce((a,z)=>a+z.glFl,0);
-  const glOhne=sicht.some(z=>z.pos.some(p=>p.glas && p.fl==null));
+  const b1=block1(), b2=block2(F), b3=block3(F);
+  const glas=b3.filter(z=>byId(z.id)&&!OFFEN_WEIN.includes(z.id)), rest=b3.filter(z=>!byId(z.id)||OFFEN_WEIN.includes(z.id));
+  const abw=z=>Math.abs(z.diff)>=0.05;
+  const n={flasche:b1.zeilen.filter(abw).length, glas:0, bar:b2.filter(abw).length, rest:0};
+  const namen=gnNamen();
+  const gruppe=(a,letzte)=>{ const A=artInfo(a); return a!==letzte?'<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+'</div>':''; };
 
   let h='<div class="bzeit">'+
     '<div class="seg" role="group" aria-label="Zeitraum">'+
@@ -3293,59 +3400,65 @@ function vBlick(m){
     '<button type="button" class="pf" id="bZur" aria-label="früher">‹</button>'+
     '<span class="bdatum">'+esc(fensterTitel(UEB.art,F))+'</span>'+
     '<button type="button" class="pf" id="bVor" aria-label="später">›</button>'+
-    '<div class="seg rechts" role="group" aria-label="Auswahl">'+
-      '<button type="button" data-nur="0" class="'+(UEB.nur?'':'on')+'">Alle</button>'+
-      '<button type="button" data-nur="1" class="'+(UEB.nur?'on':'')+'">Stimmt nicht · '+nNicht+'</button></div></div>';
+    '<div class="seg rechts" role="group"><button type="button" data-nur="0" class="'+(UEB.nur?'':'on')+'">Alle</button><button type="button" data-nur="1" class="'+(UEB.nur?'on':'')+'">Stimmt nicht · '+(n.flasche+n.bar)+'</button></div></div>';
+  h+='<div class="bchips">'+[{id:"alle",t:"Alle"},...BLOECKE].map((B,i)=>'<button type="button" class="bchip'+(UEB.block===B.id?' on':'')+'" data-blk="'+B.id+'">'+
+      (i?i+' · ':'')+esc(B.t)+(n[B.id]?'<sup>'+n[B.id]+'</sup>':'')+'</button>').join("")+'</div>';
+  const lz=[...b1.luecken.ohneZ].sort().slice(-7), lf=[...b1.luecken.ohneF].sort().slice(-7);
+  if(lz.length) h+='<div class="hinweis warn bhw"><span>Kein Z-Bericht für '+lz.map(kurzTag).join(", ")+' — Verkäufe dieser Tage fehlen rechts.</span><button type="button" class="b klein stark" data-geh="import">Z-Bericht einlesen</button></div>';
+  if(lf.length) h+='<div class="hinweis warn bhw"><span>Keine abgeschlossene Fassung für '+lf.map(kurzTag).join(", ")+' — was dort gefehlt hat, trägt die nächste Fassung mit.</span></div>';
 
-  h+='<div class="bchips">'+FILTER.map(f=>'<button type="button" class="bchip'+(f.k?' k'+f.k:'')+(UEB.filter===f.id?' on':'')+'" data-f="'+f.id+'">'+
-      (f.k?'<i></i>':'')+esc(f.t)+(f.id!=="alle"&&abw[f.id]?'<sup>'+abw[f.id]+'</sup>':'')+'</button>').join("")+'</div>';
+  const block=(B,i,kopfL,kopfR,inhalt,anzahl,info)=>{
+    if(UEB.block!=="alle"&&UEB.block!==B.id) return '';
+    if(UEB.nur&&info) return '';
+    const zu=!!UEB.zu[B.id];
+    return '<div class="bblock'+(info?' info':'')+'"><button type="button" class="bbkopf" data-zu="'+B.id+'" aria-expanded="'+(!zu)+'">'+
+      '<h2>'+(i+1)+' · '+esc(B.t)+'</h2><span class="unter">'+esc(B.s)+(B.id!=="flasche"?' · '+esc(fensterTitel(UEB.art,F)):'')+'</span>'+
+      '<span class="bbn">'+anzahl+(n[B.id]?' · <b>'+n[B.id]+' weichen ab</b>':'')+'</span><span class="bbpf">'+(zu?'▸':'▾')+'</span></button>'+
+      (zu?'':'<div class="btab"><div class="bhd"><div class="l">'+kopfL+'</div><div></div><div></div><div class="r">'+kopfR+'</div></div>'+inhalt+'</div>')+'</div>';
+  };
 
-  /* Hinweise: nur Tatsachen, jede mit dem Weg zur Abhilfe. */
-  const hw=[];
-  if(!G.berichte.length) hw.push(['warn','Für diesen Zeitraum ist kein Z-Bericht eingelesen — rechts steht deshalb nichts.','Z-Bericht einlesen','import']);
-  else if(G.ohneZ.length) hw.push(['warn','Z-Bericht fehlt für '+G.ohneZ.map(kurzTag).join(", ")+' — dort gibt es eine Fassung, aber keinen Verkauf.','Z-Bericht einlesen','import']);
-  if(G.ohneFassung.length) hw.push(['warn','Keine Fassung für '+G.ohneFassung.map(kurzTag).join(", ")+' — der Verkauf dieser Tage hat links kein Gegenüber.',null,null]);
-  if(G.laufend) hw.push(['warn',G.laufend+(G.laufend===1?' Vorgang läuft':' Vorgänge laufen')+' noch — was dort steht, zählt erst nach dem Abschluss.',null,null]);
-  if(G.offen.length) hw.push(['warn',G.offen.length+' Kassenname'+(G.offen.length===1?'':'n')+' ohne Zuordnung — stehen unten, zählen nirgends mit.','Zuordnen','zuordnung']);
-  const nAnn=sicht.filter(z=>z.ann).length;
-  if(nAnn) hw.push(['info',nAnn+' Position'+(nAnn===1?'':'en')+' mit angenommener Flaschengröße (nicht bestätigt) — bestätigen unter Analytics → Zuordnung.',null,null]);
-  h+=hw.map((x,i)=>'<div class="hinweis '+x[0]+' bhw"><span>'+esc(x[1])+'</span>'+(x[2]?'<button type="button" class="b klein stark" data-geh="'+x[3]+'">'+esc(x[2])+'</button>':'')+'</div>').join("");
-
-  const sL=sicht.reduce((a,z)=>a+z.links,0), sR=sicht.reduce((a,z)=>a+z.rechts,0);
-  h+='<div class="bkpi"><div><b>'+num(sL)+'</b><span>gefehlt (Fassung)</span></div>'+
-     '<div><b>'+(G.berichte.length?num(sR):'–')+'</b><span>verkauft (gastronovi)</span></div>'+
-     '<div class="glk"><b>'+gl+' Gläser</b><span>'+(gl?(glOhne?'Glaswein · Flaschengröße teils offen':'Glaswein = '+num(glFl)+' Fl.'):'kein Glaswein')+'</span></div>'+
-     '<div class="'+(nNicht?'rot':'')+'"><b>'+nNicht+'</b><span>stimmen nicht</span></div></div>';
-
-  h+='<div class="btab"><div class="bhd"><div class="l">Fassung · fehlt oben</div><div></div><div></div>'+
-     '<div class="r">Z-Bericht'+(G.berichte.length===1?' '+esc(ZBER[G.berichte[0]].nr||''):G.berichte.length?' · '+G.berichte.length+' Berichte':'')+' · gastronovi</div></div>';
-  if(!sicht.length) h+='<div class="leer">Für diesen Zeitraum gibt es nichts zu vergleichen.</div>';
-  ARTEN.forEach(A=>{
-    const zs=sicht.filter(z=>z.art===A.id); if(!zs.length) return;
-    const ok=zs.filter(z=>z.status==="ok"), rest=zs.filter(z=>z.status!=="ok");
-    if(UEB.nur && !rest.length) return;
-    h+='<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+' <small>· '+zs.length+'</small></div>';
-    rest.forEach(z=>h+=blickZeile(z));
-    if(UEB.nur || !ok.length) return;
-    if(UEB.auf[A.id]){ ok.forEach(z=>h+=blickZeile(z));
-      h+='<button type="button" class="bzu k'+A.k+'" data-auf="'+A.id+'">zuklappen</button>'; }
-    else h+='<button type="button" class="brow zu k'+A.k+'" data-auf="'+A.id+'"><div class="nm">✓ '+
-      (rest.length?ok.length+' weitere stimmen':'alle '+ok.length+' stimmen')+' · aufklappen</div>'+
-      '<div class="ql"><b>'+num(ok.reduce((a,z)=>a+z.links,0))+'</b></div><div class="mid"></div>'+
-      '<div class="rt"><span class="sum">'+num(ok.reduce((a,z)=>a+z.rechts,0))+'</span></div></button>';
+  /* 1 · Flaschenwein */
+  let x='', letzte=null;
+  const z1=b1.zeilen.filter(z=>!UEB.nur||abw(z));
+  if(!z1.length) x+='<div class="leer">'+(b1.zeilen.length?'Alle Flaschenweine stimmen.':'Seit der Zählung nichts zu vergleichen.')+'</div>';
+  z1.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    x+='<button type="button" class="brow k'+A.k+'" data-spur="'+esc(z.id)+'"><div class="nm"><span class="'+(z.gn?'':'stammn')+'">'+esc(z.name)+'</span> <span class="m">seit '+esc(kurzTag(z.von))+' · Tage '+(UEB.spur[z.id]?'▾':'▸')+'</span></div>'+
+       '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid">'+pkt(z.diff)+'</div><div class="rt"><span class="sum">'+num(z.R)+'</span></div></button>';
+    if(UEB.spur[z.id]) x+='<div class="bspur">'+z.spur.map(s=>'<div class="'+(Math.abs(s.l-s.r)>=0.05?'ab':'')+'"><span>'+esc(deTag(s.t))+'</span><span>fehlt '+num(s.l)+'</span><span>verkauft '+num(s.r)+'</span><span>Summe '+fmtD(s.kum)+'</span></div>').join("")+'</div>';
   });
-  h+='</div>';
+  h+=block(BLOECKE[0],0,'Restaurant · fehlt oben','verkauft · Flaschen',x,b1.zeilen.length+' Weine',false);
 
-  if(G.offen.length) h+='<div class="karte boffen"><h3>Noch offen</h3><p class="unter">Kassennamen ohne Artikel. Sie fließen in keine Zahl ein, bis sie zugeordnet sind.</p>'+
-    G.offen.sort((a,b)=>b.anzahl-a.anzahl).map(o=>'<div class="bo"><span>'+esc(o.name)+'</span><b>'+num(o.anzahl)+'</b></div>').join("")+
-    '<button type="button" class="b klein stark" data-geh="zuordnung">Zuordnen</button></div>';
-  if(G.ignoriert.length) h+='<p class="unter bign">'+G.ignoriert.reduce((a,o)=>a+o.anzahl,0)+' verkaufte Einheiten sind auf „Ignorieren" (Speisen, Kaffee, Mischgetränke) — sie kommen nicht aus dem Keller.</p>';
+  /* 2 · Glaswein */
+  x=''; letzte=null;
+  if(!glas.length) x+='<div class="leer">Nichts im Zeitraum.</div>';
+  glas.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    x+='<div class="brow k'+A.k+'"><div class="nm">'+esc(namen[z.id]?zeilenName(z.id,namen):artName(z.id))+'</div>'+
+       '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid"></div><div class="rt">'+(z.gl?'<span class="bs gl">'+GLAS_SVG+z.gl+' Gläser ≈ '+num(z.glFl)+' Fl.</span>':'<span class="klein">nichts verkauft</span>')+'</div></div>'; });
+  h+=block(BLOECKE[1],1,'Bar · fehlt oben','verkauft · Gläser',x,glas.reduce((a,z)=>a+z.gl,0)+' Gläser',true);
+
+  /* 3 · Bar-Flaschen */
+  x=''; letzte=null;
+  const z2=b2.filter(z=>!UEB.nur||abw(z));
+  if(!z2.length) x+='<div class="leer">'+(b2.length?'Alle Flaschen stimmen.':'Nichts im Zeitraum.')+'</div>';
+  z2.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    x+='<div class="brow k'+A.k+'"><div class="nm">'+esc(z.namen[0]||GN(z.id))+(z.namen.length>1?' <span class="m">+ '+esc(z.namen.slice(1).join(", "))+'</span>':'')+'</div>'+
+       '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid">'+pkt(z.diff)+'</div><div class="rt"><span class="sum">'+num(z.R)+'</span></div></div>'; });
+  h+=block(BLOECKE[2],2,'fehlt oben','verkauft',x,b2.length+' Sorten',false);
+
+  /* 4 · Rest */
+  x=''; letzte=null;
+  if(!rest.length) x+='<div class="leer">Nichts im Zeitraum.</div>';
+  rest.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    const r=[z.gl?'<span class="bs gl">'+GLAS_SVG+z.gl+' Gläser ≈ '+num(z.glFl)+' Fl.</span>':'', z.stk?'<span class="bs">'+num(z.stk)+' Stk.</span>':''].join("");
+    x+='<div class="brow k'+A.k+'"><div class="nm">'+esc(artName(z.id))+'</div><div class="ql"><b>'+num(z.L)+'</b></div><div class="mid"></div><div class="rt">'+(r||'<span class="klein">nichts verkauft</span>')+'</div></div>'; });
+  h+=block(BLOECKE[3],3,'fehlt oben (Bar/Lade)','verkauft',x,rest.length+' Sorten',true);
 
   m.innerHTML=h;
   m.querySelectorAll("[data-art]").forEach(b=>b.onclick=()=>{ UEB.art=b.dataset.art; merkeUeb(); zeichne(); });
   m.querySelectorAll("[data-nur]").forEach(b=>b.onclick=()=>{ UEB.nur=b.dataset.nur==="1"; zeichne(); });
-  m.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ UEB.filter=b.dataset.f; merkeUeb(); zeichne(); });
-  m.querySelectorAll("[data-auf]").forEach(b=>b.onclick=()=>{ UEB.auf[b.dataset.auf]=!UEB.auf[b.dataset.auf]; zeichne(); });
+  m.querySelectorAll("[data-blk]").forEach(b=>b.onclick=()=>{ UEB.block=b.dataset.blk; zeichne(); });
+  m.querySelectorAll("[data-zu]").forEach(b=>b.onclick=()=>{ UEB.zu[b.dataset.zu]=!UEB.zu[b.dataset.zu]; zeichne(); });
+  m.querySelectorAll("[data-spur]").forEach(b=>b.onclick=()=>{ UEB.spur[b.dataset.spur]=!UEB.spur[b.dataset.spur]; zeichne(); });
   m.querySelectorAll("[data-geh]").forEach(b=>b.onclick=()=>{ SEITE=b.dataset.geh; ANA_OFFEN=true; zeichne(); window.scrollTo(0,0); });
   $("#bZur").onclick=()=>{ UEB.ende=blaettern(UEB.art,F.von,-1); zeichne(); };
   $("#bVor").onclick=()=>{ UEB.ende=blaettern(UEB.art,F.von,1); zeichne(); };
