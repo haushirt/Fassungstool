@@ -780,17 +780,7 @@
      [
       "gingerbeer",
       8
-     ],
-     {
-      "versetzt": 1,
-      "platz": 8,
-      "stapel": [
-       [
-        "gastklein",
-        8
-       ]
-      ]
-     }
+     ]
     ]
    },
    {
@@ -928,11 +918,12 @@
    "hefe0": "Franziskaner Weissbier alkoholfrei",
    "hell": "Franziskaner Weissbier hell",
    "dunkel": "Franziskaner Weissbier dunkel",
-   "gasteiner": "Gasteiner 1 l",
+   "gasteiner": "Gasteiner 0,75 l",
    "gastill": "Gasteiner still",
    "noblier": "Noblier alkoholfrei",
    "redale": "Raschhofer Roter Engel · Red Ale",
-   "paleale": "Raschhofer Silberpfeil · Pale Ale"
+   "paleale": "Raschhofer Silberpfeil · Pale Ale",
+   "gast033": "Gasteiner sparkling 0,33"
   },
   "kurz": {
    "tonicth": "Tonic T.H.",
@@ -962,9 +953,10 @@
    "sanbitter": "Sanbitter",
    "noblier": "Noblier",
    "gastill": "Still",
-   "gasteiner": "Gast. 1 l",
+   "gasteiner": "Gast. 0,75",
    "redale": "Red Ale",
-   "paleale": "Pale Ale"
+   "paleale": "Pale Ale",
+   "gast033": "Gast. 0,33"
   },
   "col": {
    "sanbitter": "#CC0A14",
@@ -990,7 +982,8 @@
    "gastill": "#4E7A8E",
    "noblier": "#9A7B44",
    "redale": "#D51726",
-   "paleale": "#7DBE2E"
+   "paleale": "#7DBE2E",
+   "gast033": "#1D6E96"
   },
   "spec": {
    "holunder": "#8A7E62",
@@ -1002,7 +995,8 @@
   },
   "skal": {
    "st03": 0.76,
-   "gastklein": 0.84
+   "gastklein": 0.84,
+   "gast033": 0.9
   }
  }
 }

@@ -22,7 +22,7 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Runde 24 (30.09.2026) — Backoffice neu geordnet, „leer" in der App
 
-Branch `claude/upbeat-tesla-wq8whz`, PR offen (nicht gemergt). `sw.js` **v75**.
+Branch `claude/upbeat-tesla-wq8whz`, PR #21 offen (nicht gemergt). `sw.js` **v76**.
 `npm test` **583/583**. Browser: `node tests/ui-runde24.cjs` 30/30,
 `node tests/ui-runde24-app.cjs` 9/9. **Keine Migration.**
 
@@ -36,6 +36,14 @@ Branch `claude/upbeat-tesla-wq8whz`, PR offen (nicht gemergt). `sw.js` **v75**.
   `leitung.html`, gleich gehalten von `tests/gastronovi-liste.test.mjs`.
 - App: „leer" bei Kellerzählung (Zählung 0 geht jetzt ins Journal) und beim Holen;
   „Zusätzlich entnommen" als eigene Karte.
+- Nachtrag 30.09.: Bar · Rotweine = Achs Goldberg (w024), Gebeshuber (w032),
+  Dürnberg Elementum (w036); Geräte mit alter Voreinstellung stellen selbst um.
+  Lade 2 = 4 still + 6 **Gasteiner sparkling 0,33** (neu, `gast033`) + 18 Gasteiner
+  **0,75 l** (6 je Reihe). Der 0,25er (`gastklein`) ist aus den Laden raus (Name bleibt
+  für alte Vorgänge). **Zitronensaft gerade nicht vorrätig** (`NICHT_VORRAETIG` in
+  beiden HTML): kein Soll, in Lade 1 als „aus". Zurück: dort streichen.
+- Offen: Kassenname des neuen 0,33ers ist noch unbekannt → nach dem ersten Z-Bericht
+  in der Zuordnung auf „Gasteiner sparkling 0,33" legen.
 
 ## Was Runde 18 verändert hat (nur `public/leitung.html`)
 - Die vier Kacheln des Mittagsblicks sind **Knöpfe** und führen weiter.

@@ -233,11 +233,11 @@ describe("Runde 14 · Sonderentnahme braucht einen Grund", () => {
 });
 
 describe("Runde 14 · Laden und Weinzeile", () => {
-  test("Gasteiner 0,25 steht auf acht", () => {
+  test("Gasteiner 0,25 ist aus den Laden genommen (Runde 24)", () => {
+    /* Runde 14 stellte ihn auf acht; seit 30.09.2026 gibt es ihn nicht mehr —
+       an seine Stelle tritt der Sparkling 0,33 in Lade 2. */
     const S = JSON.parse(lies("src/stamm.json"));
-    const treffer = JSON.stringify(S).match(/\["gastklein",\s*(\d+)\]/);
-    assert.ok(treffer, "gastklein nicht im Stapel gefunden");
-    assert.equal(treffer[1], "8");
+    assert.doesNotMatch(JSON.stringify(S.GETR.laden), /gastklein/);
   });
 
   test("alle Flaschenspalten der Lade 1 sind gleich hoch", () => {

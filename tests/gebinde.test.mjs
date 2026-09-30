@@ -82,7 +82,8 @@ describe("Gebindegröße: eine Quelle, klare Auskunft", () => {
     f.setzte({ "Gasteiner Quellwasser 1l": "gasteiner" }, {}, {}, []);
     const v = f.gebindeGroesse("gasteiner", "Gasteiner Quellwasser 1l");
     assert.equal(v.quelle, "vorschlag");
-    assert.equal(v.ml, 1000, "„Gasteiner 1 l“ steht im Artikelnamen");
+    /* Runde 24: der Artikel heisst jetzt richtig „Gasteiner 0,75 l". */
+    assert.equal(v.ml, 750, "„Gasteiner 0,75 l“ steht im Artikelnamen");
 
     f.setzte({ "Gasteiner Quellwasser 1l": "gasteiner" },
              { "Gasteiner Quellwasser 1l": 1000 }, {}, []);

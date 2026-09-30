@@ -85,6 +85,26 @@ const srv = http.createServer((q, a) => {
   await p.locator(".zusatz").first().scrollIntoViewIfNeeded();
   await p.screenshot({ path: path.join(BILD, "app-holen-leer-zusatz.png"), fullPage: true });
 
+  console.log("\n4 · Bar-Rotweine, Lade 1 (Zitrone aus), Lade 2 (neu)");
+  await p.evaluate(() => { try { localStorage.clear(); } catch (e) {}
+    sessionStorage.setItem("hh_user", "Asad"); start("tag"); barIdx = 0; go(0); });
+  await p.waitForTimeout(400); await weg();
+  const rot = await p.evaluate(() => barSlots("barrot").map(x => x.id).join(","));
+  ok("Bar · Rotweine: Achs Goldberg, Gebeshuber, Dürnberg Elementum", rot === "w024,w032,w036", rot);
+  await p.screenshot({ path: path.join(BILD, "app-bar-rot.png"), fullPage: true });
+  await p.evaluate(() => { barIdx = 1; render(); }); await p.waitForTimeout(300);
+  ok("Lade 1: Zitronensaft steht als „aus\" da", await p.locator(".gitem--aus").count() === 1);
+  ok("Zitronensaft hat kein Soll", await p.evaluate(() => GSOLL.zitrone === undefined));
+  await p.screenshot({ path: path.join(BILD, "app-lade1.png"), fullPage: true });
+  await p.evaluate(() => { barIdx = 2; render(); }); await p.waitForTimeout(300);
+  const l2 = await p.evaluate(() => ({ t: document.querySelector(".stath b").textContent,
+    fach: [...document.querySelectorAll(".facht > span:first-child")].map(e => e.textContent),
+    soll: [GSOLL.gastill, GSOLL.gast033, GSOLL.gasteiner, GSOLL.gastklein ?? null] }));
+  ok("Lade 2: Stille 4 · Sparkling 0,33 6 · Gasteiner 0,75 l 18 · kein 0,25",
+     JSON.stringify(l2.soll) === JSON.stringify([4, 6, 18, undefined].map(x => x ?? null)) && l2.fach.join("|") === "Stille 0,75|Sparkling 0,33|Gasteiner 0,75 l",
+     JSON.stringify(l2));
+  await p.screenshot({ path: path.join(BILD, "app-lade2.png"), fullPage: true });
+
   await b.close(); srv.close();
   console.log("\n" + (geprueft - fehler) + " von " + geprueft + " Prüfungen bestanden");
   process.exit(fehler ? 1 : 0);

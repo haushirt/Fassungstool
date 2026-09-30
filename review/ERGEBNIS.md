@@ -20,13 +20,18 @@
 - **Holen:** Knopf „leer" je Position → Menge 0, Zeile erledigt, Backoffice zeigt „leer".
 - **Zusätzlich entnommen** ist eine eigene Karte mit Titel, Zahl und Knopf „+ Hinzufügen" statt eines grauen Textlinks.
 
+## Nachtrag 30.09. · Laden und Bar
+- **Bar · Rotweine:** Achs Goldberg, Gebeshuber Pinot Noir, Dürnberg Elementum (Geräte mit alter Voreinstellung stellen selbst um).
+- **Lade 2:** 4 still · 6 Gasteiner sparkling **0,33** (neu) · 18 Gasteiner **0,75 l** (6 je Reihe). Der 0,25er ist aus den Laden genommen.
+- **Zitronensaft** gerade nicht vorrätig: kein Soll, in Lade 1 als „aus".
+
 ## Worker
 - Eine Zählung mit 0 geht jetzt ins Journal (vorher verworfen). Bewegungen mit 0 bleiben draußen. Append-only unverändert.
 
 ## Geprüft
 - `npm test` **583 von 583** (neu: `tests/gastronovi-liste.test.mjs`).
-- Browser: `tests/ui-runde24.cjs` **30/30** (echter Worker), `tests/ui-runde24-app.cjs` **9/9**, `ui-leitung-echt` 44/44, `ui-runde22` 31/31, `ui-runde21` 19/19, `ui-runde17` 38/38, `ui-runde18` ohne Fund.
-- Bilder: `review/screens/r24/`. `sw.js` auf **v75**.
+- Browser: `tests/ui-runde24.cjs` **30/30** (echter Worker), `tests/ui-runde24-app.cjs` **13/13**, `ui-leitung-echt` 44/44, `ui-runde22` 31/31, `ui-runde21` 19/19, `ui-runde17` 38/38, `ui-runde18` ohne Fund.
+- Bilder: `review/screens/r24/`. `sw.js` auf **v76**.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
