@@ -20,6 +20,14 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   die Fragen an Casimir in `review/MORGENBRIEF.md`.
 - **Offen ist keine Migration.**
 
+## 30.09.2026 · Z 49 und Z 50 eingelesen (Agent mit eigenem Benutzer „Claude", auf Casimirs Anweisung)
+- Z 50 neu, Z 49 erneut gesendet (unverändert 60 Positionen). Zugeordnet: Elementum ⅛ → w036,
+  Heideboden → w038, Spiegel → w023, Gemischter Satz → w020, Now-Limo Berry → berry,
+  „Pinot noir" + „Glass Wein Pinot noir" → w032 (Casimir), „Gasteiner sparkling 0,20l" → gast033 (Casimir).
+- Befund: Fassung `tag_2026-09-28` ist leer und offen (Casimir löscht sie); `tag_2026-09-29`
+  deckt 28.+29. ab → nur die Wochenansicht vergleicht richtig.
+- PR: Wein ohne Menge im Kassennamen zählt in der Übersicht als ⅛-Glas, markiert „angenommen".
+
 ## Runde 24 (30.09.2026) — Backoffice neu geordnet, „leer" in der App
 
 Branch `claude/upbeat-tesla-wq8whz`, PR #21 gemergt am 30.09. (LIVE). `sw.js` **v77**.

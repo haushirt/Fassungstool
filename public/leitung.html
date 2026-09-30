@@ -3167,7 +3167,15 @@ function zeilenName(id, namen){
    alles unter Analytics rechnen weiter streng. Ohne Ausschankmenge im
    Kassennamen (Cocktail „1 Glas") wird nichts angenommen. */
 function annehmen(f, p, artId){
-  if(f.ok || f.fehlt!=="gebinde") return f;
+  if(f.ok) return f;
+  /* Casimir (30.09.2026): Frei getippte Weinbuchungen ohne Menge im Namen
+     („Pinot noir", „Glass Wein Pinot noir") sind Gläser. Sie zählen als
+     ⅛ l aus einer Flasche der vorgeschlagenen Grösse — markiert. */
+  if(f.fehlt==="ausschank" && byId(artId)){
+    const geb=gebindeGroesse(artId, p.name), ml=(geb&&geb.ml)||GEBINDE_STANDARD.wein;
+    return {ok:true, fl:(+p.anzahl||0)*125/ml, aus:125, geb:{ml}, ann:"glas"};
+  }
+  if(f.fehlt!=="gebinde") return f;
   /* Getränke: ein Stück an der Kasse = eine Flasche. Die Grösse im
      Stammnamen taugt dafür nicht („Gasteiner 1 l" ist die 0,75er). */
   if(!byId(artId)) return {ok:true, fl:(+p.anzahl||0), aus:f.aus, geb:{ml:f.aus}, ann:"stueck"};
