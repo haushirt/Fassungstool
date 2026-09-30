@@ -1,13 +1,12 @@
 # Stand · Fassungstool
 
-**Letzte Aktualisierung:** 23.09.2026 (Runde 23 · Kassennamen Z 41–43)
+**Letzte Aktualisierung:** 30.09.2026 (Runde 24 · Backoffice neu geordnet, „leer")
 
 Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 23 ist gemergt und LIVE** (PR #18, 23.09.2026). Alle Runden bis
-  einschliesslich 23 sind auf `main`.
+- **Runde 24 liegt als PR bereit** (nicht gemergt). Runde 23 ist LIVE (PR #18).
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
 - `sw.js` steht mit Runde 23 auf **v73**.
@@ -20,6 +19,23 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
   `review/ERGEBNIS.md`, die Übergaben aller Runden in `review/LOG.md`,
   die Fragen an Casimir in `review/MORGENBRIEF.md`.
 - **Offen ist keine Migration.**
+
+## Runde 24 (30.09.2026) — Backoffice neu geordnet, „leer" in der App
+
+Branch `claude/upbeat-tesla-wq8whz`, PR offen (nicht gemergt). `sw.js` **v75**.
+`npm test` **583/583**. Browser: `node tests/ui-runde24.cjs` 30/30,
+`node tests/ui-runde24-app.cjs` 9/9. **Keine Migration.**
+
+- Backoffice oben nur **Übersicht** und **Kellerstand**; alles Alte unter **Analytics**
+  (alte Übersicht = „Tagesbericht"). Start ist die neue Übersicht.
+- Übersicht: Tag/Woche/Monat, links „fehlt oben", rechts Z-Bericht, Farben je Art,
+  Filter, Gläser-Feld, „Stimmt nicht". Vorlage `review/mockup/r24/e-v3.html`.
+- **Flaschengrößen werden in der Übersicht angenommen und markiert** (Casimir,
+  30.09.) — live ist keine einzige bestätigt. Analytics rechnet weiter streng.
+- gastronovi-Artikelliste: `docs/gastronovi-artikel.csv`, Kopie `GN_ARTIKEL` in
+  `leitung.html`, gleich gehalten von `tests/gastronovi-liste.test.mjs`.
+- App: „leer" bei Kellerzählung (Zählung 0 geht jetzt ins Journal) und beim Holen;
+  „Zusätzlich entnommen" als eigene Karte.
 
 ## Was Runde 18 verändert hat (nur `public/leitung.html`)
 - Die vier Kacheln des Mittagsblicks sind **Knöpfe** und führen weiter.

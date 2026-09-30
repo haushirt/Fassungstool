@@ -73,6 +73,9 @@ Spalten: Priorität · Rolle (wer hat es gemeldet) · Runde · Punkt · Datei:Ze
 
 ## Mittel
 
+- **(Runde 24) Betriebstag-Versatz in der neuen Übersicht.** Tag X zeigt Fassung vom Tag X gegen Z-Bericht vom Tag X. Ist der Versatz echt (siehe Hoch), steht in der Tagesansicht jede Zeile rot; in Woche/Monat mittelt es sich. Entscheidung nötig.
+- **(Runde 24) Getränkelager ohne Kellerstand.** Es wird nicht gezählt; der Kellerstand zeigt nur Wein.
+
 | Rolle | Runde | Punkt | Datei:Zeile |
 |---|---|---|---|
 | qa-guardian | 16 | **`kurz()` in `leitung.html` sichert nur den KOPF, nicht den Leib — „PIN zurücksetzen" hängt dann unbegrenzt.** Der `AbortController` wird im `finally` geräumt, sobald `fetch` auflöst, und das ist, sobald die Kopfzeilen da sind; `leitung.html:2741` ruft danach `await r.json()` ohne jede Frist. Gemessen (`tests/qa-runde16-stummer-leib.cjs`, Server sendet `200` + `content-type` und den Leib nie): `kurz()` kommt nach 3 ms zurück, der Aufrufer hängt danach unbegrenzt — `b.disabled=false` am Ende des Handlers wird nie erreicht, der Knopf bleibt tot, es erscheint weder Dialog noch Hinweis, und der `catch`-Zweig mit dem Ersatzcode (`vorschlag`) greift nicht, weil nichts wirft. Der neue Code kann am Server längst stehen: Die Person kann sich dann nicht anmelden und niemand kennt ihren Code. Der Kommentar bei `:927` behauptet „Dieselbe Rechnung wie `holeKurz()` in index.html" — dort wird der Leib seit `79d8bc7` INNERHALB der Frist gelesen, hier nicht. Gegenprobe im selben Lauf: `holeKurz()` kommt bei zurückgehaltenem Leib nach 8001 ms zurück. | `public/leitung.html:927`, `:2741` |

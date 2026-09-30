@@ -2,6 +2,15 @@
 
 <!-- Kurz und datiert. Neueste oben. -->
 
+## 30.09.2026 (Runde 24)
+- **Vor dem Bauen die Live-Daten ansehen.** Die neue Übersicht war streng gebaut
+  (nur bestätigte Flaschengrößen) — live gab es davon genau null. Ein Blick in die
+  D1 (nur lesend) hat die Frage an Casimir erst möglich gemacht.
+- **Testordner sind Eingaben.** Eine Referenzliste in `tests/fixtures/` wurde von
+  der Z-Bericht-Prüfung als Bericht gelesen. Nachschlagelisten gehören nach `docs/`.
+- **Ein Wert 0 und „nicht gezählt" brauchen verschiedene Wege.** Die App löschte 0,
+  der Worker verwarf 0 — „leer" musste an beiden Stellen durch.
+
 ## 19.09.2026 (Runde 17)
 - **Ein `save()` ist noch kein Arbeiten.** `start()` speichert unbedingt, und die
   45-Sekunden-Uhr machte daraus einen laufenden Vorgang am Server. Eine Schwelle,

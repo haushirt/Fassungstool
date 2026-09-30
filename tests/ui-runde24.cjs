@@ -186,8 +186,9 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
   ok("Leindl: Name aus der gastronovi-Liste (Glas und Flasche in einer Zeile)", blick.leindl && blick.leindl.name === "GV Leindl, Langenlois");
   ok("Leindl weicht ab (rot)", blick.leindl && blick.leindl.status === "ab");
   ok("Glas-Baustein zeigt die Rechnung", /4 × ⅛ l = 0,7 Fl\./.test(blick.text));
-  ok("Glatzer Rubin: im Z nur Glas ohne bestätigte Größe → offen, nicht geraten",
-     blick.glatz && blick.glatz.status === "offen" && blick.glatz.fehlt > 0);
+  ok("Glatzer Rubin: Glas ohne bestätigte Größe → mit 0,75 l gerechnet und als „angenommen\" markiert",
+     blick.glatz && blick.glatz.ann === true && Math.abs(blick.glatz.rechts - 2 * 125 / 750) < 1e-9);
+  ok("die Annahme steht sichtbar da", /angenommen/.test(blick.text));
   ok("Glatzer Rubin: beim Holen leer markiert", blick.glatz && blick.glatz.leer === true);
   ok("offene Kassennamen werden genannt", /ohne Zuordnung/.test(blick.text) === (blick.offen > 0));
   await p.screenshot({ path: path.join(BILD, "uebersicht-tag.png"), fullPage: true });
