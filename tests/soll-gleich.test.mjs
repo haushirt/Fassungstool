@@ -58,8 +58,13 @@ describe("Das Soll der Getränke ist in App und Backoffice dasselbe", () => {
     /* Der eigentliche Fund: Gasteiner kommt aus Lade 2 (15), nicht mehr
        aus dem Regal (18). Die Zahlen stehen ausgeschrieben da, damit
        eine Änderung an der Lade diese Prüfung bewusst anfasst. */
-    assert.equal(A.GSOLL.gasteiner, 15, "App");
-    assert.equal(B.GSOLL.gasteiner, 15, "Backoffice");
+    /* Runde 24 (Casimir, 30.09.): wieder 0,75er, sechs je Reihe, 18 in der Lade. */
+    assert.equal(A.GSOLL.gasteiner, 18, "App");
+    assert.equal(B.GSOLL.gasteiner, 18, "Backoffice");
+    assert.equal(A.GSOLL.gast033, 6, "App · Sparkling 0,33");
+    assert.equal(B.GSOLL.gast033, 6, "Backoffice · Sparkling 0,33");
+    assert.equal(A.GSOLL.gastklein, undefined, "0,25 ist aus dem System");
+    assert.equal(B.GSOLL.gastklein, undefined, "0,25 ist aus dem System");
     assert.equal(A.GSOLL.gastill, 4, "App");
     assert.equal(B.GSOLL.gastill, 4, "Backoffice");
   });

@@ -4819,3 +4819,15 @@ Grösse dastehen; der grosse Gasteiner ist dazugekommen.
 
 **STATUS:** FERTIG
 
+
+
+### Runde 24 – software-engineer (/tag, 30.09.2026)
+**Kritik am Vorgänger:** `public/index.html` `zRow`: 0 löschte den Haken, „leer" war nicht erfassbar ↩️ geändert · `src/index.js` `zu()`: Zählung 0 verworfen ↩️ geändert.
+**Umgesetzt:** Backoffice mit zwei Seiten + „Analytics" (neue Übersicht, Kellerstand/Analyse) · „leer" bei Zählung und Holen · „Zusätzlich entnommen" als Karte.
+**Geprüft:** npm test 583/583, ui-runde24 30/30, ui-runde24-app 9/9, ältere UI-Prüfungen grün.
+**Für die Nächsten:** Die Übersicht NIMMT Flaschengrößen an (Casimirs Wahl) und markiert sie; `abgleich()` bleibt streng. Betriebstag-Versatz Z ↔ Fassung ist weiter offen und betrifft die Tagesansicht direkt.
+**Phase/Thema:** A / Backoffice-Übersicht
+**Backlog:** (mittel) Betriebstag-Versatz in der Tagesansicht sichtbar machen · (niedrig) Getränkelager hat keinen Kellerstand
+**STATUS:** VERBESSERUNGEN
+
+**Nachtrag 30.09. (Runde 24):** Bar-Rotweine w024/w032/w036, Lade 2 mit gast033 (6) und Gasteiner 0,75 (18, 6 je Reihe), gastklein aus den Laden, Zitronensaft nicht vorrätig. Drei alte Prüfungen bewusst auf die neuen Mengen gestellt (soll-gleich, gebinde, oberflaeche-f). npm test 583/583, ui-runde24-app 13/13.
