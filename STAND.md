@@ -6,7 +6,7 @@ Diese Datei zuerst lesen. Das ganze Repo zu erkunden ist nicht nötig.
 Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Wo wir stehen
-- **Runde 24 liegt als PR bereit** (nicht gemergt). Runde 23 ist LIVE (PR #18).
+- **Runde 24 ist gemergt und LIVE** (PR #21, 30.09.2026).
 - Die Runden 17 bis 22 stehen weiter unten, jede mit dem, was sie gebracht hat.
 - Jeder Push auf `main` geht **automatisch live** (Workers Builds).
 - `sw.js` steht mit Runde 23 auf **v73**.
@@ -22,7 +22,7 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 
 ## Runde 24 (30.09.2026) — Backoffice neu geordnet, „leer" in der App
 
-Branch `claude/upbeat-tesla-wq8whz`, PR #21 offen (nicht gemergt). `sw.js` **v76**.
+Branch `claude/upbeat-tesla-wq8whz`, PR #21 gemergt am 30.09. (LIVE). `sw.js` **v77**.
 `npm test` **583/583**. Browser: `node tests/ui-runde24.cjs` 30/30,
 `node tests/ui-runde24-app.cjs` 9/9. **Keine Migration.**
 
@@ -38,7 +38,7 @@ Branch `claude/upbeat-tesla-wq8whz`, PR #21 offen (nicht gemergt). `sw.js` **v76
   „Zusätzlich entnommen" als eigene Karte.
 - Nachtrag 30.09.: Bar · Rotweine = Achs Goldberg (w024), Gebeshuber (w032),
   Dürnberg Elementum (w036); Geräte mit alter Voreinstellung stellen selbst um.
-  Lade 2 = 4 still + 6 **Gasteiner sparkling 0,33** (neu, `gast033`) + 18 Gasteiner
+  Lade 2 = oben ein Kästchen: 4 still + 6 **Gasteiner sparkling 0,33** (neu, `gast033`) + 18 Gasteiner
   **0,75 l** (6 je Reihe). Der 0,25er (`gastklein`) ist aus den Laden raus (Name bleibt
   für alte Vorgänge). **Zitronensaft gerade nicht vorrätig** (`NICHT_VORRAETIG` in
   beiden HTML): kein Soll, in Lade 1 als „aus". Zurück: dort streichen.

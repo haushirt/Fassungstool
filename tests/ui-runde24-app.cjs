@@ -100,10 +100,12 @@ const srv = http.createServer((q, a) => {
   const l2 = await p.evaluate(() => ({ t: document.querySelector(".stath b").textContent,
     fach: [...document.querySelectorAll(".facht > span:first-child")].map(e => e.textContent),
     soll: [GSOLL.gastill, GSOLL.gast033, GSOLL.gasteiner, GSOLL.gastklein ?? null] }));
-  ok("Lade 2: Stille 4 · Sparkling 0,33 6 · Gasteiner 0,75 l 18 · kein 0,25",
-     JSON.stringify(l2.soll) === JSON.stringify([4, 6, 18, undefined].map(x => x ?? null)) && l2.fach.join("|") === "Stille 0,75|Sparkling 0,33|Gasteiner 0,75 l",
+  ok("Lade 2: oben Still 4 + Sparkling 0,33 6 in einem Kästchen, unten Gasteiner 0,75 l 18 · kein 0,25",
+     JSON.stringify(l2.soll) === JSON.stringify([4, 6, 18, undefined].map(x => x ?? null)) && l2.fach.join("|") === "Still 0,75 · Sparkling 0,33|Gasteiner 0,75 l",
      JSON.stringify(l2));
   await p.screenshot({ path: path.join(BILD, "app-lade2.png"), fullPage: true });
+  await p.evaluate(() => { barIdx = 4; render(); }); await p.waitForTimeout(300);
+  ok("Lade 4: kein Gasteiner 0,25 mehr", !/Gast\. 0,25|Gasteiner 0,25/.test(await p.locator("main").textContent()));
 
   await b.close(); srv.close();
   console.log("\n" + (geprueft - fehler) + " von " + geprueft + " Prüfungen bestanden");
