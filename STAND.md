@@ -27,9 +27,9 @@ Tiefe Details: `PROJEKTANLEITUNG-Fassungstool.md`, `UEBERGABE-TECHNISCH.md`.
 - Befund: Fassung `tag_2026-09-28` ist leer und offen (Casimir löscht sie); `tag_2026-09-29`
   deckt 28.+29. ab → nur die Wochenansicht vergleicht richtig.
 - PR: Wein ohne Menge im Kassennamen zählt in der Übersicht als ⅛-Glas, markiert „angenommen".
-- **Übersicht = drei Abgleiche** (Casimir, 30.09.): 1 Flaschenwein (Restaurant `rest` gegen
+- **Übersicht = vier Blöcke** (Casimir, 30.09.), je filter- und aufklappbar: 1 Flaschenwein (Restaurant `rest` gegen
   verkaufte ganze Flaschen ≥ 0,5 l, aufsummiert seit Kellerzählung je Wein, Tagesspur),
-  2 Flaschen (Bier/Soft/Wasser, Stück = Flasche, Zeitraum), 3 Offen (Bar-Wein, Serena,
+  2 Glaswein (Bar-Wein gegen Gläser, Info), 3 Bar-Flaschen (Bier/Soft/Wasser), 4 Rest (Serena,
   Mixer, Säfte — nur Info). Live-Befund: Nittnaus 17, Gesellmann Gols 12, Glatzer 8,
   Leindl 6 fehlten im Restaurant ohne verkaufte Flasche; Z 42–48 fehlen noch.
 

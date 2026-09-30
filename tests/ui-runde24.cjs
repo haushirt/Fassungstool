@@ -185,11 +185,18 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      blick.leindl && blick.leindl.rechts);
   ok("Leindl: Name aus der gastronovi-Liste (Glas und Flasche in einer Zeile)", blick.leindl && blick.leindl.name === "GV Leindl, Langenlois");
   ok("Leindl weicht ab (rot)", blick.leindl && blick.leindl.status === "ab");
-  ok("Block 3 zeigt die Gläser mit Rechnung", /4 Gläser ≈ 0,7 Fl\./.test(blick.text));
+  ok("Glaswein-Block zeigt die Gläser mit Rechnung", /4 Gläser ≈ 0,7 Fl\./.test(blick.text));
+  await p.locator('[data-zu="glas"]').click(); await p.waitForTimeout(150);
+  ok("ein Block klappt zu", !/4 Gläser ≈/.test(await p.locator("main").textContent()));
+  await p.locator('[data-zu="glas"]').click(); await p.waitForTimeout(150);
+  await p.locator('[data-blk="bar"]').click(); await p.waitForTimeout(150);
+  const nurBar = await p.evaluate(() => [...document.querySelectorAll(".bblock h2")].map(e => e.textContent));
+  ok("Filter zeigt nur einen Block", nurBar.length === 1 && /Bar-Flaschen/.test(nurBar[0]), nurBar.join("|"));
+  await p.locator('[data-blk="alle"]').click(); await p.waitForTimeout(150);
   ok("Glatzer Rubin: Glas ohne bestätigte Größe → mit 0,75 l gerechnet und als „angenommen\" markiert",
      blick.glatz && blick.glatz.ann === true && Math.abs(blick.glatz.rechts - 2 * 125 / 750) < 1e-9);
-  ok("drei Blöcke: Flaschenwein, Flaschen, Offen",
-     /1 · Flaschenwein/.test(blick.text) && /2 · Flaschen/.test(blick.text) && /3 · Offen/.test(blick.text));
+  ok("vier Blöcke in Casimirs Reihenfolge: Flaschenwein, Glaswein, Bar-Flaschen, Rest",
+     /1 · Flaschenwein[\s\S]*2 · Glaswein[\s\S]*3 · Bar-Flaschen[\s\S]*4 · Rest/.test(blick.text));
   const b1 = await p.evaluate(() => block1().zeilen.map(z => [z.id, z.L, z.R]));
   ok("Block 1: nur Restaurant gegen ganze Flaschen (Leindl-Gläser zählen dort nicht)",
      !b1.some(z => z[0] === "w001" && z[2] > 0), JSON.stringify(b1.slice(0, 5)));

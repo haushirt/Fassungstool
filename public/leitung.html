@@ -417,8 +417,12 @@ nav.seite button.ana{padding-left:var(--space-5)}
 .bzu{display:block;width:100%;padding:6px var(--space-4);text-align:left;color:var(--fg-muted);
   font-size:var(--text-xs);background:var(--surface-2);border-top:1px solid var(--surface-3)}
 .bblock{margin-bottom:var(--space-6)}
-.bbkopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);margin-bottom:var(--space-2)}
-.bbkopf h2{font-size:24px}.bbkopf .rechts{margin-left:auto}
+.bbkopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);margin-bottom:var(--space-2);
+  width:100%;text-align:left;padding:var(--space-2) 0;border-bottom:1px solid var(--border)}
+.bbkopf h2{font-size:24px}
+.bbkopf .bbn{margin-left:auto;font-size:var(--text-sm);color:var(--fg-muted)}
+.bbkopf .bbn b{color:var(--danger)}
+.bbkopf .bbpf{color:var(--fg-muted);width:18px;text-align:right}
 .bblock.info .btab{opacity:.9}.bblock.info .bhd{background:var(--surface-3)}
 .bspur{background:var(--surface-2);border-top:1px solid var(--surface-3);padding:4px var(--space-4) 8px var(--space-6);font-size:var(--text-xs)}
 .bspur div{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:8px;padding:3px 0;font-variant-numeric:tabular-nums}
@@ -3370,69 +3374,90 @@ function block3(F){
     .sort((a,b)=>ARTEN.findIndex(q=>q.id===artVon(a.id))-ARTEN.findIndex(q=>q.id===artVon(b.id)) || artName(a.id).localeCompare(artName(b.id),"de"));
 }
 const pkt = d => Math.abs(d)<0.05 ? '<span class="dot ok" title="stimmt">✓</span>' : '<span class="dot no" title="weicht ab">'+fmtD(d)+'</span>';
+/* Runde 24 · Vier Blöcke in dieser Reihenfolge (Casimir, 30.09.): Flaschenwein,
+   Glaswein, Bar-Flaschen, Rest. Jeder für sich filter- und aufklappbar. */
+const BLOECKE=[
+  {id:"flasche", t:"Flaschenwein", s:"Restaurant „fehlt oben“ gegen verkaufte ganze Flaschen · aufsummiert seit der letzten Kellerzählung"},
+  {id:"glas",    t:"Glaswein",     s:"Bar-Weine gegen verkaufte Gläser · nur zur Info, ohne Urteil"},
+  {id:"bar",     t:"Bar-Flaschen", s:"Bier, Softdrinks, Wasser · ein Stück an der Kasse ist eine Flasche"},
+  {id:"rest",    t:"Rest",         s:"Serena, Mixer, Säfte · offen, nicht unter Kontrolle, nur zur Info"}
+];
 function vBlick(m){
   if(!UEB.ende) UEB.ende=letzterTag();
-  UEB.spur=UEB.spur||{};
+  UEB.spur=UEB.spur||{}; UEB.zu=UEB.zu||{}; UEB.block=UEB.block||"alle";
   const F=fenster(UEB.art, UEB.ende);
   const b1=block1(), b2=block2(F), b3=block3(F);
-  const n1=b1.zeilen.filter(z=>Math.abs(z.diff)>=0.05).length, n2=b2.filter(z=>Math.abs(z.diff)>=0.05).length;
+  const glas=b3.filter(z=>byId(z.id)&&!OFFEN_WEIN.includes(z.id)), rest=b3.filter(z=>!byId(z.id)||OFFEN_WEIN.includes(z.id));
+  const abw=z=>Math.abs(z.diff)>=0.05;
+  const n={flasche:b1.zeilen.filter(abw).length, glas:0, bar:b2.filter(abw).length, rest:0};
   const namen=gnNamen();
-  let h='';
-  /* ── 1 · Flaschenwein ── */
-  h+='<div class="bblock"><div class="bbkopf"><h2>1 · Flaschenwein</h2><span class="unter">Restaurant „fehlt oben" gegen verkaufte ganze Flaschen · aufsummiert seit der letzten Kellerzählung bis '+esc(kurzTag(b1.bis))+'</span>'+
-     '<div class="seg rechts" role="group"><button type="button" data-nur="0" class="'+(UEB.nur?'':'on')+'">Alle</button><button type="button" data-nur="1" class="'+(UEB.nur?'on':'')+'">Stimmt nicht · '+(n1+n2)+'</button></div></div>';
-  const lz=[...b1.luecken.ohneZ].sort().slice(-7), lf=[...b1.luecken.ohneF].sort().slice(-7);
-  if(lz.length) h+='<div class="hinweis warn bhw"><span>Kein Z-Bericht für '+lz.map(kurzTag).join(", ")+' — Verkäufe dieser Tage fehlen rechts.</span><button type="button" class="b klein stark" data-geh="import">Z-Bericht einlesen</button></div>';
-  if(lf.length) h+='<div class="hinweis warn bhw"><span>Keine abgeschlossene Fassung für '+lf.map(kurzTag).join(", ")+' — was dort gefehlt hat, trägt die nächste Fassung mit.</span></div>';
-  h+='<div class="btab"><div class="bhd"><div class="l">Restaurant · fehlt oben</div><div></div><div></div><div class="r">verkauft · Flaschen</div></div>';
-  let zeig1=b1.zeilen.filter(z=>!UEB.nur||Math.abs(z.diff)>=0.05);
-  if(!zeig1.length) h+='<div class="leer">'+(b1.zeilen.length?'Alle Flaschenweine stimmen.':'Seit der Zählung nichts zu vergleichen.')+'</div>';
-  let letzte=null;
-  zeig1.forEach(z=>{ const a=artVon(z.id), A=artInfo(a);
-    if(a!==letzte){ letzte=a; h+='<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+'</div>'; }
-    h+='<button type="button" class="brow k'+A.k+'" data-spur="'+esc(z.id)+'"><div class="nm"><span class="'+(z.gn?'':'stammn')+'">'+esc(z.name)+'</span> <span class="m">seit '+esc(kurzTag(z.von))+' · Tage '+(UEB.spur[z.id]?'▾':'▸')+'</span></div>'+
-       '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid">'+pkt(z.diff)+'</div><div class="rt"><span class="sum">'+num(z.R)+'</span></div></button>';
-    if(UEB.spur[z.id]) h+='<div class="bspur">'+z.spur.map(s=>'<div class="'+(Math.abs(s.l-s.r)>=0.05?'ab':'')+'"><span>'+esc(deTag(s.t))+'</span><span>fehlt '+num(s.l)+'</span><span>verkauft '+num(s.r)+'</span><span>Summe '+fmtD(s.kum)+'</span></div>').join("")+'</div>';
-  });
-  h+='</div></div>';
+  const gruppe=(a,letzte)=>{ const A=artInfo(a); return a!==letzte?'<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+'</div>':''; };
 
-  /* ── Zeitraum für Block 2 und 3 ── */
-  h+='<div class="bzeit" style="margin-top:var(--space-6)">'+
+  let h='<div class="bzeit">'+
     '<div class="seg" role="group" aria-label="Zeitraum">'+
       ["tag","woche","monat"].map(a=>'<button type="button" data-art="'+a+'" class="'+(UEB.art===a?'on':'')+'" aria-pressed="'+(UEB.art===a)+'">'+
         {tag:"Tag",woche:"Woche",monat:"Monat"}[a]+'</button>').join("")+'</div>'+
     '<button type="button" class="pf" id="bZur" aria-label="früher">‹</button>'+
     '<span class="bdatum">'+esc(fensterTitel(UEB.art,F))+'</span>'+
-    '<button type="button" class="pf" id="bVor" aria-label="später">›</button><span class="unter">gilt für 2 und 3</span></div>';
+    '<button type="button" class="pf" id="bVor" aria-label="später">›</button>'+
+    '<div class="seg rechts" role="group"><button type="button" data-nur="0" class="'+(UEB.nur?'':'on')+'">Alle</button><button type="button" data-nur="1" class="'+(UEB.nur?'on':'')+'">Stimmt nicht · '+(n.flasche+n.bar)+'</button></div></div>';
+  h+='<div class="bchips">'+[{id:"alle",t:"Alle"},...BLOECKE].map((B,i)=>'<button type="button" class="bchip'+(UEB.block===B.id?' on':'')+'" data-blk="'+B.id+'">'+
+      (i?i+' · ':'')+esc(B.t)+(n[B.id]?'<sup>'+n[B.id]+'</sup>':'')+'</button>').join("")+'</div>';
+  const lz=[...b1.luecken.ohneZ].sort().slice(-7), lf=[...b1.luecken.ohneF].sort().slice(-7);
+  if(lz.length) h+='<div class="hinweis warn bhw"><span>Kein Z-Bericht für '+lz.map(kurzTag).join(", ")+' — Verkäufe dieser Tage fehlen rechts.</span><button type="button" class="b klein stark" data-geh="import">Z-Bericht einlesen</button></div>';
+  if(lf.length) h+='<div class="hinweis warn bhw"><span>Keine abgeschlossene Fassung für '+lf.map(kurzTag).join(", ")+' — was dort gefehlt hat, trägt die nächste Fassung mit.</span></div>';
 
-  /* ── 2 · Flaschen ── */
-  h+='<div class="bblock"><div class="bbkopf"><h2>2 · Flaschen</h2><span class="unter">Bier, Softdrinks, Wasser · ein Stück an der Kasse ist eine Flasche</span></div>';
-  h+='<div class="btab"><div class="bhd"><div class="l">fehlt oben</div><div></div><div></div><div class="r">verkauft</div></div>';
-  const zeig2=b2.filter(z=>!UEB.nur||Math.abs(z.diff)>=0.05);
-  if(!zeig2.length) h+='<div class="leer">'+(b2.length?'Alle Flaschen stimmen.':'Nichts im Zeitraum.')+'</div>';
-  letzte=null;
-  zeig2.forEach(z=>{ const a=artVon(z.id), A=artInfo(a);
-    if(a!==letzte){ letzte=a; h+='<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+'</div>'; }
-    h+='<div class="brow k'+A.k+'"><div class="nm">'+esc(z.namen[0]||GN(z.id))+(z.namen.length>1?' <span class="m">+ '+esc(z.namen.slice(1).join(", "))+'</span>':'')+'</div>'+
+  const block=(B,i,kopfL,kopfR,inhalt,anzahl,info)=>{
+    if(UEB.block!=="alle"&&UEB.block!==B.id) return '';
+    if(UEB.nur&&info) return '';
+    const zu=!!UEB.zu[B.id];
+    return '<div class="bblock'+(info?' info':'')+'"><button type="button" class="bbkopf" data-zu="'+B.id+'" aria-expanded="'+(!zu)+'">'+
+      '<h2>'+(i+1)+' · '+esc(B.t)+'</h2><span class="unter">'+esc(B.s)+(B.id!=="flasche"?' · '+esc(fensterTitel(UEB.art,F)):'')+'</span>'+
+      '<span class="bbn">'+anzahl+(n[B.id]?' · <b>'+n[B.id]+' weichen ab</b>':'')+'</span><span class="bbpf">'+(zu?'▸':'▾')+'</span></button>'+
+      (zu?'':'<div class="btab"><div class="bhd"><div class="l">'+kopfL+'</div><div></div><div></div><div class="r">'+kopfR+'</div></div>'+inhalt+'</div>')+'</div>';
+  };
+
+  /* 1 · Flaschenwein */
+  let x='', letzte=null;
+  const z1=b1.zeilen.filter(z=>!UEB.nur||abw(z));
+  if(!z1.length) x+='<div class="leer">'+(b1.zeilen.length?'Alle Flaschenweine stimmen.':'Seit der Zählung nichts zu vergleichen.')+'</div>';
+  z1.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    x+='<button type="button" class="brow k'+A.k+'" data-spur="'+esc(z.id)+'"><div class="nm"><span class="'+(z.gn?'':'stammn')+'">'+esc(z.name)+'</span> <span class="m">seit '+esc(kurzTag(z.von))+' · Tage '+(UEB.spur[z.id]?'▾':'▸')+'</span></div>'+
+       '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid">'+pkt(z.diff)+'</div><div class="rt"><span class="sum">'+num(z.R)+'</span></div></button>';
+    if(UEB.spur[z.id]) x+='<div class="bspur">'+z.spur.map(s=>'<div class="'+(Math.abs(s.l-s.r)>=0.05?'ab':'')+'"><span>'+esc(deTag(s.t))+'</span><span>fehlt '+num(s.l)+'</span><span>verkauft '+num(s.r)+'</span><span>Summe '+fmtD(s.kum)+'</span></div>').join("")+'</div>';
+  });
+  h+=block(BLOECKE[0],0,'Restaurant · fehlt oben','verkauft · Flaschen',x,b1.zeilen.length+' Weine',false);
+
+  /* 2 · Glaswein */
+  x=''; letzte=null;
+  if(!glas.length) x+='<div class="leer">Nichts im Zeitraum.</div>';
+  glas.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    x+='<div class="brow k'+A.k+'"><div class="nm">'+esc(namen[z.id]?zeilenName(z.id,namen):artName(z.id))+'</div>'+
+       '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid"></div><div class="rt">'+(z.gl?'<span class="bs gl">'+GLAS_SVG+z.gl+' Gläser ≈ '+num(z.glFl)+' Fl.</span>':'<span class="klein">nichts verkauft</span>')+'</div></div>'; });
+  h+=block(BLOECKE[1],1,'Bar · fehlt oben','verkauft · Gläser',x,glas.reduce((a,z)=>a+z.gl,0)+' Gläser',true);
+
+  /* 3 · Bar-Flaschen */
+  x=''; letzte=null;
+  const z2=b2.filter(z=>!UEB.nur||abw(z));
+  if(!z2.length) x+='<div class="leer">'+(b2.length?'Alle Flaschen stimmen.':'Nichts im Zeitraum.')+'</div>';
+  z2.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    x+='<div class="brow k'+A.k+'"><div class="nm">'+esc(z.namen[0]||GN(z.id))+(z.namen.length>1?' <span class="m">+ '+esc(z.namen.slice(1).join(", "))+'</span>':'')+'</div>'+
        '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid">'+pkt(z.diff)+'</div><div class="rt"><span class="sum">'+num(z.R)+'</span></div></div>'; });
-  h+='</div></div>';
+  h+=block(BLOECKE[2],2,'fehlt oben','verkauft',x,b2.length+' Sorten',false);
 
-  /* ── 3 · Offen ── */
-  if(!UEB.nur){
-    h+='<div class="bblock info"><div class="bbkopf"><h2>3 · Offen</h2><span class="unter">Bar-Weine, Serena, Mixer, Säfte · nicht unter Kontrolle, nur zur Info</span></div>';
-    h+='<div class="btab"><div class="bhd"><div class="l">fehlt oben (Bar/Lade)</div><div></div><div></div><div class="r">verkauft</div></div>';
-    if(!b3.length) h+='<div class="leer">Nichts im Zeitraum.</div>';
-    letzte=null;
-    b3.forEach(z=>{ const a=artVon(z.id), A=artInfo(a);
-      if(a!==letzte){ letzte=a; h+='<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+'</div>'; }
-      const r=[z.gl?'<span class="bs gl">'+GLAS_SVG+z.gl+' Gläser ≈ '+num(z.glFl)+' Fl.</span>':'', z.stk?'<span class="bs">'+num(z.stk)+' Stk.</span>':''].join("");
-      h+='<div class="brow k'+A.k+'"><div class="nm">'+esc(namen[z.id]&&byId(z.id)?zeilenName(z.id,namen):artName(z.id))+'</div>'+
-         '<div class="ql"><b>'+num(z.L)+'</b></div><div class="mid"></div><div class="rt">'+(r||'<span class="klein">nichts verkauft</span>')+'</div></div>'; });
-    h+='</div></div>';
-  }
+  /* 4 · Rest */
+  x=''; letzte=null;
+  if(!rest.length) x+='<div class="leer">Nichts im Zeitraum.</div>';
+  rest.forEach(z=>{ const a=artVon(z.id), A=artInfo(a); x+=gruppe(a,letzte); letzte=a;
+    const r=[z.gl?'<span class="bs gl">'+GLAS_SVG+z.gl+' Gläser ≈ '+num(z.glFl)+' Fl.</span>':'', z.stk?'<span class="bs">'+num(z.stk)+' Stk.</span>':''].join("");
+    x+='<div class="brow k'+A.k+'"><div class="nm">'+esc(artName(z.id))+'</div><div class="ql"><b>'+num(z.L)+'</b></div><div class="mid"></div><div class="rt">'+(r||'<span class="klein">nichts verkauft</span>')+'</div></div>'; });
+  h+=block(BLOECKE[3],3,'fehlt oben (Bar/Lade)','verkauft',x,rest.length+' Sorten',true);
+
   m.innerHTML=h;
   m.querySelectorAll("[data-art]").forEach(b=>b.onclick=()=>{ UEB.art=b.dataset.art; merkeUeb(); zeichne(); });
   m.querySelectorAll("[data-nur]").forEach(b=>b.onclick=()=>{ UEB.nur=b.dataset.nur==="1"; zeichne(); });
+  m.querySelectorAll("[data-blk]").forEach(b=>b.onclick=()=>{ UEB.block=b.dataset.blk; zeichne(); });
+  m.querySelectorAll("[data-zu]").forEach(b=>b.onclick=()=>{ UEB.zu[b.dataset.zu]=!UEB.zu[b.dataset.zu]; zeichne(); });
   m.querySelectorAll("[data-spur]").forEach(b=>b.onclick=()=>{ UEB.spur[b.dataset.spur]=!UEB.spur[b.dataset.spur]; zeichne(); });
   m.querySelectorAll("[data-geh]").forEach(b=>b.onclick=()=>{ SEITE=b.dataset.geh; ANA_OFFEN=true; zeichne(); window.scrollTo(0,0); });
   $("#bZur").onclick=()=>{ UEB.ende=blaettern(UEB.art,F.von,-1); zeichne(); };
