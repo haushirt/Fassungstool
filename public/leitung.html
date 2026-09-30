@@ -342,6 +342,102 @@ nav.seite button.ausgang{margin-top:var(--space-6);border-top:1px solid var(--bo
 main{padding:var(--space-7) var(--space-7) var(--space-8);max-width:1180px}
 
 /* ═══════════════ Überschriften ═══════════════ */
+/* ═══════════════ Runde 24 · Navigation: zwei Seiten oben, Rest unter „Analytics" ═══════════════ */
+.zeitwahl[hidden]{display:none!important}
+nav.seite button.oben{font-weight:var(--weight-bold);font-size:var(--text-base)}
+nav.seite .anaknopf{margin-top:var(--space-5);border-top:1px solid var(--border);border-radius:0;
+  padding-top:var(--space-3);color:var(--fg-secondary);font-weight:var(--weight-medium)}
+nav.seite .anaknopf .pfeil{color:var(--fg-muted)}
+nav.seite .grp.ana{padding-left:var(--space-2)}
+nav.seite button.ana{padding-left:var(--space-5)}
+
+/* ═══════════════ Runde 24 · Übersicht (Vorlage review/mockup/r24/e-v3.html) ═══════════════
+   Farben je Art: nur hier, nicht in der geteilten Schicht — die App kennt
+   diese Einteilung nicht. Jede Farbe steht neben ihrem Namen, nie allein. */
+:root{--kW:#E3C766;--kP:#E8A0B4;--kR:#8E2F3C;--kN:#B89B72;--kS:#C9A7D9;--kB:#C98B2B;
+  --kO:#2E7DB5;--kM:#4FA38F;--kF:#E08A3C;--kX:#9AA3A1;--glas:#1F4E73;--glas-bg:#EEF4FA;--glas-bd:#C9DCEC}
+.kW{--k:var(--kW)}.kP{--k:var(--kP)}.kR{--k:var(--kR)}.kN{--k:var(--kN)}.kS{--k:var(--kS)}
+.kB{--k:var(--kB)}.kO{--k:var(--kO)}.kM{--k:var(--kM)}.kF{--k:var(--kF)}.kX{--k:var(--kX)}
+.bzeit{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;margin-bottom:var(--space-3)}
+.bzeit .rechts{margin-left:auto}
+.seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--radius-ctl);overflow:hidden;background:var(--surface)}
+.seg button{padding:0 var(--space-3);min-height:var(--control-h);font-weight:var(--weight-medium);color:var(--fg-secondary)}
+.seg button.on{background:var(--accent);color:var(--fg-on-dark)}
+.pf{width:var(--control-h);height:var(--control-h);border:1px solid var(--border-strong);border-radius:var(--radius-ctl);
+  background:var(--surface);font-size:18px}
+.bdatum{font:var(--weight-medium) 24px/1.1 var(--font-display);min-width:190px;text-align:center}
+.bdatum.links{text-align:left;min-width:0}
+.bchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:var(--space-3)}
+.bchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--surface);
+  border-radius:var(--radius-pill);padding:0 12px;min-height:var(--control-h-sm);font-weight:var(--weight-medium);color:var(--fg-secondary)}
+.bchip i{width:10px;height:10px;border-radius:50%;background:var(--k)}
+.bchip.on{background:var(--fg);color:var(--fg-on-dark);border-color:var(--fg)}
+.bchip sup{background:var(--danger);color:#fff;border-radius:var(--radius-pill);font-size:11px;padding:1px 6px;line-height:1.3}
+.bhw{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)}
+.bkpi{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-2);margin:var(--space-3) 0}
+.bkpi div{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-2) var(--space-3)}
+.bkpi b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.bkpi span{font-size:var(--text-xs);color:var(--fg-muted)}
+.bkpi .glk b{color:var(--glas)}.bkpi .rot b{color:var(--danger)}
+.btab{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.bhd,.brow{display:grid;grid-template-columns:minmax(0,1fr) 84px 44px minmax(0,1fr);align-items:center}
+.bhd{background:var(--surface-2);font-size:var(--text-xs);letter-spacing:.06em;text-transform:uppercase;
+  font-weight:var(--weight-bold);color:var(--fg-muted)}
+.bhd>div{padding:var(--space-2) var(--space-3)}
+.bhd .l{border-right:1px solid var(--border)}
+.bhd>div:last-child{border-left:1px solid var(--border)}
+.bgrp{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-3) 6px;
+  font:var(--weight-medium) 19px/1.2 var(--font-display);border-top:1px solid var(--border)}
+.bgrp i{width:12px;height:12px;border-radius:3px;background:var(--k)}
+.bgrp small{font:var(--text-xs) var(--font);color:var(--fg-muted)}
+.brow{border-top:1px solid var(--surface-3);min-height:44px;position:relative;width:100%;text-align:left}
+.brow:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--k)}
+.brow .nm{padding:6px var(--space-3) 6px var(--space-4);font-weight:var(--weight-medium)}
+.brow .m{font-weight:var(--weight-regular);font-size:var(--text-xs);color:var(--fg-muted)}
+.stammn{color:var(--fg-secondary);font-weight:var(--weight-regular)}
+.brow .ql{align-self:stretch;display:flex;align-items:center;justify-content:flex-end;gap:6px;
+  padding-right:var(--space-3);border-right:1px solid var(--border);font-variant-numeric:tabular-nums}
+.brow .ql b{font-size:17px}
+.brow .mid{display:flex;justify-content:center}
+.brow .rt{align-self:stretch;border-left:1px solid var(--border);display:flex;align-items:center;flex-wrap:wrap;
+  gap:6px;padding:6px var(--space-3)}
+.brow .rt .sum{margin-left:auto;font-weight:var(--weight-bold);font-size:17px;font-variant-numeric:tabular-nums}
+.bs{display:inline-flex;align-items:center;gap:5px;border-radius:var(--radius-sm);padding:2px 8px;font-size:13px;
+  background:var(--surface-2);border:1px solid var(--border)}
+.bs.gl{background:var(--glas-bg);border-color:var(--glas-bd);color:var(--glas)}
+.bs.warn,.bs.gl.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-fg)}
+.bs svg{width:12px;height:14px}
+.dot{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:var(--weight-bold);color:#fff}
+.dot.ok{background:var(--success)}.dot.no{background:var(--danger)}.dot.un{background:#9A7700}
+.brow.zu{min-height:36px;color:var(--fg-muted);background:var(--surface-2);cursor:pointer}
+.brow.zu .nm{font-weight:var(--weight-regular)}
+.brow.zu .ql,.brow.zu .rt{border-color:transparent}
+.bzu{display:block;width:100%;padding:6px var(--space-4);text-align:left;color:var(--fg-muted);
+  font-size:var(--text-xs);background:var(--surface-2);border-top:1px solid var(--surface-3)}
+.leertag{display:inline-block;border-radius:var(--radius-pill);background:var(--fg);color:var(--fg-on-dark);
+  font-size:11px;font-weight:var(--weight-bold);padding:1px 8px;text-transform:uppercase;letter-spacing:.04em}
+.boffen{margin-top:var(--space-4)}
+.boffen .bo{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--surface-3)}
+.boffen .b{margin-top:var(--space-3)}
+.bign{margin-top:var(--space-3)}
+.btab.ks .bhd,.krow{display:grid;grid-template-columns:minmax(0,1fr) 90px 130px 90px;align-items:center}
+.btab.ks .bhd>div{border:0}.btab.ks .bhd .r{text-align:right}
+.krow{border-top:1px solid var(--surface-3);min-height:40px;position:relative}
+.krow:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--k)}
+.krow .nm{padding:6px var(--space-3) 6px var(--space-4);font-weight:var(--weight-medium)}
+.krow .m{font-size:var(--text-xs);color:var(--fg-muted);font-weight:var(--weight-regular)}
+.krow .z{text-align:right;padding-right:var(--space-3);font-variant-numeric:tabular-nums}
+.krow .z b{font-size:17px}.krow .neg{color:var(--danger)}
+@media (max-width:700px){
+  .bhd,.brow{grid-template-columns:minmax(0,1fr) 48px 30px minmax(0,1fr)}
+  .bkpi{grid-template-columns:repeat(2,1fr)}
+  .brow .nm{padding-left:10px;font-size:13px}.brow .rt{padding:6px 8px}.brow .ql{padding-right:8px}
+  .dot{width:22px;height:22px;font-size:10px}.bhd>div{padding:8px}
+  .bdatum{min-width:0;font-size:20px}
+  .btab.ks .bhd,.krow{grid-template-columns:minmax(0,1fr) 52px 80px 52px}
+}
+
 h2{font:var(--weight-medium) var(--text-display)/1.1 var(--font-display);
   letter-spacing:0}
 .unter{color:var(--fg-muted);font-size:var(--text-sm);margin-top:6px;
@@ -1303,7 +1399,6 @@ function normVorgang(v){
       z[w.id]=(+(v.reihen||{})[w.id]||0)*6 + (+(v.einzel||{})[w.id]||0); hat=true;
     });
     if(hat) o.zaehlung=z;
-    if(v.leer && Object.keys(v.leer).length) o.leer=Object.assign({},v.leer);
     if(v.getr && Object.keys(v.getr).length) o.gzaehlung=Object.assign({},v.getr);
   }
 
@@ -1373,6 +1468,8 @@ function normVorgang(v){
 
   o.flWein=summe(o.wein); o.flGetr=summe(o.getr);
   o.flVerbraucht=summe(o.verbraucht);
+  /* Runde 24 · „leer" aus Kellerzählung und Holen: nur zum Zeigen. */
+  if(v.leer && Object.keys(v.leer).length) o.leer=Object.assign({},v.leer);
   return o;
 }
 
@@ -2025,7 +2122,11 @@ function bestand(){
     Object.keys(v.wein).forEach(id=>{ if(!nach(id)) return;
       b[id]=(b[id]||0)-v.wein[id]; seit.raus[id]=(seit.raus[id]||0)+v.wein[id]; });
   });
-  return {basis, b, seit, unklar, hat:!!basis};
+  /* Runde 24 · Zähltag und gezählte Menge je Artikel, für den Kellerstand
+     und seine Analyse. Nur zusätzlich — an der Rechnung ändert sich nichts. */
+  const zaehltag={}, gezaehlt={};
+  Object.keys(zuletzt).forEach(id=>{ zaehltag[id]=zuletzt[id].tag; gezaehlt[id]=zuletzt[id].zaehlung[id]; });
+  return {basis, b, seit, unklar, hat:!!basis, zaehltag, gezaehlt};
 }
 
 /* Die am Zähltag gelieferte, NICHT mitgerechnete Menge ist keine Fußnote
@@ -2690,9 +2791,606 @@ function offeneKassennamen(){
   return alleKassennamen().filter(x=>zuordnung(x).status==="offen");
 }
 
+/* ════════════ 7a · Runde 24 · Übersicht und Kellerstand ════════════
+   Casimir (29.09.2026): „Eine klare Übersicht von Konsum gegen Verbrauch
+   … nichts glauben, nichts hochrechnen, was nicht sichtbar ist. So simpel
+   wie möglich." Vorlage ist das freigegebene Bild
+   `review/mockup/r24/e-v3.html`.
+
+   Zwei Seiten je Zeile: links, was bei der Fassung OBEN GEFEHLT hat
+   (`verbraucht`, dieselbe Grösse, gegen die `abgleich()` rechnet), rechts
+   die Kassenpositionen aus dem Z-Bericht, Namen WORTGLEICH, wie gastronovi
+   sie schreibt. Glas wird nur mit bestätigter Flaschengrösse umgerechnet
+   (`flaschen()`); sonst steht die Gläserzahl da und die Zeile ist offen.
+   Alles andere — Deutungen, Euro, Verlauf — liegt unter „Analytics". */
+
+/* Arten in der Reihenfolge der Liste. `f` = Filterknopf, `k` = Farbe. */
+const ARTEN=[
+  {id:"weiss",  t:"Weißwein",   f:"wein",  k:"W"},
+  {id:"rose",   t:"Rosé",       f:"wein",  k:"P"},
+  {id:"rot",    t:"Rotwein",    f:"wein",  k:"R"},
+  {id:"natur",  t:"Naturwein",  f:"wein",  k:"N"},
+  {id:"schaum", t:"Schaumwein", f:"schaum",k:"S"},
+  {id:"bier",   t:"Bier",       f:"bier",  k:"B"},
+  {id:"soft",   t:"Wasser & Softdrinks", f:"soft", k:"O"},
+  {id:"mixer",  t:"Mixer",      f:"mixer", k:"M"},
+  {id:"saft",   t:"Säfte & Barzutaten", f:"saft", k:"F"},
+  {id:"sonst",  t:"Sonstiges",  f:"sonst", k:"X"}
+];
+const FILTER=[
+  {id:"alle",t:"Alle"},{id:"wein",t:"Wein",k:"W"},{id:"schaum",t:"Schaumwein",k:"S"},
+  {id:"bier",t:"Bier",k:"B"},{id:"soft",t:"Soft",k:"O"},{id:"mixer",t:"Mixer",k:"M"},
+  {id:"saft",t:"Saft",k:"F"}
+];
+/* Welche Art ein Artikel ist. Wein aus der Farbe im Stamm; Getränke aus
+   der Lade, in der sie liegen — GETR kennt keine Warenart, die Lade ist
+   die einzige Einteilung, die es gibt. Wasser liegt in Regal und
+   Mischgetränke-Lade, gehört aber zu den Softdrinks. */
+const WASSER=["gasteiner","gastill","gastklein"];
+function artVon(id){
+  const w=byId(id);
+  if(w) return w.f==="WEISS"?"weiss":w.f==="ROSÉ"?"rose":w.f==="ROT"?"rot":
+               w.f==="BUBBLES"?"schaum":w.f==="NATURAL"?"natur":"sonst";
+  if(WASSER.includes(id)) return "soft";
+  const L=(GETR.laden||[]).find(l=>JSON.stringify(l).includes('"'+id+'"'));
+  if(!L) return "sonst";
+  return {bier:"bier",soft:"soft",regal:"soft",mix:"mixer",saft:"saft"}[L.id]||"sonst";
+}
+const artInfo = id => ARTEN.find(a=>a.id===id)||ARTEN[ARTEN.length-1];
+
+/* ── Zeitraum: Tag, Woche (Mo–So), Monat ── */
+const UEB={art:"tag", ende:null, nur:false, filter:"alle", auf:{}};
+try{ const x=lese("hh_ueb");
+  if(x){ if(["tag","woche","monat"].includes(x.art)) UEB.art=x.art;
+         if(FILTER.some(f=>f.id===x.filter)) UEB.filter=x.filter; } }catch(e){}
+function merkeUeb(){ schreib("hh_ueb", {art:UEB.art, filter:UEB.filter}); }
+const wtag = iso => (new Date(iso+"T12:00:00Z").getUTCDay()+6)%7;   /* Mo=0 … So=6 */
+function fenster(art, t){
+  if(art==="woche"){ const von=tagMinus(t, wtag(t)); return {von, bis:tagMinus(von,-6)}; }
+  if(art==="monat"){ const von=t.slice(0,8)+"01";
+    const d=new Date(von+"T12:00:00Z"); d.setUTCMonth(d.getUTCMonth()+1); d.setUTCDate(0);
+    return {von, bis:d.toISOString().slice(0,10)}; }
+  return {von:t, bis:t};
+}
+function blaettern(art, t, r){
+  if(art==="woche") return tagMinus(t, -7*r);
+  if(art==="monat"){ const d=new Date(t.slice(0,8)+"15T12:00:00Z"); d.setUTCMonth(d.getUTCMonth()+r);
+    return d.toISOString().slice(0,10); }
+  return tagMinus(t, -r);
+}
+function kwNr(iso){ const d=new Date(iso+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+3-wtag(iso));
+  const j=new Date(Date.UTC(d.getUTCFullYear(),0,4));
+  return 1+Math.round(((d-j)/864e5-3+((j.getUTCDay()+6)%7))/7); }
+const kurzTag = iso => iso.slice(8,10)+"."+iso.slice(5,7)+".";
+function fensterTitel(art, F){
+  if(art==="woche") return "KW "+kwNr(F.von)+" · "+kurzTag(F.von)+"–"+kurzTag(F.bis);
+  if(art==="monat") return new Date(F.von+"T12:00:00Z").toLocaleDateString("de-AT",{month:"long",year:"numeric",timeZone:"UTC"});
+  return deTag(F.von);
+}
+function tageIm(F){ const r=[]; for(let t=F.von; t<=F.bis; t=tagMinus(t,-1)) r.push(t); return r; }
+
+/* Ausschank lesbar: 125 → ⅛ l. */
+function mlKurz(ml){
+  const b={125:"⅛ l",250:"¼ l",62.5:"1/16 l",100:"0,1 l",200:"0,2 l",750:"0,75 l"}[ml];
+  return b || (String(Math.round(ml)/1000).replace(".",",")+" l");
+}
+
+/* Runde 24 · Die Artikelliste aus gastronovi, WORTGLEICH mit
+   docs/gastronovi-artikel.csv (Casimir, 29.09.2026; „Titel;Mengenbeschreibung").
+   `tests/gastronovi-liste.test.mjs` hält beide Zeile für Zeile zusammen.
+   Gebraucht wird sie für den Zeilennamen der Übersicht: Der Z-Bericht
+   schreibt „GV Leindl Langenlois 1/8 l", die Liste „GV Leindl, Langenlois".
+   Verglichen wird NUR exakt (ohne Leerzeichen, Komma, Punkt; Regel 5 —
+   keine Ähnlichkeitssuche). Trifft nichts, bleibt der Kassenname. */
+const GN_ARTIKEL=[
+  ["Gasteiner sparkling 0,75l","0,75l"],
+  ["Gasteiner still","0,75l"],
+  ["Gasteiner Quellwasser 1l","1l"],
+  ["Gasteiner Quellwasser 0,5l","0,5l"],
+  ["Gasteiner sparkling 0,20l","0,20l"],
+  ["Soda Zitrone 0,25l","0,25l"],
+  ["Soda Zitrone 0,50l","0,50l"],
+  ["Skiwasser 0,5l","0,5l"],
+  ["Hauslimo 0,25l","0,25l"],
+  ["Hauslimo 0,5l","0,5l"],
+  ["Bio Berry 0,33","1 Glas"],
+  ["Bio Orange 0,33","1 Glas"],
+  ["Bio Lemon 0,33","1 Glas"],
+  ["Coca Cola","0,35l"],
+  ["Cola Zero","1 Glas"],
+  ["Spezi","0,3l"],
+  ["Almdudler","0,35l"],
+  ["Fever-Tree Ginger Ale","0,2l"],
+  ["Fever-Tree Indian Tonic","1 Glas"],
+  ["Sanbitter","1 Glas"],
+  ["Fentimans Ginger Beer","1 Glas"],
+  ["Fever-Tree Mediterranean Tonic","1 Glas"],
+  ["Coca-Cola Light","0,35l"],
+  ["Ginger Ale","0,2l"],
+  ["Bitter Lemon","0,2l"],
+  ["Tonic Water","0,2l"],
+  ["Ginger Beer","0,33l"],
+  ["Orangensaft","0,25l"],
+  ["Mangosaft","0,25l"],
+  ["Grapefruitsaft","0,25l"],
+  ["Johannisbeersaft","0,25l"],
+  ["Maracujasaft","0,25l"],
+  ["Cranberrysaft","0,25l"],
+  ["Ananassaft","0,25l"],
+  ["Van Nahmen Pfirsich","0,25l"],
+  ["Skiwasser 0,25l","0,25l"],
+  ["Apfelsaft","0,25l"],
+  ["Orange gespritzt 0,25l","0,25l"],
+  ["Orange gespritzt 0,5l","0,5l"],
+  ["Mango gespritzt 0,25l","0,25l"],
+  ["Mango gespritzt 0,5l","0,5l"],
+  ["Holundersoda 0,25l","0,25l"],
+  ["Holundersoda 0,5l","0,5l"],
+  ["Apfel gespritzt 0,25l","0,25l"],
+  ["Apfel gespritzt 0,5l","0,5l"],
+  ["Grapefruit gespritzt 0,25l","0,25l"],
+  ["Grapefruit gespritzt 0,5l","0,5l"],
+  ["Johannisbeer gespritzt 0,25l","0,25l"],
+  ["Johannisbeer gespritzt 0,5l","0,5l"],
+  ["Cranberry gespritzt 0,25l","0,25l"],
+  ["Cranberry gespritzt 0,5l","0,5l"],
+  ["Espresso","1 Glas"],
+  ["Espresso doppio","1 Glas"],
+  ["Verlängerter","1 Glas"],
+  ["Espresso Macchiato","1 Glas"],
+  ["Iced Americano","1 Glas"],
+  ["Iced Kaffee mit Milch","1 Glas"],
+  ["Cappuccino (Melange)","1 Glas"],
+  ["Latte Macchiato","1 Glas"],
+  ["Flat White","1 Glas"],
+  ["Cortado","1 Glas"],
+  ["Babyccino","1 Glas"],
+  ["Cappuccino (Melange) Hafermilch","1 Glas"],
+  ["Caffè Latte (Macchiato) Hafermilch","1 Glas"],
+  ["Flat White Hafermilch","1 Glas"],
+  ["Cortado Hafermilch","1 Glas"],
+  ["Extra Hafermilch","1 Glas"],
+  ["Kleiner Brauner","1 Tasse"],
+  ["Großer Brauner","1 Tasse"],
+  ["Tee Earl Grey","1 Tasse"],
+  ["Tee English Breakfast","1 Tasse"],
+  ["Tee Grüner Tee","1 Tasse"],
+  ["Tee Pfefferminz","1 Tasse"],
+  ["Tee Kamille","1 Tasse"],
+  ["Tee Früchtetee","1 Tasse"],
+  ["Tee Rooibos","1 Tasse"],
+  ["Tee Ingwer-Zitrone frisch","1 Tasse"],
+  ["Matcha Latte","1 Glas"],
+  ["Matcha Latte Hafermilch","1 Glas"],
+  ["Heisse Schokolade o. Schlag","1 Glas"],
+  ["Heisse Schokolade m. Schlag","1 Glas"],
+  ["Golden Milk (Kurkuma Latte)","1 Glas"],
+  ["Extra Milch","1 Glas"],
+  ["Raschhofer Pils 0,2l","0,2l"],
+  ["Raschhofer Pils 0,3l","0,3l"],
+  ["Raschhofer Pils 0,5l","0,5l"],
+  ["Hefeweizen hell 0,5l","0,5l"],
+  ["Hefeweizen dunkel 0,5l","0,5l"],
+  ["Radler 0,3l","0,3l"],
+  ["Radler 0,5l","0,5l"],
+  ["Bier alkoholfrei 0,3l","0,3l"],
+  ["Stiegl alkoholfrei 0,5l","0,5l"],
+  ["Weizen alkoholfrei","1 Glas"],
+  ["Radler alkoholfrei","1 Glas"],
+  ["GV Leindl, Langenlois","1/8 l"],
+  ["SB Hannes Sabathi","1/8 l"],
+  ["CH Gesellmann","1/8 l"],
+  ["RS Fritsch, Wagram","1/8 l"],
+  ["ZW Glatzer, Rubin Carnuntum","1/8 l"],
+  ["BF Andreas Gsellmann, Gols","1/8 l"],
+  ["CR Heinrich für Unger & Klein, Nelke","1/8 l"],
+  ["GV Ott, Fass 4","1/8 l"],
+  ["ME Dürnberg, Elementum","1/8 l"],
+  ["GS Mayer am Pfarrplatz, Wiener Gemischter Satz","1/8 l"],
+  ["GB Andreas Gsellmann","1/8 l"],
+  ["CW Wolfgang Seher, Wilde Reben","1/8 l"],
+  ["Prosecco","0,1l"],
+  ["Serena Prosecco","0,75l"],
+  ["Champagne de Saint Gall Rosé","0,75 l"],
+  ["Seher Frizzante Rosé","0,75 l"],
+  ["Glas Seher Sparkling Rosé","0,1l"],
+  ["Aperol Spritz","1 Glas"],
+  ["Hugo","1 Glas"],
+  ["Lillet Wild Berry","1 Glas"],
+  ["Spritz","1 Glas"],
+  ["Campari Orange","1 Glas"],
+  ["Campari Soda","1 Glas"],
+  ["Prosecco Holunder","1 Glas"],
+  ["Martini bianco 5cl","5cl"],
+  ["Martini rosso 5cl","5cl"],
+  ["Martini extra dry 5cl","5cl"],
+  ["Cynar Orange","1 Glas"],
+  ["Americano","1 Glas"],
+  ["Campari Spritz","1 Glas"],
+  ["Sarti Spritz","1 Glas"],
+  ["Vermouth & Tonic","1 Glas"],
+  ["Negroni","1 Glas"],
+  ["Old fashioned","1 Glas"],
+  ["Penicillin","1 Glas"],
+  ["Manhattan","1 Glas"],
+  ["Godfather","1 Glas"],
+  ["Espresso Martini","1 Glas"],
+  ["Cosmopolitan","1 Glas"],
+  ["White Russian","1 Glas"],
+  ["Pornstar Martini","1 Glas"],
+  ["Gin Basil Smash","1 Glas"],
+  ["Connie Hash","1 Glas"],
+  ["Southside","1 Glas"],
+  ["Tom Collins","1 Glas"],
+  ["Daiquiri","1 Glas"],
+  ["Margarita","1 Glas"],
+  ["Whiskey Sour","1 Glas"],
+  ["Monkey Sour","1 Glas"],
+  ["Amaretto Sour","1 Glas"],
+  ["Pisco Sour","1 Glas"],
+  ["Aperol Sour","1 Glas"],
+  ["Averna Sour","1 Glas"],
+  ["Moscow Mule","1 Glas"],
+  ["Munich Mule","1 Glas"],
+  ["Brazilian Mule","1 Glas"],
+  ["Mango Mule","1 Glas"],
+  ["Gin & Tonic Tanqueray","1 Glas"],
+  ["Gin & Tonic Monkey 47 Dry","1 Glas"],
+  ["Gin & Tonic Monkey 47 Sloe","1 Glas"],
+  ["Gin & Tonic Gin Mare","1 Glas"],
+  ["Gin & Tonic Hendrick's","1 Glas"],
+  ["Gin & Tonic Blue Gin","1 Glas"],
+  ["Gin & Tonic Roku Gin","1 Glas"],
+  ["Gin & Tonic The Botanist","1 Glas"],
+  ["Virgin Piña Colada","1 Glas"],
+  ["Hausgemachte Limonade","1 Glas"],
+  ["Nojito","1 Glas"],
+  ["Ipanema","1 Glas"],
+  ["Virgin Hugo","1 Glas"],
+  ["Sanbitter Spritz","1 Glas"],
+  ["Kinder Cocktail","1 Glas"],
+  ["Obstler Durzbauer","2 cl"],
+  ["Vogelbeere Durzbauer","2 cl"],
+  ["Himbeere Durzbauer","2 cl"],
+  ["Honig Willi Durzbauer","2 cl"],
+  ["Haselnuss Schreyer & Muster","2 cl"],
+  ["Marille Schreyer & Muster","2 cl"],
+  ["Zwetschke Schreyer & Muster","2 cl"],
+  ["Zirberl Schreyer & Muster","2 cl"],
+  ["Williams Schreyer & Muster","2 cl"],
+  ["Kriecherl Schreyer & Muster","2 cl"],
+  ["GV Leindl, Langenlois","0,75 l"],
+  ["GV Simon Gattinger, Loiben Federspiel","0,75 l"],
+  ["GV Ott, Fass 4","0,75 l"],
+  ["GV Fritsch, Ried Schlossberg","0,75 l"],
+  ["RI Hirsch, Zöbing","0,75 l"],
+  ["RI Pichler-Krutzler, Loiben","0,75 l"],
+  ["RI Emrich-Schönleber, Mineral","0,75 l"],
+  ["SB Hannes Sabathi","0,75 l"],
+  ["SB Verus","0,75 l"],
+  ["WB Hannes Sabathi","0,75 l"],
+  ["CH Gesellmann","0,75 l"],
+  ["CH Domaine Borgeot, Bourgogne Blanc","0,75 l"],
+  ["CH Domaine Pillot, Bourgogne Blanc","0,75 l"],
+  ["GB Dürnberg","0,75 l"],
+  ["GB Andreas Gsellmann","0,75 l"],
+  ["RV Josef Fritz, Wagram Terrassen","0,75 l"],
+  ["MU Muster, Gelber Muskateller Styria","0,75 l"],
+  ["GS Groiss, Anna's 17","0,75 l"],
+  ["GS Mayer am Pfarrplatz, Wiener Gemischter Satz","0,75 l"],
+  ["CW Unger & Klein, Fäulein Klein","0,75 l"],
+  ["CW Wolfgang Seher, Wilde Reben","0,75 l"],
+  ["CW Heinrich für Unger & Klein, Tulpe","0,75 l"],
+  ["CW Bründlmayer, Spiegel","0,75 l"],
+  ["BN Dürnberg, Blanc de Noir","0,75 l"],
+  ["RS Fritsch, Wagram","0,75 l"],
+  ["RS Ultimate Provence, UP Rosé","0,75 l"],
+  ["ZW Werner Achs, Goldberg","0,75 l"],
+  ["ZW Glatzer, Rubin Carnuntum","0,75 l"],
+  ["ZW Kollwentz, Leithakalk","0,75 l"],
+  ["ZW Glatzer, Dornenvogel","0,75 l"],
+  ["BF Nittnaus, Kalk & Schiefer","0,75 l"],
+  ["BF Muhr, Samt & Seide","0,75 l"],
+  ["BF Andreas Gsellmann, Gols","0,75 l"],
+  ["PN Gebeshuber, Gumpoldskirchen","0,75 l"],
+  ["PN Schiefer","0,75 l"],
+  ["PN Domaine Confuron-Gindre, Bourgogne","0,75 l"],
+  ["PN Domaine Ecard, Savigny-lès-Beaune","0,75 l"],
+  ["BA Ceste, Barbera d'Alba Sposabella","0,75 l"],
+  ["SG Lamole di Lamole, Chianti Classico Duelame","0,75 l"],
+  ["ME Dürnberg, Elementum","0,75 l"],
+  ["CR Claus Preisinger, Heideboden","0,75 l"],
+  ["CR Heinrich für Unger & Klein, Nelke","0,75 l"],
+  ["CR Heinrich, Pannobile","0,75 l"],
+  ["CR Werner Achs, Xur","0,75 l"],
+  ["NW Heinrich, Naked White","0,75 l"],
+  ["NW Claus Preisinger, Kalk und Kiesel","0,75 l"],
+  ["NW Andreas Gsellmann, Traminer","0,75 l"],
+  ["NW Heinrich, Muskat Freyheit","0,75 l"],
+  ["NW Heinrich, Roter Traminer Freyheit","0,75 l"],
+  ["NR Heinrich, Naked Red","0,75 l"],
+  ["NR Heinrich, Pinot Freyheit","0,75 l"]
+];
+const gnNorm = s => String(s||"").toLowerCase().replace(/[\s,.]/g,"");
+const GN_TITEL = new Map(GN_ARTIKEL.map(([t])=>[gnNorm(t), t]));
+/* Wortgleich mit `kern()` in src/gnparse.js: die Grösse am Ende abschneiden. */
+function kernName(name){
+  const s=String(name||"").trim(); let t=s, vorher;
+  do{ vorher=t;
+    t=t.replace(/[\s,;·|]*\b\d\s*\/\s*\d\s*(?:ml|cl|l)\b\.?\s*$/i,"")
+       .replace(/[\s,;·|]*\b\d+(?:[.,]\d+)?\s*(?:ml|cl|l)\b\.?\s*$/i,"")
+       .replace(/[\s,;·|]*\b\d\s*\/\s*\d\b\s*$/,"")
+       .replace(/[\s,;·|]+$/,"").trim();
+  }while(t!==vorher);
+  return t||s;
+}
+
+/* Welche Kassennamen zu einem Artikel gehören — über ALLE geladenen
+   Berichte, damit eine Zeile ihren gastronovi-Namen auch an einem Tag
+   trägt, an dem nichts verkauft wurde. Gewählt wird der Flaschenname
+   (grösste Ausschankmenge). Ohne Kassennamen: der Name aus dem Stamm,
+   grau — der Artikel ist bei gastronovi dann (noch) nie gebucht worden. */
+function gnNamen(){
+  const je={};
+  Object.keys(ZBER).forEach(t=>(ZBER[t].positionen||[]).forEach(p=>{
+    if(REZ[p.name] && REZ[p.name].length) return;
+    const zu=zuordnung(p); if(!zu.id) return;
+    const ml=mlAusText(p.name)||0;
+    if(!je[zu.id] || ml>je[zu.id].ml) je[zu.id]={name:p.name, ml};
+  }));
+  return je;
+}
+
+/* Der Name einer Zeile. Wein: der Titel aus der gastronovi-Liste (ein
+   Wein, Glas und Flasche darunter); fehlt er dort, der Kassenname ohne
+   Grösse. Getränke: der Kassenname, wie er ist. Nie gebucht: Stammname. */
+function zeilenName(id, namen){
+  const gn=namen[id]; if(!gn) return artName(id);
+  if(!byId(id)) return gn.name;
+  const k=kernName(gn.name);
+  return GN_TITEL.get(gnNorm(k)) || k;
+}
+/* Das Herz der Übersicht. Liefert je Artikel beide Seiten, und daneben
+   alles, was NICHT in eine Zahl ging — mit Namen, nie still. */
+function gegenueber(F){
+  const drin = t => t>=F.von && t<=F.bis;
+  const Z={}, offen=[], ignoriert=[], rezepte=[];
+  const zeilen={};
+  const zeile = id => zeilen[id] || (zeilen[id]={id, links:0, laufend:0, leer:false, pos:[], rechts:0, gl:0, glFl:0, fehlt:0});
+  const berichte=Object.keys(ZBER).filter(drin).sort();
+  berichte.forEach(t=>(ZBER[t].positionen||[]).forEach(p=>{
+    const n=+p.anzahl||0;
+    const r=REZ[p.name];
+    if(r && r.length){ const da=rezepte.find(o=>o.name===p.name);
+      if(da) da.anzahl+=n; else rezepte.push({name:p.name, anzahl:n});
+      r.forEach(x=>{ const g=gebindeGroesse(x.id,null), Zl=zeile(x.id);
+        if(g.quelle==="bestaetigt" && +x.ml>0){ const fl=n*x.ml/g.ml;
+          Zl.rechts+=fl; Zl.pos.push({name:p.name, anzahl:n, rezept:true, aus:+x.ml, fl}); }
+        else { Zl.fehlt++; Zl.pos.push({name:p.name, anzahl:n, rezept:true, aus:+x.ml||null, fl:null}); } });
+      return; }
+    const zu=zuordnung(p);
+    if(zu.status==="offen"){ const da=offen.find(o=>o.name===p.name);
+      if(da) da.anzahl+=n; else offen.push({name:p.name, anzahl:n}); return; }
+    if(zu.status==="ignoriert"){ const da=ignoriert.find(o=>o.name===p.name);
+      if(da) da.anzahl+=n; else ignoriert.push({name:p.name, anzahl:n}); return; }
+    const Zl=zeile(zu.id), f=flaschen(p, zu.id);
+    const glas = f.aus && f.geb && f.geb.ml && f.aus < f.geb.ml*0.9;
+    let da=Zl.pos.find(o=>o.name===p.name && !o.rezept);
+    if(!da){ da={name:p.name, anzahl:0, aus:f.aus, glas:!!glas, fl:f.ok?0:null, fehlt:f.ok?null:f.fehlt,
+      vorschlag:zu.status!=="fest"}; Zl.pos.push(da); }
+    da.anzahl+=n;
+    if(glas) Zl.gl+=n;
+    if(f.ok){ da.fl+=f.fl; Zl.rechts+=f.fl; if(glas) Zl.glFl+=f.fl; }
+    else Zl.fehlt++;
+  }));
+  gebucht().filter(v=>drin(v.tag)).forEach(v=>{
+    Object.keys(v.verbraucht||{}).forEach(id=>{ zeile(id).links+=v.verbraucht[id]; });
+    Object.keys(v.leer||{}).forEach(id=>{ zeile(id).leer=true; });
+  });
+  VORGAENGE.filter(v=>!v.fertig && drin(v.tag)).forEach(v=>
+    Object.keys(v.verbraucht||{}).forEach(id=>{ zeile(id).laufend+=v.verbraucht[id]; }));
+
+  const namen=gnNamen();
+  const liste=Object.values(zeilen).filter(z=>z.links||z.laufend||z.pos.length).map(z=>{
+    z.art=artVon(z.id);
+    z.name=zeilenName(z.id, namen); z.gn=!!namen[z.id];
+    z.reb=(byId(z.id)||{}).grp||"";
+    z.diff=z.links-z.rechts;
+    /* Ohne Bericht im Fenster gibt es rechts nichts zu vergleichen. Ohne
+       rechenbare Grösse auch nicht. Beides ist „offen", nie „stimmt". */
+    z.status = !berichte.length || z.fehlt || z.laufend ? "offen"
+             : Math.abs(z.diff)<0.05 ? "ok" : "ab";
+    return z;
+  }).sort((a,b)=>ARTEN.findIndex(x=>x.id===a.art)-ARTEN.findIndex(x=>x.id===b.art) ||
+                  a.reb.localeCompare(b.reb,"de") || a.name.localeCompare(b.name,"de"));
+
+  /* Tage im Fenster, an denen eine Seite fehlt — bis zum letzten Tag mit
+     Daten, nicht bis Monatsende: „fehlt" für einen Tag, der noch kommt,
+     wäre keine Auskunft. */
+  const bisDaten=[F.bis, letzterTag()].sort()[0];
+  const fassTage=new Set(VORGAENGE.filter(v=>v.mode==="tag"||v.mode==="fuellen").map(v=>v.tag));
+  const tage=tageIm(F).filter(t=>t<=bisDaten);
+  return {zeilen:liste, offen, ignoriert, rezepte, berichte,
+    ohneZ: tage.filter(t=>!ZBER[t] && fassTage.has(t)),
+    ohneFassung: tage.filter(t=>ZBER[t] && !fassTage.has(t)),
+    laufend: VORGAENGE.filter(v=>!v.fertig && drin(v.tag)).length};
+}
+
+const fmtD = d => (d>0?"+":d<0?"−":"")+num(Math.abs(d));
+const GLAS_SVG='<svg viewBox="0 0 12 14" aria-hidden="true"><path d="M2 1h8l-1 6a3 3 0 0 1-6 0zM6 10v3M3.5 13h5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+
+function baustein(p){
+  const tip=' title="'+esc(p.name)+'"';
+  if(p.rezept) return '<span class="bs"'+tip+'>'+esc(p.name)+' '+p.anzahl+'×'+(p.fl!=null?' = '+num(p.fl)+' Fl.':' · Größe fehlt')+'</span>';
+  if(p.glas){
+    if(p.fl==null) return '<span class="bs gl warn"'+tip+'>'+GLAS_SVG+p.anzahl+' × '+esc(mlKurz(p.aus))+' · Flaschengröße fehlt</span>';
+    return '<span class="bs gl"'+tip+'>'+GLAS_SVG+p.anzahl+' × '+esc(mlKurz(p.aus))+' = '+num(p.fl)+' Fl.</span>';
+  }
+  if(p.fl==null) return '<span class="bs warn"'+tip+'>'+p.anzahl+' × '+esc(p.name)+' · '+(p.fehlt==="ausschank"?'keine Menge im Namen':'Größe fehlt')+'</span>';
+  return '<span class="bs"'+tip+'>Fl. '+num(p.fl)+'</span>';
+}
+function blickZeile(z){
+  const A=artInfo(z.art);
+  const einfach = z.pos.length===1 && !z.pos[0].glas && z.pos[0].fl!=null && !z.pos[0].rezept;
+  const rechts = z.pos.length
+    ? (einfach?'':z.pos.map(baustein).join(""))+'<span class="sum">'+(z.fehlt?'–':num(z.rechts))+'</span>'
+    : '<span class="klein">nicht verkauft</span><span class="sum">0</span>';
+  const punkt = z.status==="ok"?'<span class="dot ok" title="stimmt">✓</span>'
+    : z.status==="ab"?'<span class="dot no" title="weicht ab">'+fmtD(z.diff)+'</span>'
+    : '<span class="dot un" title="offen">?</span>';
+  const links = (z.leer?'<span class="leertag">leer</span>':'')+
+    (z.laufend?'<span class="klein" title="Vorgang noch nicht abgeschlossen">+'+num(z.laufend)+' läuft</span>':'')+
+    '<b>'+num(z.links)+'</b>';
+  return '<div class="brow k'+A.k+'" data-id="'+esc(z.id)+'">'+
+    '<div class="nm"><span class="'+(z.gn?'':'stammn')+'">'+esc(z.name)+'</span>'+
+      (z.reb?' <span class="m">'+esc(z.reb)+'</span>':'')+'</div>'+
+    '<div class="ql">'+links+'</div><div class="mid">'+punkt+'</div>'+
+    '<div class="rt">'+rechts+'</div></div>';
+}
+
+function vBlick(m){
+  if(!UEB.ende) UEB.ende=letzterTag();
+  const F=fenster(UEB.art, UEB.ende);
+  const G=gegenueber(F);
+  const passt = z => UEB.filter==="alle" || artInfo(z.art).f===UEB.filter;
+  const sicht=G.zeilen.filter(passt);
+  const nicht = z => z.status!=="ok";
+  const abw={}; G.zeilen.filter(nicht).forEach(z=>{ const f=artInfo(z.art).f; abw[f]=(abw[f]||0)+1; });
+  const nNicht=sicht.filter(nicht).length;
+  const gl=sicht.reduce((a,z)=>a+z.gl,0), glFl=sicht.reduce((a,z)=>a+z.glFl,0);
+  const glOhne=sicht.some(z=>z.pos.some(p=>p.glas && p.fl==null));
+
+  let h='<div class="bzeit">'+
+    '<div class="seg" role="group" aria-label="Zeitraum">'+
+      ["tag","woche","monat"].map(a=>'<button type="button" data-art="'+a+'" class="'+(UEB.art===a?'on':'')+'" aria-pressed="'+(UEB.art===a)+'">'+
+        {tag:"Tag",woche:"Woche",monat:"Monat"}[a]+'</button>').join("")+'</div>'+
+    '<button type="button" class="pf" id="bZur" aria-label="früher">‹</button>'+
+    '<span class="bdatum">'+esc(fensterTitel(UEB.art,F))+'</span>'+
+    '<button type="button" class="pf" id="bVor" aria-label="später">›</button>'+
+    '<div class="seg rechts" role="group" aria-label="Auswahl">'+
+      '<button type="button" data-nur="0" class="'+(UEB.nur?'':'on')+'">Alle</button>'+
+      '<button type="button" data-nur="1" class="'+(UEB.nur?'on':'')+'">Stimmt nicht · '+nNicht+'</button></div></div>';
+
+  h+='<div class="bchips">'+FILTER.map(f=>'<button type="button" class="bchip'+(f.k?' k'+f.k:'')+(UEB.filter===f.id?' on':'')+'" data-f="'+f.id+'">'+
+      (f.k?'<i></i>':'')+esc(f.t)+(f.id!=="alle"&&abw[f.id]?'<sup>'+abw[f.id]+'</sup>':'')+'</button>').join("")+'</div>';
+
+  /* Hinweise: nur Tatsachen, jede mit dem Weg zur Abhilfe. */
+  const hw=[];
+  if(!G.berichte.length) hw.push(['warn','Für diesen Zeitraum ist kein Z-Bericht eingelesen — rechts steht deshalb nichts.','Z-Bericht einlesen','import']);
+  else if(G.ohneZ.length) hw.push(['warn','Z-Bericht fehlt für '+G.ohneZ.map(kurzTag).join(", ")+' — dort gibt es eine Fassung, aber keinen Verkauf.','Z-Bericht einlesen','import']);
+  if(G.ohneFassung.length) hw.push(['warn','Keine Fassung für '+G.ohneFassung.map(kurzTag).join(", ")+' — der Verkauf dieser Tage hat links kein Gegenüber.',null,null]);
+  if(G.laufend) hw.push(['warn',G.laufend+(G.laufend===1?' Vorgang läuft':' Vorgänge laufen')+' noch — was dort steht, zählt erst nach dem Abschluss.',null,null]);
+  if(G.offen.length) hw.push(['warn',G.offen.length+' Kassenname'+(G.offen.length===1?'':'n')+' ohne Zuordnung — stehen unten, zählen nirgends mit.','Zuordnen','zuordnung']);
+  h+=hw.map((x,i)=>'<div class="hinweis '+x[0]+' bhw"><span>'+esc(x[1])+'</span>'+(x[2]?'<button type="button" class="b klein stark" data-geh="'+x[3]+'">'+esc(x[2])+'</button>':'')+'</div>').join("");
+
+  const sL=sicht.reduce((a,z)=>a+z.links,0), sR=sicht.reduce((a,z)=>a+z.rechts,0);
+  h+='<div class="bkpi"><div><b>'+num(sL)+'</b><span>gefehlt (Fassung)</span></div>'+
+     '<div><b>'+(G.berichte.length?num(sR):'–')+'</b><span>verkauft (gastronovi)</span></div>'+
+     '<div class="glk"><b>'+gl+' Gläser</b><span>'+(gl?(glOhne?'Glaswein · Flaschengröße teils offen':'Glaswein = '+num(glFl)+' Fl.'):'kein Glaswein')+'</span></div>'+
+     '<div class="'+(nNicht?'rot':'')+'"><b>'+nNicht+'</b><span>stimmen nicht</span></div></div>';
+
+  h+='<div class="btab"><div class="bhd"><div class="l">Fassung · fehlt oben</div><div></div><div></div>'+
+     '<div class="r">Z-Bericht'+(G.berichte.length===1?' '+esc(ZBER[G.berichte[0]].nr||''):G.berichte.length?' · '+G.berichte.length+' Berichte':'')+' · gastronovi</div></div>';
+  if(!sicht.length) h+='<div class="leer">Für diesen Zeitraum gibt es nichts zu vergleichen.</div>';
+  ARTEN.forEach(A=>{
+    const zs=sicht.filter(z=>z.art===A.id); if(!zs.length) return;
+    const ok=zs.filter(z=>z.status==="ok"), rest=zs.filter(z=>z.status!=="ok");
+    if(UEB.nur && !rest.length) return;
+    h+='<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+' <small>· '+zs.length+'</small></div>';
+    rest.forEach(z=>h+=blickZeile(z));
+    if(UEB.nur || !ok.length) return;
+    if(UEB.auf[A.id]){ ok.forEach(z=>h+=blickZeile(z));
+      h+='<button type="button" class="bzu k'+A.k+'" data-auf="'+A.id+'">zuklappen</button>'; }
+    else h+='<button type="button" class="brow zu k'+A.k+'" data-auf="'+A.id+'"><div class="nm">✓ '+
+      (rest.length?ok.length+' weitere stimmen':'alle '+ok.length+' stimmen')+' · aufklappen</div>'+
+      '<div class="ql"><b>'+num(ok.reduce((a,z)=>a+z.links,0))+'</b></div><div class="mid"></div>'+
+      '<div class="rt"><span class="sum">'+num(ok.reduce((a,z)=>a+z.rechts,0))+'</span></div></button>';
+  });
+  h+='</div>';
+
+  if(G.offen.length) h+='<div class="karte boffen"><h3>Noch offen</h3><p class="unter">Kassennamen ohne Artikel. Sie fließen in keine Zahl ein, bis sie zugeordnet sind.</p>'+
+    G.offen.sort((a,b)=>b.anzahl-a.anzahl).map(o=>'<div class="bo"><span>'+esc(o.name)+'</span><b>'+num(o.anzahl)+'</b></div>').join("")+
+    '<button type="button" class="b klein stark" data-geh="zuordnung">Zuordnen</button></div>';
+  if(G.ignoriert.length) h+='<p class="unter bign">'+G.ignoriert.reduce((a,o)=>a+o.anzahl,0)+' verkaufte Einheiten sind auf „Ignorieren" (Speisen, Kaffee, Mischgetränke) — sie kommen nicht aus dem Keller.</p>';
+
+  m.innerHTML=h;
+  m.querySelectorAll("[data-art]").forEach(b=>b.onclick=()=>{ UEB.art=b.dataset.art; merkeUeb(); zeichne(); });
+  m.querySelectorAll("[data-nur]").forEach(b=>b.onclick=()=>{ UEB.nur=b.dataset.nur==="1"; zeichne(); });
+  m.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ UEB.filter=b.dataset.f; merkeUeb(); zeichne(); });
+  m.querySelectorAll("[data-auf]").forEach(b=>b.onclick=()=>{ UEB.auf[b.dataset.auf]=!UEB.auf[b.dataset.auf]; zeichne(); });
+  m.querySelectorAll("[data-geh]").forEach(b=>b.onclick=()=>{ SEITE=b.dataset.geh; ANA_OFFEN=true; zeichne(); window.scrollTo(0,0); });
+  $("#bZur").onclick=()=>{ UEB.ende=blaettern(UEB.art,F.von,-1); zeichne(); };
+  $("#bVor").onclick=()=>{ UEB.ende=blaettern(UEB.art,F.von,1); zeichne(); };
+}
+
+/* ── Kellerstand: letzte Zählung + Eingänge − geholt (`bestand()`) ── */
+let KS_ANALYSE=false;
+function vKeller(m){
+  const B=bestand();
+  const namen=gnNamen();
+  const passt = id => UEB.filter==="alle" || artInfo(artVon(id)).f===UEB.filter;
+  const ids=Object.keys(B.b).filter(passt).sort((a,b)=>
+    ARTEN.findIndex(x=>x.id===artVon(a))-ARTEN.findIndex(x=>x.id===artVon(b)) ||
+    ((byId(a)||{}).grp||"").localeCompare((byId(b)||{}).grp||"","de") ||
+    artName(a).localeCompare(artName(b),"de"));
+  const nm = id => namen[id]?esc(zeilenName(id,namen)):'<span class="stammn">'+esc(artName(id))+'</span>';
+  let h='<div class="bzeit"><span class="bdatum links">Kellerstand</span>'+
+    '<span class="unter">'+(B.hat?'letzte Zählung '+esc(deTag(B.basis.tag)):'noch keine Kellerzählung abgeschlossen')+'</span>'+
+    '<button type="button" class="b stark rechts" id="bAna" aria-pressed="'+KS_ANALYSE+'">'+(KS_ANALYSE?'Analyse schließen':'Analyse')+'</button></div>';
+  h+='<div class="bchips">'+FILTER.map(f=>'<button type="button" class="bchip'+(f.k?' k'+f.k:'')+(UEB.filter===f.id?' on':'')+'" data-f="'+f.id+'">'+
+      (f.k?'<i></i>':'')+esc(f.t)+'</button>').join("")+'</div>';
+  if(!B.hat){ m.innerHTML=h+'<div class="leer">Der Kellerstand beginnt mit der ersten abgeschlossenen Kellerzählung.</div>'; kellerKnoepfe(m); return; }
+
+  if(KS_ANALYSE){
+    /* Geholt seit der Zählung gegen verbucht seit der Zählung. Verkauf
+       zählt ab dem Tag NACH der Zählung — am Zähltag selbst ist nicht
+       feststellbar, was davor und was danach verkauft wurde. */
+    const bis=letzterTag(); const cache={};
+    const rows=ids.filter(id=>B.zaehltag[id]).map(id=>{
+      const von=tagMinus(B.zaehltag[id],-1);
+      const G=cache[von]||(cache[von]=gegenueber({von, bis}));
+      const z=G.zeilen.find(x=>x.id===id);
+      const ver=z?z.rechts:0, fehlt=z?z.fehlt:0, geh=B.seit.raus[id]||0;
+      return {id, geh, ver, fehlt, diff:geh-ver, keinZ:!G.berichte.length};
+    }).filter(r=>r.geh||r.ver||r.fehlt);
+    const nNicht=rows.filter(r=>r.fehlt||r.keinZ||Math.abs(r.diff)>=0.05).length;
+    h+='<div class="btab"><div class="bhd"><div class="l">Aus dem Keller geholt · seit Zählung</div><div></div><div></div><div class="r">Verbucht · gastronovi</div></div>';
+    if(!rows.length) h+='<div class="leer">Seit der Zählung wurde nichts geholt und nichts verbucht.</div>';
+    rows.forEach(r=>{ const A=artInfo(artVon(r.id));
+      const pk = r.fehlt||r.keinZ ? '<span class="dot un">?</span>' : Math.abs(r.diff)<0.05 ? '<span class="dot ok">✓</span>' : '<span class="dot no">'+fmtD(r.diff)+'</span>';
+      h+='<div class="brow k'+A.k+'"><div class="nm">'+nm(r.id)+' <span class="m">seit '+kurzTag(B.zaehltag[r.id])+'</span></div><div class="ql"><b>'+num(r.geh)+'</b></div>'+
+        '<div class="mid">'+pk+'</div><div class="rt"><span class="sum">'+(r.fehlt||r.keinZ?'–':num(r.ver))+'</span></div></div>'; });
+    h+='</div><p class="unter">'+nNicht+' Positionen stimmen nicht. Verbucht zählt ab dem Tag nach der jeweiligen Zählung.</p>';
+  } else {
+    h+='<div class="btab ks"><div class="bhd"><div class="l">Artikel</div><div class="r">gezählt</div><div class="r">+ ein / − geholt</div><div class="r">jetzt</div></div>';
+    let letzte=null;
+    ids.forEach(id=>{ const a=artVon(id), A=artInfo(a);
+      if(a!==letzte){ letzte=a; h+='<div class="bgrp k'+A.k+'"><i></i>'+esc(A.t)+'</div>'; }
+      const ein=B.seit.ein[id]||0, raus=B.seit.raus[id]||0, jetzt=B.b[id], gz=B.gezaehlt[id];
+      const u=unklarMenge(B,id);
+      h+='<div class="krow k'+A.k+'"><div class="nm">'+nm(id)+' <span class="m">'+kurzTag(B.zaehltag[id]||"")+'</span></div>'+
+        '<div class="z">'+(gz===0?'<span class="leertag">leer</span>':num(gz))+'</div>'+
+        '<div class="z">'+([ein?'+'+num(ein):'', raus?'−'+num(raus):''].filter(Boolean).join(' / ')||'–')+'</div>'+
+        '<div class="z"><b class="'+(jetzt<0?'neg':'')+'">'+(jetzt===0?'<span class="leertag">leer</span>':num(jetzt))+'</b>'+
+          (u?' <span class="klein" title="'+esc(unklarZeilenSatz(u))+'">+'+num(u)+'?</span>':'')+'</div></div>';
+    });
+    h+='</div><p class="unter">Nur der Weinkeller: das Getränkelager wird nicht gezählt, dafür gibt es keinen Stand.</p>';
+  }
+  m.innerHTML=h; kellerKnoepfe(m);
+}
+function kellerKnoepfe(m){
+  const a=$("#bAna"); if(a) a.onclick=()=>{ KS_ANALYSE=!KS_ANALYSE; zeichne(); };
+  m.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ UEB.filter=b.dataset.f; merkeUeb(); zeichne(); });
+}
+
 /* ════════════ 7 · Ansichten ════════════ */
+/* Runde 24 · Oben stehen nur noch zwei Seiten. Alles, was es vorher gab,
+   liegt unverändert unter „Analytics" — in denselben Gruppen. Die alte
+   Übersicht heisst dort „Tagesbericht", damit es nur EINE Übersicht gibt. */
 const SEITEN=[
-  {id:"heute",     t:"Übersicht",        grp:"Täglich"},
+  {id:"blick",     t:"Übersicht",        oben:true},
+  {id:"keller",    t:"Kellerstand",      oben:true},
+  {id:"heute",     t:"Tagesbericht",     grp:"Täglich"},
   {id:"abgleich",  t:"Verkauf ↔ Fassung"},
   {id:"import",    t:"Z-Bericht"},
   {id:"bestand",   t:"Kellerbestand",    grp:"Bestand"},
@@ -2706,7 +3404,8 @@ const SEITEN=[
   {id:"team",      t:"Mitarbeiter",       grp:"Verwaltung"},
   {id:"einst",     t:"Einstellungen"}
 ];
-let SEITE="heute";
+let SEITE="blick";
+let ANA_OFFEN=false;   /* Runde 24 · „Analytics" aufgeklappt? */
 /* Die vier angebotenen Fenster. Sie stehen hier oben und nicht bei der
    Zeichenfunktion, weil `SPANNE` sie gleich in der nächsten Zeile
    braucht — beim Laden der Seite, nicht erst beim ersten Zeichnen. */
@@ -2747,10 +3446,20 @@ function zaehler(id){
 
 function zeichneNav(){
   const n=$("#nav"); n.innerHTML="";
+  const ana=!SEITEN.find(s=>s.id===SEITE&&s.oben);
+  if(ana) ANA_OFFEN=true;
+  let anaKnopf=false;
   SEITEN.forEach(s=>{
-    if(s.grp){ const g=document.createElement("div"); g.className="grp"; g.textContent=s.grp; n.appendChild(g); }
+    if(!s.oben && !anaKnopf){ anaKnopf=true;
+      const a=document.createElement("button"); a.type="button"; a.className="anaknopf"+(ANA_OFFEN?" offen":"");
+      a.setAttribute("aria-expanded",ANA_OFFEN?"true":"false");
+      a.innerHTML='<span>Analytics</span><span class="pfeil">'+(ANA_OFFEN?'▾':'▸')+'</span>';
+      a.onclick=()=>{ ANA_OFFEN=!ANA_OFFEN; zeichneNav(); };
+      n.appendChild(a); }
+    if(!s.oben && !ANA_OFFEN) return;
+    if(s.grp){ const g=document.createElement("div"); g.className="grp ana"; g.textContent=s.grp; n.appendChild(g); }
     const b=document.createElement("button");
-    b.className=(SEITE===s.id?"on":"");
+    b.className=(SEITE===s.id?"on":"")+(s.oben?" oben":" ana");
     const z=zaehler(s.id);
     b.innerHTML=`<span>${esc(s.t)}</span>`+
       (z?`<span class="zahl ${s.id==="zuordnung"||s.id==="abgleich"?"rot":""}">${z}</span>`:"");
@@ -5403,7 +6112,7 @@ function vTeam(m){
 }
 
 /* ════════════ 8 · Aufbau ════════════ */
-const ANSICHT={heute:vHeute, abgleich:vAbgleich, import:vImport, bestand:vBestand,
+const ANSICHT={blick:vBlick, keller:vKeller, heute:vHeute, abgleich:vAbgleich, import:vImport, bestand:vBestand,
   bestellen:vBestellen, getraenke:vGetraenke, zaehlliste:vZaehlliste,
   eingaenge:vEingaenge, speicher:vSpeicher,
   zuordnung:vZuordnung, rezepte:vRezepte, team:vTeam, einst:vEinst};
@@ -5428,7 +6137,7 @@ function kuerzeUnter(){
 function zeichne(){
   zeichneNav();
   const m=$("#inhalt"); m.innerHTML="";
-  (ANSICHT[SEITE]||vHeute)(m);
+  (ANSICHT[SEITE]||vBlick)(m);
   quellBanner(m);
   kuerzeUnter();
   const qk=quellSchluessel(), ql=QUELLLAGE[qk];
@@ -5474,6 +6183,9 @@ setInterval(()=>{ const e=$("#tStand"); if(!e) return;
    sieht. */
 function zeichneZeitwahl(){
   const e=$("#zeitwahl"); if(!e) return;
+  /* Runde 24 · Übersicht und Kellerstand haben ihren eigenen Zeitraum
+     (Tag/Woche/Monat) — die alten Fenster gelten nur unter Analytics. */
+  e.hidden = SEITE==="blick" || SEITE==="keller";
   e.innerHTML=SPANNEN.map(x=>
     `<button type="button" class="${SPANNE===x.n?"on":""}" data-spanne="${x.n}"
        aria-pressed="${SPANNE===x.n}">${x.t}</button>`).join("");
