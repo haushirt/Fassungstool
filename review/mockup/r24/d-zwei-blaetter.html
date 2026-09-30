@@ -1,0 +1,65 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Übersicht</title><link rel="stylesheet" href="basis.css">
+<style>
+main{max-width:1180px}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--fg-m);margin:0 0 10px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.blatt{display:grid;grid-template-columns:1fr 44px 1fr;gap:0 0;align-items:stretch}
+.bk{background:var(--surface);border:1px solid var(--border);padding:12px 14px;display:flex;justify-content:space-between;align-items:baseline}
+.bk h2{margin:0;font-family:var(--disp);font-size:22px}
+.bk .s{font-size:12px;color:var(--fg-m)}
+.bk.l{border-radius:12px 12px 0 0;border-bottom:0}.bk.r{border-radius:12px 12px 0 0;border-bottom:0}
+.mid{display:flex;align-items:center;justify-content:center}
+.gr{grid-column:1/-1;display:grid;grid-template-columns:1fr 44px 1fr}
+.gr .t{background:var(--surface-2);border:1px solid var(--border);border-width:1px 1px 0;padding:6px 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;display:flex;gap:8px;align-items:center}
+.gr .t i{width:12px;height:12px;border-radius:3px}
+.c{background:var(--surface);border-left:1px solid var(--border);border-right:1px solid var(--border);border-top:1px solid #F0EDE6;padding:7px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center;min-height:38px;position:relative}
+.c:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--k)}
+.c .n{font-weight:600}.c .m{font-size:12px;color:var(--fg-m);font-weight:400}
+.c .q{font-variant-numeric:tabular-nums;font-weight:700;font-size:16px;min-width:38px;text-align:right}
+.c .sub{display:block;font-size:12px;color:var(--fg-m);font-weight:400}
+.c.leerz{background:repeating-linear-gradient(45deg,#fff,#fff 6px,#F6F4EF 6px,#F6F4EF 12px);color:var(--fg-m)}
+.dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.ok{background:var(--success)}.no{background:var(--danger)}.un{background:#C99A00}
+.fuss{grid-column:1/-1;display:grid;grid-template-columns:1fr 44px 1fr}
+.fuss div.c{border-bottom:1px solid var(--border);border-radius:0 0 12px 12px;background:var(--surface-2)}
+.W{--k:#E3C766}.R{--k:#8E2F3C}.S{--k:#C9A7D9}.B{--k:#C98B2B}.O{--k:#2E7DB5}.M{--k:#4FA38F}.F{--k:#E08A3C}
+.offen{margin-top:14px}
+@media(max-width:700px){.blatt,.gr,.fuss{grid-template-columns:1fr 30px 1fr}.c{padding:6px 8px;font-size:13px}.c .m{display:block}.bk h2{font-size:17px}.bk .s{display:none}.dot{width:20px;height:20px;font-size:10px}}
+</style><body>
+<header><span class="logo">Haus Hirt</span><button class="tab an">Übersicht</button><button class="tab">Kellerstand</button><button class="tab ana">Analytics ▾</button></header>
+<main>
+<div class="zeit"><div class="seg"><b class="an">Tag</b><b>Woche</b><b>Monat</b></div><button class="pf">‹</button><span class="datum">Mo 28.09.2026</span><button class="pf">›</button>
+<div class="seg" style="margin-left:auto"><b class="an">Alle · 14</b><b>Stimmt nicht · 4</b></div></div>
+<div class="leg"><span><i style="background:#E3C766"></i>Weiß</span><span><i style="background:#8E2F3C"></i>Rot</span><span><i style="background:#C9A7D9"></i>Schaumwein</span><span><i style="background:#C98B2B"></i>Bier</span><span><i style="background:#2E7DB5"></i>Soft</span><span><i style="background:#4FA38F"></i>Mixer</span><span><i style="background:#E08A3C"></i>Saft</span>
+<span style="margin-left:auto"><span class="dot ok" style="display:inline-flex;width:14px;height:14px"></span> stimmt &nbsp; <span class="dot no" style="display:inline-flex;width:14px;height:14px"></span> weicht ab &nbsp; <span class="dot un" style="display:inline-flex;width:14px;height:14px"></span> offen</span></div>
+
+<div class="blatt">
+<div class="bk l"><h2>Fassung · fehlt oben</h2><span class="s">3 Fassungen · alle abgeschlossen</span></div><div></div>
+<div class="bk r"><h2>Z-Bericht · gastronovi</h2><span class="s">Z 44 · 27.09. 23:05 – 28.09. 23:18</span></div>
+
+<div class="gr"><div class="t"><i style="background:#E3C766"></i>Weißwein · Grüner Veltliner</div><div></div><div class="t"><i style="background:#E3C766"></i>Weißwein · Grüner Veltliner</div></div>
+<div class="gr"><div class="c W"><span class="n">GV Leindl, Langenlois <span class="m">0,75 l</span></span><span class="q">3</span></div><div class="mid"><span class="dot no">+½</span></div>
+<div class="c W"><span class="n">GV Leindl, Langenlois <span class="m">0,75 l</span><span class="sub">+ GV Leindl, Langenlois 1/8 l · 9 Gläser = 1,5 Fl.</span></span><span class="q">2,5</span></div></div>
+<div class="gr"><div class="c W"><span class="n">GV Ott, Fass 4 <span class="m">0,75 l</span></span><span class="q">1</span></div><div class="mid"><span class="dot ok">✓</span></div><div class="c W"><span class="n">GV Ott, Fass 4 <span class="m">0,75 l</span></span><span class="q">1</span></div></div>
+<div class="gr"><div class="t"><i style="background:#E3C766"></i>Weißwein · Sauvignon Blanc</div><div></div><div class="t"><i style="background:#E3C766"></i>Weißwein · Sauvignon Blanc</div></div>
+<div class="gr"><div class="c W"><span class="n">SB Hannes Sabathi <span class="m">0,75 l</span></span><span class="q">2</span></div><div class="mid"><span class="dot ok">✓</span></div><div class="c W"><span class="n">SB Hannes Sabathi <span class="m">1/8 l · 12 Gläser</span></span><span class="q">2</span></div></div>
+<div class="gr"><div class="t"><i style="background:#8E2F3C"></i>Rotwein</div><div></div><div class="t"><i style="background:#8E2F3C"></i>Rotwein</div></div>
+<div class="gr"><div class="c R"><span class="n">BF Muhr, Samt &amp; Seide <span class="m">0,75 l</span></span><span class="q">1</span></div><div class="mid"><span class="dot no">+1</span></div><div class="c R leerz"><span class="n">nicht verkauft</span><span class="q">0</span></div></div>
+<div class="gr"><div class="c R"><span class="n">ZW Glatzer, Rubin Carnuntum <span class="m">0,75 l</span></span><span class="q">2</span></div><div class="mid"><span class="dot un">?</span></div><div class="c R"><span class="n">ZW Glatzer, Rubin Carnuntum <span class="m">1/8 l · 7 Gläser · Flaschengröße bestätigen</span></span><span class="q">7 Gl.</span></div></div>
+<div class="gr"><div class="t"><i style="background:#C98B2B"></i>Bier</div><div></div><div class="t"><i style="background:#C98B2B"></i>Bier</div></div>
+<div class="gr"><div class="c B"><span class="n">Hefeweizen hell 0,5l</span><span class="q">6</span></div><div class="mid"><span class="dot no">+1</span></div><div class="c B"><span class="n">Hefeweizen hell 0,5l</span><span class="q">5</span></div></div>
+<div class="gr"><div class="c B"><span class="n">Stiegl alkoholfrei 0,5l</span><span class="q">4</span></div><div class="mid"><span class="dot ok">✓</span></div><div class="c B"><span class="n">Stiegl alkoholfrei 0,5l</span><span class="q">4</span></div></div>
+<div class="gr"><div class="t"><i style="background:#2E7DB5"></i>Softdrinks</div><div></div><div class="t"><i style="background:#2E7DB5"></i>Softdrinks</div></div>
+<div class="gr"><div class="c O"><span class="n">Coca Cola <span class="m">0,35l</span></span><span class="q">8</span></div><div class="mid"><span class="dot ok">✓</span></div><div class="c O"><span class="n">Coca Cola <span class="m">0,35l</span></span><span class="q">8</span></div></div>
+<div class="gr"><div class="c O"><span class="n">Almdudler <span class="m">0,35l</span></span><span class="q">2</span></div><div class="mid"><span class="dot no">−1</span></div><div class="c O"><span class="n">Almdudler <span class="m">0,35l</span></span><span class="q">3</span></div></div>
+<div class="gr"><div class="t"><i style="background:#4FA38F"></i>Mixer</div><div></div><div class="t"><i style="background:#4FA38F"></i>Mixer</div></div>
+<div class="gr"><div class="c M"><span class="n">Fever-Tree Indian Tonic</span><span class="q">3</span></div><div class="mid"><span class="dot ok">✓</span></div><div class="c M"><span class="n">Fever-Tree Indian Tonic <span class="m">1 Glas</span></span><span class="q">3</span></div></div>
+<div class="gr"><div class="t"><i style="background:#E08A3C"></i>Säfte</div><div></div><div class="t"><i style="background:#E08A3C"></i>Säfte</div></div>
+<div class="gr"><div class="c F"><span class="n">Orangensaft <span class="m">0,25l</span></span><span class="q">5</span></div><div class="mid"><span class="dot ok">✓</span></div><div class="c F"><span class="n">Orangensaft <span class="m">0,25l</span></span><span class="q">5</span></div></div>
+<div class="fuss"><div class="c"><span class="n">Summe gefehlt</span><span class="q">37</span></div><div></div><div class="c"><span class="n">Summe verkauft</span><span class="q">35</span></div></div>
+</div>
+
+<div class="karte offen"><div class="art" style="border:0">Noch offen <span class="klein">· vom System nicht zuordenbar, fließt in keine Zahl ein</span></div>
+<div class="z"><div class="n">Apfelsaft <span class="m">0,25l · im Keller kein Artikel</span></div><span></span><span>1</span><span><button class="btn2" style="padding:4px 10px">Zuordnen</button></span></div>
+</div>
+</main></body></html>

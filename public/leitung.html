@@ -1303,6 +1303,7 @@ function normVorgang(v){
       z[w.id]=(+(v.reihen||{})[w.id]||0)*6 + (+(v.einzel||{})[w.id]||0); hat=true;
     });
     if(hat) o.zaehlung=z;
+    if(v.leer && Object.keys(v.leer).length) o.leer=Object.assign({},v.leer);
     if(v.getr && Object.keys(v.getr).length) o.gzaehlung=Object.assign({},v.getr);
   }
 

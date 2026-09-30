@@ -550,7 +550,9 @@ async function ereignisseAbleiten(env, vid, d, p) {
      vergessene Angabe keine D1-Ausnahme mitten im Abschluss wird. */
   const zu = (art, artikel, menge, ort) => {
     menge = +menge || 0;
-    if (menge) zeilen.push({ art, artikel, menge, ort: ort || "" });
+    /* Eine Zählung mit 0 ist ein Stand („leer"), keine fehlende Angabe —
+       sie geht ins Journal. Bewegungen mit 0 bleiben draussen (Runde 24). */
+    if (menge || art === "zaehlung") zeilen.push({ art, artikel, menge, ort: ort || "" });
   };
 
   if (d.mode === "tag" || d.mode === "fuellen") {

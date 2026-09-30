@@ -910,7 +910,14 @@ main.hasrail{padding-right:calc(var(--rail) + var(--space-5))}
 .zw{padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
 .zw.zebra{background:var(--surface-3)}
 .zw.seen .nm{opacity:.55}
-.ztop{margin-bottom:var(--space-2)}
+.ztop{margin-bottom:var(--space-2);position:relative;padding-right:84px}
+/* Runde 24 · „leer" — ein Platz ohne Flasche ist gezählt, nicht vergessen */
+.leerknopf{position:absolute;right:0;top:0;min-height:var(--tap-min);min-width:72px;padding:0 var(--space-3);
+  border:1px solid var(--border-strong);border-radius:var(--radius-pill);background:var(--surface);
+  color:var(--fg-secondary);font:var(--weight-medium) var(--text-sm)/1 var(--font)}
+.leerknopf.an{background:var(--fg);border-color:var(--fg);color:var(--fg-on-dark)}
+.zw.istleer .zsteppers{opacity:.35}
+.zw.istleer .nm{text-decoration:line-through;text-decoration-color:var(--fg-muted)}
 /* NEU GEMESSEN (Jagd 13): Die Zeile traegt drei Felder — Reihen, Einzeln,
    Summe. Zwei davon brauchen je 122 px (40 + 34 + 40 + zwei Fugen), das
    dritte mindestens 60. Bei 320 px stehen 288 zur Verfuegung: die Summe
@@ -1188,6 +1195,8 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .abwk.on{color:var(--danger);font-weight:var(--weight-medium);text-decoration:none;
  border:1px solid var(--danger-border);border-radius:var(--radius-pill);
  background:var(--danger-bg);min-height:var(--control-h-sm);padding:0 var(--space-3)}
+.leerknopf.inl{position:static;min-width:56px;flex:none}
+.holz.istleer .gq{background:var(--surface-4);color:var(--fg-muted)}
 .abwfeld{width:56px;min-height:var(--control-h-sm);text-align:center;
  font-size:var(--text-base);font-weight:var(--weight-bold);
  font-variant-numeric:tabular-nums;border:2px solid var(--fg);
@@ -1276,10 +1285,21 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 .datumline input{position:absolute;inset:0;width:100%;height:100%;
   opacity:0;border:0;padding:0;margin:0;cursor:pointer}
 /* P12 · Zusätzlich entnommen */
-.zusatz{margin-top:var(--space-6);padding-top:var(--space-4);
-  border-top:1px solid var(--border)}
-.zusatzlink{background:none;border:0;color:var(--fg-muted);font-size:var(--text-sm);
-  text-decoration:underline;cursor:pointer;min-height:var(--tap-min);padding:0}
+/* Runde 24 · eine eigene Karte statt eines grauen Textlinks: Casimir
+   wollte es „als Funktion", nicht als Fussnote. */
+.zusatz{margin-top:var(--space-6);padding:var(--space-3) var(--space-4) var(--space-4);
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius-lg)}
+.zusatz.hat{border-color:var(--accent)}
+.zusatzkopf{display:flex;align-items:center;gap:var(--space-3);width:100%;background:none;border:0;
+  padding:0;min-height:var(--tap-min);cursor:pointer;text-align:left;color:var(--fg);font:inherit}
+.zusatzkopf .zk-t{flex:1;display:flex;flex-direction:column;gap:2px}
+.zusatzkopf .zk-t b{font-size:var(--text-base);font-weight:var(--weight-bold)}
+.zusatzkopf .zk-t small{font-size:var(--text-xs);color:var(--fg-muted)}
+.zusatzkopf .zk-n{background:var(--accent);color:var(--fg-on-dark);border-radius:var(--radius-pill);
+  padding:2px 10px;font-weight:var(--weight-bold);font-size:var(--text-sm)}
+.zusatzkopf .zk-a{border:1px solid var(--accent);color:var(--accent);border-radius:var(--radius-pill);
+  padding:6px 14px;font-weight:var(--weight-medium);font-size:var(--text-sm);white-space:nowrap}
+.zusatzkopf .zk-a.zu{background:var(--accent);color:var(--fg-on-dark)}
 .zusatzsum{font-size:var(--text-sm);color:var(--fg-muted);margin:var(--space-2) 0}
 .zusatzq{margin:var(--space-3) 0}
 .cnt.zin{min-width:46px;text-align:center;padding:0;border-width:2px;border-color:var(--fg)}
@@ -1584,7 +1604,7 @@ label.f span{font-size:var(--text-xs);color:var(--fg-muted);
 /* ═══════════════ Druck ═══════════════ */
 @media print{
   header,.tools,.howto,.rail,.exprow,.explesser,
-  .netz,.zusatzlink{display:none!important}
+  .netz,.zusatzkopf .zk-a{display:none!important}
   body{background:var(--surface)}
   .doc{padding:0}
   /* Rubriken starten eingeklappt — im Druck müssen sie offen sein. */
@@ -4373,7 +4393,25 @@ function holRow(it){
   b.onclick=()=>{if(on)delete d.holt[it.w.id];else d.holt[it.w.id]=1;save();render();};
   r.appendChild(b);
   abwKnopf(r,it.w.id,it.n,menge,d.holtN,v=>b.querySelector(".gq").textContent=v);
+  holLeer(r,it.w.id,d.holtN,d.holt);
   return r;
+}
+/* Runde 24 · „leer": im Lager ist nichts mehr da. Menge 0, Zeile erledigt,
+   und der Vorgang merkt sich `leer[id]` — damit die Leitung sieht, dass
+   nicht vergessen, sondern nichts da war. Ein zweiter Tipp nimmt es zurück. */
+function holLeer(zeile,id,topf,erledigt){
+  const d=D();if(!d.leer)d.leer={};
+  const an=!!d.leer[id];
+  if(an)zeile.classList.add("istleer");
+  const k=document.createElement("button");k.type="button";
+  k.className="leerknopf inl"+(an?" an":"");k.textContent=an?"leer ✓":"leer";
+  k.setAttribute("aria-pressed",an?"true":"false");
+  k.setAttribute("aria-label",GN(id)+" ist leer");
+  k.onclick=e=>{e.stopPropagation();
+    if(an){delete d.leer[id];delete topf[id];delete erledigt[id];}
+    else{d.leer[id]=1;topf[id]=0;erledigt[id]=1;}
+    save();render();};
+  zeile.appendChild(k);
 }
 /* Die Menge stimmt fast immer. Nur wenn im Lager etwas aus ist, klappt
    hier ein Feld auf \u2014 zurückhaltend, damit es nicht zum Normalfall wird. */
@@ -4494,18 +4532,32 @@ function rZaehl(m){
   });
 }
 function zRow(w,idx){
-  const d=D(),on=!!d.zdone[w.id];
-  const row=document.createElement("div");row.className="zw"+(on?" seen":"")+(idx%2?" zebra":"");
+  const d=D(),on=!!d.zdone[w.id];if(!d.leer)d.leer={};
+  const row=document.createElement("div");row.className="zw"+(on?" seen":"")+(idx%2?" zebra":"")+(d.leer[w.id]?" istleer":"");
   const top=document.createElement("div");top.className="ztop";
   top.innerHTML=`<span class="nm"><b>${esc(w.winzer)}</b><span class="wn">${esc(w.wein)}</span></span>
     <span class="mt">${esc(w.jg)} · ${esc(w.region)}</span>`;
+  /* Runde 24 · „leer": gezählt mit 0. Ohne diesen Knopf liess sich ein
+     leerer Platz nicht von einem vergessenen unterscheiden — 0 löschte
+     den Haken, und der Abschluss blieb gesperrt. */
+  const leerB=document.createElement("button");leerB.type="button";
+  leerB.className="leerknopf"+(d.leer[w.id]?" an":"");leerB.textContent=d.leer[w.id]?"leer ✓":"leer";
+  leerB.setAttribute("aria-pressed",d.leer[w.id]?"true":"false");
+  leerB.setAttribute("aria-label",`${w.wein} als leer markieren`);
+  leerB.onclick=()=>{
+    if(d.leer[w.id]){delete d.leer[w.id];delete d.zdone[w.id];}
+    else{d.leer[w.id]=1;delete d.reihen[w.id];delete d.einzel[w.id];d.zdone[w.id]=1;}
+    save();row.replaceWith(zRow(w,idx));renderFoot();};
+  top.appendChild(leerB);
   row.appendChild(top);
   const z=document.createElement("div");z.className="zsteppers";
   const stepper=(bucket,lab)=>{
     const box=document.createElement("div");box.className="zstep";
     const set=(v)=>{v=Math.max(0,v);if(v)d[bucket][w.id]=v;else delete d[bucket][w.id];
       const tot=g(d.reihen,w.id)*6+g(d.einzel,w.id);
-      if(tot>0)d.zdone[w.id]=1;else delete d.zdone[w.id];
+      if(tot>0){d.zdone[w.id]=1;if(d.leer[w.id]){delete d.leer[w.id];row.classList.remove("istleer");
+        leerB.classList.remove("an");leerB.textContent="leer";leerB.setAttribute("aria-pressed","false");}}
+      else if(!d.leer[w.id])delete d.zdone[w.id];
       save();
       valEl.textContent=g(d[bucket],w.id);valEl.classList.toggle("on",!!g(d[bucket],w.id));
       row.classList.toggle("seen",tot>0);
@@ -5443,6 +5495,7 @@ function holZeile(blk,x){
   l.onclick=()=>{if(on)delete d.gholt[x.id];else d.gholt[x.id]=1;save();render();};
   r.appendChild(l);
   abwKnopf(r,x.id,x.n,menge,d.gholtN,v=>l.querySelector(".gq").textContent=v);
+  holLeer(r,x.id,d.gholtN,d.gholt);
   blk.appendChild(r);
 }
 function holBlock(m,titel,anz,liste){
@@ -5501,14 +5554,24 @@ function kistenBedarf(liste){
 }
 /* Zusätzlich entnommene Getränke \u2014 eigener Topf wie beim Wein. */
 let gzOffen=false,gzQ="";
+/* Runde 24 · Kopf der Karte „Zusätzlich entnommen" — für Wein und Getränke gleich. */
+function zusatzKopf(box,offen,anzahl,einheit,toggle){
+  const kopf=document.createElement("button");kopf.type="button";kopf.className="zusatzkopf";
+  kopf.setAttribute("aria-expanded",offen?"true":"false");
+  kopf.innerHTML='<span class="zk-t"><b>Zusätzlich entnommen</b><small>Was außerhalb der Liste '+
+    einheit+' herausgenommen wurde</small></span>'+
+    (anzahl?'<span class="zk-n">'+anzahl+'</span>':'')+
+    '<span class="zk-a'+(offen?' zu':'')+'">'+(offen?'Fertig':'+ Hinzufügen')+'</span>';
+  kopf.onclick=toggle;
+  box.appendChild(kopf);
+  if(anzahl)box.classList.add("hat");
+}
 function gZusatz(m){
   const d=D();d.gzusatz=d.gzusatz||{};
   const erf=Object.keys(d.gzusatz).filter(id=>+d.gzusatz[id]>0);
   const box=document.createElement("div");box.className="zusatz";
-  const kopf=document.createElement("button");kopf.className="zusatzlink";
-  kopf.textContent=(gzOffen?"\u2212":"+")+" Zusätzlich entnommen";
-  kopf.onclick=()=>{gzOffen=!gzOffen;render();};
-  box.appendChild(kopf);
+  zusatzKopf(box,gzOffen,erf.reduce((a,id)=>a+ +d.gzusatz[id],0),"aus dem Lager",
+    ()=>{gzOffen=!gzOffen;render();});
   if(erf.length){
     const s2=erf.reduce((a,id)=>a+ +d.gzusatz[id],0);
     const z=document.createElement("div");z.className="zusatzsum";
@@ -5539,10 +5602,8 @@ function rZusatz(m){
   const d=D();d.zusatz=d.zusatz||{};
   const erf=WINES.filter(w=>g(d.zusatz,w.id));
   const box=document.createElement("div");box.className="zusatz";
-  const kopf=document.createElement("button");kopf.className="zusatzlink";
-  kopf.textContent=zusatzOffen?"\u2212 Zusätzlich entnommen":"+ Zusätzlich entnommen";
-  kopf.onclick=()=>{zusatzOffen=!zusatzOffen;render();};
-  box.appendChild(kopf);
+  zusatzKopf(box,zusatzOffen,erf.reduce((a,w)=>a+g(d.zusatz,w.id),0),"aus dem Keller",
+    ()=>{zusatzOffen=!zusatzOffen;render();});
   if(erf.length){
     const sum2=erf.reduce((a,w)=>a+g(d.zusatz,w.id),0);
     const z=document.createElement("div");z.className="zusatzsum";
@@ -6487,7 +6548,7 @@ function docKeller(){
       if(z!==lz){lz=z;tr+=`<tr><td class="grp" colspan="5">${PLAN.zonen[z].t}</td></tr>`;}
       const R=g(d.reihen,w.id),E=g(d.einzel,w.id);
       tr+=`<tr><td><b>${esc(w.winzer)}</b> · ${esc(w.wein)}</td><td>${esc(w.jg)}</td>
-        <td class="r">${R||"–"}</td><td class="r">${E||"–"}</td><td class="r"><b>${R*6+E}</b></td></tr>`;});
+        <td class="r">${R||"–"}</td><td class="r">${E||"–"}</td><td class="r"><b>${(d.leer||{})[w.id]?"leer":R*6+E}</b></td></tr>`;});
     h+=`<div class="sec"><h3>Gezählter Bestand</h3>
       ${tbl(`<th>Wein</th><th>Jg.</th><th class="r">Reihen</th><th class="r">Einz.</th><th class="r">Fl.</th>`,tr,
         `<tr class="tot"><td colspan="4">Summe</td><td class="r">${tot}</td></tr>`)}</div>`;}
