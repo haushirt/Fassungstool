@@ -185,25 +185,27 @@ const POSITIONEN = 48, STUECK = 145, UMSATZ = 602.50;
      blick.leindl && blick.leindl.rechts);
   ok("Leindl: Name aus der gastronovi-Liste (Glas und Flasche in einer Zeile)", blick.leindl && blick.leindl.name === "GV Leindl, Langenlois");
   ok("Leindl weicht ab (rot)", blick.leindl && blick.leindl.status === "ab");
-  ok("Glas-Baustein zeigt die Rechnung", /4 × ⅛ l = 0,7 Fl\./.test(blick.text));
+  ok("Block 3 zeigt die Gläser mit Rechnung", /4 Gläser ≈ 0,7 Fl\./.test(blick.text));
   ok("Glatzer Rubin: Glas ohne bestätigte Größe → mit 0,75 l gerechnet und als „angenommen\" markiert",
      blick.glatz && blick.glatz.ann === true && Math.abs(blick.glatz.rechts - 2 * 125 / 750) < 1e-9);
-  ok("die Annahme steht sichtbar da", /angenommen/.test(blick.text));
+  ok("drei Blöcke: Flaschenwein, Flaschen, Offen",
+     /1 · Flaschenwein/.test(blick.text) && /2 · Flaschen/.test(blick.text) && /3 · Offen/.test(blick.text));
+  const b1 = await p.evaluate(() => block1().zeilen.map(z => [z.id, z.L, z.R]));
+  ok("Block 1: nur Restaurant gegen ganze Flaschen (Leindl-Gläser zählen dort nicht)",
+     !b1.some(z => z[0] === "w001" && z[2] > 0), JSON.stringify(b1.slice(0, 5)));
   ok("Glatzer Rubin: beim Holen leer markiert", blick.glatz && blick.glatz.leer === true);
   ok("offene Kassennamen werden genannt", /ohne Zuordnung/.test(blick.text) === (blick.offen > 0));
   await p.screenshot({ path: path.join(BILD, "uebersicht-tag.png"), fullPage: true });
 
   await p.locator('[data-nur="1"]').click(); await p.waitForTimeout(200);
-  const nurNicht = await p.evaluate(() => ({ zu: document.querySelectorAll(".brow.zu").length,
-    ok: [...document.querySelectorAll(".brow .dot.ok")].length }));
-  ok("„Stimmt nicht\" blendet alles aus, was stimmt", nurNicht.zu === 0 && nurNicht.ok === 0, JSON.stringify(nurNicht));
+  const nurNicht = await p.evaluate(() => ({ ok: [...document.querySelectorAll(".brow .dot.ok")].length,
+    offen: !!document.querySelector(".bblock.info") }));
+  ok("„Stimmt nicht\" blendet alles aus, was stimmt, und Block 3", nurNicht.ok === 0 && !nurNicht.offen, JSON.stringify(nurNicht));
   await p.screenshot({ path: path.join(BILD, "stimmt-nicht.png"), fullPage: true });
   await p.locator('[data-nur="0"]').click(); await p.waitForTimeout(150);
 
-  await p.locator('.bchip[data-f="bier"]').click(); await p.waitForTimeout(150);
-  const bier = await p.evaluate(() => [...document.querySelectorAll(".bgrp")].map(g => g.textContent));
-  ok("Filter Bier zeigt nur Bier", bier.length <= 1 && bier.every(t => /Bier/.test(t)), bier.join(" | "));
-  await p.locator('.bchip[data-f="alle"]').click(); await p.waitForTimeout(150);
+  const b2 = await p.evaluate(() => block2(fenster("tag", "2026-09-16")).map(z => artVon(z.id)));
+  ok("Block 2 enthält nur Bier, Softdrinks, Wasser", b2.every(a => a === "bier" || a === "soft"), b2.join(","));
 
   console.log("\n4 · Woche, Monat, Blättern");
   await p.locator('[data-art="woche"]').click(); await p.waitForTimeout(150);
